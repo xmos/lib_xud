@@ -6,6 +6,6 @@
 #    make export - will build the library and export a binary version
 #                  of the module into the export/ directory
 
-include ../../xcommon/module_xcommon/build/Makefile.library
+include ../../xcommon/module_xcommon/build/Makefile.libraries
 
 

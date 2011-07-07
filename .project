@@ -1,6 +1,6 @@
 <?XL version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>sc_lib_example</name>
+	<name>sc_xud</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -31,7 +31,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildLocation</key>
-					<value>${workspace_loc:/sc_lib_example}</value>
+					<value>${workspace_loc:/sc_xud}</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>

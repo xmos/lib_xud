@@ -7,14 +7,20 @@
 #include "XUD_Support.h"
 #include "XUD_TestMode.h"
 #include "usb.h"
+#include "xud.h"
 
-extern out port reg_write_port;
-extern in  port reg_read_port;
 extern in  port flag0_port;
 extern in  port flag1_port;
 extern in  port flag2_port;
+#ifdef GLX
+extern out buffered port:32 p_usb_txd;
+#define reg_write_port null
+#define reg_read_port null
+#else
+extern out port reg_write_port;
+extern in  port reg_read_port;
 extern out port p_usb_txd;
-
+#endif
 #define TEST_PACKET_LEN 14
 #define T_INTER_TEST_PACKET_us 2
 #define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
@@ -40,8 +46,13 @@ unsigned int test_packet[TEST_PACKET_LEN] = {
 
 int XUD_TestMode_TestJ () 
 {
+#ifdef GLX
+
+#else
   XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
   XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x4);
+#endif
+  
   // TestMode remains in J state until exit action is taken (which
   // for a device is power cycle)
   while(1) {
@@ -52,8 +63,12 @@ int XUD_TestMode_TestJ ()
 
 int XUD_TestMode_TestK () 
 {
+#ifdef GLX
+#else
   XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
   XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x4);
+#endif  
+  
   // TestMode remains in J state until exit action is taken (which
   // for a device is power cycle)
   while(1) {
@@ -92,16 +107,23 @@ int XUD_UsbTestModeHandler(unsigned rxd_port, unsigned rxa_port, chanend c_usb_t
 	//	printhexln(cmd);
 	switch(cmd) {
 	case WINDEX_TEST_J:
+#ifdef GLX
+
+#else
 		    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 		//				XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x4);
-				while(1) {
+#endif	
+    			while(1) {
 					p_usb_txd <: 0xffffffff;
 				}
 		break;
 	
  case WINDEX_TEST_K:
+#ifdef GLX
+#else
 		    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
-				//				XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x4);
+#endif	
+    			//				XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x4);
 				while(1) {
 					p_usb_txd <: 0;
 				}

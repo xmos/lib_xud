@@ -6,13 +6,25 @@
 #include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_Support.h"
+#include "xud.h"
 
-extern out port reg_write_port;
-extern in  port reg_read_port;
+#ifdef GLX
+#include <xa1_registers.h>
+int write_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned data);
+#endif
+
 extern in  port flag0_port;
 extern in  port flag1_port;
 extern in  port flag2_port;
+#ifdef GLX
+extern out buffered port:32 p_usb_txd;
+#define reg_write_port null
+#define reg_read_port null
+#else
+extern out port reg_write_port;
+extern in  port reg_read_port;
 extern out port p_usb_txd;
+#endif
 
 /* States for state machine */
 #define STATE_START 0
@@ -32,6 +44,8 @@ extern out port p_usb_txd;
 
 unsigned chirptime = TUCHEND_DELAY;
 
+#define MYID   0x0000
+#define GLXID  0x0001
 extern int resetCount;
 
 /* Assumptions:
@@ -49,15 +63,20 @@ int XUD_DeviceAttachHS()
   
 
     clearbuf(p_usb_txd);
+#ifndef GLX 
     clearbuf(reg_write_port);
+#endif
     // On detecting the SE0:
     // De-assert XCVRSelect and set opmode=2
     // DEBUG - write to ulpi reg 0x54. This is:
     // opmode = 0b10, termsel = 1, xcvrsel = 0b00;
 
+#ifdef GLX
+    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010); 
+#else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
-    
-    XUD_Sup_Delay(50);
+#endif
+    //XUD_Sup_Delay(50);
 
     // DEBUG: This sets IFM mode to DecodeLineState
     // Bit 5 of the CtRL reg (DONTUSE) has a serious effect on
@@ -72,8 +91,14 @@ int XUD_DeviceAttachHS()
     // Wait for TUCHEND - TUCH
     //XUD_Sup_Delay(chirptime);
 
+#ifdef GLX
+    p_usb_txd <: 0;
+    XUD_Sup_Delay(30000000);
+    while(1);
+#else
    for (int i = 0; i < 25000; i++)
         p_usb_txd <: 0;
+#endif
 
    // XUD_Sup_Delay(30000);
 
@@ -85,9 +110,21 @@ int XUD_DeviceAttachHS()
     // Wait for fs chirp k (i.e. HS chirp j)
     //flag0_port when pinseq(0) :> tmp; // Wait for out k to go
 
+//#ifdef GLX
+//#warning TODO re-add timeouts for GLX
+//chirpCount = 3;
+//while(chirpCount)
+//{
+  //  flag0_port when pinseq(1) :> int _;
+//
+ //   flag1_port when pinseq(1) :> int _;
+//
+ //   chirpCount--;
+
+//}
 
 
-
+#if 1
     while(loop)
     {
         switch(state)
@@ -96,119 +133,151 @@ int XUD_DeviceAttachHS()
                 t :> time1;
                 chirpCount = 0;
                 nextState = STATE_DETECTK;
-                break;
+                    break;
 
             case STATE_DETECTK:
                 t :> time2;
 
+//#ifndef GLX
                 if (time2 - time1 > INVALID_DELAY)
                     nextState = STATE_INVALID;
-
+//#endif
                 flag1_port :> tmp;
                 if (tmp)
                     nextState = STATE_FILT_CHECK_K;
                 break;
 
-      case STATE_FILT_CHECK_K:
-        XUD_Sup_Delay(T_FILT);
-        flag1_port :> tmp;
-        if (tmp) {
-          XUD_Sup_Delay(T_FILT);
-          nextState = STATE_INC_K;
-        } else {
-          nextState = STATE_DETECTK;
-        }
-        break;
+            case STATE_FILT_CHECK_K:
+                XUD_Sup_Delay(T_FILT);
+                flag1_port :> tmp;
+                if (tmp) 
+                {
+                    XUD_Sup_Delay(T_FILT);
+                    nextState = STATE_INC_K;
+                } 
+                else 
+                {
+                    nextState = STATE_DETECTK;
+                }
+                break;
 
-      case STATE_INC_K:
-        flag2_port :> tmp;  // check for se0
-        if(tmp) {
+            case STATE_INC_K:
+                flag2_port :> tmp;  // check for se0
+                if(tmp) 
+                {
 #ifdef XUD_STATE_LOGGING
-          addDeviceState(STATE_K_INVALID);
+                    addDeviceState(STATE_K_INVALID);
 #endif
-          nextState = STATE_INVALID;
-        } else {
+                    nextState = STATE_INVALID;
+                } 
+                else 
+                {
 #ifdef XUD_STATE_LOGGING
-          addDeviceState(STATE_K_VALID);
+                    addDeviceState(STATE_K_VALID);
 #endif
-          chirpCount++;
-          if (chirpCount == 6) {
-            nextState = STATE_VALID;
-          } else {
-            nextState = STATE_DETECTJ;
-          }
-        }
-        break;
+                    chirpCount++;
+                    if (chirpCount == 6) 
+                    {
+                        nextState = STATE_VALID;
+                    } 
+                    else 
+                    {
+                        nextState = STATE_DETECTJ;
+                    }
+                }
+                break;
 
-      case STATE_DETECTJ:
-        t :> time2;
+            case STATE_DETECTJ:
+                t :> time2;
 
-        if (time2 - time1 > INVALID_DELAY)
-          nextState = STATE_INVALID;
+//#ifndef GLX
+                if (time2 - time1 > INVALID_DELAY)
+                    nextState = STATE_INVALID;
+//#endif
 
-        flag0_port :> tmp;
-        if (tmp)
-          nextState = STATE_FILT_CHECK_J;
-        break;
+                flag0_port :> tmp;
+                if (tmp)
+                    nextState = STATE_FILT_CHECK_J;
+                break;
 
-      case STATE_FILT_CHECK_J:
-        XUD_Sup_Delay(T_FILT);
-        flag0_port :> tmp;
-        if (tmp) {
-            XUD_Sup_Delay(T_FILT);
-            nextState = STATE_INC_J;
-        } else {
-            nextState = STATE_DETECTJ;
-        }
-        break;
+            case STATE_FILT_CHECK_J:
+        
+//#ifndef GLX
+                XUD_Sup_Delay(T_FILT);
+//#endif
+                flag0_port :> tmp;
+                if (tmp) 
+                {
+//#ifndef GLX
+                    XUD_Sup_Delay(T_FILT);
+//#endif
+                    nextState = STATE_INC_J;
+                } 
+                else 
+                {
+                    nextState = STATE_DETECTJ;
+                }
+                break;
 
-      case STATE_INC_J:
-        flag2_port :> tmp;  // check for se0
-        if(tmp) {
+            case STATE_INC_J:
+                flag2_port :> tmp;  // check for se0
+                if(tmp) 
+                {
 #ifdef XUD_STATE_LOGGING
-          addDeviceState(STATE_J_INVALID);
+                    addDeviceState(STATE_J_INVALID);
 #endif
-          nextState = STATE_INVALID;
-        } else {
+                    nextState = STATE_INVALID;
+                } 
+                else 
+                {
 #ifdef XUD_STATE_LOGGING
-          addDeviceState(STATE_J_VALID);
+                    addDeviceState(STATE_J_VALID);
 #endif
-          chirpCount++;
-          if (chirpCount == 6) {
-            nextState = STATE_VALID;
-          } else {
-            nextState = STATE_DETECTK;
-          }
+                    chirpCount++;
+                    if (chirpCount == 6) 
+                    {
+                        nextState = STATE_VALID;
+                    } 
+                    else 
+                    {
+                        nextState = STATE_DETECTK;
+                    }
+                }
+                break;
+
+            case STATE_INVALID:
+                loop = 0;
+                complete = 0;
+                //return 0;
+                //nextState = STATE_START;
+                break;
+
+            case STATE_VALID:
+                //printstr("good chirp");
+                loop = 0;
+                break;
         }
-        break;
-
-      case STATE_INVALID:
-        loop = 0;
-        complete = 0;
-        //return 0;
-        //nextState = STATE_START;
-        break;
-
-      case STATE_VALID:
-        //printstr("good chirp");
-        loop = 0;
-        break;
-    }
 
     state = nextState;
   }
 
+#endif
+
   if (complete) {
 
+#ifdef GLX
+    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b0000); 
+#else
     // Three pairs of KJ received... de-assert TermSelect... (and opmode = 0, suspendm = 1)
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
+#endif
 
     //wait for SE0 (TODO consume other chirps?)
     flag2_port when pinseq(1) :> tmp;
 
   }
     //wait for SE0 end
-    flag2_port when pinseq(0) :> tmp;
+//    flag2_port when pinseq(0) :> tmp;
 
   return complete;
 }

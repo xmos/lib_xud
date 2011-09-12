@@ -1,6 +1,14 @@
 #include <xs1.h>
 #include <platform.h>
+#include "xud.h"
 
+#ifdef GLX
+
+
+
+
+
+#else
 #ifdef UIFM_USB_CLK_PORT
 // Port defines already made (probably in XN file)
 in port  p_usb_clk       = UIFM_USB_CLK_PORT;
@@ -40,5 +48,5 @@ on stdcore[USB_CORE]:out port p_usb_txd       = UIFM_TX_DATA_PORT;
 on stdcore[USB_CORE]:    port p_usb_rxd       = UIFM_RX_DATA_PORT;
 
 #endif
-
+#endif
 #endif

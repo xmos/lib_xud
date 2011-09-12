@@ -10,6 +10,10 @@
 #include <print.h>
 #include <xs1.h>
 
+#ifdef GLX
+#define GLX 1
+#endif
+
 /* Arch type defines */
 typedef unsigned char 	uint8;
 typedef unsigned int 	uint32;

@@ -9,9 +9,24 @@
 /* Location to store stack pointer (required for interupt handler) */
 unsigned SavedSp;
 
-int XUD_LLD_IoLoop(in port rxd_port, in port rxa_port, out port txd_port, in port rxe_port, in port flag0_port, 
-    in port, out port, int x,
-                   XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[], int  epCount, chanend ?sof, chanend ?c_usb_testmode) ;
+
+#if 0
+
+int XUD_LLD_IoLoop(
+#ifdef GLX
+                in buffered port:32 rxd_port,
+#else
+                in port rxd_port, 
+#endif
+                in port rxa_port,
+#ifdef GLX
+                out buffered port:32 txd_port,
+#else
+                out port txd_port, 
+#endif
+                in port rxe_port, in port flag0_port, 
+                in port, out port, int x,
+                XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[], int  epCount, chanend ?sof, chanend ?c_usb_testmode) ;
 
 
 
@@ -22,9 +37,21 @@ int XUD_LLD_IoLoop(in port rxd_port, in port rxa_port, out port txd_port, in por
 
 
 
-int XUD_LLD_Io(in port rxd_port, in port rxa_port, out port txd_port, in port rxe_port, in port flag0_port, 
-    int x, int y, int z,
-               XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[], int epCount, in port reg_read_port, out port reg_write_port, chanend ?sof, chanend ?c_usb_testmode) 
+int XUD_LLD_Io(
+#ifdef GLX
+                in buffered port:32 rxd_port,
+#else
+                in port rxd_port, 
+#endif
+                in port rxa_port,
+#ifdef GLX
+                out buffered port:32 txd_port,
+#else
+                out port txd_port, 
+#endif
+                in port rxe_port, in port flag0_port, 
+                int x, int y, int z,
+               XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[], int epCount, in port ?reg_read_port, out port ?reg_write_port, chanend ?sof, chanend ?c_usb_testmode) 
 {
 
     /* Call main IO assembly loop */
@@ -32,3 +59,4 @@ int XUD_LLD_Io(in port rxd_port, in port rxa_port, out port txd_port, in port rx
 
 }
 
+#endif

@@ -93,11 +93,11 @@ InEventLoopEnd:
 
 #define STACK_EXTEND 16
 
-#include "XUD_Token_Out.S"
-#include "XUD_Token_Ping.S"
-#include "XUD_Token_In.S"
-#include "XUD_Token_Setup.S"
-#include "XUD_Token_SOF.S"
+#include "./included/XUD_Token_Out.S"
+#include "./included/XUD_Token_Ping.S"
+#include "./included/XUD_Token_In.S"
+#include "./included/XUD_Token_Setup.S"
+#include "./included/XUD_Token_SOF.S"
 
 
 // Stack frame:
@@ -502,6 +502,8 @@ Loop_BadPid:
 XUD_TokenRx_Pid: 
     inpw       r11, res[RXD], 8                       // Read 8 bit PID
     shr        r11, r11, 24                           // Shift off junk 
+    
+    //bl         printintln
     ldw        r10, r10[r11]                          // Load relevant branch address
 
 #if 1        
@@ -619,4 +621,4 @@ Return:
 
         
 // Tables of tables...
-#include "XUD_PidJumpTable.S"
+#include "./included/XUD_PidJumpTable.S"

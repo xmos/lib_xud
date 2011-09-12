@@ -21,14 +21,19 @@
 #define DELAY_6ms            (DELAY_6ms_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
 
 extern in  port p_usb_clk;
-extern out port reg_write_port ;
 extern in  port reg_read_port  ;
 extern in  port flag0_port     ;
 extern in  port flag1_port     ;
 extern in  port flag2_port     ;
 extern out port p_usb_txd       ;
-extern   port p_usb_rxd       ;
-
+#ifdef GLX
+extern in buffered port:32 p_usb_rxd;
+#define reg_read_port null
+#define reg_write_port null
+#else
+extern out port reg_write_port ;
+extern port p_usb_rxd;
+#endif
 extern unsigned g_curSpeed;
 
 /* Reset USB transceiver for specified time */
@@ -37,7 +42,10 @@ void XUD_PhyReset(out port p_rst, int time, unsigned rstMask)
 	unsigned x;
     clearbuf(p_usb_rxd);
 
-    p_usb_rxd <: 0;            // While in reset, drive 0 on data bus and clear port buffers
+#ifndef GLX
+#warning TODO FIXME
+    //p_usb_rxd <: 0;            // While in reset, drive 0 on data bus and clear port buffers
+#endif   
     clearbuf(p_usb_rxd);
     
 	x = peek(p_rst);
@@ -146,23 +154,35 @@ int XUD_Init()
 extern int inSus;
 extern unsigned susresettime;
 
-
+#ifdef GLX
+#define MYID   0x0000
+#define GLXID  0x0001
+#include <xa1_registers.h>
+#include <print.h>
+int write_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned data);
+int read_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned &data);
+#endif
 /** XUD_DoSuspend
   * @brief  Function called when device is suspended. This should include any clock down code etc.
   * @return True if reset detected during resume */
 int XUD_Suspend()
 {
-    int tmp;
+    unsigned tmp;
     timer t;
     unsigned time;
     
     while(1)
     {
         /* Read flags reg... */
+    
+#ifdef GLX
+        read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
+#else
         tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-
+#endif
         if(tmp & UIFM_FLAGS_SE0)
         {
+            //printint(1);
             t :> time;
             select
             {
@@ -182,7 +202,11 @@ int XUD_Suspend()
             /* Wait for end of resume (SE0) */
             while(1)
             {
+#ifdef GLX
+                read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
+#else
                 tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
+#endif
             
                 if(tmp & UIFM_FLAGS_FS_J)
                 {
@@ -190,14 +214,23 @@ int XUD_Suspend()
                 }
                 else if(tmp & UIFM_FLAGS_SE0)
                 {
-                    /* Resume detected from suspend: switch back to HS (suspendm high) and continue...*/                              if(g_curSpeed == XUD_SPEED_HS)
+                    /* Resume detected from suspend: switch back to HS (suspendm high) and continue...*/                              
+                    if(g_curSpeed == XUD_SPEED_HS)
                     {
+#ifdef GLX
+                        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+#else
                         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
+#endif
                     }
                     
                     while(1)
                     {
+#ifdef GLX
+                        read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
+#else
                         tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
+#endif
                     
                         if(!(tmp & UIFM_FLAGS_SE0))
                         {

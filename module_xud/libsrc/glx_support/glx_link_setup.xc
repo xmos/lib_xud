@@ -1,4 +1,5 @@
 // Martin Vickers : 24/9/10
+#define __XS1_L__
 #include <xs1.h>
 #include <platform.h>
 #include "print.h"

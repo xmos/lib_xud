@@ -11,6 +11,7 @@
 #ifdef GLX
 #include <xa1_registers.h>
 int write_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned data);
+int read_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned &data);
 #endif
 
 extern in  port flag0_port;
@@ -39,8 +40,9 @@ extern out port p_usb_txd;
 
 #define TUCHEND_DELAY_us  1500 // 1.5ms
 #define TUCHEND_DELAY            (TUCHEND_DELAY_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+// TODO fix times...
 #define INVALID_DELAY_us  2500 // 2.5ms
-#define INVALID_DELAY            (INVALID_DELAY_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define INVALID_DELAY     (INVALID_DELAY_us * (XCORE_FREQ_MHz/10) / (REF_CLK_DIVIDER+1))
 
 unsigned chirptime = TUCHEND_DELAY;
 
@@ -72,7 +74,10 @@ int XUD_DeviceAttachHS()
     // opmode = 0b10, termsel = 1, xcvrsel = 0b00;
 
 #ifdef GLX
-    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010); 
+    
+    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010);
+    //read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, tmp);.
+    
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
 #endif
@@ -86,15 +91,17 @@ int XUD_DeviceAttachHS()
 
     // Should out a K chirp - Signal HS device to host
     //XUD_Sup_Outpw8(p_usb_txd, 0);
-   // p_usb_txd <: 0;
+    //p_usb_txd <: 0;
 
     // Wait for TUCHEND - TUCH
     //XUD_Sup_Delay(chirptime);
 
 #ifdef GLX
-    p_usb_txd <: 0;
-    XUD_Sup_Delay(30000000);
-    while(1);
+    // output k-chirp for required time
+    for (int i = 0; i < 25000; i++)
+        p_usb_txd <: 0x0;
+    
+    XUD_Sup_Delay(chirptime);    
 #else
    for (int i = 0; i < 25000; i++)
         p_usb_txd <: 0;
@@ -108,21 +115,7 @@ int XUD_DeviceAttachHS()
     //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x04);
     // J, K, SE0 on flag ports 0, 1, 2 respectively
     // Wait for fs chirp k (i.e. HS chirp j)
-    //flag0_port when pinseq(0) :> tmp; // Wait for out k to go
-
-//#ifdef GLX
-//#warning TODO re-add timeouts for GLX
-//chirpCount = 3;
-//while(chirpCount)
-//{
-  //  flag0_port when pinseq(1) :> int _;
-//
- //   flag1_port when pinseq(1) :> int _;
-//
- //   chirpCount--;
-
-//}
-
+    flag1_port when pinseq(0) :> tmp; // Wait for out k to go
 
 #if 1
     while(loop)
@@ -139,12 +132,16 @@ int XUD_DeviceAttachHS()
                 t :> time2;
 
 //#ifndef GLX
-                if (time2 - time1 > INVALID_DELAY)
+                /*if (time2 - time1 > INVALID_DELAY)
+                {
                     nextState = STATE_INVALID;
+                }*/
 //#endif
                 flag1_port :> tmp;
                 if (tmp)
+                {
                     nextState = STATE_FILT_CHECK_K;
+                }
                 break;
 
             case STATE_FILT_CHECK_K:
@@ -169,6 +166,7 @@ int XUD_DeviceAttachHS()
                     addDeviceState(STATE_K_INVALID);
 #endif
                     nextState = STATE_INVALID;
+                    printint(2);
                 } 
                 else 
                 {
@@ -191,8 +189,11 @@ int XUD_DeviceAttachHS()
                 t :> time2;
 
 //#ifndef GLX
-                if (time2 - time1 > INVALID_DELAY)
+                /*if (time2 - time1 > INVALID_DELAY)
+                {
                     nextState = STATE_INVALID;
+                    printint(3);
+                } */
 //#endif
 
                 flag0_port :> tmp;
@@ -248,12 +249,13 @@ int XUD_DeviceAttachHS()
             case STATE_INVALID:
                 loop = 0;
                 complete = 0;
+                printstr("invalid\n");
                 //return 0;
                 //nextState = STATE_START;
                 break;
 
             case STATE_VALID:
-                //printstr("good chirp");
+                //printstr("good chirp\n");
                 loop = 0;
                 break;
         }
@@ -263,7 +265,8 @@ int XUD_DeviceAttachHS()
 
 #endif
 
-  if (complete) {
+
+if (complete) {
 
 #ifdef GLX
     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b0000); 
@@ -276,7 +279,8 @@ int XUD_DeviceAttachHS()
     flag2_port when pinseq(1) :> tmp;
 
   }
-    //wait for SE0 end
+    //wait for SE0 end 
+    // TODO... ADD BACK IN
 //    flag2_port when pinseq(0) :> tmp;
 
   return complete;

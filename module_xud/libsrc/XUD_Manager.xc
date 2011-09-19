@@ -543,7 +543,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #else
 
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
-#endif          
+#endif      
+            /* Setup flags for power signalling - J/K/SE0 line state*/
             XUD_UIFM_PwrSigFlags();
             
             if (one)
@@ -574,7 +575,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                 /* Run suspend code, returns 1 if reset from suspend, else resume */
                 reset = XUD_Suspend();
-
+                
                 /* Run user resume code */
                 XUD_UserResume();
             }
@@ -606,7 +607,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #else
                 XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
 #endif
-
+                
                 if(g_desSpeed == XUD_SPEED_HS)
                 {
                     if (!XUD_DeviceAttachHS())

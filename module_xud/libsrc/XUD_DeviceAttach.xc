@@ -40,9 +40,8 @@ extern out port p_usb_txd;
 
 #define TUCHEND_DELAY_us  1500 // 1.5ms
 #define TUCHEND_DELAY            (TUCHEND_DELAY_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
-// TODO fix times...
 #define INVALID_DELAY_us  2500 // 2.5ms
-#define INVALID_DELAY     (INVALID_DELAY_us * (XCORE_FREQ_MHz/10) / (REF_CLK_DIVIDER+1))
+#define INVALID_DELAY     (INVALID_DELAY_us * (XCORE_FREQ_MHz) / (REF_CLK_DIVIDER+1))
 
 unsigned chirptime = TUCHEND_DELAY;
 
@@ -131,12 +130,11 @@ int XUD_DeviceAttachHS()
             case STATE_DETECTK:
                 t :> time2;
 
-//#ifndef GLX
-                /*if (time2 - time1 > INVALID_DELAY)
+                if (time2 - time1 > INVALID_DELAY)
                 {
                     nextState = STATE_INVALID;
-                }*/
-//#endif
+                }
+                
                 flag1_port :> tmp;
                 if (tmp)
                 {
@@ -188,13 +186,11 @@ int XUD_DeviceAttachHS()
             case STATE_DETECTJ:
                 t :> time2;
 
-//#ifndef GLX
-                /*if (time2 - time1 > INVALID_DELAY)
+                if (time2 - time1 > INVALID_DELAY)
                 {
                     nextState = STATE_INVALID;
                     printint(3);
-                } */
-//#endif
+                } 
 
                 flag0_port :> tmp;
                 if (tmp)
@@ -203,15 +199,11 @@ int XUD_DeviceAttachHS()
 
             case STATE_FILT_CHECK_J:
         
-//#ifndef GLX
                 XUD_Sup_Delay(T_FILT);
-//#endif
                 flag0_port :> tmp;
                 if (tmp) 
                 {
-//#ifndef GLX
                     XUD_Sup_Delay(T_FILT);
-//#endif
                     nextState = STATE_INC_J;
                 } 
                 else 
@@ -249,13 +241,11 @@ int XUD_DeviceAttachHS()
             case STATE_INVALID:
                 loop = 0;
                 complete = 0;
-                printstr("invalid\n");
                 //return 0;
                 //nextState = STATE_START;
                 break;
 
             case STATE_VALID:
-                //printstr("good chirp\n");
                 loop = 0;
                 break;
         }

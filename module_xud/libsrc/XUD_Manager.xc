@@ -275,7 +275,6 @@ extern port p_usb_rxd       ;
 int xud_counter = 0;
 #endif
 
-
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
 {
@@ -651,10 +650,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             
             /* Allow SOF tokens through */
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_MISC, UIFM_MISC_SOFISTOKEN);
-#endif
+#endif /* GLX */
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
-#endif
+#endif /* ARCH_L */
 
 #ifdef GLX
             write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG,
@@ -671,7 +670,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
             /* Set flag2_port to RX_ERROR (bit 0) */
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK2, 0x01);   // bit 0
-#endif
+#endif /* GLX */
 
             /* Run main IO loop
                 flag0: Valid token flag

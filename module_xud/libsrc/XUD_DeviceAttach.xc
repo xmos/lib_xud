@@ -266,22 +266,21 @@ int XUD_DeviceAttachHS()
 #endif
 
 
-if (complete) {
+    if (complete) {
 
 #ifdef GLX
-    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b0000); 
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b0000); 
 #else
-    // Three pairs of KJ received... de-assert TermSelect... (and opmode = 0, suspendm = 1)
-    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
+        // Three pairs of KJ received... de-assert TermSelect... (and opmode = 0, suspendm = 1)
+        XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
 #endif
 
-    //wait for SE0 (TODO consume other chirps?)
-    flag2_port when pinseq(1) :> tmp;
+        //wait for SE0 (TODO consume other chirps?)
+        flag2_port when pinseq(1) :> tmp;
 
-  }
+    }
     //wait for SE0 end 
-    // TODO... ADD BACK IN
-//    flag2_port when pinseq(0) :> tmp;
+    flag2_port when pinseq(0) :> tmp;
 
   return complete;
 }

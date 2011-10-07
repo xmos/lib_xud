@@ -12,8 +12,8 @@ extern unsigned int ReadPS_XC0 (unsigned int);
 
 #define XVBGX1 1
 #ifdef XVBGX1
-  #define SLINK_DEF XS1_SSWITCH_SLINK_3_NUM
-  #define XLINK_DEF XS1_SSWITCH_XLINK_3_NUM
+  #define SLINK_DEF XS1_SSWITCH_SLINK_5_NUM
+  #define XLINK_DEF XS1_SSWITCH_XLINK_5_NUM
 #else
   #ifdef MCM
     #define SLINK_DEF XS1_SSWITCH_SLINK_5_NUM

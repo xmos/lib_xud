@@ -409,6 +409,12 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 
 }
 
+#ifdef GLX
+//unsigned phycontrol_word_act =  (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) | (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE);
+
+//unsigned phycontrol_word_zerophyclk = 0x7ff;
+#endif
+
 // Main XUD loop
 static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port p_rst, unsigned rstMask, clock clk, chanend ?c_usb_testmode)
 {
@@ -444,6 +450,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifdef GLX
     /* Setup link with Glx */
     glx_link_setup(MYID, GLXID);
+
+#ifdef GLX_PWRDWN
+#warning BUILDING WITH GLX POWER DOWN ENABLED
+
+    /* Tell GLX to allow USB suspend/wake */
+    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 0x3 << XS1_GLX_PWR_USB_PD_EN_BASE);
+
+#endif
+
 //All these delays are for a xev running at 500MHz
 //#ifdef SDF
 #if 1
@@ -507,6 +522,23 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
         /* Keep usb clock active, enter active mode */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
+
+#ifdef GLX_PWRDWN
+        /* Setup sleep timers and supplies */
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING2_ADRS,   0x00007f);
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
+ 	write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
+                                 (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) |
+                                      (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE));
+        // setup SE0 glitch filter to wait for the 6th bit of the rtc to roll over before detecting SE0, and enable autoresume
+        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, phycontrol_word_act);
+#endif
+
+
 #else
         /* Reset transceiver */
         XUD_PhyReset(p_rst, reset_time*10, rstMask);

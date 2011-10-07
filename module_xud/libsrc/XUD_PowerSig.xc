@@ -13,6 +13,13 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_UIFM_Defines.h"
 
+#ifdef GLX
+#warning BUILDING FOR GLX SUPPORT
+#include "xa1_registers.h"
+#include "glx.h"
+#endif
+
+
 #define T_WTRSTFS_us        26 // 26us
 #define T_WTRSTFS            (T_WTRSTFS_us      * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
 #define STATE_START_TO_us 3000 // 3ms
@@ -170,6 +177,113 @@ int XUD_Suspend()
     unsigned tmp;
     timer t;
     unsigned time;
+    unsigned before;
+ 
+#if defined(GLX) && defined(GLX_SUSPHY)
+  	write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
+                                 (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) |
+                                      (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE));
+
+write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
+                                    (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) |
+                                    (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
+                                    | (1 << XS1_UIFM_PHY_CONTROL_FORCESUSPEND));
+
+
+
+
+//#ifdef GLX_PWRDWN
+#if 1
+
+        read_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_SEQUENCE_DBG_ADRS, before);
+
+    // Finally power down Xevious, allow pin based wakeup, keep sysclk running, keep USB enabled.
+    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 
+                       (1 << XS1_GLX_PWR_SLEEP_INIT_BASE)               /* Sleep */
+                     | (1<<XS1_GLX_PWR_SLEEP_CLK_SEL_BASE)           /* Default clock */ 
+                     | (0x3 << XS1_GLX_PWR_USB_PD_EN_BASE ) );       /* Enable usb power up/down */
+
+    {
+        timer t;
+        unsigned time;
+        unsigned rdata1 = 0;
+        unsigned rdata2 = 0;
+
+        while(1)
+        {
+		    read_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_SEQUENCE_DBG_ADRS, rdata1);
+        
+            rdata1>>=16;
+            rdata1&=0x7;
+
+            if(rdata1 != 1)
+                break;
+
+        	read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata2);
+            rdata2 >>= 9;
+            rdata2 &= 0x3; 
+
+            if(rdata2 == 2)
+            {
+               // if(rdata2 != 3)
+                    break;
+            }
+        }
+
+        printhexln(before);
+        printhexln(rdata1);
+        printhexln(rdata2);
+
+    }
+    
+    
+    while(1);
+    
+    /* XCore will now be off and will reboot on resume/reset */
+
+#endif
+    
+
+
+	{
+		unsigned rdata = 0;
+	
+        while(1)
+		{
+			read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata);
+            rdata >>= 9;
+            rdata &= 0x3; 
+			
+            if(rdata == 2)
+            {
+                /* Resume */
+                /* TODO Wait for end of resume */
+
+                /* Un-suspend phy */ 
+                write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0);
+
+                /* TODO WAIT FOR CLK */
+
+                /* Back to high-speed */
+                write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+                return 0;
+            }
+            else if(rdata == 0)
+            {
+                /* Reset */
+                
+                /* Un-suspend phy */
+                write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0);
+                return 1;
+            }
+		}
+	}
+
+
+
+#else
+
+
     
     while(1)
     {
@@ -243,6 +357,8 @@ int XUD_Suspend()
             return 0;
         }
     }
+#endif
+
     return 0;
 }
 

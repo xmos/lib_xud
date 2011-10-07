@@ -1,4 +1,5 @@
 // Martin Vickers : 24/9/10
+#define __XS1_L__
 #include <xs1.h>
 #include <platform.h>
 #include "print.h"
@@ -101,7 +102,7 @@ void glx_link_setup_set_sys_clk_freq (unsigned myid, unsigned glxid) {
   //test to see if the on-chip osc is being used.
   if ((read_data_u & (1<<XS1_GLX_CFG_MODE_BOOT_BASE)) == 0) {
     //update galaxians system clock frequency register
-    read_data_u = 20; //ReadPS_XC0(0xA0b) << 16 | ReadPS_XC0(0x90b);
+    read_data_u = 24; //ReadPS_XC0(0xA0b) << 16 | ReadPS_XC0(0x90b);
     write_sswitch_reg_noresp(glxid, XS1_GLX_CFG_SYS_CLK_FREQ_ADRS, read_data_u);
   }
 

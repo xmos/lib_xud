@@ -9,6 +9,7 @@
 #include "XUD_UIFM_Defines.h"
 #include <xs1.h>
 
+#ifndef GLX
 .text
 .align    2
 
@@ -197,4 +198,5 @@ XUD_UIFM_RegWrite_Locked:
   out       res[r1], r1
 
   retsp     0
+#endif
 #endif

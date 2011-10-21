@@ -9,8 +9,8 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_Support.h"
 
-unsigned UsbTestModeHandler_asm(chanend c);
-unsigned XUD_UsbTestSE0(unsigned rxd_port, unsigned rxa_port);
+unsigned UsbTestModeHandler_asm();
+unsigned XUD_UsbTestSE0();
 
 int XUD_TestMode_TestJ () ;
 int XUD_TestMode_TestK () ;

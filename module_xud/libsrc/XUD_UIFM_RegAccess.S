@@ -11,6 +11,41 @@
 
 .text
 .align    2
+
+//XUD_ULPIReg(p_usb_txd); 
+.globl XUD_ULPIReg //"f{ui}(ui)"
+.globl XUD_ULPIReg.nstackwords
+.globl XUD_ULPIReg.maxthreads
+.globl XUD_ULPIReg.maxtimers
+.globl XUD_ULPIReg.maxchanends
+.globl XUD_ULPIReg.maxsync
+.type  XUD_ULPIReg, @function
+.linkset XUD_ULPIReg.locnoside, 1
+.linkset XUD_ULPIReg.locnochandec, 1
+.linkset XUD_ULPIReg.nstackwords, 16
+.cc_top XUD_ULPIReg.function,XUD_ULPIReg
+.align    4
+
+
+XUD_ULPIReg:
+  entsp     16
+ 
+ 
+  ldc       r11, 0x8d
+  out     res[r0], r11
+looper:
+  bu        looper 
+  
+  
+  retsp     16
+.cc_bottom XUD_ULPIReg.function
+.linkset XUD_ULPIReg.maxchanends, 0
+.linkset XUD_ULPIReg.maxtimers, 0
+.linkset XUD_ULPIReg.maxthreads, 1
+
+
+.text
+.align    2
 .globl XUD_UIFM_Enable, "f{ui}(ui)"
 .globl XUD_UIFM_Enable.nstackwords
 .globl XUD_UIFM_Enable.maxthreads

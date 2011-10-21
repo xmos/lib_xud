@@ -100,7 +100,7 @@
 #define INTERFACE_POWER             0x08
     
 
-/* Table 9-6. Standard Feature Selectors */
+/* Table 9-6. Standard Feature Selectors (wValue) */
 #define DEVICE_REMOTE_WAKEUP        0x01     	/* Recipient: Device */
 #define ENDPOINT_HALT               0x00     	/* Recipient: Endpoint */
 #define TEST_MODE                   0x02     	/* Recipient: Device */
@@ -144,12 +144,12 @@
 #define XUD_DESC_DEV_B_DEVCLASS_INTER     0x0   // Interface descriptor speicifies class
 #define XUD_DESC_DEV_B_DEVCLASS_COMMS     0x2   // Communications
 
-// Defines for Test mode
-#define WINDEX_TEST_J        0x1
-#define WINDEX_TEST_K        0x2
-#define WINDEX_TEST_SE0_NAK  0x3
-#define WINDEX_TEST_PACKET   0x4
-#define WINDEX_TEST_FORCE_ENABLE 0x5
+// Test selector defines for Test mode
+#define WINDEX_TEST_J               (0x1<<8)
+#define WINDEX_TEST_K               (0x2<<8)
+#define WINDEX_TEST_SE0_NAK         (0x3<<8)
+#define WINDEX_TEST_PACKET          (0x4<<8)
+#define WINDEX_TEST_FORCE_ENABLE    (0x5<<8)
 
 //* DEPRECATED DEFINES:
 // TODO rm these defines

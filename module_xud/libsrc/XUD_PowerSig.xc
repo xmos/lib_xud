@@ -180,34 +180,68 @@ int XUD_Suspend()
     unsigned before;
  
 #if defined(GLX) && defined(GLX_SUSPHY)
-  	write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
-                                 (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) |
-                                      (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE));
+#ifdef GLX_PWRDWN
 
-write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
-                                    (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) |
-                                    (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
+        read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, before);
+
+
+        while(1)
+        {
+            unsigned  x;
+            read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
+            x >>= 9;
+            x &= 0x3;
+            if(x == 1)
+            {
+                break;
+            }
+        }
+
+         /* Save address */
+        {
+            unsigned x;
+
+            char wData[] = {0};
+            read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, x);
+            wData[0] = (char) x;
+
+            write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1,wData); 
+
+            //wData[0] = 0;
+
+            //read_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1, wData);
+        }
+
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
+                                    (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) 
+                                    |(0x7 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
                                     | (1 << XS1_UIFM_PHY_CONTROL_FORCESUSPEND));
 
 
+       
 
+        /* Mark scratch reg */
+        {
+            char x[] = {1};
+            write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0xff, 0, 1,x); 
+        }
 
-//#ifdef GLX_PWRDWN
-#if 1
-
-        read_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_SEQUENCE_DBG_ADRS, before);
-
-    // Finally power down Xevious, allow pin based wakeup, keep sysclk running, keep USB enabled.
-    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 
+        // Finally power down Xevious,  keep sysclk running, keep USB enabled.
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 
                        (1 << XS1_GLX_PWR_SLEEP_INIT_BASE)               /* Sleep */
                      | (1<<XS1_GLX_PWR_SLEEP_CLK_SEL_BASE)           /* Default clock */ 
                      | (0x3 << XS1_GLX_PWR_USB_PD_EN_BASE ) );       /* Enable usb power up/down */
 
+        /* XCore will now be off and will reboot on resume/reset */
+        while(1);
+
+#if 0
     {
         timer t;
         unsigned time;
         unsigned rdata1 = 0;
         unsigned rdata2 = 0;
+        unsigned rdata3 = 0;
 
         while(1)
         {
@@ -219,27 +253,32 @@ write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,
             if(rdata1 != 1)
                 break;
 
-        	read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata2);
+            read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata2);
             rdata2 >>= 9;
-            rdata2 &= 0x3; 
-
+            rdata2 &= 0x3;
             if(rdata2 == 2)
             {
                // if(rdata2 != 3)
                     break;
             }
-        }
 
-        printhexln(before);
+        	//read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, rdata3);
+            //rdata3 >>= 12;
+            //rdata3 &= 0x3;
+            
+            //if(rdata3!=0)
+              //  break; 
+ 
+
+        }
+        
+        //before>>12;
+        //before&=3;
         printhexln(rdata1);
         printhexln(rdata2);
 
     }
-    
-    
-    while(1);
-    
-    /* XCore will now be off and will reboot on resume/reset */
+#endif 
 
 #endif
     
@@ -247,6 +286,8 @@ write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,
 
 	{
 		unsigned rdata = 0;
+
+        /* TODO Wait for suspend (j) to come through filter */
 	
         while(1)
 		{

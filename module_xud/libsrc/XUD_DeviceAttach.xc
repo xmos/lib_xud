@@ -270,7 +270,7 @@ int XUD_DeviceAttachHS()
 
     }
     //wait for SE0 end 
-    flag2_port when pinseq(0) :> tmp;
+//    flag2_port when pinseq(0) :> tmp;
 
   return complete;
 }

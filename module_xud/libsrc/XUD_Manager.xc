@@ -15,6 +15,7 @@ void XUD_Error_hex(char errString[], int i_err);
 
 #include <xs1.h>
 #include <print.h>
+#include <xclib.h>
 
 #include "xud.h"
 #include "usb.h"
@@ -271,9 +272,13 @@ extern out port p_usb_txd       ;
 extern port p_usb_rxd       ;
 #endif
 
+extern out port p_test;
+
 #ifdef XUD_ISO_OUT_COUNTER
 int xud_counter = 0;
 #endif
+
+unsigned toggle = 0;
 
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
@@ -390,6 +395,14 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
     }
 }
 
+void looper()
+{
+    while(1)
+    {
+
+    }
+}
+
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed) 
 {
     for(int i = 0; i < nOut; i++) 
@@ -409,10 +422,13 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 
 }
 
+int waking = 0;
+int wakingReset = 0;
 #ifdef GLX
 //unsigned phycontrol_word_act =  (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) | (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE);
 
 //unsigned phycontrol_word_zerophyclk = 0x7ff;
+
 #endif
 
 // Main XUD loop
@@ -477,6 +493,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 
+
+
  // Set up USB ports. Done in ASM as read port used in both directions initially.
   // Main difference from xevious is IFM not enabled.
   // GLX_UIFM_PortConfig (p_usb_clk, txd, rxd, flag0_port, flag1_port, flag2_port);
@@ -512,8 +530,85 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     while(!XUD_USB_Done)
     {
-#ifdef GLX
 
+#if defined(GLX) && defined(GLX_PWRDWN)
+        /* Check if waking up */
+        char rdata[1];
+
+        read_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0xff, 0, 1, rdata);
+        
+        if(rdata[0])
+        {
+            unsigned resumeReason;
+
+            /* Check why we are waking up.. */
+            read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, resumeReason);
+          
+            p_test <: 0;
+            /* We're waking up.. */ 
+            /* Reset flag */
+            rdata[0] = 0;
+            write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0xff, 0, 1, rdata);
+
+            waking = 1;
+
+            /* Unsuspend phy */        
+            write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
+                                    (0x1 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE));
+
+            /* Resume */ 
+            if(resumeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMEK))
+            { 
+                /* Wait for SE0 */
+                while(1)
+                {
+                    unsigned  x;
+                    read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
+                    x >>= 9;
+                    x &= 0x3;
+                    if(x == 0)
+                    {
+                        break;
+                    }
+                }
+
+                /* TODO might has suspended in FS */
+                /* Back to HS */
+                write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+
+            //p_test <:0;
+
+                /* Wait for end of SE0 */
+                while(1)
+                {
+                    unsigned  x;
+                    read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
+                    x >>= 9;
+                    x &= 0x3;
+                    if(x != 0)
+                    {
+                        break;
+                    }
+                }
+            }
+            else // if(resumeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMESE0))
+            {
+                /* Woke due to reset in suspend. Treat any other condition as reset also. */
+                //asm("ecallf %0"::"r"(0));
+
+                wakingReset = 1;
+                reset = 1;
+                one = 0;
+            }
+
+            p_test <: 1;
+
+        }
+        else
+        {
+#endif
+#ifdef GLX
+        
         /* Enable the USB clock */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
 
@@ -524,18 +619,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
 
 #ifdef GLX_PWRDWN
+        }
         /* Setup sleep timers and supplies */
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING2_ADRS,   0x00007f);
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
- 	write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
-                                 (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) |
-                                      (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE));
-        // setup SE0 glitch filter to wait for the 6th bit of the rtc to roll over before detecting SE0, and enable autoresume
-        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, phycontrol_word_act);
+        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
+        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
+        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING2_ADRS,   0x00007f);
+        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
+        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
+        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
 #endif
 
 
@@ -566,107 +657,135 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
         while(1)
         {
-            /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-#ifdef GLX
-            write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
-                (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
-                | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
-#else
-
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
-#endif      
-            /* Setup flags for power signalling - J/K/SE0 line state*/
-            XUD_UIFM_PwrSigFlags();
-            
-            if (one)
+            if(waking && !wakingReset)
             {
-                /* Set flags up for pwr signalling */ 
-                reset = XUD_Init();
-                one = 0;
+#ifdef GLX
+                /* Restore address */
+                {  
+                    char rData[1];
+
+                    read_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1, rData);
+
+                    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, (unsigned) rData[0]);
+                }
+                 
+                 sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
+                 SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
+
+                SetupChannelVectorsOverride(epChans0);
+#endif
             }
             else
             {
-                XUD_Sup_Delay(30000); // 200-800us
-                //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAGS, 0x0);
 
-                /* Sample line state and check for reset (or suspend) */
-                //flags = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-
-                //reset = flags & 0x20;
-                flag2_port :> reset;
-            }
-
-            
-
-            /* Inspect for suspend or reset */
-            if(!reset)
-            {
-                /* Run user suspend code */
-                XUD_UserSuspend();
-
-                /* Run suspend code, returns 1 if reset from suspend, else resume */
-                reset = XUD_Suspend();
-                
-                /* Run user resume code */
-                XUD_UserResume();
-            }
-
-            /* Test if coming back from reset or suspend */
-            if(reset)
-            {
-                sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
-                
-#ifdef ARCH_G
-                XUD_SetCrcTableAddr(0);
-#endif
-                /* Check for exit */
-                if (XUD_USB_Done) 
-                {
-                    break;
-                }
-
-                /* Initialise PID sequence tables etc */
-                for (int i = 0; i < noEpIn; i++)
-                {
-                    ep_pid_sequence_table_IN_A[i] = PIDn_DATA1;
-                    ep_pid_sequence_table_IN_B[i] = PIDn_DATA1;
-                }
-
-                /* Set default device address */
+                /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
 #ifdef GLX
-                write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
-#else
-                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
-#endif
-                
-                if(g_desSpeed == XUD_SPEED_HS)
+                if(!waking)
                 {
-                    if (!XUD_DeviceAttachHS())
-                    {
-                        /* HS handshake fail, mark as running in FS */
-                        g_curSpeed = XUD_SPEED_FS;
-                        g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
-                    }
-                    else
-                    {
-                        g_curSpeed = XUD_SPEED_HS;
-                        g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
-                    }
+                write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
+                    (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
+                    | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+                }
+#else
 
+                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
+#endif      
+                /* Setup flags for power signalling - J/K/SE0 line state*/
+                XUD_UIFM_PwrSigFlags();
+           
+                if(!wakingReset)
+                { 
+                if (one)
+                {
+                    /* Set flags up for pwr signalling */ 
+                    reset = XUD_Init();
+                    one = 0;
                 }
                 else
                 {
-                    g_curSpeed = XUD_SPEED_FS;
-                    g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
+                    XUD_Sup_Delay(30000); // 200-800us
+                    //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAGS, 0x0);
+
+                    /* Sample line state and check for reset (or suspend) */
+                    //flags = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
+
+                    //reset = flags & 0x20;
+                    flag2_port :> reset;
+                }
                 }
 
+                /* Inspect for suspend or reset */
+                if(!reset)
+                {
+                    /* Run user suspend code */
+                    XUD_UserSuspend();
 
-                /* Send speed to EPs */
-                SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
+                    /* Run suspend code, returns 1 if reset from suspend, else resume */
+                    reset = XUD_Suspend();
+                
+                    /* Run user resume code */
+                    XUD_UserResume();
+                }
 
-                SetupChannelVectorsOverride(epChans0);
+                /* Test if coming back from reset or suspend */
+                if(reset)
+                {
+                    sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
+                
+#ifdef ARCH_G
+                    XUD_SetCrcTableAddr(0);
+#endif
+                    /* Check for exit */
+                    if (XUD_USB_Done) 
+                    {
+                        break;
+                    }
 
+                    /* Initialise PID sequence tables etc */
+                    //for (int i = 0; i < noEpIn; i++)
+                    //{
+                      //  ep_pid_sequence_table_IN_A[i] = PIDn_DATA1;
+                       // ep_pid_sequence_table_IN_B[i] = PIDn_DATA1;
+                    //}
+                    //TODO RESET IN THE EP STRUCTURES!!
+
+                    /* Set default device address */
+#ifdef GLX
+                    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
+#else
+                    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
+#endif
+                
+                    if(g_desSpeed == XUD_SPEED_HS)
+                    {
+                        if (!XUD_DeviceAttachHS())
+                        {
+                            /* HS handshake fail, mark as running in FS */
+                            g_curSpeed = XUD_SPEED_FS;
+                            g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
+                        }
+                        else
+                        {
+                            g_curSpeed = XUD_SPEED_HS;
+                            g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
+                        }
+                    }
+                    else
+                    {
+                        g_curSpeed = XUD_SPEED_FS;
+                        g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
+                    }
+
+
+                    /* Send speed to EPs */
+                    SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
+
+                    SetupChannelVectorsOverride(epChans0);
+
+                }
             }
+
+            p_test <: 1;
 
             /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
             NOTE: Need to do this every iteration since CHKTOK would break power signaling */
@@ -703,6 +822,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             /* Set flag2_port to RX_ERROR (bit 0) */
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK2, 0x01);   // bit 0
 #endif /* GLX */
+            waking = 0;
 
             /* Run main IO loop
                 flag0: Valid token flag

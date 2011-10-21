@@ -20,25 +20,31 @@ extern out buffered port:32 p_usb_txd;
 extern out port reg_write_port;
 extern in  port reg_read_port;
 extern out port p_usb_txd;
+<<<<<<< HEAD
+extern port p_usb_rxd;
+
+=======
 #endif
+>>>>>>> 47de8f5c9b488fe04116393ab1ddfb2f31b6792e
 #define TEST_PACKET_LEN 14
 #define T_INTER_TEST_PACKET_us 2
 #define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
 
-unsigned int test_packet[TEST_PACKET_LEN] = {
-  0x000000c3,
-  0x00000000,
-  0xaaaa0000,
-  0xaaaaaaaa,
-  0xeeeeaaaa,
-  0xeeeeeeee,
-  0xfffeeeee,
-  0xffffffff,
-  0xffffffff,
-  0xbf7fffff,
-  0xfbf7efdf,
-  0xbf7efcfd,
-  0xfbf7efdf,
+unsigned int test_packet[TEST_PACKET_LEN] = 
+{
+    0x000000c3,
+    0x00000000,
+    0xaaaa0000,
+    0xaaaaaaaa,
+    0xeeeeaaaa,
+    0xeeeeeeee,
+    0xfffeeeee,
+    0xffffffff,
+    0xffffffff,
+    0xbf7fffff,
+    0xfbf7efdf,
+    0xbf7efcfd,
+    0xfbf7efdf,
 	0xceb67efd
 };
 
@@ -77,25 +83,66 @@ int XUD_TestMode_TestK ()
   return 0;
 };
 
-int XUD_TestMode_TestPacket () {
-	// Repetitively transmit specific test packet until reset.
+int XUD_TestMode_TestPacket () 
+{
+	// Repetitively transmit specific test packet forever.
 	// Timings must still meet minimum interpacket gap
 	// Have to relate KJ pairings to data.
 	unsigned i;
 	timer test_packet_timer;
-	while (1) {
-		for (i=0; i<TEST_PACKET_LEN; i++ ) {
+
+#pragma unsafe arrays
+	while (1) 
+    {
+#pragma loop unroll
+		for (i=0; i < TEST_PACKET_LEN; i++ ) 
+        {
 			p_usb_txd <: test_packet[i];
 		};
-		//	p_usb_txd <: 0xceb6;
-		//		UsbTestPacketCRC();
-	test_packet_timer :> i;
+        sync(p_usb_txd);
+	    test_packet_timer :> i;
 		test_packet_timer when timerafter (i +   T_INTER_TEST_PACKET) :> int _;
 	}
 	return 0;
 }
 
 // runs in XUD thread with interrupt on entering testmode.
+<<<<<<< HEAD
+int XUD_UsbTestModeHandler() 
+{
+	unsigned cmd = UsbTestModeHandler_asm();
+	
+    switch(cmd) 
+    {
+	    case WINDEX_TEST_J:
+		    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
+			while(1) 
+            {
+			    p_usb_txd <: 0xffffffff;
+			}
+		    break;
+	
+        case WINDEX_TEST_K:
+		    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
+			while(1) 
+            {
+				p_usb_txd <: 0;
+			}
+	        break;
+ 
+        case WINDEX_TEST_SE0_NAK:
+	        // NAK every IN packet if the CRC is correct.
+	        // Drop into asm to deal with.
+		    XUD_UsbTestSE0();
+	        break;
+        
+        case WINDEX_TEST_PACKET:
+	        XUD_TestMode_TestPacket();
+	        break;
+        
+        default:
+	        break;
+=======
 int XUD_UsbTestModeHandler(unsigned rxd_port, unsigned rxa_port, chanend c_usb_testmode) {
 	// How are channels passed in from an interrup?
 	unsigned cmd;
@@ -145,7 +192,8 @@ int XUD_UsbTestModeHandler(unsigned rxd_port, unsigned rxa_port, chanend c_usb_t
 	 printstrln ("ERROR: Unsupported testmode ");
 #endif
 	 break;
+>>>>>>> 47de8f5c9b488fe04116393ab1ddfb2f31b6792e
 	}
 	while(1);
-	return -1;  // Unreachable
+    return -1;  // Unreachable
 }

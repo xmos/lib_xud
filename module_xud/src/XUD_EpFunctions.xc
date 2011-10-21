@@ -158,7 +158,7 @@ int XUD_SetBuffer_ResetPid_EpMax(XUD_ep c, unsigned epNum, unsigned char buffer[
 
 
 
-/* TODO Should take ep max length as a param - currently hardcoded as 64  */
+/* TODO Should take ep max length as a param - currently hardcoded as 64 (#11384) */
 int XUD_DoGetRequest(XUD_ep c, XUD_ep c_in, uint8 buffer[], unsigned length, unsigned requested)
 {
     unsigned char tmpBuffer[1024];

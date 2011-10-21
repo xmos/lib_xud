@@ -136,17 +136,17 @@ InEventLoopEnd:
 .text
 .cc_top UsbTestModeHandler_asm.func, UsbTestModeHandler_asm
 UsbTestModeHandler_asm:
-	clrsr 0x18
-	clrsr 0x2
+	clrsr       0x18
+	clrsr       0x2
 	clre // clear all events
-	get r11, ed
-    chkct    res[r11], XS1_CT_END
-	outct res[r11], XS1_CT_END
-    in       r0, res[r11]
-    chkct    res[r11], XS1_CT_END
-	outct res[r11], XS1_CT_END
+	get         r11, ed
+    chkct       res[r11], XS1_CT_END
+	outct       res[r11], XS1_CT_END
+    in          r0, res[r11]
+    chkct       res[r11], XS1_CT_END
+	outct       res[r11], XS1_CT_END
 //	in r0, res[r11]
-	retsp 0
+	retsp       0
 .cc_bottom UsbTestModeHandler_asm.func
 
 
@@ -157,57 +157,41 @@ UsbTestModeHandler_asm:
 .text
 .cc_top XUD_UsbTestSE0.func, XUD_UsbTestSE0
 XUD_UsbTestSE0:
-    clre
-    ldc         r3, 0
-    ldw         r5, sp[23] //dp[chanArray]                            // EP channes array
-    ldaw        r6, dp[ep_pid_sequence_table_IN_A]
-    //ldc         r7, 0x3334                             // CRC16 init (out)
-    ldc         r9, 0xa001                             // CRC16 poly
+    ldw         r0, dp[p_usb_rxd]                           // Load RXD port
+    ldw         r1, dp[flag0_port]                          // Valid token port
+    ldw         r2, dp[p_usb_txd]                           // Load TXD port
+    ldw         r3, dp[flag1_port]                          // Load RXA port
+ 
+XUD_UsbTestSE0_loop:
+    inpw        r11, res[r0], 8                             // Read 8 bit PID
+    shr         r11, r11, 24                                // shift off junk  
 
-// Restore Test Mode event handler
-//	ldw r10, sp[(10+ STACK_EXTEND)]
-//	edu res[r10]
-//	inct r0, res[r10]
-//	eeu res[r10]
+    inpw        r9, res[r0], 8                              // Read EP Number (dont care)
 
-//    ldap       r11, NextRxWord_test                        // Restore RXD event vector
-//    setv       res[RXD], r11
+    in          r9, res[r1]
+    bf          r9, InvalidTestToken                        // If VALID_TOKEN not high, ignore token
 
-    setc      res[RXD], XS1_SETC_RUN_CLRBUF   // TODO Investigate why this is required 
-                                                      // Original USB Token: | CRC | EP | ADDR | PID | junk 
-                                                    // Received token is address and CRC checked.
-                                                      // We receive: | 0000 4-bit EP | 0000 4-bit PID | 
-//	ldc r10, 0x9
-    inpw       r11, res[RXD], 8                       // Read 8 bit PID
-    shr        r11, r11, 24                           // shift off junk  
-// if eq 0x9 (IN), NAK, else wait for next pid.
-   eq r10, r10, r11
-   bf r10, XUD_UsbTestSE0
-   // pid in, so NAK
-// read token ep
-    ldw       r1, sp[11]                        // Load Valid Token port
-    inpw      r10, res[RXD], 8                  // Read EP Number 
-    shr       r10, r10, 24          
-    in        r1, res[r1]
-    bf        r1, InvalidTestToken                        // If VALID_TOKEN not high, ignore token
-// Pid_In code:
+    eq          r10, r11, PID_IN 
+    bf          r10, XUD_UsbTestSE0_loop
 
-InvalidTestToken:
-	ldw       r1, sp[10]           		    // Load RxA Port ID (r1) 
-waitforRXALow_test:  
-    in        r10, res[r1]
-    bt      r10, waitforRXALow_test
-   
-    //bl           ERR_UnsupportedToken
-    bu     XUD_UsbTestSE0       // Invalid token received Ignore unknown toks
-
-    ldc       r11, PIDn_NAK			                // TODO Min inter-packet delay	
-	  outpw     res[TXD], r11, 8
-	  syncr     res[TXD]
     nop 
     nop
     nop
-    bu        XUD_UsbTestSE0
+    nop
+    nop
+
+    ldc         r11, PIDn_NAK			               	
+	outpw       res[r2], r11, 8
+	syncr       res[r2]
+    bu          XUD_UsbTestSE0_loop
+
+InvalidTestToken:  
+    in          r11, res[r3]
+    bt          r11, InvalidTestToken
+    setc        res[r0], XS1_SETC_RUN_CLRBUF                // Clear RXD port 
+    bu          XUD_UsbTestSE0_loop                         
+
+    
 // End of code for Test_SE0_NAK
 .cc_bottom XUD_UsbTestSE0.func
 

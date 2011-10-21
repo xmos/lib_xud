@@ -272,7 +272,15 @@ extern out port p_usb_txd       ;
 extern port p_usb_rxd       ;
 #endif
 
+<<<<<<< HEAD
 extern out port p_test;
+=======
+//#define VBUSHACK 1
+#ifdef VBUSHACK
+out port p_usb_stp = XS1_PORT_1E;
+in port p_usb_dir = XS1_PORT_1G;
+#endif
+>>>>>>> ef6c6d3db7e9a7e0df2c52d42389a1b9971e433e
 
 #ifdef XUD_ISO_OUT_COUNTER
 int xud_counter = 0;
@@ -422,14 +430,21 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 
 }
 
+<<<<<<< HEAD
 int waking = 0;
 int wakingReset = 0;
+=======
+<<<<<<< HEAD
+void XUD_ULPIReg(out port p_usb_txd);
+=======
+>>>>>>> ef6c6d3db7e9a7e0df2c52d42389a1b9971e433e
 #ifdef GLX
 //unsigned phycontrol_word_act =  (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) | (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE);
 
 //unsigned phycontrol_word_zerophyclk = 0x7ff;
 
 #endif
+>>>>>>> 47de8f5c9b488fe04116393ab1ddfb2f31b6792e
 
 // Main XUD loop
 static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port p_rst, unsigned rstMask, clock clk, chanend ?c_usb_testmode)
@@ -530,6 +545,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     while(!XUD_USB_Done)
     {
+<<<<<<< HEAD
+=======
+#ifdef VBUSHACK
+        p_usb_rxd :> void;
+#endif
+
+#ifdef GLX
+>>>>>>> ef6c6d3db7e9a7e0df2c52d42389a1b9971e433e
 
 #if defined(GLX) && defined(GLX_PWRDWN)
         /* Check if waking up */
@@ -641,10 +664,65 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
 
+#ifdef VBUSHACK
+        {timer t;
+         unsigned x;
+         t :> x;
+         t when timerafter(x+100000) :> void;
+         }
+ 
+        /* Driver STP low */
+        p_usb_stp <: 0;
+
+        /* Wait for dir low */
+        {timer t;
+         unsigned x;
+         t :> x;
+         t when timerafter(x+1000) :> void;
+         }
+
+
+
+            p_usb_rxd <: 0x8D;
+            p_usb_rxd <: 0x8D;
+            p_usb_rxd <: 0x8D;
+            p_usb_rxd <: 0x00;
+            //p_usb
+
+
+            p_usb_stp <: 1;
+            p_usb_stp <: 0;
+
+ /* Wait for dir low */
+        {timer t;
+         unsigned x;
+         t :> x;
+         t when timerafter(x+100) :> void;
+         }
+
+
+            p_usb_rxd <: 0x90;
+            p_usb_rxd <: 0x90;
+            p_usb_rxd <: 0x90;
+            p_usb_rxd <: 0x00;
+            //p_usb
+
+
+            p_usb_stp <: 1;
+            p_usb_stp <: 0;
+
+
+
+            //while(1);
+        //XUD_ULPIReg(p_usb_txd);
+
+#endif
+
 #ifndef GLX
         /* Configure ports and clock blocks for use with UIFM */
         XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
 
+       
         /* Enable UIFM and wait for connect */
         XUD_UIFM_Enable(UIFM_MODE);
 #endif
@@ -654,6 +732,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE));
 #else        
         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
+      
+
 #endif
         while(1)
         {

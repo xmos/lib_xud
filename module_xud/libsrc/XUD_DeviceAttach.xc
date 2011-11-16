@@ -8,7 +8,7 @@
 #include "XUD_Support.h"
 #include "xud.h"
 
-#ifdef GLX
+#ifdef ARCH_S
 #include <xa1_registers.h>
 int write_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned data);
 int read_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned &data);
@@ -17,7 +17,7 @@ int read_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destR
 extern in  port flag0_port;
 extern in  port flag1_port;
 extern in  port flag2_port;
-#ifdef GLX
+#ifdef ARCH_S
 extern out buffered port:32 p_usb_txd;
 #define reg_write_port null
 #define reg_read_port null
@@ -64,7 +64,7 @@ int XUD_DeviceAttachHS()
   
 
     clearbuf(p_usb_txd);
-#ifndef GLX 
+#ifndef ARCH_S 
     clearbuf(reg_write_port);
 #endif
     // On detecting the SE0:
@@ -72,7 +72,7 @@ int XUD_DeviceAttachHS()
     // DEBUG - write to ulpi reg 0x54. This is:
     // opmode = 0b10, termsel = 1, xcvrsel = 0b00;
 
-#ifdef GLX
+#ifdef ARCH_S
     
     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010);
     //read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, tmp);.
@@ -95,7 +95,7 @@ int XUD_DeviceAttachHS()
     // Wait for TUCHEND - TUCH
     //XUD_Sup_Delay(chirptime);
 
-#ifdef GLX
+#ifdef ARCH_S
     // output k-chirp for required time
     for (int i = 0; i < 25000; i++)
         p_usb_txd <: 0x0;
@@ -256,9 +256,10 @@ int XUD_DeviceAttachHS()
 #endif
 
 
-    if (complete) {
+    if (complete)
+    {
 
-#ifdef GLX
+#ifdef ARCH_S
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b0000); 
 #else
         // Three pairs of KJ received... de-assert TermSelect... (and opmode = 0, suspendm = 1)
@@ -269,9 +270,19 @@ int XUD_DeviceAttachHS()
         flag2_port when pinseq(1) :> tmp;
 
     }
-    //wait for SE0 end 
-//    flag2_port when pinseq(0) :> tmp;
+    else
+    {
+#ifdef ARCH_S
+        /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
+                    (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
+                    | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+#endif
+    }
 
-  return complete;
+    //wait for SE0 end 
+    flag2_port when pinseq(0) :> tmp;
+
+    return complete;
 }
 

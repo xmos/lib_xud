@@ -2,7 +2,7 @@
 #include "XUD_UIFM_Functions.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_UIFM_Defines.h"
-#ifdef GLX
+#ifdef ARCH_S
 #include <xa1_registers.h>
 #include <print.h>
 #endif
@@ -23,17 +23,9 @@ void XUD_SetDevAddr(unsigned addr)
 
 #ifdef ARCH_L
     /* Set device address in UIFM */
-#ifdef GLX
+#ifdef ARCH_S
     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG,addr);
     read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG,data);
- 
-    //printint(XS1_UIFM_DEVICE_ADDRESS_REG);
- 
-    
-     //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, (1<<XS1_UIFM_IFM_CONTROL_DOTOKENS) 
-       //         | (1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS) 
-         ///       | (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE)
-           //     | (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
 #else
     /* RegWrite_ loads write port from dp to avoid parallel usage checks */
     /* TODO this should really be locked for mutual exclusion */

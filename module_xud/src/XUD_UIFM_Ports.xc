@@ -2,7 +2,7 @@
 #include <platform.h>
 #include "xud.h"
 
-#ifdef GLX
+#ifdef ARCH_S
 
 
 

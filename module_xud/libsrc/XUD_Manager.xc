@@ -34,8 +34,8 @@ void XUD_Error_hex(char errString[], int i_err);
 #error ARCH_L or ARCH_G must be defined
 #endif
 
-#ifdef GLX
-#warning BUILDING FOR GLX SUPPORT
+#ifdef ARCH_S
+#warning BUILDING WITH S SUPPORT
 #include "xa1_registers.h"
 #include "glx.h"
 #endif
@@ -244,7 +244,7 @@ unsigned g_txHandshakeTimeout;
 unsigned g_prevPid=0xbadf00d;
 unsigned int data_pid=0xbadf00d;
 
-#ifdef GLX
+#ifdef ARCH_S
 /* USB Port declarations - for Zevious with Galaxion */
 out port tx_readyout = XS1_PORT_1K; // aka txvalid
 in port tx_readyin = XS1_PORT_1H;
@@ -257,7 +257,6 @@ in port flag2_port = XS1_PORT_1P;
 in port p_usb_clk = XS1_PORT_1J;
 clock tx_usb_clk = XS1_CLKBLK_5;
 clock rx_usb_clk = XS1_CLKBLK_4;
-out port p_trig = XS1_PORT_1L;
 #define reg_write_port null
 #define reg_read_port null
 #else
@@ -272,26 +271,21 @@ extern out port p_usb_txd       ;
 extern port p_usb_rxd       ;
 #endif
 
-<<<<<<< HEAD
-extern out port p_test;
-=======
 //#define VBUSHACK 1
 #ifdef VBUSHACK
 out port p_usb_stp = XS1_PORT_1E;
 in port p_usb_dir = XS1_PORT_1G;
 #endif
->>>>>>> ef6c6d3db7e9a7e0df2c52d42389a1b9971e433e
 
 #ifdef XUD_ISO_OUT_COUNTER
 int xud_counter = 0;
 #endif
 
-unsigned toggle = 0;
 
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
 {
-#ifdef GLX
+#ifdef ARCH_S
     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG, ((1<<XS1_UIFM_IFM_FLAGS_SE0)<<16) 
         | ((1<<XS1_UIFM_IFM_FLAGS_K)<<8) | (1 << XS1_UIFM_IFM_FLAGS_J));
 #else
@@ -313,13 +307,13 @@ extern void SetupChannelVectorsOverride(XUD_chan chans[]);
 extern void SetupChannelVectors(XUD_chan chans[], int countOut, int countIn);
 
 extern int XUD_LLD_IoLoop(
-#ifdef GLX
+#ifdef ARCH_S
                             in buffered port:32 rxd_port,
 #else
                             in port rxd_port, 
 #endif
                             in port rxa_port, 
-#ifdef GLX
+#ifdef ARCH_S
                             out buffered port:32 txd_port,
 #else
                             out port txd_port, 
@@ -403,14 +397,6 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
     }
 }
 
-void looper()
-{
-    while(1)
-    {
-
-    }
-}
-
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed) 
 {
     for(int i = 0; i < nOut; i++) 
@@ -430,24 +416,13 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 
 }
 
-<<<<<<< HEAD
 int waking = 0;
 int wakingReset = 0;
-=======
-<<<<<<< HEAD
+
 void XUD_ULPIReg(out port p_usb_txd);
-=======
->>>>>>> ef6c6d3db7e9a7e0df2c52d42389a1b9971e433e
-#ifdef GLX
-//unsigned phycontrol_word_act =  (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) | (6 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE);
-
-//unsigned phycontrol_word_zerophyclk = 0x7ff;
-
-#endif
->>>>>>> 47de8f5c9b488fe04116393ab1ddfb2f31b6792e
 
 // Main XUD loop
-static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port p_rst, unsigned rstMask, clock clk, chanend ?c_usb_testmode)
+static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, chanend ?c_usb_testmode)
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
     const int reset_time = RESET_TIME;
@@ -462,13 +437,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     /* Make sure ports are on and reset port states */
     set_port_use_on(p_usb_clk);
+#ifndef ARCH_S
     set_port_clock(p_usb_clk, clk);
+#endif
     set_port_use_on(p_usb_txd);
     set_port_use_on(p_usb_rxd);
     set_port_use_on(flag0_port);
     set_port_use_on(flag1_port);
     set_port_use_on(flag2_port);
-#ifndef GLX
+#ifndef ARCH_S
     set_port_use_on(reg_read_port);
     set_port_use_on(reg_write_port);
 #endif
@@ -478,7 +455,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     XUD_SetCrcTableAddr(0);
 #endif
 
-#ifdef GLX
+#ifdef ARCH_S
     /* Setup link with Glx */
     glx_link_setup(MYID, GLXID);
 
@@ -545,18 +522,17 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     while(!XUD_USB_Done)
     {
-<<<<<<< HEAD
-=======
 #ifdef VBUSHACK
         p_usb_rxd :> void;
 #endif
 
-#ifdef GLX
->>>>>>> ef6c6d3db7e9a7e0df2c52d42389a1b9971e433e
+#ifdef ARCH_S
 
-#if defined(GLX) && defined(GLX_PWRDWN)
+//#if defined(ARCH_S) && defined(GLX_PWRDWN)
         /* Check if waking up */
+#if 0
         char rdata[1];
+
 
         read_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0xff, 0, 1, rdata);
         
@@ -567,7 +543,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             /* Check why we are waking up.. */
             read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, resumeReason);
           
-            p_test <: 0;
+            //p_test <: 0;
             /* We're waking up.. */ 
             /* Reset flag */
             rdata[0] = 0;
@@ -624,13 +600,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 one = 0;
             }
 
-            p_test <: 1;
+            //p_test <: 1;
 
         }
         else
+#endif
         {
 #endif
-#ifdef GLX
+#ifdef ARCH_S
         
         /* Enable the USB clock */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
@@ -644,12 +621,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifdef GLX_PWRDWN
         }
         /* Setup sleep timers and supplies */
-        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
-        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
-        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING2_ADRS,   0x00007f);
-        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
-        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
-        //write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING2_ADRS,   0x00007f);
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
 #endif
 
 
@@ -710,15 +687,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
             p_usb_stp <: 1;
             p_usb_stp <: 0;
-
-
-
-            //while(1);
-        //XUD_ULPIReg(p_usb_txd);
-
 #endif
 
-#ifndef GLX
+#ifndef ARCH_S
         /* Configure ports and clock blocks for use with UIFM */
         XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
 
@@ -727,7 +698,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         XUD_UIFM_Enable(UIFM_MODE);
 #endif
  
-#ifdef GLX
+#ifdef ARCH_S
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, 
             (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE));
 #else        
@@ -737,35 +708,35 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
         while(1)
         {
-            if(waking && !wakingReset)
-            {
-#ifdef GLX
+            //if(waking && !wakingReset)
+            //{
+#ifdef ARCH_S
                 /* Restore address */
-                {  
-                    char rData[1];
+              //  {  
+                //    char rData[1];
 
-                    read_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1, rData);
+                  //  read_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1, rData);
 
-                    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, (unsigned) rData[0]);
-                }
+                   // write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, (unsigned) rData[0]);
+               // }
                  
-                 sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
-                 SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
+                // sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
+                 //SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
 
-                SetupChannelVectorsOverride(epChans0);
+                //SetupChannelVectorsOverride(epChans0);
 #endif
-            }
-            else
+           // }
+            //else
             {
 
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-#ifdef GLX
-                if(!waking)
-                {
+#ifdef ARCH_S
+            //    if(!waking)
+              //  {
                 write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
                     (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
-                }
+               // }
 #else
 
                 XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
@@ -773,8 +744,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Setup flags for power signalling - J/K/SE0 line state*/
                 XUD_UIFM_PwrSigFlags();
            
-                if(!wakingReset)
-                { 
+                //if(!wakingReset)
+                //{ 
                 if (one)
                 {
                     /* Set flags up for pwr signalling */ 
@@ -791,8 +762,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                     //reset = flags & 0x20;
                     flag2_port :> reset;
+
                 }
-                }
+//                }
 
                 /* Inspect for suspend or reset */
                 if(!reset)
@@ -806,7 +778,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Run user resume code */
                     XUD_UserResume();
                 }
-
+                
                 /* Test if coming back from reset or suspend */
                 if(reset)
                 {
@@ -828,9 +800,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                        // ep_pid_sequence_table_IN_B[i] = PIDn_DATA1;
                     //}
                     //TODO RESET IN THE EP STRUCTURES!!
-
                     /* Set default device address */
-#ifdef GLX
+#ifdef ARCH_S
                     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
 #else
                     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
@@ -865,12 +836,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 }
             }
 
-            p_test <: 1;
+            //p_test <: 1;
 
             /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
             NOTE: Need to do this every iteration since CHKTOK would break power signaling */
 #ifdef ARCH_L
-#ifdef GLX
+#ifdef ARCH_S
             write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, (1<<XS1_UIFM_IFM_CONTROL_DOTOKENS) 
                 | (1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS) 
                 | (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE)
@@ -886,7 +857,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
 #endif /* ARCH_L */
 
-#ifdef GLX
+#ifdef ARCH_S
             write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG,
                 ((1<<XS1_UIFM_IFM_FLAGS_NEWTOKEN) 
                 | ((1<<XS1_UIFM_IFM_FLAGS_RXACTIVE)<<8)
@@ -908,13 +879,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 flag0: Valid token flag
                 flag1: Rx Active
                 flag2: Rx Error */
+                     //toggle = !toggle;
+                     //p_test <: toggle;
+
             XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
                            reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof, c_usb_testmode); 
 
 
             /* Put UIFM back to default state */
 #ifdef ARCH_L
-#ifdef GLX
+#ifdef ARCH_S
             //TODO
 #else
             /* Disable SOF passing */
@@ -931,7 +905,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     }
 
 
-#ifndef GLX
+#ifndef ARCH_S
     XUD_UIFM_Enable(0);
 #endif
 
@@ -941,7 +915,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_use_off(flag0_port);
     set_port_use_off(flag1_port);
     set_port_use_off(flag2_port);
-#ifdef GLX
+#ifdef ARCH_S
     #warning TODO switch off ports
 #else
     set_port_use_off(reg_read_port);
@@ -995,7 +969,7 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
                 chanend c_ep_in[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], 
-                out port p_rst, clock clk, unsigned rstMask, unsigned speed, chanend ?c_usb_testmode)
+                out port ?p_rst, clock ?clk, unsigned rstMask, unsigned speed, chanend ?c_usb_testmode)
 {
     /* Arrays for channels... */
     /* TODO use two arrays? */
@@ -1082,11 +1056,13 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
     }
 #endif
 
+#ifndef ARCH_S
     /* Clock reset port from reference clock (required as clkblk 0 running from USB clock) */
     set_clock_on(clk);
     set_clock_ref(clk);
     set_port_clock(p_rst, clk);
     start_clock(clk);
+#endif
 
     /* Run the main XUD loop */
     XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, c_usb_testmode);

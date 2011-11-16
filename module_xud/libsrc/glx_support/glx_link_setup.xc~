@@ -12,8 +12,8 @@ extern unsigned int ReadPS_XC0 (unsigned int);
 
 #define XVBGX1 1
 #ifdef XVBGX1
-  #define SLINK_DEF XS1_SSWITCH_SLINK_3_NUM
-  #define XLINK_DEF XS1_SSWITCH_XLINK_3_NUM
+  #define SLINK_DEF XS1_SSWITCH_SLINK_5_NUM
+  #define XLINK_DEF XS1_SSWITCH_XLINK_5_NUM
 #else
   #ifdef MCM
     #define SLINK_DEF XS1_SSWITCH_SLINK_5_NUM
@@ -66,7 +66,7 @@ void glx_link_setup_no_set_sys_clk_freq (unsigned myid, unsigned glxid) {
   glx_link_setup_no_link_or_hello(myid,glxid);
 
   //GLX hackery, the value of the GLX clock period (in ps) is forced into the ring_osc registers = 50ns = 50000ps.
-  glx_period_val      = 50000; //ReadPS_XC0(0x80b) << 16 | ReadPS_XC0(0x70b);
+  glx_period_val      = 1000000 / 24; //ReadPS_XC0(0x80b) << 16 | ReadPS_XC0(0x70b);
 
   //divide by the XCore clock period (in ps)
   link_delay_vals     = (glx_period_val / 2500) * 2; //2500

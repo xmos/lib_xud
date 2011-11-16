@@ -66,13 +66,13 @@ void glx_link_setup_no_set_sys_clk_freq (unsigned myid, unsigned glxid) {
   glx_link_setup_no_link_or_hello(myid,glxid);
 
   //GLX hackery, the value of the GLX clock period (in ps) is forced into the ring_osc registers = 50ns = 50000ps.
-  glx_period_val      = 50000; //ReadPS_XC0(0x80b) << 16 | ReadPS_XC0(0x70b);
+  glx_period_val      = 1000000 / 24; //ReadPS_XC0(0x80b) << 16 | ReadPS_XC0(0x70b);
 
   //divide by the XCore clock period (in ps)
-  link_delay_vals     = (glx_period_val / 2500) * 2; //2500
+  link_delay_vals     = (glx_period_val / 2000) * 2; //2500
 
   //Round up the division
-  link_delay_vals_rem = ((glx_period_val % 2500) > (2500/2)) ? 2 : 0; //2500
+  link_delay_vals_rem = ((glx_period_val % 2000) > (2000/2)) ? 2 : 0; //2500
 
   //Set the link to run half the rate of the glx clock freq
   link_delay_vals     = (link_delay_vals + link_delay_vals_rem) & 0x7ff;

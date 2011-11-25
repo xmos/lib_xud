@@ -234,8 +234,14 @@ void XUD_UserResume();
 #pragma xta command "set required - 83 ns"
 #endif
 
+/* Timeout differences due to using 60MHz vs 100MHz */
+#ifndef ARCH_S
 #define HS_TX_HANDSHAKE_TIMEOUT 100
 #define FS_TX_HANDSHAKE_TIMEOUT 3000
+#else
+#define HS_TX_HANDSHAKE_TIMEOUT (167)
+#define FS_TX_HANDSHAKE_TIMEOUT (5000)
+#endif
 
 /* Global vars for current and desired USB speed */
 unsigned g_curSpeed;

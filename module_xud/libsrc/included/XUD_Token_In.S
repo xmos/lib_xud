@@ -214,13 +214,13 @@ SetupReceiveHandShake:
     eeu		     res[RXD]                       // Events on RXD always enabled - Can;t be any more due to using events on channels
 
 SetupTimeout:				                              // Timeout done using another port off same clock block we dont happen to already be using events on. Cunning.
-    ldw 		r1, sp[11]        	                    // Load saved ValidToken port. Event vector already set.
+    ldw 		    r1, sp[11]        	                    // Load saved ValidToken port. Event vector already set.
     in           	r11, res[r1]		                  // Do input and get port time/timestamps
     getts	       	r11, res[r1]
-    ldw                 r9, dp[g_txHandshakeTimeout]
+    ldw             r9, dp[g_txHandshakeTimeout]
     add          	r11, r11, r9
     setpt	       	res[r1], r11		                  // Set port time and enable events
-    eeu	       	res[r1]
+    eeu	        	res[r1]
 
 WaitForHandshake:			                            // Wait for timeout or handshake
     .xtabranch TxHandshakeTimeOut, TxHandShakeReceived

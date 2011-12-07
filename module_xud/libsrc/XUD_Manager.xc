@@ -475,22 +475,25 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 //All these delays are for a xev running at 500MHz
 //#ifdef SDF
-#if 1
+//#if 1
 //8 is abs max, any larger and the rdy's will not be produced
 //These setting cause the rdy to be sampled as soon as 
 //possible then output the data if allowed on the next cycle
+//#define TX_RISE_DELAY 5
+//#define TX_FALL_DELAY 2
+//#define RX_RISE_DELAY 7
+//#define RX_FALL_DELAY 7
+//#else
+//#define TX_RISE_DELAY 1
+//define TX_FALL_DELAY 0
+//#define RX_RISE_DELAY 5
+//#define RX_FALL_DELAY 5
+//#endif
+
 #define TX_RISE_DELAY 5
 #define TX_FALL_DELAY 2
-#define RX_RISE_DELAY 7
-#define RX_FALL_DELAY 7
-#else
-#define TX_RISE_DELAY 1
-#define TX_FALL_DELAY 0
 #define RX_RISE_DELAY 5
 #define RX_FALL_DELAY 5
-#endif
-
-
 
 
  // Set up USB ports. Done in ASM as read port used in both directions initially.

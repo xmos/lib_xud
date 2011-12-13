@@ -245,7 +245,8 @@ int XUD_DoSetRequestStatus(XUD_ep c, unsigned epnNum);
 void XUD_SetDevAddr(unsigned addr);
 
 int XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two);
-
+int XUD_ResetDrain(chanend one);
+int XUD_GetBusSpeed(chanend c);
 XUD_ep XUD_Init_Ep(chanend c_ep);
 
 

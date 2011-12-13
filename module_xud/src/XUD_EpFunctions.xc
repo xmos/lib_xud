@@ -206,15 +206,11 @@ void XUD_Error_hex(char errString[], int i_err)
 }
 #endif
 
-
-//???
 int XUD_ResetEndpoint0(chanend one, chanend ?two) 
 {
     int busStateCt;
     int busSpeed;
-
     
-
     outct(one, XS1_CT_END);
     busStateCt = inct(one);
 
@@ -232,7 +228,6 @@ int XUD_ResetEndpoint0(chanend one, chanend ?two)
         {
             inuint(two);
         }
-
         return busSpeed;
     }
     else
@@ -241,6 +236,21 @@ int XUD_ResetEndpoint0(chanend one, chanend ?two)
         /* TODO Currently suspend condition is never communicated */
         return XUD_SUSPEND;
     }
+}
+
+int XUD_ResetDrain(chanend one)
+{
+    int busStateCt;
+
+    outct(one, XS1_CT_END);
+    busStateCt = inct(one);
+
+    return busStateCt;
+}
+
+int XUD_GetBusSpeed(chanend c)
+{
+    return inuint(c);
 }
 
 XUD_ep XUD_Init_Ep(chanend c)

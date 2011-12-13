@@ -641,7 +641,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #else
         /* Reset transceiver */
-        XUD_PhyReset(p_rst, reset_time*10, rstMask);
+        if (!isnull(p_rst)) {
+           XUD_PhyReset(p_rst, reset_time*10, rstMask);
+        }
 #endif
 
         /* Wait for USB clock (typically 1ms after reset) */
@@ -909,7 +911,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         }
 
         /* Reset transceiver */
-        p_rst <: 0;
+        if (!isnull(p_rst)) {
+           p_rst <: 0;
+        }
 
     }
 
@@ -1067,10 +1071,12 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
 #ifndef ARCH_S
     /* Clock reset port from reference clock (required as clkblk 0 running from USB clock) */
-    set_clock_on(clk);
-    set_clock_ref(clk);
-    set_port_clock(p_rst, clk);
-    start_clock(clk);
+    if(!isnull(p_rst) && !isnull(clk)) {
+       set_clock_on(clk);
+       set_clock_ref(clk);
+       set_port_clock(p_rst, clk);
+       start_clock(clk);
+    }
 #endif
 
     /* Run the main XUD loop */

@@ -80,7 +80,7 @@ int XUD_DeviceAttachHS()
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
 #endif
-    //XUD_Sup_Delay(50);
+    XUD_Sup_Delay(50);
 
     // DEBUG: This sets IFM mode to DecodeLineState
     // Bit 5 of the CtRL reg (DONTUSE) has a serious effect on

@@ -287,6 +287,21 @@ in port p_usb_dir = XS1_PORT_1G;
 int xud_counter = 0;
 #endif
 
+XUD_chan epChans[32];
+XUD_chan epChans0[32];
+
+typedef struct XUD_ep_info { 
+  unsigned int chan_array_ptr;
+  unsigned int ep_xud_chanend;
+  unsigned int ep_client_chanend;
+  unsigned int scratch;   // 3 used for datalength in
+  unsigned int pid;      //4 
+  unsigned int scratch2; // 5 Data 
+  //unsigned int scratch3; // 5 Data (used for datalenght in)
+} XUD_ep_info;
+
+
+static XUD_ep_info ep_info[32];
 
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
@@ -332,9 +347,6 @@ extern int XUD_LLD_IoLoop(
 // Pid sequencing tables.. note currently only supports DATA0/DATA1 sequencing
 /* TODO these should be init in loop over EP COUNT */
 unsigned char ep_pid_sequence_table_OUT[] = {PID_DATA1, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0};
-
-unsigned char ep_pid_sequence_table_IN_A[] = {PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1, PIDn_DATA1};
-unsigned char ep_pid_sequence_table_IN_B[] = {PIDn_DATA0, PIDn_DATA0, PIDn_DATA1, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0, PIDn_DATA0};
 
 unsigned handshakeTable_IN[16];
 unsigned handshakeTable_OUT[16];
@@ -804,13 +816,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         break;
                     }
 
-                    /* Initialise PID sequence tables etc */
-                    //for (int i = 0; i < noEpIn; i++)
-                    //{
-                      //  ep_pid_sequence_table_IN_A[i] = PIDn_DATA1;
-                       // ep_pid_sequence_table_IN_B[i] = PIDn_DATA1;
-                    //}
-                    //TODO RESET IN THE EP STRUCTURES!!
+                    /* Reset in the ep structures */
+                    for(int i = 0; i< noEpIn; i++)
+                    {
+                        ep_info[noEpOut+i].pid = PIDn_DATA1;
+                    }
+
                     /* Set default device address */
 #ifdef ARCH_S
                     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
@@ -960,22 +971,6 @@ static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[]) {
     }
 }
 
-
-XUD_chan epChans[32];
-XUD_chan epChans0[32];
-
-typedef struct XUD_ep_info { 
-  unsigned int chan_array_ptr;
-  unsigned int ep_xud_chanend;
-  unsigned int ep_client_chanend;
-  unsigned int scratch;   // 3 used for datalength in
-  unsigned int pid;      //4 
-  unsigned int scratch2; // 5 Data 
-  //unsigned int scratch3; // 5 Data (used for datalenght in)
-} XUD_ep_info;
-
-
-static XUD_ep_info ep_info[32];
 
 //#pragma unsafe arrays
 int XUD_Manager(chanend c_ep_out[], int noEpOut, 

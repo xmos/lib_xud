@@ -1,0 +1,7 @@
+This is a xud trest using a xsim testbench.
+
+To build:
+  xmake
+
+To run:
+  xmake run

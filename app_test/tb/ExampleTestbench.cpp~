@@ -13,19 +13,33 @@
 #include "xsidevice.h"
 using namespace std;
 
+/* TODO List*/
+/*
+ * - Ideally RXA done properly - requires two more states using RxAStartDelay and RxAEndDelay
+ * - RxV bubbles in packets
+ */
+
 #define MAX_INSTANCES 256
 
 /* All port names relative to Xcore */
-#define RX_DATA_PORT XS1_PORT_8A;
+#define CLK_PORT        "XS1_PORT_1A"
+
+#define RX_DATA_PORT    "XS1_PORT_8A"
+#define RX_RXA_PORT     "XS1_PORT_1D"
+#define RX_RXV_PORT     "XS1_PORT_1C"
+
+#define V_TOK_PORT      "XS1_PORT_1E" 
 
 using namespace std;
 
-typedef enum USBEventType { tx, rx, delay};
+typedef enum USBEventType { tx, rx, delay, tok};
+
 typedef struct testnode                                                
 {                                                               
       int data;               // will store information
       testnode *next;             // the reference to the next node
 }; 
+
 class USBEvent
 {
     protected:
@@ -62,6 +76,20 @@ class USBRxPacket: public USBEvent
         int GetDataLength() {return dataLength;}
         int GetData(int i) {return data[i];}
 };
+
+class USBRxToken: public USBEvent 
+{
+    protected:
+        unsigned char pid;
+        unsigned char ep;
+
+    public:
+        USBRxToken();
+        USBRxToken(unsigned char p, unsigned char e):USBEvent(tok) {pid = p; ep=e;}// Contstructor
+        int GetPid() {return pid;}
+        int GetEp() {return ep;}
+};
+
 
 
 
@@ -207,6 +235,7 @@ int g_rxDataIndex = 0;
 USBDelay *myUsbDelay;
 USBRxPacket *myUsbRxPacket;
   
+int stop = 0;
 
 void usb_tick(node *head)
 {
@@ -218,7 +247,7 @@ void usb_tick(node *head)
     /* Toggle USB clock port */
     g_usbClock = !g_usbClock;
 
-    drive_port("stdcore[0]", "XS1_PORT_1A", 0x1, g_usbClock);
+    drive_port("stdcore[0]", CLK_PORT, 0x1, g_usbClock);
  
     printf("TB: CLK: %d: ", g_usbClock);
    
@@ -229,7 +258,8 @@ void usb_tick(node *head)
             fprintf(stdout, "TB: in START: \n");
             
             /* Pop a usb event from the list */
-            if(head != NULL)
+            //if(head != NULL)
+            if(!stop)
             {
                 USBEvent *e1 = temp1->e;   
 
@@ -242,8 +272,8 @@ void usb_tick(node *head)
             
                     nextState = IN_DELAY;
                     g_delayCount = myUsbDelay->GetDelayTime();
- /* move on down the list... */
-                *head = *head->next;   // tranfer the address of 'temp->next' to 'temp'
+                    /* move on down the list... */
+                    //*head = *head->next;   // tranfer the address of 'temp->next' to 'temp'
 
                 }
 
@@ -262,8 +292,20 @@ void usb_tick(node *head)
                     nextState = RX_DATA;
                     g_rxDataCount = myUsbRxPacket->GetDataLength();
                     g_rxDataIndex = 0;
-                }
 
+                   
+                    drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 1);
+                    drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 1);
+                    drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, myUsbRxPacket->GetData(g_rxDataIndex));
+                }
+                    if(head->next == NULL)
+                    {
+                        stop = 1;
+                    }
+                    else    
+                    {
+                        *head = *head->next;   // tranfer the address of 'temp->next' to 'temp'
+                    }
             }
             else
             {
@@ -302,22 +344,26 @@ void usb_tick(node *head)
 
             fprintf(stdout, "TB: RX_DATA %d : %d\n", g_rxDataIndex, myUsbRxPacket->GetData(g_rxDataIndex));
             nextState = RX_DATA;
-            //Output Data on bus
-            // write_port 
-            
+
+            drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, myUsbRxPacket->GetData(g_rxDataIndex));
 
             // Change data on on falling edge
-            if(g_usbClock == 0)
+            if(g_usbClock == 1)
             {
                 g_rxDataIndex++;
 
-                if(g_rxDataIndex == g_rxDataCount)
-                {
-                    nextState = START;
-                    while(1);
-                }
             }
-            
+
+            /* End of RX data */
+            if((g_rxDataIndex == g_rxDataCount) && (g_usbClock ==0))
+            {
+                    /* Return to start state */
+                    drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 0);
+                    drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 0);
+                    drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0);
+                    nextState = START;
+            }
+
 
             break;   
 
@@ -416,8 +462,7 @@ void PrintUSBEventList(node *head)
         USBEvent *e1 = temp1->e;   
 
         USBDelay * myUsbDelay = dynamic_cast<USBDelay*>(e1);
-    
-
+        
         if(myUsbDelay)
         {
             fprintf(stdout, "Delay (%d)\n", myUsbDelay->GetDelayTime());
@@ -514,6 +559,12 @@ int main(int argc, char **argv)
     // Empty linked list
     node *head = NULL;
 
+    /* Init port state */
+    drive_port("stdcore[0]", RX_RXA_PORT, 0x1, 0);
+    drive_port("stdcore[0]", RX_RXV_PORT, 0x1, 0);
+    drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0xFF);
+
+
     /* Create test datapacket */
     unsigned char *data;
     data = new unsigned char[RX_DATALENGTH];
@@ -524,12 +575,14 @@ int main(int argc, char **argv)
     }
 
     /* Create test packet list */
-    USBEvent *test0 = new USBRxPacket(RX_DATALENGTH, data);
-    USBEvent *test1 = new USBDelay(12);
+    USBEvent *test0 = new USBDelay(20);
+    USBEvent *test1 = new USBRxPacket(RX_DATALENGTH, data);
+    USBEvent *test2 = new USBDelay(20);
  
 
     AddUSBEventToList(&head, test0);
     AddUSBEventToList(&head, test1);
+    AddUSBEventToList(&head, test2);
 
     PrintUSBEventList(head);
 

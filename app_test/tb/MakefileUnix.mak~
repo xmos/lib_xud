@@ -1,6 +1,6 @@
 TOOLS_ROOT = /Applications/XMOS_20111027/
 #../../..
-#include ./MakefileUnix.mak
+include $(TOOLS_ROOT)/src/MakefileUnix.mak
 
 ifndef M32
 M32 = -m32

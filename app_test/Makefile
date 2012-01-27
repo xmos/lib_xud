@@ -14,7 +14,7 @@ build:
 # NOTE: Requires the testbench to have been built (src/testbenches/ExampleTestbench)
 #
 run:
-	ExampleTestbench   ./app_test.xe 
+	ExampleTestbench '--vcd-tracing "-o trace.vcd -ports -pads"  ./app_test.xe '
 	
 	#--vcd-tracing "-o trace.vcd -pads" app_test.xe
 

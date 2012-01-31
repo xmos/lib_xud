@@ -9,6 +9,7 @@
 #include <print.h>
 #include "xud.h"
 #include "platform.h"
+#include "test.h"
 
 #define XUD_EP_COUNT_OUT   2
 #define XUD_EP_COUNT_IN    2
@@ -84,6 +85,17 @@ void hid(chanend chan_ep1)
 }
 
 
+void TestEp(chanend chan_ep) 
+{
+    unsigned char buffer[1024];
+
+    XUD_ep ep = XUD_Init_Ep(chan_ep);
+   
+    XUD_GetBuffer(ep, buffer);
+
+    printstrln("Done");
+}
+
 
 
 #define USB_CORE 0
@@ -98,18 +110,9 @@ int main()
                                 null, epTypeTableOut, epTypeTableIn,
                                 p_usb_rst, clk, -1, XUD_SPEED_HS, null); 
         
-
-        //on stdcore[USB_CORE]:
-        //{
-          //  set_thread_fast_mode_on();
-            //Endpoint0( c_ep_out[0], c_ep_in[0], c_usb_test);
-        //}
-       
-        //on stdcore[USB_CORE]:
-        //{
-          //  set_thread_fast_mode_on();
-           // hid(c_ep_in[1]);
-        //}
+#if (TEST_CRC_BAD) || (TEST_ACK)
+        on stdcore[USB_CORE]: TestEp(c_ep_out[1]);
+#endif
     }
 
     return 0;

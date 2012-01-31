@@ -7,77 +7,110 @@
  */
 #include <xs1.h>
 #include <print.h>
+#include "xud.h"
+#include "platform.h"
 
-port p1 = XS1_PORT_1A;
-port p2 = XS1_PORT_1B;
+#define XUD_EP_COUNT_OUT   2
+#define XUD_EP_COUNT_IN    2
 
-in port p_rxd = XS1_PORT_8A;
+/* Endpoint type tables */
+XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL};
 
-int testAndSend(port outPort, port inPort, int value)
+/* USB Port declarations */
+on stdcore[0]: out port p_usb_rst = XS1_PORT_1A;
+on stdcore[0]: clock    clk       = XS1_CLKBLK_3;
+
+on stdcore[0] : out port p_test = XS1_PORT_1I;
+
+void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend ?c_usb_test);
+
+char reportBuffer[] = {0, 0, 0, 0};
+
+/*
+ * This function responds to the HID requests - it draws a square using the mouse moving 40 pixels
+ * in each direction in sequence every 100 requests.
+ */
+void hid(chanend chan_ep1) 
 {
-  timer t;
-  unsigned time;
-  int error = 0;
-  
-  // Transmit the desired value
-  outPort <: value;
- 
-  
+    int counter = 0;
+    int state = 0;
     
-  // Record the start time to check for failure
-  t :> time;
-
-  select {
-    case inPort when pinseq(value) :> int x:
-      printstrln(" ok");
-      break;
-    case t when timerafter(time + 100) :> time:
-      printstrln(" error");
-      error = 1;
-      break;
-  }
-  
-  return error;
-}
-
-int sendP1ToP2(int value)
-{
-  printstr("p1 -> ");
-  printint(value);
-  printstr(" -> p2");
-  return testAndSend(p1, p2, value);
-}
-
-int sendP2ToP1(int value)
-{
-  printstr("p2 -> ");
-  printint(value);
-  printstr(" -> p1");
-  return testAndSend(p2, p1, value);
-}
-
-
-int main()
-{
-  int error = 0;
-
-    set_thread_fast_mode_on();
- 
- while(1)
+    XUD_ep c_ep1 = XUD_Init_Ep(chan_ep1);
+   
+    counter = 0;
+    while(1) 
     {
-            p1 when pinseq(1):> int x;
-            p1 when pinseq(0):> int x;
+        counter++;
+        if(counter == 400) 
+        {
+            if(state == 0) 
+            {
+                reportBuffer[1] = 40;
+                reportBuffer[2] = 0; 
+                state+=1;
+            } 
+            else if(state == 1) 
+            {
+                reportBuffer[1] = 0;
+                reportBuffer[2] = 40;
+                state+=1;
+            } 
+            else if(state == 2) 
+            {
+                reportBuffer[1] = -40;
+                reportBuffer[2] = 0; 
+                state+=1;
+            } 
+            else if(state == 3) 
+            {
+                reportBuffer[1] = 0;
+                reportBuffer[2] = -40;
+                state = 0;
+            }
+            counter = 0;
+        } 
+        else 
+        {
+            reportBuffer[1] = 0;
+            reportBuffer[2] = 0; 
+        }
+
+        if (XUD_SetBuffer(c_ep1, reportBuffer, 4) < 0)
+        {
+            XUD_ResetEndpoint(c_ep1, null);
+        }
     }
- 
-  
-  error |= sendP1ToP2(0);
-  error |= sendP1ToP2(1);
-  
-  // Stop P1 driving
-  p1 :> int x;
+}
 
-  error |= sendP2ToP1(0);
-  error |= sendP2ToP1(1);
 
-  return error;
+
+
+#define USB_CORE 0
+int main() 
+{
+    chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+
+    par 
+    {
+        
+        on stdcore[USB_CORE]: XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+                                null, epTypeTableOut, epTypeTableIn,
+                                p_usb_rst, clk, -1, XUD_SPEED_HS, null); 
+        
+
+        //on stdcore[USB_CORE]:
+        //{
+          //  set_thread_fast_mode_on();
+            //Endpoint0( c_ep_out[0], c_ep_in[0], c_usb_test);
+        //}
+       
+        //on stdcore[USB_CORE]:
+        //{
+          //  set_thread_fast_mode_on();
+           // hid(c_ep_in[1]);
+        //}
+    }
+
+    return 0;
 }

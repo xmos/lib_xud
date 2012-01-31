@@ -487,7 +487,6 @@ XUD_TokenRx_Pid:
     inpw       r11, res[RXD], 8                       // Read 8 bit PID
     shr        r11, r11, 24                           // Shift off junk 
     
-    //bl         printintln
     ldw        r10, r10[r11]                          // Load relevant branch address
 
 #if 1        

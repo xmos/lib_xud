@@ -5,6 +5,11 @@
   * @version   0.1
   **/
 /* Error printing functions */
+
+#ifdef SIMULATION
+#warning !!!!!!!!!!!!!! BUILDING FOR SIM
+#endif
+
 #ifdef XUD_DEBUG_VERSION
 void XUD_Error(char errString[]);
 void XUD_Error_hex(char errString[], int i_err);
@@ -43,6 +48,7 @@ void XUD_Error_hex(char errString[], int i_err);
 void XUD_UserSuspend();
 void XUD_UserResume();
 
+#if 0
 #pragma xta command "config threads stdcore[0] 6"        
 #pragma xta command "add exclusion Pid_Out"
 #pragma xta command "add exclusion Pid_Setup"
@@ -62,7 +68,6 @@ void XUD_UserResume();
 #pragma xta command "add exclusion InvalidToken"       
 #pragma xta command "add exclusion InReady"
 
-#if 0
 #pragma xta command "analyse path XUD_TokenRx_Pid XUD_TokenRx_Ep"
 #pragma xta command "set required - 33 ns"   
 #endif
@@ -72,7 +77,6 @@ void XUD_UserResume();
 #if 0
 #pragma xta command "analyse path XUD_TokenRx_Ep XUD_IN_TxNak"
 #pragma xta command "set required - 233 ns"             
-#endif
 #pragma xta command "add exclusion InNotReady"
 #pragma xta command "remove exclusion InReady"
 
@@ -84,17 +88,17 @@ void XUD_UserResume();
 #pragma xta command "add exclusion XUD_IN_TxPid_TailS1"
 #pragma xta command "add exclusion XUD_IN_TxPid_TailS2"
 #pragma xta command "add exclusion XUD_IN_TxPid_TailS3"
+#endif
 #if 0
 #pragma xta command "analyse path XUD_TokenRx_Ep XUD_IN_TxPid_Tail0"
 #pragma xta command "set required - 266 ns"   
 #endif
 
+#if 0
 #pragma xta command "remove exclusion XUD_IN_TxPid_TailS0"
 #pragma xta command "add exclusion XUD_IN_TxPid_Tail0"
-#if 0
 #pragma xta command "analyse path XUD_TokenRx_Ep XUD_IN_TxPid_TailS0"
 #pragma xta command "set required - 266 ns"   
-#endif
 
 #pragma xta command "remove exclusion XUD_IN_TxPid_Tail1"
 #pragma xta command "add exclusion XUD_IN_TxPid_TailS0"
@@ -205,9 +209,9 @@ void XUD_UserResume();
 /* RX TO RX */
 /* Rx SOF to Rx SOF - This is a non-interesting case since timing will be ~125uS */
 
-#pragma xta command "remove exclusion Pid_Sof"
-#pragma xta command "add exclusion Pid_Out"
-#pragma xta command "add exclusion Pid_In"
+//#pragma xta command "remove exclusion Pid_Sof"
+//#pragma xta command "add exclusion Pid_Out"
+//#pragma xta command "add exclusion Pid_In"
 #if 0
 #pragma xta command "analyse path XUD_TokenRx_Ep XUD_TokenRx_Pid"
 #pragma xta command "set required - 50 ns"
@@ -215,19 +219,20 @@ void XUD_UserResume();
 
 /* Rx OUT Data end to Rx Token (ISO Out Data) */
 //#pragma xta command "add exclusion OutTail0"
-#pragma xta command "add exclusion OutTail1"
-#pragma xta command "add exclusion OutTail2"
-#pragma xta command "add exclusion OutTail3"
-#pragma xta command "add exclusion OutTail4"
-#pragma xta command "add exclusion OutTail5"
-#pragma xta command "add exclusion ReportBadCrc"
-#pragma xta command "add exclusion DoOutHandShakeOut"
+//#pragma xta command "add exclusion OutTail1"
+//#pragma xta command "add exclusion OutTail2"
+//#pragma xta command "add exclusion OutTail3"
+//#pragma xta command "add exclusion OutTail4"
+//#pragma xta command "add exclusion OutTail5"
+//#pragma xta command "add exclusion ReportBadCrc"
+//#pragma xta command "add exclusion DoOutHandShakeOut"
 #if 0
 #pragma xta command "analyse path XUD_OUT_RxTail XUD_TokenRx_Pid"
 #pragma xta command "set required - 50 ns"
 #endif
 
 
+#endif
 /* TX INTRA PACKET TIMING */
 #if 0
 #pragma xta command "analyse path XUD_IN_TxPid_Tail0 TxLoop0_Out"
@@ -473,16 +478,20 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     XUD_SetCrcTableAddr(0);
 #endif
 
-#ifdef ARCH_S
+#if defined(ARCH_S) 
+
+#ifndef SIMULATION
     /* Setup link with Glx */
     glx_link_setup(MYID, GLXID);
+#endif
 
 #ifdef GLX_PWRDWN
 #warning BUILDING WITH GLX POWER DOWN ENABLED
 
+#ifndef SIMULATION
     /* Tell GLX to allow USB suspend/wake */
     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 0x3 << XS1_GLX_PWR_USB_PD_EN_BASE);
-
+#endif
 #endif
 
 //All these delays are for a xev running at 500MHz
@@ -629,7 +638,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         {
 #endif
 #ifdef ARCH_S
-        
+ 
+#ifndef SIMULATION       
         /* Enable the USB clock */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
 
@@ -638,9 +648,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
         /* Keep usb clock active, enter active mode */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
+#endif
 
 #ifdef GLX_PWRDWN
         }
+#ifndef SIMULATION
         /* Setup sleep timers and supplies */
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
@@ -648,6 +660,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
+#endif
 #endif
 
 
@@ -722,8 +735,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
  
 #ifdef ARCH_S
+#ifndef SIMULATION
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, 
             (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE));
+#endif
 #else        
         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
       
@@ -756,17 +771,24 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifdef ARCH_S
             //    if(!waking)
               //  {
+#ifndef SIMULATION
                 write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
                     (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
                // }
+#endif
 #else
 
                 XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
 #endif      
+                
+ 
+#ifdef SIMULATION
+                reset = 1;
+                
+#else
                 /* Setup flags for power signalling - J/K/SE0 line state*/
                 XUD_UIFM_PwrSigFlags();
-           
                 //if(!wakingReset)
                 //{ 
                 if (one)
@@ -788,7 +810,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                 }
 //                }
-
+#endif
                 /* Inspect for suspend or reset */
                 if(!reset)
                 {
@@ -824,11 +846,25 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                     /* Set default device address */
 #ifdef ARCH_S
+#ifndef SIMULATION
                     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
+#endif
 #else
                     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
 #endif
-                
+ 
+#ifdef SIMULATION
+                    if(g_desSpeed == XUD_SPEED_HS)
+                    {
+                        g_curSpeed = XUD_SPEED_HS;
+                        g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
+                    }
+                    else
+                    {
+                        g_curSpeed = XUD_SPEED_FS;
+                        g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
+                    }
+#else               
                     if(g_desSpeed == XUD_SPEED_HS)
                     {
                         if (!XUD_DeviceAttachHS())
@@ -848,7 +884,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         g_curSpeed = XUD_SPEED_FS;
                         g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
                     }
-
+#endif
 
                     /* Send speed to EPs */
                     SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
@@ -864,11 +900,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             NOTE: Need to do this every iteration since CHKTOK would break power signaling */
 #ifdef ARCH_L
 #ifdef ARCH_S
+#ifndef SIMULATION
             write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, (1<<XS1_UIFM_IFM_CONTROL_DOTOKENS) 
                 | (1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS) 
                 | (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE)
                 | (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
-
+#endif
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_CHKTOK | UIFM_CTRL_DECODE_LS);
             
@@ -880,11 +917,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif /* ARCH_L */
 
 #ifdef ARCH_S
+#ifndef SIMULATION
             write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG,
                 ((1<<XS1_UIFM_IFM_FLAGS_NEWTOKEN) 
                 | ((1<<XS1_UIFM_IFM_FLAGS_RXACTIVE)<<8)
                 | ((1<<XS1_UIFM_IFM_FLAGS_RXERROR)<<16)));
-
+#endif
 #else
             /* Set flag0_port to NEW_TOKEN (bit 6 of ifm flags) */
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK0, 0x40);   // bit 6

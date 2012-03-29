@@ -60,8 +60,10 @@ include $(XMOS_MAKE_DIR)/xcommon/module_xcommon/build/Makefile.common
 # NOTE: Requires the testbench to have been built (src/testbenches/ExampleTestbench)
 #
 run:
-	ExampleTestbench -t '--vcd-tracing "-o trace.vcd -ports -pads"  ./bin/app_test.xe '
+	ExampleTestbench   '--vcd-tracing "-o trace.vcd -ports -pads"  ./bin/app_test.xe '
 	
+runtrace:
+	ExampleTestbench   '-t --vcd-tracing "-o trace.vcd -ports -pads"  ./bin/app_test.xe '
 	#--vcd-tracing "-o trace.vcd -pads" app_test.xe
 
 #

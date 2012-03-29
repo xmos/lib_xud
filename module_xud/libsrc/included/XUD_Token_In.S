@@ -232,9 +232,11 @@ WaitForHandshake:			                            // Wait for timeout or handshake
 TxHandshakeTimeOut:
     in 	    	r11, res[r1]                    // This will clear port time
     edu         res[r1]
-    ldc         r11, 1
-    out         res[r5], r11        
-    bu        	NextToken
+    bu          BadHandShake
+
+    //ldc         r11, 1
+    //out         res[r5], r11        
+    //bu        	NextToken
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align 4
@@ -253,18 +255,20 @@ XUD_IN_RxAck:
     bt          r9, BadHandShake                // Invalid handshake received from host. we need to resend...
    
 DoneTx:
-    ldap       r11, NextRxWord                  // Restore RXD event vector
-    setv       res[RXD], r11
-    ldc           r11, 0                        // Send 0 to EP thread for no error
-    out           res[r5], r11
+    ldap        r11, NextRxWord                 // Restore RXD event vector
+    setv        res[RXD], r11    
+    ldc         r11, 0                          // Send 0 to EP thread for no error
+    out         res[r5], r11
         
   bu        	NextToken
 
-BadHandShake:				                            // Received a bad handshake
-    ldc           r11, 1                                      // Send 1 for error
-    out           res[r5], r11
+BadHandShake:			                        // Received a bad (or no)handshake
+    ldap        r11, NextRxWord                 // Restore RXD event vector
+    setv        res[RXD], r11
+    ldc         r11, 1                          // Send 1 for error
+    out         res[r5], r11
         
-    bu 		NextToken
+    bu 		    NextToken
 
 .align 32
 .skip 26

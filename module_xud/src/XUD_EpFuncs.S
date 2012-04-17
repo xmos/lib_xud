@@ -284,9 +284,10 @@ XUD_ResetEndpoint:
         retsp 1
 .cc_bottom XUD_ResetEndpoint.func
 
+.globl   XUD_SetReady
 .globl   XUD_SetReady.nstackwords
 .linkset XUD_SetReady.nstackwords, 0
-        
+
 .cc_top XUD_SetReady.func, XUD_SetReady
 XUD_SetReady:
     ldw        r0,  r0[2]               

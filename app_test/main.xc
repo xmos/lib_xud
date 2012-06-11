@@ -12,14 +12,15 @@
 #include "platform.h"
 #include "test.h"
 
-#define XUD_EP_COUNT_OUT   3
-#define XUD_EP_COUNT_IN    3
-
-/* TODO.. PID TOGGLING CHECKS */
-
+#define XUD_EP_COUNT_OUT   5
+#define XUD_EP_COUNT_IN    5
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO};
+XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, 
+                                                XUD_EPTYPE_BUL, 
+                                                XUD_EPTYPE_ISO, 
+                                                XUD_EPTYPE_BUL,
+                                                 XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO};
 
 /* USB Port declarations */
@@ -98,11 +99,11 @@ void exit(int);
 unsigned fail(int x)
 {
 
-    printstr("\nXCORE: ***** FAIL ******");
+    printstr("\nXCORE: ### FAIL ******");
     switch(x)
     {
         case FAIL_RX_DATAERROR:
-		    printstr("RX Data Error\n");
+		    printstr("XCORE RX Data Error\n");
 
             break;
 
@@ -111,24 +112,27 @@ unsigned fail(int x)
     exit(1);	
 }
 
-unsigned char g_rxDataCheck[3] = {1, 1, 1};
-unsigned char g_txDataCheck[3] = {1, 1, 1};
-unsigned g_txLength[3] = {0,0,0};
-
-unsigned char g_workingBuffer[3][1024];
+unsigned char g_rxDataCheck[5] = {1, 1, 1, 1, 1};
+unsigned char g_txDataCheck[5] = {1, 1, 1, 1, 1};
+unsigned g_txLength[5] = {0,0,0,0,0};
 
 
-/* Returns 0 for non-error */
 #pragma unsafe arrays
 int RxDataCheck(unsigned char b[], int l, int epNum)
 {
     int fail = 0;
     unsigned char x;
 
+   // printstr("##### RX DATA: \n");
     for (int i = 0; i < l; i++)
     {
         if(b[i] != g_rxDataCheck[epNum])
         {
+            printstr("#### Mismatch\n");
+            printhexln(b[i]);
+            printhexln(g_rxDataCheck[epNum]);
+            printhexln(epNum);
+            printintln(l);
             return 1;
         }
 
@@ -173,27 +177,27 @@ void TestEp_out(chanend chan_ep, chanend c_sync, int epNum)
         	
         length = XUD_GetBuffer(ep, buffer);
 
-	    /* Check length */
-	    if(length != buffer[0])
-	    {
-	        //	/fail();
-	    }
-
         /* Update tx length to rx length */
-        asm("stw   %0, dp[g_txLength]":: "r" (length));
+        asm("stw   %0, %1[%2]":: "r" (length), "r"(g_txLength), "r"(epNum));
         //g_txLength[epNum] = length;
 
+        if(epNum == 2)
+        {
+            //if(length!=0)
+           // {
+            //printhexln(0xffffffff);
+            //printintln(length);
+            //while(1);
+            //}
+        }
+        //printintln(length); 
         if(RxDataCheck(buffer, length, epNum))
         {
+            //for (int i = 0; i < length;i++)
+              //  printhexln(buffer[i]);
             fail(FAIL_RX_DATAERROR);
         }
 
-
-	    /* Perform transform on buffer - pretty simple for the mo.. */
-	    //for(int i = 0; i < length; i++)
-	    //{
-		  //  g_workingBuffer[epNum][i] += buffer[i];
-	   // }
 
         if(one)
         {
@@ -231,17 +235,173 @@ void TestEp_in(chanend chan_ep, chanend c_sync, int epNum)
     XUD_ep ep = XUD_Init_Ep(chan_ep);
 
     c_sync :> y;
-    asm("ldw   %0, dp[g_txLength]" : "=r" (length) :);
+    //asm("ldw   %0, %1[%2]" : "=r" (length) :"r"(g_txLength), "r" (epNum));
+    length = g_txLength[epNum];
+    
+    //printstr("FIRST: ");
+    //printintln(length);
+    
     SendTxPacket(ep, length, epNum);
+    
 
     while(1)
     {
         //c_sync :> y;
-        asm("ldw   %0, dp[g_txLength]" : "=r" (length) :);
+        length = g_txLength[epNum];
+        //asm("ldw   %0, %1[%2]" : "=r" (length) :"r"(g_txLength), "r" (epNum));
+
+        if((epNum == 2)&&(length!=0))
+        {
+            ///length = 3;
+            //printhexln(0xffffffff);
+            //printhexln(length);
+            //while(1);
+        }
         SendTxPacket(ep, length, epNum);
     }
 
 }
+
+int TestEp_Control(chanend c_out, chanend c_in, int epNum)
+{
+    int slength;
+    int length;
+
+    XUD_ep c_ep0_out = XUD_Init_Ep(c_out);
+    XUD_ep c_ep0_in  = XUD_Init_Ep(c_in);
+
+    /* Buffer for Setup data */
+    unsigned char buffer[120]; 
+
+    while(1)
+    {
+        /* Wait for Setup data */
+        slength = XUD_GetSetupBuffer(c_ep0_out, c_ep0_in, buffer);
+
+        if(slength != 8)
+        {
+            printintln(length);
+            fail(FAIL_RX_DATAERROR);
+        }
+
+        if(RxDataCheck(buffer, slength, epNum))
+        {
+            fail(FAIL_RX_DATAERROR);
+        }
+
+        length = XUD_GetBuffer(c_ep0_out, buffer);
+        if(RxDataCheck(buffer, length, epNum))
+        {
+            fail(FAIL_RX_DATAERROR);
+        }
+
+        
+        length = XUD_GetBuffer(c_ep0_out, buffer);
+        if(RxDataCheck(buffer, length, epNum))
+        {
+            fail(FAIL_RX_DATAERROR);
+        }
+
+        length = XUD_GetBuffer(c_ep0_out, buffer);
+        if(RxDataCheck(buffer, length, epNum))
+        {
+            fail(FAIL_RX_DATAERROR);
+        }
+
+
+        /* Send 0 length back */
+        SendTxPacket(c_ep0_in, 0, epNum);
+
+         /* Wait for Setup data */
+        slength = XUD_GetSetupBuffer(c_ep0_out, c_ep0_in, buffer);
+
+        if(slength != 8)
+        {
+            printintln(length);
+            fail(FAIL_RX_DATAERROR);
+        }
+
+        if(RxDataCheck(buffer, slength, epNum))
+        {
+            fail(FAIL_RX_DATAERROR);
+        }
+
+        
+        SendTxPacket(c_ep0_in, length, epNum);
+        SendTxPacket(c_ep0_in, length, epNum);
+        SendTxPacket(c_ep0_in, length, epNum);
+
+        length = XUD_GetBuffer(c_ep0_out, buffer);
+        if(length != 0)
+        {
+            fail(FAIL_RX_DATAERROR);
+        }
+
+
+        
+
+    }
+}
+
+#pragma select handler
+void XUD_GetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
+
+void TestEp_select(chanend c_out1, chanend c_out2, chanend c_in1, chanend c_in2)
+{
+    XUD_ep ep_out1 = XUD_Init_Ep(c_out1);
+    XUD_ep ep_out2  = XUD_Init_Ep(c_out2);
+    XUD_ep ep_in1  = XUD_Init_Ep(c_in1);
+    XUD_ep ep_in2  = XUD_Init_Ep(c_in2);
+
+    unsigned char buffer1[1024];
+    unsigned char buffer1_in[1024];
+    unsigned char buffer2[1024];
+    unsigned char buffer2_in[1024];
+    unsigned tmp;
+
+    for(int i = 0; i<1024; i++)
+    {
+        buffer1_in[i] = i+1;
+        buffer2_in[i] = i+1;
+    }
+
+
+    XUD_SetReady_Out(ep_out1, buffer1);
+    XUD_SetReady_Out(ep_out2, buffer2);
+    XUD_SetReady_In(ep_in1, buffer1_in, 10);
+
+    /* TODO - reset/CT etc */
+    while(1)
+    {
+        select
+        {
+            case XUD_GetData_Select(c_out1, ep_out1, tmp):
+
+                //doRxData
+                if(RxDataCheck(buffer1, tmp, 3))
+                {
+                    fail(FAIL_RX_DATAERROR);
+                }
+
+                XUD_SetReady_Out(ep_out1, buffer1);
+
+                break; 
+ 
+            case XUD_GetData_Select(c_out2, ep_out2, tmp):
+
+                //doRxData
+                if(RxDataCheck(buffer2, tmp, 4))
+                {
+                    fail(FAIL_RX_DATAERROR);
+                }
+
+                XUD_SetReady_Out(ep_out2, buffer2);
+
+                break; 
+        }
+    }
+}
+
 
 #define USB_CORE 0
 int main() 
@@ -256,12 +416,15 @@ int main()
         on stdcore[USB_CORE]: XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 p_usb_rst, clk, -1, XUD_SPEED_HS, null); 
+ 
+        on stdcore[USB_CORE]: TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
         
 #if (TEST_CRC_BAD) || (TEST_ACK)
         on stdcore[USB_CORE]: TestEp_out(c_ep_out[1], c_sync, 1);
         on stdcore[USB_CORE]: TestEp_in(c_ep_in[1], c_sync, 1);
         on stdcore[USB_CORE]: TestEp_out(c_ep_out[2], c_sync_iso, 2);
         on stdcore[USB_CORE]: TestEp_in(c_ep_in[2], c_sync_iso, 2);
+        on stdcore[USB_CORE]: TestEp_select(c_ep_out[3], c_ep_out[4], c_ep_in[3], c_ep_in[4]);
 #endif
     }
 

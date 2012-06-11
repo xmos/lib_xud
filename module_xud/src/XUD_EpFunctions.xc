@@ -77,16 +77,15 @@ int XUD_GetBuffer(XUD_ep c, unsigned char buffer[])
 
 
 /** XUD_GetSetupBuffer() 
-  * @brief Request setup data from usb buffer for a specific EP, pauses until data is available.  
-  * @param c Data channel to/from XUD
-  * @param c_ctl Control channel from XUD
-  * @param epNum EP number 
-  * @param buffer char buffer passed by ref into which data is returned
-  * @return datalength in bytes (always 8), -1 if kill received
+  * @brief  Request setup data from usb buffer for a specific EP, pauses until data is available.  
+  * @param  ep_out Out XUD ep 
+  * @param  ep_in  In XUD ep 
+  * @param  buffer Char buffer passed by ref into which data is returned
+  * @return datalength in bytes (should always 8), -1 if kill received
   **/
-int XUD_GetSetupBuffer(XUD_ep c_out, unsigned char buffer[])
+int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[])
 {
-    return XUD_GetSetupData(c_out, buffer);
+    return XUD_GetSetupData(ep_out, ep_in, buffer);
 }
 
 
@@ -99,10 +98,10 @@ int XUD_GetSetupBuffer(XUD_ep c_out, unsigned char buffer[])
   * @param      buffer
   * @param      datalengh in bytes!
   **/
-int XUD_SetBuffer_ResetPid(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned char pid)
-{
-    return XUD_SetData(c, buffer, datalength, 0, pid);  
-}
+//int XUD_SetBuffer_ResetPid(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned char pid)
+//{
+  //  return XUD_SetData(c, buffer, datalength, 0, pid);  
+//}
 
 int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
 {
@@ -114,8 +113,7 @@ int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
 
 
 /* Datalength in bytes */
-int XUD_SetBuffer_ResetPid_EpMax(XUD_ep c, unsigned epNum, unsigned char buffer[], 
-  unsigned datalength, unsigned epMax, unsigned char pid)
+int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, unsigned epMax)
 {
     int i = 0;
  
@@ -123,12 +121,15 @@ int XUD_SetBuffer_ResetPid_EpMax(XUD_ep c, unsigned epNum, unsigned char buffer[
     if(datalength <= epMax)
     {
         /* Datalength is less than the maximum per transaction of the EP, so just send */
-        return XUD_SetData(c, buffer, datalength, 0, pid); 
+        return XUD_SetData(ep, buffer, datalength, 0, 0); 
     }
     else
     {
         /* Send first packet out and reset PID */
-        if (XUD_SetData(c, buffer, epMax, 0, pid) < 0) return -1;
+        if (XUD_SetData(ep, buffer, epMax, 0, 0) < 0) 
+        {
+            return -1;
+        }
         i+= epMax;
         datalength-=epMax;
 
@@ -138,7 +139,7 @@ int XUD_SetBuffer_ResetPid_EpMax(XUD_ep c, unsigned epNum, unsigned char buffer[
             if(datalength > epMax)
 	        {
                 /* PID Automatically toggled */
-                if (XUD_SetData(c, buffer, epMax, i, 0) < 0) return -1;
+                if (XUD_SetData(ep, buffer, epMax, i, 0) < 0) return -1;
 
                 datalength-=epMax;
                 i += epMax;
@@ -146,7 +147,7 @@ int XUD_SetBuffer_ResetPid_EpMax(XUD_ep c, unsigned epNum, unsigned char buffer[
 	        else
 	        {
                 /* PID automatically toggled */
-                if (XUD_SetData(c, buffer, datalength, i, 0) < 0) return -1;
+                if (XUD_SetData(ep, buffer, datalength, i, 0) < 0) return -1;
 
 	            break; //out of while loop
 	        }
@@ -163,7 +164,7 @@ int XUD_DoGetRequest(XUD_ep c, XUD_ep c_in, uint8 buffer[], unsigned length, uns
 {
     unsigned char tmpBuffer[1024];
 
-    if (XUD_SetBuffer_ResetPid_EpMax(c_in, 0, buffer, min(length, requested), 64, PIDn_DATA1) < 0) 
+   if (XUD_SetBuffer_EpMax(c_in, buffer, min(length, requested), 64) < 0) 
     {
         return -1;
     }

@@ -151,15 +151,15 @@
 #define WINDEX_TEST_PACKET          (0x4<<8)
 #define WINDEX_TEST_FORCE_ENABLE    (0x5<<8)
 
-//* DEPRECATED DEFINES:
-// TODO rm these defines
 // Raw PIDs
 #define PID_OUT   0x01
 #define PID_ACK   0x02
-#define PID_IN    0x09
-#define PID_SOF   0x05
-#define PID_SETUP 0x0d
+#define PID_DATA0 0x03
 #define PID_PING  0x04
+#define PID_SOF   0x05
+#define PID_IN    0x09
+#define PID_DATA1 0x0B
+#define PID_SETUP 0x0D
 
 // PIDs with error check
 // Token

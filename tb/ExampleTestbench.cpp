@@ -27,12 +27,18 @@ using namespace std;
 #define PID_ACK   2
 #define PID_DATA0 3
 #define PID_IN    9
+#define PID_DATA1 0xb
+#define PID_SETUP 0xd
 
 #define PIDn_ACK     0xd2
 #define PIDn_DATA0   0xC3
 
 
 #define MAX_INSTANCES 256
+
+
+#define RX_END_DELAY 3 /* Number of clocks between end of data packet an RXActive going low. See UTMI spec page 59 */
+
 
 /* All port names relative to Xcore */
 #define CLK_PORT        "XS1_PORT_1J"
@@ -49,6 +55,7 @@ using namespace std;
 #define TX_RDY_OUT_PORT "XS1_PORT_1K"
 #define TX_RDY_IN_PORT "XS1_PORT_1H"
 
+int g_rxEndDelay = RX_END_DELAY;
 
 using namespace std;
 
@@ -102,12 +109,14 @@ class USBRxToken: public USBEvent
     protected:
         unsigned char pid;
         unsigned char ep;
+        bool valid;
 
     public:
         USBRxToken();
-        USBRxToken(unsigned char p, unsigned char e):USBEvent(tok) {pid = p; ep=e;}// Contstructor
+        USBRxToken(unsigned char p, unsigned char e, bool v):USBEvent(tok) {pid = p; ep=e; valid=v;}// Contstructor
         int GetPid() {return pid;}
         int GetEp() {return ep;}
+        bool GetValid() {return valid;}
 };
 
 class USBTxPacket: public USBEvent 
@@ -278,12 +287,12 @@ void drive_port(const char *core, const char *port, XsiPortData mask, XsiPortDat
     if(strcmp(port, CLK_PORT) == 0)
     {
        portString = "CLK_PORT"; 
-       fprintf(stdin, "TB: Driving %s : %x\n", portString, value);
-       fprintf(stdout, "TB: Driving %s : %x\n", portString, value);
+       //fprintf(stdin, "TB: Driving %s : %x\n", portString, value);
+       //fprintf(stdout, "TB: Driving %s : %x\n", portString, value);
     }
     else
     {
-        fprintf(stdout, "TB: Driving %s : %x\n", port, value);
+        //fprintf(stdout, "TB: Driving %s : %x\n", port, value);
     }
 
 
@@ -327,6 +336,7 @@ typedef enum USBState {
                             RX_TOKEN_DELAY3,
                             RX_TOKEN_EP1,
                             RX_TOKEN_EP2,
+                            RX_DATA_END,
                             TX_DATA,
                             TX_DATA_WAIT,
                         };
@@ -455,7 +465,7 @@ USBState usb_rising(USBState curState, node *head)
 
         case IN_DELAY:
 
-            fprintf(stdout, "TB: IN_DELAY (%d)\n", g_delayCount);
+            //fprintf(stdout, "TB: IN_DELAY (%d)\n", g_delayCount);
 
             drive_port("stdcore[0]", RX_RXA_PORT, 0x1, 0);
             drive_port("stdcore[0]", RX_RXV_PORT, 0x1, 0);
@@ -672,8 +682,14 @@ USBState usb_falling(USBState curState)
             /* Valid token high also */
             drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, myUsbRxToken->GetEp());
             drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 1);
-            drive_port("stdcore[0]", V_TOK_PORT, 0xFF, 1);
-            
+            if(myUsbRxToken->GetValid()==true)
+            {
+                drive_port("stdcore[0]", V_TOK_PORT, 0xFF, 1);
+            }
+            else
+            {
+                drive_port("stdcore[0]", V_TOK_PORT, 0xFF, 0);
+            }
             nextState = RX_TOKEN_EP2;
             break;
 
@@ -702,13 +718,26 @@ USBState usb_falling(USBState curState)
             if(g_rxDataIndex == g_rxDataCount)
             {
                     /* Return to start state */
-                    drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 0);
+                    //drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 0);
                     drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 0);
                     drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0);
-                    nextState = START;
+                    nextState = RX_DATA_END;
+                    g_rxEndDelay = RX_END_DELAY;
 
                     fprintf(stdout, "TB: EN OF RX DATA\n");
             }
+            break;
+
+        case RX_DATA_END:
+                
+            g_rxEndDelay--;
+
+            if(g_rxEndDelay < 0)
+            {
+                drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 0);
+                nextState = START;
+            }
+                
             break;
 
         default:
@@ -840,36 +869,41 @@ void AddList(testnode **testhead, int i)
 #define RX_PKTLENGTH (RX_DATALENGTH+3)
 
 int counter = 0;
-unsigned char g_txDataVal = 1;
-unsigned char g_rxDataVal = 1;
+unsigned char g_rxDataVal[5] = {1,1,1,1,1};
+unsigned char g_txDataVal[5] = {1,1,1,1,1};
 
 unsigned char g_pidTableIn[16];
 unsigned char g_pidTableOut[16];
 
-//eventIndex = AddInTransfer(UsbEventList, eventIndex, 1, 10);
-/* TODO:
+//eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, 10);
+/* NOTES:
+ * We need badCrc AND handshake flags to deal with Iso endpoints
+ *
+ * TODO:
  * - timeout value
  * - Could take a hex value for handshake not 1 or 0 (0 would mean none)
+ * 
+ * Restrictions: 
+ * - Can't send a handshake of 0x00 - passing 0 in for handshake will cause no handshake to be sent 
  */
-int AddInTransfer(USBEvent **UsbEventList, int eventIndex, int epNum, int length, int handshake)
+int AddInTransaction(USBEvent **UsbEventList, int eventIndex, int epNum, int length, int badCrc, unsigned char handshake)
 {
     unsigned char *data = new unsigned char[length];
     unsigned char *packet = new unsigned char[length+3]; /* +3 for PID and CRC */
     unsigned char *dataAck = new unsigned char[1];
-    dataAck[0] = PID_ACK;
+    dataAck[0] = handshake;
 
     /* Populate expected data */
     for (int i = 0; i< length; i++)
     {
-        data[i] = g_txDataVal++;
+        data[i] = g_txDataVal[epNum]++;
     }
 
     /* Create good CRC */
     unsigned crc = GenCrc16(data, length);
 
-    /* PID and toggle*/
+    /* PID */
     packet[0] = g_pidTableIn[epNum];
-    g_pidTableIn[epNum] ^= 0x88;
    
     for(int i = 0; i < length; i++)
     {
@@ -880,27 +914,46 @@ int AddInTransfer(USBEvent **UsbEventList, int eventIndex, int epNum, int length
     packet[length+2] = (crc>>8);
 
     /* Token: TB -> XCore */ 
-    UsbEventList[eventIndex++] = new USBRxToken(PID_IN, epNum);
+    UsbEventList[eventIndex++] = new USBRxToken(PID_IN, epNum, true);
 
     /* Data: XCore -> TB */
     UsbEventList[eventIndex++] = new USBTxPacket(length+3, packet, 200);
  
     UsbEventList[eventIndex++] = new USBDelay(15);
 
-    if(handshake)
+    if(!badCrc)
     {
-        UsbEventList[eventIndex++] = new USBRxPacket(1, dataAck);
+        if(handshake)
+        {
+            UsbEventList[eventIndex++] = new USBRxPacket(1, dataAck);
+
+            if(handshake != PID_ACK)
+            {
+                /* We expect a re-send */
+                g_txDataVal[epNum]-=length;
+            }
+            else
+            {
+                /* toggle PID */
+                g_pidTableIn[epNum] ^= 0x88;
+            }
+        }
+        else
+        {
+            /* If no handshake then ISO.. dont don anything... */
+        }
     }
     else
     {
-        g_txDataVal-=length;
+        /* Emulate bad crc by not sending ack - we expect a resend*/
+        g_txDataVal[epNum]-=length;
     }
     return eventIndex;
 }
 
-int AddOutTransfer(USBEvent **UsbEventList, int eventIndex, int epNum, int length, int badCrc)
+int AddSetupTransaction(USBEvent **UsbEventList, int eventIndex, int epNum, unsigned char dataPid, uint length, int badCrc, int handshake, bool valid)
 {
-     unsigned char *data = new unsigned char[length];
+    unsigned char *data = new unsigned char[length];
     unsigned char *packet = new unsigned char[length+3]; /* +3 for PID and CRC */
     unsigned char *dataAck = new unsigned char[1];
     dataAck[0] = PIDn_ACK;
@@ -908,16 +961,24 @@ int AddOutTransfer(USBEvent **UsbEventList, int eventIndex, int epNum, int lengt
     /* Populate expected data */
     for (int i = 0; i< length; i++)
     {
-        data[i] = g_rxDataVal++;
+        data[i] = g_rxDataVal[epNum]++;
     }
 
     /* Create good CRC */
     unsigned crc = GenCrc16(data, length);
 
     /* PID and toggle */
-    packet[0] = g_pidTableOut[epNum];
-    g_pidTableOut[epNum] ^= 0x88;
+    if(dataPid != 0)
+    {
+        g_pidTableOut[epNum] = dataPid;
+    }    
     
+    packet[0] = g_pidTableOut[epNum];
+
+    /* Dont toggle pid if we know we are sending a bad crc.. */
+    if(!badCrc)
+        g_pidTableOut[epNum] ^= 0x8;
+
     for(int i = 0; i < length; i++)
     {
         packet[i+1] = data[i];
@@ -928,21 +989,109 @@ int AddOutTransfer(USBEvent **UsbEventList, int eventIndex, int epNum, int lengt
         packet[length+1] = crc & 0xff;
         packet[length+2] = (crc>>8);
     }
+    else
+    {
+        /* Set the CRC to something weird.. */
+        packet[length+1] = 0xff;
+        packet[length+2] = 0xff;
+    }
 
-    UsbEventList[eventIndex++] = new USBRxToken(PID_OUT,epNum);
+    UsbEventList[eventIndex++] = new USBRxToken(PID_SETUP,epNum, valid);
     UsbEventList[eventIndex++] = new USBDelay(40);
     UsbEventList[eventIndex++] = new USBRxPacket(length+3, packet); /* +3 for PID and CRC */
 
-    if(!badCrc)
+    if(valid)
     {
-        UsbEventList[eventIndex++] = new USBTxPacket(1, dataAck, 30);
+        if(handshake && !badCrc)
+        {
+            UsbEventList[eventIndex++] = new USBTxPacket(1, dataAck, 30);
+        }
+
+        if(badCrc)
+        {
+            /* If CRC is bad then dont expect handshake.  We need to resend */
+            g_rxDataVal[epNum] -= length;
+        }
     }
     else
     {
-        /* If CRC is bad then dont expect handshake.  We need to resend */
-        g_rxDataVal -= length;
+        g_rxDataVal[epNum] -= length;
     }
 
+    return eventIndex;
+}
+
+
+int g_numTests = 0;
+
+
+
+int AddOutTransaction(USBEvent **UsbEventList, int eventIndex, int epNum, unsigned char dataPid, uint length, int badCrc, int handshake, bool valid)
+{
+    unsigned char *data = new unsigned char[length];
+    unsigned char *packet = new unsigned char[length+3]; /* +3 for PID and CRC */
+    unsigned char *dataAck = new unsigned char[1];
+    dataAck[0] = PIDn_ACK;
+
+    /* Populate expected data */
+    for (int i = 0; i< length; i++)
+    {
+        data[i] = g_rxDataVal[epNum]++;
+    }
+
+    /* Create good CRC */
+    unsigned crc = GenCrc16(data, length);
+
+    /* PID and toggle */
+    if(dataPid != 0)
+    {
+        g_pidTableOut[epNum] = dataPid;
+    }    
+    
+    packet[0] = g_pidTableOut[epNum];
+
+    /* Dont toggle pid if we know we are sending a bad crc.. */
+    if(!badCrc)
+        g_pidTableOut[epNum] ^= 0x8;
+
+    for(int i = 0; i < length; i++)
+    {
+        packet[i+1] = data[i];
+    }
+ 
+    if(!badCrc)
+    {   
+        packet[length+1] = crc & 0xff;
+        packet[length+2] = (crc>>8);
+    }
+    else
+    {
+        /* Set the CRC to something weird.. */
+        packet[length+1] = 0xff;
+        packet[length+2] = 0xff;
+    }
+
+    UsbEventList[eventIndex++] = new USBRxToken(PID_OUT,epNum, valid);
+    UsbEventList[eventIndex++] = new USBDelay(40);
+    UsbEventList[eventIndex++] = new USBRxPacket(length+3, packet); /* +3 for PID and CRC */
+
+    if(valid)
+    {
+        if(handshake && !badCrc)
+        {
+            UsbEventList[eventIndex++] = new USBTxPacket(1, dataAck, 30);
+        }
+
+        if(badCrc)
+        {
+            /* If CRC is bad then dont expect handshake.  We need to resend */
+            g_rxDataVal[epNum] -= length;
+        }
+    }
+    else
+    {
+        g_rxDataVal[epNum] -= length;
+    }
 
     return eventIndex;
 }
@@ -950,11 +1099,11 @@ int main(int argc, char **argv)
 {
     parse_args(argc, argv);
 
-    //fprintf(stdout, "Running XUD testbench\n");
-
     // Empty linked list
     node *head = NULL;
 
+    
+    
     /* Init port state */
     drive_port("stdcore[0]", RX_RXA_PORT, 0x1, 0);
     drive_port("stdcore[0]", RX_RXV_PORT, 0x1, 0);
@@ -975,11 +1124,15 @@ int main(int argc, char **argv)
     int len = 0;
     int ep  = 0;
     int handshake = 1;
+    int badcrc = 0;
+    bool valid = true;
+    unsigned char dataPid = 0;
+    int newlen = 0;
 
     for (int i = 0; i < 16; i++)
     {
         g_pidTableIn[i] = PIDn_DATA0;
-        g_pidTableOut[i] = PIDn_DATA0;
+        g_pidTableOut[i] = PID_DATA0;
     }
     
     int eventIndex = 0;   
@@ -1008,46 +1161,342 @@ int main(int argc, char **argv)
     USBEvent *UsbEventList[NUM_EVENTS];
 
     /* Create test packet list */
-    UsbEventList[eventIndex++] = new USBDelay(1200);
+    UsbEventList[eventIndex++] = new USBDelay(1500);
+
+#if 1
+    /**** Simple control transfer test 
+     * Note Payload should *always* be 8 bytes
+     * Note Device should *never* NAK a SETUP 
+     * Data PID *always* DATA0
+     */
+     
+    valid = true;
+    ep = 0;
+    badcrc = 0;
+    handshake = 1;
+    dataPid = PID_DATA0;
+
+    /* Simulate a SET request */
+    /* SETUP Stage */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddSetupTransaction(UsbEventList, eventIndex, 0, dataPid, 8, badcrc, handshake, valid);
+
+    /* Data Stage*/
+    dataPid = 0;
+    badcrc = 0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH, badcrc, 1, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
     
-    eventIndex = AddOutTransfer(UsbEventList, eventIndex, 1, RX_DATALENGTH, 0); /* EP, Length */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH+2, badcrc, 1, true); /* EP, Length */
+
+    /* Status stage - zero length IN */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    g_pidTableIn[0] = PID_DATA1;
+
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, 0, badcrc,  PID_ACK); /* EP, Length, handshake */
+
+#if 1
+    /* Simulate a GET request */
+     /* SETUP Stage */
+    dataPid = PID_DATA0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddSetupTransaction(UsbEventList, eventIndex, 0, dataPid, 8, badcrc, handshake, valid);
+
+    /* Data stage IN */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    /* Need to reset PID toggling on a setup */
+    g_pidTableIn[0] = PID_DATA1;
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
+
+    /* Status stage - zero length OUT (DATA1 PID) */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, PID_DATA1, 0, 0, 1, true); /* EP, Length */
+    
+    /****/
+#endif
+
+#if 1
+/**** Test bad CRC in OUT data */
+    badcrc = 1;
+    dataPid = 0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
+    
+    /* We should not receive ACK from XCore (due to bad CRC) - re-send same packet */
+    badcrc = 0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
+
+    /* Send another to check things are okay.. */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, badcrc, 1, true); /* EP, Length */
+    /* End test */
+#endif
+
+
+#if 1
+#if 1
+    /***** Test out of sequence OUT data PIDS - i.e. situation where XCore ack didn't make it to host 
+     * i.e. PID sequence DATA0 DATA1 DATA1 DATA0
+     * Expected behaviour is that the second DATA1 packet is ACKed but the data is junked.
+     * USB Spec page 159
+     */
+    valid = true;
+    badcrc = 0;
+    handshake = 1;
+    dataPid = PID_DATA1;
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
+     
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    g_rxDataVal[1] -= RX_DATALENGTH; /* Manual reset of length counter */
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
 
     UsbEventList[eventIndex++] = new USBDelay(500);
+    /*****/
+#endif
 
-    eventIndex = AddInTransfer(UsbEventList, eventIndex, 1, RX_DATALENGTH, 1); /* EP, Length */
+#if 1
+    /***** Basic OUT Testing with different tail lengths */
+    dataPid = 0;
+    badcrc = 0;
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
+    
 
-    UsbEventList[eventIndex++] = new USBDelay(50);
-    eventIndex = AddOutTransfer(UsbEventList, eventIndex, 1, RX_DATALENGTH, 0); /* EP, Length */
-    UsbEventList[eventIndex++] = new USBDelay(500);
-    eventIndex = AddInTransfer(UsbEventList, eventIndex, 1, RX_DATALENGTH, 0); /* EP, Length */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, 0, 1, true); /* EP, Length */
+    
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+2, 0, 1, true); /* EP, Length */
 
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+3, 0, 1, true); /* EP, Length */
+    /*End test */
+#endif
+
+#if 1
+    /**** Test bad CRC in OUT data */
+    badcrc = 1;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
+    
+    /* We should not receive ACK from XCore (due to bad CRC) - re-send same packet */
+    badcrc = 0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
+
+    /* Send another to check things are okay.. */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, badcrc, 1, true); /* EP, Length */
+    /* End test */
+#endif
+
+#if 1
+    /**** Test OUT zero length */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, 0, badcrc, 1, true); /* EP, Length */
+
+    /* Send another to make sure all okay - have to allow bigger delays for checks for longer packets */
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, 40, badcrc, 1, true); /* EP, Length */
+    
     UsbEventList[eventIndex++] = new USBDelay(300);
-    eventIndex = AddOutTransfer(UsbEventList, eventIndex, 1, 20, 0); /* EP, Length */
-    UsbEventList[eventIndex++] = new USBDelay(500);
-    eventIndex = AddInTransfer(UsbEventList, eventIndex, 1, RX_DATALENGTH,  1); /* EP, Length, badcrc, handshake */
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, 41, badcrc, 1, true); /* EP, Length */
 
-    UsbEventList[eventIndex++] = new USBDelay(50);
-    eventIndex = AddOutTransfer(UsbEventList, eventIndex, 1, 10, 1); /* EP, Length */
-  
-    len = 11;
-    UsbEventList[eventIndex++] = new USBDelay(50);
-    eventIndex = AddOutTransfer(UsbEventList, eventIndex, 1, len, 0); /* EP, Length */
-    UsbEventList[eventIndex++] = new USBDelay(50);
-    eventIndex = AddInTransfer(UsbEventList, eventIndex, 1, 20,  1); /* EP, Length, handshake */
-    UsbEventList[eventIndex++] = new USBDelay(50);
-    eventIndex = AddInTransfer(UsbEventList, eventIndex, 1, len,  1); /* EP, Length, handshake */
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, 42, badcrc, 1, true); /* EP, Length */
 
-    /* ISO ep tests - no handshaking */
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, 43, badcrc, 1, true); /* EP, Length */
+
+    /* End test */
+#endif
+
+#if 1 
+    /**** ISO OUT tests - no handshaking */
     ep = 2;
     handshake = 0;
-    UsbEventList[eventIndex++] = new USBDelay(50);
-    eventIndex = AddOutTransfer(UsbEventList, eventIndex, ep, len, handshake); /* EP, Length */
-    UsbEventList[eventIndex++] = new USBDelay(50);
-    eventIndex = AddInTransfer(UsbEventList, eventIndex, ep, len,  handshake); /* EP, Length, handshake */
-    UsbEventList[eventIndex++] = new USBDelay(50);
-    eventIndex = AddInTransfer(UsbEventList, eventIndex, ep, len, handshake); /* EP, Length, handshake */
+    badcrc = 0;
+    len = RX_DATALENGTH;
+    dataPid = PID_DATA0;
+    
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, dataPid, len, badcrc, handshake, true); /* EP, Length */
+    
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, dataPid, len+1, badcrc, handshake, true); /* EP, Length */
+    
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, dataPid, len+2, badcrc, handshake, true); /* EP, Length */
+  
+    /* Zero length ISO test */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, dataPid, 0, badcrc, handshake, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, dataPid, len+3, badcrc, handshake, true); /* EP, Length */
 
 
+#endif
+#endif
+#if 1
+#if 1 
+    /**** Basic bulk IN test */
+    dataPid = 0;
+    badcrc = 0;
+    ep = 1;
+    handshake = PID_ACK;
+    newlen = 0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, dataPid, newlen, 0, 1, true); 
+
+    UsbEventList[eventIndex++] = new USBDelay(500);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, ep, RX_DATALENGTH+1, badcrc, handshake); 
+    
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, dataPid, newlen, 0, 1, true); 
+
+    /* Test some more lengths... */
+    for(int i = 0; i< 30; i++)
+    {
+        UsbEventList[eventIndex++] = new USBDelay(100);
+        eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, dataPid, newlen+1+i, 0, 1, true); 
+
+
+        UsbEventList[eventIndex++] = new USBDelay(100);
+        eventIndex = AddInTransaction(UsbEventList, eventIndex, ep, newlen+i, badcrc, handshake); 
+    }
+    /****/
+#endif
+#endif
+
+#if 1
+    /* IN ISO */
+    ep = 2;
+    handshake = 0;
+    newlen = 0;
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, PID_DATA0, newlen, 0, handshake, true); 
+
+    UsbEventList[eventIndex++] = new USBDelay(500);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, ep, RX_DATALENGTH, badcrc, handshake); 
+
+    UsbEventList[eventIndex++] = new USBDelay(500);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, ep, newlen, badcrc, 0); 
+ 
+    for(int i = 0; i < 40; i++)
+    { 
+        UsbEventList[eventIndex++] = new USBDelay(100);
+        eventIndex = AddOutTransaction(UsbEventList, eventIndex, ep, PID_DATA0, newlen+1+i, 0, handshake, true); 
+   
+        UsbEventList[eventIndex++] = new USBDelay(100);
+        eventIndex = AddInTransaction(UsbEventList, eventIndex, ep, newlen+i, badcrc, 0); 
+    }
+
+#endif
+#endif
+
+#if 1
+    /**** Test emulation of BAD crc for IN - no ACK from host. We expect a resend of same data */
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
+    UsbEventList[eventIndex++] = new USBDelay(500);
+    
+    UsbEventList[eventIndex++] = new USBDelay(500);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, 30, badcrc, PID_ACK); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(500);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, badcrc, PID_ACK); /* EP, Length */
+
+
+    //badcrc = 1;
+    //eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, badcrc, 0); /* EP, Length */
+    
+    badcrc = 1;
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, badcrc, PID_ACK); /* EP, Length */
+
+    badcrc = 0;
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, badcrc, PID_ACK); /* EP, Length */
+    
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, badcrc, PID_ACK); /* EP, Length */
+    /*****/
+#endif
+
+#if 1 
+    /***** Test IN with BAD handshake */
+    len = RX_DATALENGTH;
+    badcrc = 0;
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, badcrc,  0xFF); 
+
+    /* Expect resend of same data here... */
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, badcrc, PID_ACK); 
+
+    /*****/
+#endif
+
+
+    /*** Test the shared thread EP model (EP's 3+4) */
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 3, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 3, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
+
+     UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 4, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 4, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 3, RX_DATALENGTH, badcrc, PID_ACK); 
+
+#if 0
+    /***** Test some invalid IN tokens */
+    UsbEventList[eventIndex++] = new USBDelay(50);
+ 
+    UsbEventList[eventIndex++] = new USBRxToken(PID_IN, 1, false);
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    
+    UsbEventList[eventIndex++] = new USBRxToken(PID_IN, 9, false); /* odd ep */
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    
+    UsbEventList[eventIndex++] = new USBRxToken(0x56, 1, false); /* Weird pid */
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    
+    /* Invalid out transfer */
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 5, RX_DATALENGTH, 0, 1, false); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    
+    /* Send good out transfer to check everything okay */
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, 0, 1, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(300);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 1, RX_DATALENGTH, badcrc, PID_ACK); /* EP, Length */
+#endif
 
     /* Must give enough delay for exit() on xcore to run .. this is a TODO item */
     UsbEventList[eventIndex++] = new USBDelay(500);

@@ -1,7 +1,6 @@
 /** @file      xud.h
   * @brief     User defines and functions for XMOS USB Device Layer 
   * @author    Ross Owen, XMOS Limited
-  * @version   0.9
   **/
 
 #ifndef XUD_H
@@ -10,14 +9,9 @@
 #include <print.h>
 #include <xs1.h>
 
-#ifdef GLX
-#define GLX 1
-#endif
-
 /* Arch type defines */
 typedef unsigned char 	uint8;
 typedef unsigned int 	uint32;
-
 
 /**
  * @var     typedef XUD_EpType
@@ -75,12 +69,13 @@ inline int XUD_GetData_NoReq(XUD_ep c, unsigned char buffer[]);
 
 /** XUD_GetSetupData
  *  @brief      Gets a data from XUD
- *  @param      c   Out channel from XUD
+ *  @param      o   Out ep from XUD
+ *  @param      i   In ep to XUD
  *  @param      buffer Buffer to store received data into
  *  @return     Datalength (in bytes) 
  *  @TODO       Use generic GetData from this 
  */
-int XUD_GetSetupData(XUD_ep c, unsigned char buffer[]); 
+int XUD_GetSetupData(XUD_ep o, XUD_ep i, unsigned char buffer[]); 
 
 int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 int XUD_SetData_NoReq(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex);
@@ -196,25 +191,25 @@ int XUD_GetBuffer(XUD_ep c, unsigned char buffer[]);
 
 /** XUD_GetSetupBuffer() 
   * @brief  Request setup data from usb buffer for a specific EP, pauses until data is available.  
-  * @param  c Data channel from XUD
+  * @param  o EP from XUD
+  * @param  i EP to XUD
   * @param  buffer char buffer passed by ref into which data is returned
   * @return datalength in bytes (always 8)
   **/
-int XUD_GetSetupBuffer(XUD_ep c_out, unsigned char buffer[]);
+int XUD_GetSetupBuffer(XUD_ep o, XUD_ep i, unsigned char buffer[]);
 
 
 
 
 int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength);
-int XUD_SetBuffer_ResetPid(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned char pid);
+//int XUD_SetBuffer_ResetPid(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned char pid);
 
 /* Same as above but takes a max packet size for the endpoint, breaks up data to transfers of no 
  * greater than this.
  *
  * NOTE: This function reasonably assumes the max transfer size for an EP is word aligned  
  **/
-int XUD_SetBuffer_ResetPid_EpMax(XUD_ep c, unsigned epNum, unsigned char buffer[], 
-  unsigned datalength, unsigned epMax, unsigned char pid);
+int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, unsigned epMax);
 
 
 /** XUD_DoGetReuest()
@@ -286,80 +281,110 @@ void XUD_UnStall_Out(int epNum);
 void XUD_UnStall_In(int epNum);
 
 
+//#if 0
+//inline void XUD_SetReady(XUD_ep e, int pid)
+//{
+  //  int chan_array_ptr;
+   // int xud_chan;
+   // int my_chan;
+   // asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
+   // asm ("ldw %0, %1[1]":"=r"(xud_chan):"r"(e));
+  //  asm ("ldw %0, %1[2]":"=r"(my_chan):"r"(e));
+  //  asm ("out res[%0], %1"::"r"(my_chan),"r"(pid));  
+  //  asm ("stw %0, %1[0]"::"r"(xud_chan),"r"(chan_array_ptr));
+//}
+//#endif
 
-inline void XUD_SetReady(XUD_ep e, int pid)
+#if 1
+inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 {
     int chan_array_ptr;
     int xud_chan;
     int my_chan;
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
-    asm ("ldw %0, %1[1]":"=r"(xud_chan):"r"(e));
-    asm ("ldw %0, %1[2]":"=r"(my_chan):"r"(e));
-    asm ("out res[%0], %1"::"r"(my_chan),"r"(pid));  
-    asm ("stw %0, %1[0]"::"r"(xud_chan),"r"(chan_array_ptr));
-}
-
-#if 0
-inline void XUD_SetReady_Out(XUD_ep e, int x, unsigned bufferPtr)
-{
-    int chan_array_ptr;
-    int xud_chan;
-    int my_chan;
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
-    asm ("ldw %0, %1[1]":"=r"(xud_chan):"r"(e));
-    asm ("ldw %0, %1[2]":"=r"(my_chan):"r"(e));
-    asm ("out res[%0], %1"::"r"(my_chan),"r"(1));  
-
-    /* Store buffer pointer */
-    asm ("stw %0, %1[5]"::"r"(bufferPtr),"r"(e));
-    
-    /* Mark EP as ready with ID */
-    asm ("stw %0, %1[0]"::"r"(xud_chan),"r"(chan_array_ptr));
+  
+    asm ("stw %0, %1[3]"::"r"(bufferPtr),"r"(e));            // Store buffer 
+    asm ("stw %0, %1[0]"::"r"(e),"r"(chan_array_ptr));            
+  
 }
 #endif
 
-inline void XUD_SetReady_In(XUD_ep e, int pid, unsigned bufferPtr, int len)
+
+inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 {
     int chan_array_ptr;
     int xud_chan;
     int my_chan;
     int tail;
+    int tmp, tmp2;
+    int wordlength;
+    int taillength;
 
+    /* Knock off the tail bits */
+    wordlength = len >>2;
+    wordlength <<=2;
 
-    if(!pid)
-    {
-        asm ("ldw %0, %1[4]":"=r"(pid):"r"(e));
-        pid ^= 0x88;
-        asm ("stw %0, %1[4]"::"r"(pid),"r"(e));
-    }
- 
+    taillength = zext((len << 5),7);
+
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
-    asm ("ldw %0, %1[2]":"=r"(my_chan):"r"(e));
-    asm ("out res[%0], %1"::"r"(my_chan),"r"(pid)); 
+    
+    // Get end off buffer address
+    asm ("add %0, %1, %2":"=r"(tmp):"r"(bufferPtr),"r"(wordlength));             
 
-    tail = len & 0x3;
-    bufferPtr += (len-tail);
-    tail <<= 5;
+    asm ("neg %0, %1":"=r"(tmp2):"r"(len>>2));            // Produce negative offset from end off buffer
+
+    // Store neg index 
+    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(e));            // Store index 
+    
+    // Store buffer poinr
+    asm ("stw %0, %1[3]"::"r"(tmp),"r"(e));             
+
+    // Store tail len
+    asm ("stw %0, %1[7]"::"r"(taillength),"r"(e));             
+
+
+    asm ("stw %0, %1[0]"::"r"(e),"r"(chan_array_ptr));      // Mark ready 
+
+
+
+
+
+    //asm ("out res[%0], %1"::"r"(my_chan),"r"(pid)); 
+
+    //tail = len & 0x3;
+    //bufferPtr += (len-tail);
+    //tail <<= 5;
     
     //tmp = len << 5;
     //tmp = zext(tmp, 7);
     
     /* Output tail */
-    asm("outct res[%0], %1":: "r"(my_chan), "r"(tail));
-    asm ("ldw %0, %1[1]":"=r"(xud_chan):"r"(e));
+    //asm("outct res[%0], %1":: "r"(my_chan), "r"(tail));
+    //asm ("ldw %0, %1[1]":"=r"(xud_chan):"r"(e));
 
-    len >>= 2;
-    len = -len;
+    //len >>= 2;
+    //len = -len;
 
     /* Store buffer pointer */
-    asm ("stw %0, %1[5]"::"r"(bufferPtr),"r"(e));
+    //asm ("stw %0, %1[3]"::"r"(bufferPtr),"r"(e));            
     
     /* Store length */
-    asm ("stw %0, %1[3]"::"r"(len),"r"(e));
+    //asm ("stw %0, %1[3]"::"r"(len),"r"(e));
 
     /* Mark EP ready with pointer */
-    asm ("stw %0, %1[0]"::"r"(xud_chan),"r"(chan_array_ptr));
+    //asm ("stw %0, %1[0]"::"r"(xud_chan),"r"(chan_array_ptr));
 }
+
+inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
+{
+    //TODO is there a better way of doing this?
+    unsigned char x[1];
+
+
+    /* Now make call to standard SetReady function */
+    XUD_SetReady_In(ep, x, len);
+}
+
 
 
 #if 0

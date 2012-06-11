@@ -362,6 +362,7 @@ ConfigRxErrEventVector:
 
 ConfigRxA:
     setc       res[RXA], XS1_SETC_COND_EQ
+    setc       res[RXA], XS1_SETC_IE_MODE_EVENT
     ldc        r11, 0                       
     setd       res[r1], r11    
     ldap       r11, RxALow
@@ -454,7 +455,8 @@ SetupSuspendResetTimer:
 
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     ldw         r1, sp[11]                            // Load Valid Token port
-    ldc         r3, 0        
+    //ldc         r3, 0 
+                                          
     bu         Loop
 
 // Main IO Loop
@@ -464,15 +466,16 @@ Loop:
 NextToken:
 PreLoads:
 
-    ldc         r9, 0xa001                             // CRC16 poly, used in doRxData              
+    ldc         r9, 0xa001                      // CRC16 poly, used in doRxData              
 NextTokenAfterOut:
-    ldc         r7, 0xf335                             // TX Crc init 
+    ldc         r7, 0xf335                      // TX Crc init 
 NextTokenAfterIn:
-    ldw         r5, sp[(STACK_EXTEND+7)] //dp[chanArray]             // EP channes array
 
-    ldw         r4, sp[(STACK_EXTEND+8)]                            // Load EP channeltable 
+    ldw         r4, sp[(STACK_EXTEND+8)]        // Number of out Endpoints
+    ldw         r1, dp[flag0_port]           		             
+NextTokenAfterPing:
+    ldw         r5, sp[(STACK_EXTEND+7)]        // EP structures array - pointers to EP tables or 0
     clre
-
 Loop_BadPid: 
 
 
@@ -568,7 +571,6 @@ Pid_Data1:
 Pid_Bad:                                           // Bad PID received, ignore
     
 InvalidToken:  
-
     ldw        r10, sp[10]           		        // Load RxA Port ID (r1) 
 waitforRXALow:  
 
@@ -578,6 +580,7 @@ waitforRXALow:
 
    
     bu         Loop_BadPid                                 // Invalid token received Ignore unknown toks
+
 
 .align 4
 Return:

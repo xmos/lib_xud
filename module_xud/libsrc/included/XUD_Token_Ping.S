@@ -14,7 +14,6 @@ Pid_Ping:
 #else
     #include "XUD_G_Crc.S"                       
 #endif
-//TODO PING CURRENTLY ALWAYS ACKS
 
 LoadStatTablePing:
     ldw       r5, r5[r10]                       // Load relevant EP chanend
@@ -36,6 +35,6 @@ PrimaryBufferFull_PING:
   bu           Return_PING
 
 Return_PING:
-  bu NextToken
+  bu NextTokenAfterPing
  
     .cc_bottom Pid_Ping.func

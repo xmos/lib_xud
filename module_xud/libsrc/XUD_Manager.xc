@@ -298,11 +298,12 @@ XUD_chan epChans0[32];
 typedef struct XUD_ep_info { 
   unsigned int chan_array_ptr;
   unsigned int ep_xud_chanend;
-  unsigned int ep_client_chanend;
-  unsigned int scratch;   // 3 used for datalength in
-  unsigned int pid;      //4 
-  unsigned int scratch2; // 5 Data 
-  //unsigned int scratch3; // 5 Data (used for datalenght in)
+  unsigned int ep_client_chanend;   // 2
+  unsigned int scratch;             // 3 used for datalength in
+  unsigned int pid;                 // 4 Expected out PID 
+  unsigned int epType;              // 5 Data
+  unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN. 
+  unsigned int tailLength;           // 7 "tail" length for IN (bytes)
 } XUD_ep_info;
 
 
@@ -351,7 +352,7 @@ extern int XUD_LLD_IoLoop(
 
 // Pid sequencing tables.. note currently only supports DATA0/DATA1 sequencing
 /* TODO these should be init in loop over EP COUNT */
-unsigned char ep_pid_sequence_table_OUT[] = {PID_DATA1, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0};
+//unsigned char ep_pid_sequence_table_OUT[] = {PID_DATA1, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0};
 
 unsigned handshakeTable_IN[16];
 unsigned handshakeTable_OUT[16];
@@ -454,6 +455,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     /* Enable fast mode on thread */
     set_thread_fast_mode_on();
+//#warning XUD FAST MODE OFF!!!!!!!!!!!!!
 
     /* Setup channel event vectors */
     SetupChannelVectors(epChans0, noEpOut, noEpIn);
@@ -841,7 +843,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Reset in the ep structures */
                     for(int i = 0; i< noEpIn; i++)
                     {
-                        ep_info[noEpOut+i].pid = PIDn_DATA1;
+                        ep_info[noEpOut+i].pid = PIDn_DATA0;
                     }
 
                     /* Set default device address */
@@ -1047,6 +1049,10 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
       epStatFlagTableOut[i] = epTypeTableOut[i] & XUD_STATUS_ENABLE;
       epTypeTableOut[i] = epTypeTableOut[i] & 0x7FFFFFFF;
+      
+      ep_info[i].epType = epTypeTableOut[i];
+
+      ep_info[i].pid = PID_DATA0;
 
       handshakeTable_OUT[i] = PIDn_NAK;
     }
@@ -1069,10 +1075,12 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
         outuint(c_ep_in[i], x);
 
-        ep_info[noEpOut+i].pid = PIDn_DATA1;
+        ep_info[noEpOut+i].pid = PIDn_DATA0;
 	   
         epStatFlagTableIn[i] = epTypeTableIn[i] & XUD_STATUS_ENABLE;
         epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;
+
+        ep_info[noEpOut+i].epType = epTypeTableIn[i];
 
         handshakeTable_IN[i] = PIDn_NAK;
     }
@@ -1142,12 +1150,14 @@ void ERR_BadToken()
 #endif
 }
 
-void ERR_BadCrc()
+void ERR_BadCrc(unsigned a, unsigned b)
 {
-#ifdef XUD_DEBUG_VERSION
-  printstrln("BAD DATA CRC");
+    printhex(a);
+    printhexln(0xffff);
+    printhex(b);
+
   while(1);
-#endif
+//#endif
 }
 
 void ERR_SetupBuffFull()

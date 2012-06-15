@@ -12,8 +12,8 @@ Pid_Out:
     inpw       r10, res[RXD], 8;                // Read EP Number */ 
     shr        r10, r10, 24;                    // Shift off junk */  
 
-    in         r11, res[r1];  
-    bf         r11, InvalidToken;               // If VALID_TOKEN not high, ignore token */
+    in         r4, res[r1];  
+    bt         r4, InvalidToken;               // If VALID_TOKEN not high, ignore token */
 #else
     // ARCH_G
     #include "XUD_G_Crc.S"               
@@ -24,11 +24,11 @@ Pid_Out:
     ldw        r1, r3[3]                        // Load buffer
 
 OutReady:
-    ldw        r4, r3[5]                        // Load EP type
     
     bl         doRXData
         
 CheckEpTypeOut:    
+    //ldw        r4, r3[5]                        // Load EP type
     //bf         r4, StoreTailDataOut             // ISO endpoint 
 
       
@@ -52,18 +52,18 @@ StoreTailDataOut:
     ldw        r5, r11[1]                       // Load chanend
                                                 // TODO... CLEAR READY!!
         
-    out        res[r5], r3                      // Output datalength (words)
+    out        res[r5], r4                     // Output datalength (words)
     outt       res[r5], r8                      // Send tail length
 
 BadDataCrcOut:
     bu        NextTokenAfterOut
 
 ReportBadCrc: 
-    ecallf     r1
-    mov         r0, r11 
+    //ecallf     r1
+    //mov         r0, r11 
     //mov         r1, r11   
-    bl        ERR_BadCrc     
-    bu ReportBadCrc                         // Don't notify EP thread
+    //bl        ERR_BadCrc     
+    //bu ReportBadCrc                         // Don't notify EP thread
     bu        NextToken
 
 // Various Error handling functions -------------------------------------------------------------------

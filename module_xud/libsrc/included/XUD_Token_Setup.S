@@ -18,85 +18,65 @@ WaitForEndDataPacket:
 .align 4
 .skip 0
 doRXData:
-    ldc         r7, 0x3334                      // CRC16 init (out)
- 
-
-
     ldw         r11, sp[10]           	        // Load RxA Port ID (r1) 
-    eeu         res[r11]            
     
-    
- 
-    inpw        r8, res[RXD], 8 
+    inpw        r8, res[RXD], 8
+GotRxPid:
     stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
-    ldc         r3, 0                          // Zero buffer index TODO can we do this better?
-    setsr       1                               // Enable thread events
-                
+    eeu         res[r11] 
+
 NextRxWord:				                        // RXD port has event vector here
-    in 	        r8, res[RXD]
-    crc32       r7, r8, r9
-    stw         r8, r1[r3]
-    add         r3, r3, 1
-    //waiteu 
-
-    in 	        r8, res[RXD]
-    crc32       r7, r8, r9
-    stw         r8, r1[r3]
-    add         r3, r3, 1
-
-    in 	        r8, res[RXD]
-    crc32       r7, r8, r9
-    stw         r8, r1[r3]
-    add         r3, r3, 1
-
-    bu          NextRxWord
+    in 	        r11, res[RXD]
+    stw         r11, r1[r4]
+    add         r4, r4, 1
+    crc32       r6, r11, r9
 .xtabranch NextRxWord, RxALow
-
+    //waiteu
+    bu          NextRxWord
 
 
 /////////////////////////////////////////////////////////////////////////////
 .align 16
-.skip 8
+.skip 10
 RxALow:
-clre
     endin   r8, res[RXD]
 XUD_OUT_RxTail:
-    in      r6, res[RXD]
-    .xtabranch OutTail0, OutTail1, OutTail2, OutTail3, OutTail4, OutTail5
+    in      r7, res[RXD]
+    
+.xtabranch OutTail0, OutTail1, OutTail2, OutTail3, OutTail4, OutTail5
     bru	    r8
 
 // Word aligned data (0 byte tail)
 .align 16
 OutTail0:
-    crc32   r7, r8, r9                   // CRC zero step                    
+    //crc32   r6, r11, r9                   // CRC zero step                    
+    crc32   r6, r8, r9                   // CRC zero step                    
     ldc     r11, 0x7000                  // Load relevant CRC magic number
-    //eq      r9, r11, r7
-    ecallf  r3
     bu      CheckCrc16
 
 // 1 Tail Byte
 .align 16
 OutTail1:
     ldc     r11, 0x80be                   // Load CRC magic number             
-    shr     r6, r6, 24                    // Shift off junk
-    crc32   r7, r6, r9
+    shr     r7, r7, 24                    // Shift off junk
+    crc32   r6, r7, r9
     bu      CheckCrc16
 
 // Two Tail Bytes
 .align 16
 OutTail2:
     ldc     r11, 0x3ffe
-    shr     r6, r6, 16
-    crc32   r7, r6, r9
+    shr     r7, r7, 16
+    crc32   r6, r7, r9
     BRFU_u6 CheckCrc16
 
 // Three Tail Bytes
 .align 16
 OutTail3:
     ldc    r11, 0        
-    shr    r6, r6, 8
-    crc32  r7, r6, r9
-    crc32  r7, r11, r9 
+    shr    r7, r7, 8
+    crc32  r6, r7, r9
+    crc32  r6, r11, r9 
     //ldc    r11, 0x0070
     ldw      r11, sp[12]
     BRFU_u6     CheckCrc16
@@ -125,12 +105,12 @@ SendNak:
 .align 4
 .skip 0
 CheckCrc16:    
-    stw         r6, r1[r3]                      // Store last data
-    eq          r1, r7, r11                     // Check for good CRC16
+    stw         r7, r1[r4]                      // Store last data
+    eq          r1, r6, r11                     // Check for good CRC16
        
 doRXDataReturn:
-    ldw         r4, dp[flag1_port]
-    in          r4, res[r4]
+    ldw         r3, dp[flag1_port]
+    in          r3, res[r3]
     retsp       0
     
     .cc_bottom doRXData.func
@@ -155,8 +135,8 @@ Pid_Setup:
     inpw      r10, res[RXD], 8;                        /* Read EP Number */ 
     shr       r10, r10, 24;                            /* Shift off junk */  
 
-    in         r11, res[r1];  
-    bf         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
+    in         r4, res[r1]; 
+    bt         r4, InvalidToken;                       /* If VALID_TOKEN not high, ignore token - PORT INVERTED*/
 #else
     #include "XUD_G_Crc.S"       
 #endif
@@ -173,7 +153,7 @@ LoadSetupBuffer:
     bl          doRXData			            // RXData writes available data to buffer and does crc check. 
                                                 // r7: CRC check outcome	
                                                 // r8: Data tail size (bytes)   
-    bf          r1, BadDataCrcSetup
+    //bf          r1, BadDataCrcSetup
 
 //CheckEpType:                                  // Always handshake for control EP/Setup transactions
 //  bf      r1, StoreTailData                       

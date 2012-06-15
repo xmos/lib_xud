@@ -454,7 +454,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     XUD_USB_Done = 0;
 
     /* Enable fast mode on thread */
-    set_thread_fast_mode_on();
+    //set_thread_fast_mode_on();
 //#warning XUD FAST MODE OFF!!!!!!!!!!!!!
 
     /* Setup channel event vectors */
@@ -546,10 +546,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   //set_port_sample_delay(p_usb_rxd);
   //set_port_sample_delay(rx_rdy);
 
+  set_port_inv(flag0_port);
+
   start_clock(tx_usb_clk);
   start_clock(rx_usb_clk);
   configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
   configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
+
+
 #endif
 
     while(!XUD_USB_Done)
@@ -731,6 +735,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Configure ports and clock blocks for use with UIFM */
         XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
 
+        set_pad_delay(flag1_port, 5);
+        set_port_inv(flag0_port);
        
         /* Enable UIFM and wait for connect */
         XUD_UIFM_Enable(UIFM_MODE);

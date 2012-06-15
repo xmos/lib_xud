@@ -353,6 +353,7 @@ ConfigRxDEventVector:                         // Configure events
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT  
     ldap        r11, NextRxWord
     setv        res[RXD], r11
+    eeu         res[RXD]
 
 ConfigRxErrEventVector:
     //setc       res[RXE], XS1_SETC_IE_MODE_EVENT 
@@ -450,7 +451,7 @@ SetupSuspendResetTimer:
 
     setc       res[r10], XS1_SETC_COND_AFTER
     setc       res[r10], XS1_SETC_IE_MODE_INTERRUPT 
-    eeu        res[r10]                         // Enable events/interupts on resource 
+    //eeu        res[r10]                         // Enable events/interupts on resource 
     setsr       0x2                             // Enable thread interrupts
 
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
@@ -465,17 +466,17 @@ SetupSuspendResetTimer:
 Loop:
 NextToken:
 PreLoads:
-
     ldc         r9, 0xa001                      // CRC16 poly, used in doRxData              
 NextTokenAfterOut:
     ldc         r7, 0xf335                      // TX Crc init 
 NextTokenAfterIn:
-
+    ldc         r6, 0x3334                      // CRC16 init (out)
     ldw         r4, sp[(STACK_EXTEND+8)]        // Number of out Endpoints
     ldw         r1, dp[flag0_port]           		             
 NextTokenAfterPing:
     ldw         r5, sp[(STACK_EXTEND+7)]        // EP structures array - pointers to EP tables or 0
     clre
+    setsr       1                               // Enable thread events
 Loop_BadPid: 
 
 

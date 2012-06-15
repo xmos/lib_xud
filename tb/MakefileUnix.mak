@@ -1,4 +1,4 @@
-TOOLS_ROOT = /Applications/XMOS_11.11.0/
+TOOLS_ROOT = /Applications/XMOS_12.6.0/
 #../../..
 include $(TOOLS_ROOT)/src/MakefileUnix.mak
 

@@ -32,6 +32,7 @@ using namespace std;
 
 #define PIDn_ACK     0xd2
 #define PIDn_DATA0   0xC3
+#define PIDn_DATA1   0x4B
 
 
 #define MAX_INSTANCES 256
@@ -1163,7 +1164,7 @@ int main(int argc, char **argv)
     /* Create test packet list */
     UsbEventList[eventIndex++] = new USBDelay(1500);
 
-#if 1
+#if 0
     /**** Simple control transfer test 
      * Note Payload should *always* be 8 bytes
      * Note Device should *never* NAK a SETUP 
@@ -1195,7 +1196,7 @@ int main(int argc, char **argv)
 
     /* Status stage - zero length IN */
     UsbEventList[eventIndex++] = new USBDelay(100);
-    g_pidTableIn[0] = PID_DATA1;
+    g_pidTableIn[0] = PIDn_DATA1;
 
     eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, 0, badcrc,  PID_ACK); /* EP, Length, handshake */
 
@@ -1209,7 +1210,7 @@ int main(int argc, char **argv)
     /* Data stage IN */
     UsbEventList[eventIndex++] = new USBDelay(100);
     /* Need to reset PID toggling on a setup */
-    g_pidTableIn[0] = PID_DATA1;
+    g_pidTableIn[0] = PIDn_DATA1;
     eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
 
     UsbEventList[eventIndex++] = new USBDelay(100);
@@ -1414,7 +1415,7 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-#if 1
+#if 0
     /**** Test emulation of BAD crc for IN - no ACK from host. We expect a resend of same data */
     eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
     UsbEventList[eventIndex++] = new USBDelay(500);
@@ -1442,7 +1443,7 @@ int main(int argc, char **argv)
     /*****/
 #endif
 
-#if 1 
+#if 0
     /***** Test IN with BAD handshake */
     len = RX_DATALENGTH;
     badcrc = 0;
@@ -1458,7 +1459,7 @@ int main(int argc, char **argv)
 
 
     /*** Test the shared thread EP model (EP's 3+4) */
-    UsbEventList[eventIndex++] = new USBDelay(50);
+    UsbEventList[eventIndex++] = new USBDelay(700);
     eventIndex = AddOutTransaction(UsbEventList, eventIndex, 3, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
 
     UsbEventList[eventIndex++] = new USBDelay(50);
@@ -1473,6 +1474,8 @@ int main(int argc, char **argv)
     UsbEventList[eventIndex++] = new USBDelay(50);
     eventIndex = AddInTransaction(UsbEventList, eventIndex, 3, RX_DATALENGTH, badcrc, PID_ACK); 
 
+    UsbEventList[eventIndex++] = new USBDelay(50);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 3, RX_DATALENGTH, badcrc, PID_ACK); 
 #if 0
     /***** Test some invalid IN tokens */
     UsbEventList[eventIndex++] = new USBDelay(50);

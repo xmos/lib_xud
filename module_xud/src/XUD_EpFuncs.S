@@ -42,8 +42,18 @@ XUD_GetSetupData_NoReq:                         // Entry for _NoReq
                                                 // TODO..
 
 XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
+#ifdef ARCH_S
     ldc         r11, PID_DATA1
+#else
+    ldc         r11, PID_DATA1
+#endif    
     stw         r11, r0[4]                      // Reset OUT toggle
+
+#ifdef ARCH_S
+    ldc         r11, PIDn_DATA1
+#else
+    ldc         r11, PID_DATA1
+#endif  
 											
     stw         r11, r1[4]                      // Reset IN toggle
 
@@ -109,13 +119,54 @@ XUD_GetSetupData_ReturnOk:
     retsp    	4
 .cc_bottom XUD_GetSetupData.func
 
+
+.cc_top XUD_SetData_Select.func, XUD_SetData_Select
+
+
+//void XUD_SetData_Select(chan c, XUD_ep ep, unsigned &x);
+//                         r0,      r1           r2
+.globl   XUD_SetData_Select
+.globl   XUD_SetData_Select.nstackwords
+.linkset XUD_SetData_Select.nstackwords, 0
+
+XUD_SetData_Select:
+    entsp 4
+    stw   r4, sp[1]
+
+    in          r3, res[r0]                   // Data sent okay 
+
+XUD_SetData_LoadEpType_:
+    ldw         r11, r1[5]                      // Don't do any toggling for ISO
+    bf          r11, XUD_SetData_DonePid_
+
+XUD_SetData_PidToggle_:                          // 
+    ldw         r11, r1[4]                      // Load EP PID from structure 
+    ldc         r4, 0x88                        
+    xor         r11, r11, r4                
+    stw         r11, r1[4]                      // Store back PID
+
+XUD_SetData_DonePid_:                        
+    //ldw         r0, sp[1]                  
+    //ldw         r1, sp[2]
+    //ldw         r2, sp[3]
+    //ldw         r3, sp[4]  
+Return2_:                                       // Reg restore
+    ldw         r4, sp[1]        
+    retsp       4
+    
+.cc_bottom XUD_SetData_Select.func
+
+
+
+
+
 //void XUD_GetData_Select(chan c, XUD_ep ep, unsigned &x);
 //                         r0,      r1           r2
 .globl   XUD_GetData_Select
 .globl   XUD_GetData_Select.nstackwords
 .linkset XUD_GetData_Select.nstackwords, 0
 
-.cc_top XUD_GetData_Select.func, XUD_GetData
+.cc_top XUD_GetData_Select.func, XUD_GetData_Select
     
 XUD_GetData_Select:                             // Entry for _NoReq 
 DataEnd_:
@@ -135,11 +186,6 @@ XUD_GetData_CheckPid_:
     bt         r11, XUD_GetData_Select           // Ignore packet...
 
 XUD_GetData_PidOkay_: 
-    //stw        r11, r2[0]                       // Zero ready entry (NOTE R11 0 from branch above)  
-                                                // TODO is there a race here? Should this happen in XUD thread? 
-    
-
-
     ldw        r11, r1[5]                       // Load EP type
     bf         r11, XUD_GetData_ReturnOk_        // Jump over PID toggle for ISO  
 
@@ -170,12 +216,12 @@ Return_:
 //int XUD_GetData(XUD_ep c, unsigned char buffer[]);
 .globl   XUD_GetData
 .globl   XUD_GetData.nstackwords
-.linkset XUD_GetData.nstackwords, 4
+.linkset XUD_GetData.nstackwords, 16
 .text
 
 .cc_top XUD_GetData.func, XUD_GetData
 XUD_GetData:
-    entsp       4
+    entsp       16
     stw         r10, sp[1]
     mov        r11, r1
     //mov        r1, r0
@@ -228,14 +274,14 @@ XUD_GetData_PidToggle:
 XUD_GetData_ReturnOk:
     sub        r0, r3, 2                        // Length correction for CRC correction (return val in r0) 
     ldw         r10, sp[1]
-    retsp      4
+    retsp      16
     
 ResetSuspend:
     mkmsk      r0, 32                           // Return -1 as length
 
 Return:
     ldw         r10, sp[1]
-    retsp      4
+    retsp      16
 
 .cc_bottom XUD_GetData.func
 

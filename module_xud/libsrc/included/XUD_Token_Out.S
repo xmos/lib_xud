@@ -28,11 +28,8 @@ OutReady:
     bl         doRXData
         
 CheckEpTypeOut:    
-    //ldw        r4, r3[5]                        // Load EP type
-    //bf         r4, StoreTailDataOut             // ISO endpoint 
-
-      
-    //ecallf         r7  
+   ldw         r11, r3[5]                        // Load EP type
+    bf       r11, StoreTailDataOut             // ISO endpoint 
     bf         r1, ReportBadCrc                 // Check for bad crc
 
 
@@ -45,12 +42,8 @@ StoreTailDataOut:
     shr        r8, r8, 3                        // r8be : number of tail bits, convert to bytes
  
     ldc        r7, 0
-    //stw        r3, r5[r10]                    // Load relevant EP pointer
-    
-    ldw        r11, r5[r10]                     // Load relevant EP pointer
-    stw        r7, r5[r10]                    // Clear
-    ldw        r5, r11[1]                       // Load chanend
-                                                // TODO... CLEAR READY!!
+    stw        r7, r5[r10]                      // Clear ready
+    ldw        r5, r3[1]                        // Load EP chanend
         
     out        res[r5], r4                     // Output datalength (words)
     outt       res[r5], r8                      // Send tail length

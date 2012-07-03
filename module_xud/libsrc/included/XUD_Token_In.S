@@ -22,15 +22,11 @@
 .cc_top InNotReady.func, InNotReady
 .align 4        
 InNotReady:
-    
-    // LOAD HANDSHAKE (NAK OR STALL)   
-    //ldc       r11, PIDn_NAK			                 // TODO Ensure min inter-packet delay  
-    ldaw       r5, dp[handshakeTable_IN]                 // Load handshake table
-    ldw        r11, r5[r10]                              // Load handshake PID
-     
+    ldaw        r11, dp[handshakeTable_IN]                 // Load handshake table
+    ldw         r11, r11[r10]                              // Load handshake PID
 XUD_IN_TxNak:     
-    outpw     res[TXD], r11, 8                           // Output handshake PID       
-    bu        NextTokenAfterIn
+    outpw       res[TXD], r11, 8                           // Output handshake PID       
+    bu          NextTokenAfterInNak
 .cc_bottom InNotReady.func
 
 
@@ -130,70 +126,59 @@ XUD_IN_TxCrc_Tail1:
     outpw        res[TXD], r7, 16
     bu           DoneTail
 
+.scheduling off
 .align 64
 .skip 0
 TxTail2:
-  ldw         r6, r8[r4]                        // Load first data word
-  //in       r6, res[r5]                        // Get data word
-  //testct   r8, res[r5]
+    ldw         r6, r8[r4]                        // Load first data word
+    crc32       r7, r6, r9
 XUD_IN_TxPid_Tail2:
-    outpw    res[TXD], r11, 8                   // Out PID        
-    out      res[TXD], r6
-    crc32      r7, r6, r9
-    add       r4, r4, 1
-    //testct   r8, res[r5]					    // BREAK TIMING IF TEST CT HERE (DATA TO CRC)
-    bf         r4, TxLoop2End        
+    outpw       res[TXD], r11, 8                   // Out PID        
+    out         res[TXD], r6
+    add         r4, r4, 1
+    bf          r4, TxLoop2End        
 TxLoop2:
-    ldw       r6, r8[r4]                        // Load first data word
-    add       r4, r4, 1
-    //in       r6, res[r5]                      // Get data word
-    //testct   r11, res[r5]        
-    out      res[TXD], r6
-    crc32      r7, r6, r9
-    bt         r4, TxLoop2
+    ldw         r6, r8[r4]                        // Load first data word
+    add         r4, r4, 1
+    crc32       r7, r6, r9
+    out         res[TXD], r6
+    bt          r4, TxLoop2
 
 TxLoop2End:
     ldw         r6, r8[r4]                      // Load tail
+    crc8        r7, r11, r6, r9
     outpw       res[TXD], r6, 16 
-    crc8        r7, r6, r6, r9
-    crc8        r7, r6, r6, r9
+    crc8        r7, r11, r11, r9
     crc32       r7, r4, r9                      // r4: 0 (from bf)     
     not         r7, r7
 
 XUD_IN_TxCrc_Tail2:
     outpw       res[TXD], r7, 16
     bu          DoneTail
+.scheduling default
 
 .align 64
 .skip 0
 TxTail3:
     ldw         r6, r8[r4]                      // Load first data word
     add         r4, r4, 1
-    //in       r6, res[r5]                      // Get data word
-    //testct   r8, res[r5]
 XUD_IN_TxPid_Tail3:
     outpw    res[TXD], r11, 8                   // Out PID        
     out      res[TXD], r6
     crc32      r7, r6, r9
-    //testct   r8, res[r5]			
     bf         r4, TxLoop3End
 TxLoop3:
-    //in       r6, res[r5]                      // Get data word
-    //testct   r11, res[r5]   
     ldw         r6, r8[r4]                      // Load first data word
     add         r4, r4, 1
     out         res[TXD], r6
     crc32       r7, r6, r9
     bt          r4, TxLoop3
 TxLoop3End:
-    //inct       r6, res[r5]                      // Input end of stream token    
-    //in         r6, res[r5]                      // Input tail data        
-    // Three tail byte  
     ldw          r6, r8[r4]                      // Load tail
+    crc8         r7, r11, r6, r9
     outpw        res[TXD], r6, 24 
-    crc8         r7, r6, r6, r9
-    crc8         r7, r6, r6, r9
-    crc8         r7, r6, r6, r9
+    crc8         r7, r11, r11, r9
+    crc8         r7, r11, r11, r9
     crc32        r7, r4, r9                // r4: 0 (from bf)     
     not          r7, r7
 XUD_IN_TxCrc_Tail3:

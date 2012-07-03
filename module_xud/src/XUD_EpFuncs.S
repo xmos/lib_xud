@@ -14,6 +14,13 @@
 .text
 
 .cc_top XUD_GetSetupData.func, XUD_GetSetupData
+
+ResetSuspendSetup:
+    mkmsk      r0, 32                           // Return -1 as length
+    ldw         r10, sp[2]                        
+    ldw         r4, sp[1]    
+    retsp      4
+
 XUD_GetSetupData:
     
     entsp       4
@@ -29,7 +36,7 @@ XUD_GetSetupData_:
 
 XUD_GetSetupData_Retry: 
     testct     r11, res[r10]                      // Test whether there is a RESET/SUSPEND exception
-    bt         r11, ResetSuspend
+    bt         r11, ResetSuspendSetup
         
 XUD_GetSetupData_NoReq:                         // Entry for _NoReq 
     in         r3, res[r10]                     // Input packet "word" length 
@@ -97,26 +104,6 @@ XUD_GetSetupData_ReturnOk:
     ldw         r4, sp[1]                        
     retsp       4
 
-
-
-
-//SetupDataLoop:
- //   testct     r11,  res[r10]
-  //  bt         r11, XUD_GetSetupData_Retry
-   // in         r11,  res[r0]                  // r2: 0
-   // stw        r11,  r1[0]
-   // testct     r11,  res[r0]
-    //bt         r11, XUD_GetSetupData_Retry        
-    //in         r11,  res[r0]                  // r2: 0
-    //stw        r11,  r1[1]
-    //inct       r11,  res[r0]                  // tail or 9 for crc error
-    //sub        r11, r11, 9
-    //bf         r11, XUD_GetSetupData_Retry
-    //ldc        r11, 0
-    //stw        r11, r2[0]                        // Zero ready entry                    
-    //ldc r0, 8
-        
-    retsp    	4
 .cc_bottom XUD_GetSetupData.func
 
 
@@ -127,7 +114,7 @@ XUD_GetSetupData_ReturnOk:
 //                         r0,      r1           r2
 .globl   XUD_SetData_Select
 .globl   XUD_SetData_Select.nstackwords
-.linkset XUD_SetData_Select.nstackwords, 0
+.linkset XUD_SetData_Select.nstackwords, 4
 
 XUD_SetData_Select:
     entsp 4
@@ -169,7 +156,7 @@ Return2_:                                       // Reg restore
 .cc_top XUD_GetData_Select.func, XUD_GetData_Select
     
 XUD_GetData_Select:                             // Entry for _NoReq 
-DataEnd_:
+    ecallf     r1
     in         r3, res[r0]                      // Input packet "word" length  
     int        r11, res[r0]                     // r11 is tail length (bytes)
 
@@ -183,7 +170,8 @@ XUD_GetData_CheckPid_:
     ldw        r0, r1[4]                        // Load expected PID 
 
     xor        r11, r0, r11                     // Do the comparison
-    bt         r11, XUD_GetData_Select           // Ignore packet...
+    ecallt     r11                              //  TODO TODO TODO TODO
+    //bt         r11, XUD_GetData_Select           // Ignore packet...
 
 XUD_GetData_PidOkay_: 
     ldw        r11, r1[5]                       // Load EP type
@@ -201,6 +189,7 @@ XUD_GetData_ReturnOk_:
     
 ResetSuspend_:
     mkmsk      r0, 32                           // Return -1 as length
+    ecallt r0
     stw        r0, r2[0]
 
 Return_:

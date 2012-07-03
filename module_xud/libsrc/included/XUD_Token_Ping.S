@@ -16,8 +16,8 @@ Pid_Ping:
 #endif
 
 LoadStatTablePing:
-    ldw       r5, r5[r10]                       // Load relevant EP chanend
-    bf        r5, PrimaryBufferFull_PING
+    ldw       r11, r5[r10]                       // Load relevant EP chanend
+    bf        r11, PrimaryBufferFull_PING
   
 PrimaryBufferEmpty_PING:               // Send ACK
   nop

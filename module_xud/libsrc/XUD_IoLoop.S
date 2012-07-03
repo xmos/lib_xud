@@ -467,16 +467,20 @@ Loop:
 NextToken:
 PreLoads:
     ldc         r9, 0xa001                      // CRC16 poly, used in doRxData              
+    ldw         r5, sp[(STACK_EXTEND+7)]        // EP structures array - pointers to EP tables or 0
+
 NextTokenAfterOut:
     ldc         r7, 0xf335                      // TX Crc init 
+
 NextTokenAfterIn:
-    ldc         r6, 0x3334                      // CRC16 init (out)
-    ldw         r4, sp[(STACK_EXTEND+8)]        // Number of out Endpoints
+    ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
     ldw         r1, dp[flag0_port]           		             
-NextTokenAfterPing:
-    ldw         r5, sp[(STACK_EXTEND+7)]        // EP structures array - pointers to EP tables or 0
+NextTokenAfterInNak:
+    ldw         r4, sp[(STACK_EXTEND+8)]        // Number of out Endpoints
     clre
     setsr       1                               // Enable thread events
+
+NextTokenAfterPing:
 Loop_BadPid: 
 
 

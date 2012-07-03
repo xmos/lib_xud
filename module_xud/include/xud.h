@@ -295,6 +295,11 @@ void XUD_UnStall_In(int epNum);
 //}
 //#endif
 
+#pragma select handler
+void XUD_GetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
+#pragma select handler
+void XUD_SetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
+
 #if 1
 inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 {
@@ -307,6 +312,20 @@ inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
     asm ("stw %0, %1[0]"::"r"(e),"r"(chan_array_ptr));            
   
 }
+
+/* Pointer version..*/
+inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
+{
+    int chan_array_ptr;
+    int xud_chan;
+    int my_chan;
+    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+  
+    asm ("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer 
+    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));        
+}
+
+
 #endif
 
 
@@ -377,13 +396,41 @@ inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 
 inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
-    //TODO is there a better way of doing this?
-    unsigned char x[1];
+    int chan_array_ptr;
+    int xud_chan;
+    int my_chan;
+    int tail;
+    int tmp, tmp2;
+    int wordlength;
+    int taillength;
+
+    /* Knock off the tail bits */
+    wordlength = len >>2;
+    wordlength <<=2;
+
+    taillength = zext((len << 5),7);
+
+    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    
+    // Get end off buffer address
+    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordlength));             
+
+    asm ("neg %0, %1":"=r"(tmp2):"r"(len>>2));            // Produce negative offset from end off buffer
+
+    // Store neg index 
+    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));            // Store index 
+    
+    // Store buffer poinr
+    asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));             
+
+    // Store tail len
+    asm ("stw %0, %1[7]"::"r"(taillength),"r"(ep));             
 
 
-    /* Now make call to standard SetReady function */
-    XUD_SetReady_In(ep, x, len);
+    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));      // Mark ready 
+
 }
+
 
 
 
@@ -450,6 +497,7 @@ inline int XUD_GetData_Inline(XUD_ep e, chanend c)
 }
 #endif
 
+#if 0
 inline void XUD_SetData_Inline(XUD_ep e, chanend c)
 {
     unsigned datum;
@@ -475,6 +523,7 @@ inline void XUD_SetData_Inline(XUD_ep e, chanend c)
     (void) inuint(c);
 
 }
+#endif
 /* Error printing functions */
 #ifdef XUD_DEBUG_VERSION
 void XUD_Error(char errString[]);

@@ -21,6 +21,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #include <xs1.h>
 #include <print.h>
 #include <xclib.h>
+#include <platform.h>
 
 #include "xud.h"
 #include "usb.h"
@@ -454,7 +455,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     XUD_USB_Done = 0;
 
     /* Enable fast mode on thread */
-    //set_thread_fast_mode_on();
+    set_thread_fast_mode_on();
 //#warning XUD FAST MODE OFF!!!!!!!!!!!!!
 
     /* Setup channel event vectors */
@@ -547,6 +548,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   //set_port_sample_delay(rx_rdy);
 
   set_port_inv(flag0_port);
+    set_pad_delay(flag1_port, 5);
 
   start_clock(tx_usb_clk);
   start_clock(rx_usb_clk);
@@ -648,12 +650,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifndef SIMULATION       
         /* Enable the USB clock */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
+        //write_node_config_reg(xs1_su, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
 
         /* Now reset the phy */
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,  (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
 
         /* Keep usb clock active, enter active mode */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
+       // write_node_config_reg(xs1_su, XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
 #endif
 
 #ifdef GLX_PWRDWN

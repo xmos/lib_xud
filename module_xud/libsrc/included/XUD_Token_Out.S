@@ -24,13 +24,20 @@ Pid_Out:
     ldw        r1, r3[3]                        // Load buffer
 
 OutReady:
-    
     bl         doRXData
+ 
+    stw         r7, r1[r4]                      // Store last data
+    eq          r1, r6, r11                     // Check for good CRC16
+       
+doRXDataReturn:
+    ldw         r11, dp[flag1_port]
+    in          r11, res[r11]
+ 
         
 CheckEpTypeOut:    
-   ldw         r11, r3[5]                        // Load EP type
-    bf       r11, StoreTailDataOut             // ISO endpoint 
-    bf         r1, ReportBadCrc                 // Check for bad crc
+    ldw         r11, r3[5]                        // Load EP type
+    bf          r11, StoreTailDataOut             // ISO endpoint 
+    bf          r1, ReportBadCrc                 // Check for bad crc
 
 
 DoOutHandShakeOut:                              // Data CRC good and EP not Iso: Send Ack
@@ -41,12 +48,12 @@ DoOutHandShakeOut:                              // Data CRC good and EP not Iso:
 StoreTailDataOut:
     shr        r8, r8, 3                        // r8be : number of tail bits, convert to bytes
  
-    ldc        r7, 0
-    stw        r7, r5[r10]                      // Clear ready
-    ldw        r5, r3[1]                        // Load EP chanend
+    ldc        r11, 0
+    stw        r11, r5[r10]                      // Clear ready
+    ldw        r11, r3[1]                        // Load EP chanend
         
-    out        res[r5], r4                     // Output datalength (words)
-    outt       res[r5], r8                      // Send tail length
+    out        res[r11], r4                     // Output datalength (words)
+    outt       res[r11], r8                      // Send tail length
 
 BadDataCrcOut:
     bu        NextTokenAfterOut

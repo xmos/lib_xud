@@ -30,13 +30,14 @@ OutReady:
     eq          r1, r6, r11                     // Check for good CRC16
        
 doRXDataReturn:
-    ldw         r11, dp[flag1_port]
+    //ldw         r11, dp[flag1_port]
+    ldw         r11, sp[10]
     in          r11, res[r11]
  
         
 CheckEpTypeOut:    
     ldw         r11, r3[5]                        // Load EP type
-    bf          r11, StoreTailDataOut             // ISO endpoint 
+    bf          r11, StoreTailDataOutIso             // ISO endpoint 
     bf          r1, ReportBadCrc                 // Check for bad crc
 
 
@@ -46,8 +47,8 @@ DoOutHandShakeOut:                              // Data CRC good and EP not Iso:
     syncr      res[TXD]        
 
 StoreTailDataOut:
-    shr        r8, r8, 3                        // r8be : number of tail bits, convert to bytes
- 
+    //shr        r8, r8, 3                      // r8: number of tail bits, convert to bytes
+                                                // This is now done on the other side 
     ldc        r11, 0
     stw        r11, r5[r10]                      // Clear ready
     ldw        r11, r3[1]                        // Load EP chanend
@@ -57,6 +58,48 @@ StoreTailDataOut:
 
 BadDataCrcOut:
     bu        NextTokenAfterOut
+
+.align 4
+.skip 0
+StoreTailDataOutIso:
+    stw          r11, r5[r10]                 // Clear ready
+    ldw         r11, r3[1]                    // Load EP chanend
+        
+    out         res[r11], r4                  // Output datalength (words)
+    outt        res[r11], r8                  // Send tail length
+    //bu          NextTokenAfterOut
+
+NextTokenAfterOut_:
+    ldc         r7, 0xf335                      // TX Crc init 
+
+NextTokenAfterIn_:
+    ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
+    ldw         r1, dp[flag0_port]           		             
+NextTokenAfterInNak_:
+    ldw         r4, sp[(STACK_EXTEND+8)]        // Number of out Endpoints
+    clre
+    setsr       1                               // Enable thread events
+
+//------------------------------------------------------------------------------------------------
+#ifdef ARCH_L
+    ldaw        r10, dp[PidJumpTable]                 
+                                                      // Original USB Token: | CRC | EP | ADDR | PID | junk 
+                                                      // Received token is address and CRC checked.
+                                                      // We receive: | 0000 4-bit EP | 0000 4-bit PID |
+XUD_TokenRx_Pid_: 
+    inpw       r11, res[RXD], 8                       // Read 8 bit PID
+    shr        r11, r11, 24                           // Shift off junk 
+    
+    ldw        r10, r10[r11]                          // Load relevant branch address
+
+BranchOnTokenPid_:
+.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
+
+    bau        r10
+#else
+#WARNING PUT ARCH_G CODE IN!!
+#endif
+
 
 ReportBadCrc: 
     //ecallf     r1
@@ -90,9 +133,9 @@ PrimaryBufferFull:                        // Wait for end of data then send NAK
   setc      res[r9], XS1_SETC_COND_EQ 
   in        r11, res[r9]
                                               // TODO: Observe interpacket delay 
-  nop
-  nop
-  nop
+  //nop
+ // nop
+  //nop
         
   //ldw       r4, sp[(STACK_EXTEND+5)]          // Load ep type table      
   //ldw       r4, r4[r10]                       // load EP type

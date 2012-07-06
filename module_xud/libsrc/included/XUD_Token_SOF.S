@@ -5,8 +5,8 @@ Pid_Sof:
     inpw      r10, res[RXD], 8;                        /* Read EP Number */ 
     shr       r10, r10, 24;                            /* Shift off junk */  
 
-    in         r11, res[r1];  
-    bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
+    //in         r11, res[r1];  
+    //bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
 #else
 //    #include "XUD_G_Crc.S"
     in         r10, res[RXD]
@@ -15,8 +15,6 @@ Pid_Sof:
     clrsr       0x2
     ldw        r11, sp[(STACK_EXTEND+9)]
     
-    //bf         r11, noSofChannel
-//SofChannel:
     out        res[r11], r10
 
 noSofChannel:

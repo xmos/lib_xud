@@ -53,7 +53,6 @@ OutTail0:
     crc32       r6, r8, r9                          // CRC zero step                    
     ldc         r11, 0x7000                         // Load relevant CRC magic number
     retsp 0
-    //bu          CheckCrc16
 
 // 1 Tail Byte
 .align 16
@@ -62,7 +61,6 @@ OutTail1:
     shr         r7, r7, 24                          // Shift off junk
     crc32       r6, r7, r9
     retsp 0
-    //bu          CheckCrc16
 
 // Two Tail Bytes
 .align 16
@@ -71,7 +69,6 @@ OutTail2:
     shr         r7, r7, 16
     crc32       r6, r7, r9
     retsp 0
-   // BRFU_u6     CheckCrc16
 
 // Three Tail Bytes
 .align 16
@@ -82,7 +79,6 @@ OutTail3:
     crc32       r6, r11, r9 
     //ldc       r11, 0x0070
     ldw         r11, sp[12]
-    //BRFU_u6     CheckCrc16
     retsp       0
 
 // Four Tail Bytes
@@ -98,25 +94,6 @@ OutTail5:
     mov         r0, r6
     bu          ERR_EndIn5
 
-
-//SendNak:
- //   ldc     r11, PIDn_NAK
-  //  outpw   res[TXD], r11, 8
-  //  bu      doRXDataReturn
-
-
-
-//.align 4
-//.skip 0
-//CheckCrc16:    
-//    stw         r7, r1[r4]                      // Store last data
-//    eq          r1, r6, r11                     // Check for good CRC16
-       
-//doRXDataReturn:
-///    ldw         r11, dp[flag1_port]
-//    in          r11, res[r11]
-//    retsp       0
-    
 .cc_bottom doRXData.func
     
 

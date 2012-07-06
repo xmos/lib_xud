@@ -159,6 +159,7 @@ XUD_GetData_Select:                             // Entry for _NoReq
     ecallf     r1
     in         r3, res[r0]                      // Input packet "word" length  
     int        r11, res[r0]                     // r11 is tail length (bytes)
+	shr		   r11, r11, 3
 
 CalcdataLength_:
     shl        r3, r3, 2                        // Num received words to bytes
@@ -235,7 +236,7 @@ XUD_GetData_Retry:
 DataEnd:
     in         r3, res[r10]                      // Input packet "word" length  
     int        r11, res[r10]                     // r11 is tail length (bytes)
-
+	shr		   r11, r11, 3
 CalcdataLength:
     shl        r3, r3, 2                        // Num received words to bytes
     add        r3, r11, r3                      // r11: Total bytes received (Note this includes 2 byte crc)

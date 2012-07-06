@@ -547,13 +547,13 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   //set_port_sample_delay(p_usb_rxd);
   //set_port_sample_delay(rx_rdy);
 
-  set_port_inv(flag0_port);
-    set_pad_delay(flag1_port, 5);
+  	set_port_inv(flag0_port);
+	set_pad_delay(flag1_port, 3);
 
-  start_clock(tx_usb_clk);
-  start_clock(rx_usb_clk);
-  configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
-  configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
+  	start_clock(tx_usb_clk);
+  	start_clock(rx_usb_clk);
+ 	configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
+  	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
 
 
 #endif

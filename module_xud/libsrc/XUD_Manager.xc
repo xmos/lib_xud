@@ -307,7 +307,6 @@ typedef struct XUD_ep_info {
   unsigned int tailLength;           // 7 "tail" length for IN (bytes)
 } XUD_ep_info;
 
-
 static XUD_ep_info ep_info[32];
 
 /* Sets the UIFM flags into a mode suitable for power signalling */
@@ -421,7 +420,7 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
         }
     }
 }
-
+        
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed) 
 {
     for(int i = 0; i < nOut; i++) 
@@ -451,6 +450,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
     const int reset_time = RESET_TIME;
+
+
 
     XUD_USB_Done = 0;
 
@@ -484,8 +485,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #if defined(ARCH_S) 
 
 #ifndef SIMULATION
-    /* Setup link with Glx */
-    glx_link_setup(MYID, GLXID);
+    /* Setup link with Glx - THIS IS NOW DONE IN THE TOOLS SUPPORT */
+   //glx_link_setup(MYID, GLXID);
 #endif
 
 #ifdef GLX_PWRDWN
@@ -785,7 +786,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
               //  {
 #ifndef SIMULATION
                 write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
-                    (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
+                      (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
                // }
 #endif
@@ -807,6 +808,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 {
                     /* Set flags up for pwr signalling */ 
                     reset = XUD_Init();
+                    //p_test <: 1;
                     one = 0;
                 }
                 else
@@ -906,7 +908,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 }
             }
 
-            //p_test <: 1;
 
             /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
             NOTE: Need to do this every iteration since CHKTOK would break power signaling */
@@ -951,9 +952,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 flag0: Valid token flag
                 flag1: Rx Active
                 flag2: Rx Error */
-                     //toggle = !toggle;
-                     //p_test <: toggle;
-
             XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
                            reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof, c_usb_testmode); 
 

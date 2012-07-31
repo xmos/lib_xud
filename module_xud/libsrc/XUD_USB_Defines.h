@@ -120,21 +120,4 @@
 
 
 
-// TODO Move these.. they are not usn spec related
-#define EP_BUFFER_SIZE 1024
-
-
-
-// OUT endpoints
-#define EP_OUT_DATA        1
-//
-// // IN endpoints
-#define EP_IN_DATA_AVAIL   1
-//
-// // Generic
- #define EP_OK              0
- #define EP_TROUBLE         9
- #define EP_HALT            8
-//
-//
 #endif

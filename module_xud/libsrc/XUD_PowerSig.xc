@@ -19,6 +19,7 @@
 #include "glx.h"
 #endif
 
+
 void XUD_UIFM_PwrSigFlags();
 
 #define T_WTRSTFS_us        26 // 26us
@@ -147,6 +148,7 @@ int XUD_Init()
 
                     case SE0_timer when timerafter(SE0_start_time + STATE_START_TO) :> int:
                         host_signal = 1;
+                        
                         reset = 0;
                         break;
                 }
@@ -180,6 +182,7 @@ int XUD_Suspend()
     unsigned time;
     unsigned before;
     unsigned devAddr;
+
  
 #if defined(ARCH_L) && defined(GLX_SUSPHY)
 #ifdef GLX_PWRDWN
@@ -236,13 +239,16 @@ int XUD_Suspend()
         /* Normally XCore will now be off and will reboot on resume/reset 
          * However, all supplies enabled to test suspend controller so we'll poll resume reason reg.. */
 
+
+
          while(1)
         {
             unsigned wakeReason = 0;
             read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, wakeReason);
             
             if(wakeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMEK))
-            { 
+            {
+                 
                 /* Unsuspend phy */        
                 write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,0);
                 
@@ -273,6 +279,7 @@ int XUD_Suspend()
                     /* Wait for se0 */
                     flag2_port when pinseq(1) :> void; 
                     
+   
                     if(g_curSpeed == XUD_SPEED_HS)
                     {
 
@@ -590,9 +597,6 @@ int XUD_Suspend()
             
                 if(tmp & UIFM_FLAGS_SE0)
                 {
-                    
-                    //printstr("RESUME1");
-                      // p_test <: 1; 
                     /* Resume detected from suspend: switch back to HS (suspendm high) and continue...*/                inSus = 0;
                     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
 

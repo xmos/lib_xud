@@ -170,8 +170,8 @@ XUD_IN_TxPid_Tail3:
 TxLoop3:
     ldw         r6, r8[r4]                      // Load first data word
     add         r4, r4, 1
-    out         res[TXD], r6
     crc32       r7, r6, r9
+    out         res[TXD], r6
     bt          r4, TxLoop3
 TxLoop3End:
     ldw          r6, r8[r4]                      // Load tail

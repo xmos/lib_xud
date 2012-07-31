@@ -63,9 +63,7 @@ inline int XUD_GetData(XUD_ep c, unsigned char buffer[]);
  *  @param      buffer Buffer to store received data into
  *  @return     Datalength (in bytes) 
  */
-inline int XUD_GetData_NoReq(XUD_ep c, unsigned char buffer[]);
-
-
+//inline int XUD_GetData_NoReq(XUD_ep c, unsigned char buffer[]);
 
 /** XUD_GetSetupData
  *  @brief      Gets a data from XUD
@@ -78,7 +76,7 @@ inline int XUD_GetData_NoReq(XUD_ep c, unsigned char buffer[]);
 int XUD_GetSetupData(XUD_ep o, XUD_ep i, unsigned char buffer[]); 
 
 int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
-int XUD_SetData_NoReq(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex);
+//int XUD_SetData_NoReq(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex);
 
 /*****************************/
 

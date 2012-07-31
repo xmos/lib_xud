@@ -102,7 +102,8 @@ BranchOnTokenPid_:
 
 
 ReportBadCrc: 
-    //ecallf     r1
+    ldc r1, 0
+    ecallf     r1
     //mov         r0, r11 
     //mov         r1, r11   
     //bl        ERR_BadCrc     

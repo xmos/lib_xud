@@ -298,14 +298,10 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
 
-#if 1
 inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 {
     int chan_array_ptr;
-    int xud_chan;
-    int my_chan;
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
-  
     asm ("stw %0, %1[3]"::"r"(bufferPtr),"r"(e));            // Store buffer 
     asm ("stw %0, %1[0]"::"r"(e),"r"(chan_array_ptr));            
   
@@ -315,24 +311,17 @@ inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
     int chan_array_ptr;
-    int xud_chan;
-    int my_chan;
+    
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-  
     asm ("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer 
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));        
 }
 
 
-#endif
-
 
 inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 {
     int chan_array_ptr;
-    int xud_chan;
-    int my_chan;
-    int tail;
     int tmp, tmp2;
     int wordlength;
     int taillength;
@@ -353,7 +342,7 @@ inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
     // Store neg index 
     asm ("stw %0, %1[6]"::"r"(tmp2),"r"(e));            // Store index 
     
-    // Store buffer poinr
+    // Store buffer pointer
     asm ("stw %0, %1[3]"::"r"(tmp),"r"(e));             
 
     // Store tail len
@@ -362,42 +351,11 @@ inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 
     asm ("stw %0, %1[0]"::"r"(e),"r"(chan_array_ptr));      // Mark ready 
 
-
-
-
-
-    //asm ("out res[%0], %1"::"r"(my_chan),"r"(pid)); 
-
-    //tail = len & 0x3;
-    //bufferPtr += (len-tail);
-    //tail <<= 5;
-    
-    //tmp = len << 5;
-    //tmp = zext(tmp, 7);
-    
-    /* Output tail */
-    //asm("outct res[%0], %1":: "r"(my_chan), "r"(tail));
-    //asm ("ldw %0, %1[1]":"=r"(xud_chan):"r"(e));
-
-    //len >>= 2;
-    //len = -len;
-
-    /* Store buffer pointer */
-    //asm ("stw %0, %1[3]"::"r"(bufferPtr),"r"(e));            
-    
-    /* Store length */
-    //asm ("stw %0, %1[3]"::"r"(len),"r"(e));
-
-    /* Mark EP ready with pointer */
-    //asm ("stw %0, %1[0]"::"r"(xud_chan),"r"(chan_array_ptr));
 }
 
 inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
-    int xud_chan;
-    int my_chan;
-    int tail;
     int tmp, tmp2;
     int wordlength;
     int taillength;
@@ -432,96 +390,6 @@ inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 
 
 
-#if 0
-inline int XUD_GetData_Inline(XUD_ep e, chanend c)
-{
-    int tailLen, dataLen;
-    unsigned p, p0;
-
-    asm("#XUD_GetData_Inline");
-
-    /* Load EP Buffer pointer */ 
-
-    while (!testct(c)) 
-    {
-        unsigned int datum = inuint(c);
-        asm("stw %0, %1[0]"::"r"(datum),"r"(p));
-        p += 4;
-    }  
-    tailLen = inct(c);
-
-    tailLen -= 10;
-
-    /* Calc datalength (in bytes) */
-    dataLen = p - p0;
-    dataLen <<= 2;
-    dataLen += taiLen;
-   
-    /*TODO BAD CRC REPORT */ 
-
-    /* Lenght correction for CRC and extra increment */
-    dataLen -= 6;
-
-    return dataLen;
-
-
-#if 0
-                // XUD_GetData
-                {
-                    xc_ptr p = aud_from_host_buffer+4;
-                    xc_ptr p0 = p;
-                    int tail;
-                    numSamples = 0;
-                    while (!testct(c_aud_out)) 
-                    {
-                        unsigned int datum = inuint(c_aud_out);
-                        write_via_xc_ptr(p, datum);
-                        p += 4;
-                    }  
-                    tail = inct(c_aud_out);
-                    datalength = p - p0 - 4;
-                    switch (tail) 
-                    {                  
-                        case 10:
-                        // the tail is 0 which means 
-                        datalength -= 2;
-                        break;
-                        default:
-                        // the tail is 2 which means the input was word aligned      
-                        break;
-                    }                
-                }
-#endif
-}
-#endif
-
-#if 0
-inline void XUD_SetData_Inline(XUD_ep e, chanend c)
-{
-    unsigned datum;
-    unsigned p;
-    unsigned chan_array_ptr;
-    int len;
-
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
-    asm ("ldw %0, %1[5]":"=r"(p):"r"(e));
-    asm ("ldw %0, %1[3]":"=r"(len):"r"(e));
-
-    asm("ldw %0, %1[%2]":"=r"(datum):"r"(p),"r"(len));
-                
-    while (len) 
-    {
-        len += 1;
-        outuint(c, datum);
-        asm("ldw %0, %1[%2]":"=r"(datum):"r"(p),"r"(len));
-    }
-                
-    outct(c, 0);
-    outuint(c, datum);
-    (void) inuint(c);
-
-}
-#endif
 /* Error printing functions */
 #ifdef XUD_DEBUG_VERSION
 void XUD_Error(char errString[]);

@@ -174,8 +174,8 @@ ldc         r11, PIDn_ACK
 
 SBuffFull:
     ldc         r11, 0
-    ecallf      r11
-    bl          ERR_SetupBuffFull			    // Wait for end of data then go to next token
+//    ecallf      r11
+ //   bl          ERR_SetupBuffFull			    // Wait for end of data then go to next token
     ldw         r10, sp[10]                     // Load RxA Port ID (r1)
     in 	        r11, res[r10]			        // RXA event cond = 0 TODO: Wait for RXA high first?
     endin       r11, res[RXD]

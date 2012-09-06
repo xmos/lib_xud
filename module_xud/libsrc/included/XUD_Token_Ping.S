@@ -24,7 +24,7 @@ PrimaryBufferEmpty_PING:               // Send ACK
   nop
   ldc          r11, PIDn_ACK
   outpw        res[TXD], r11, 8
-  bu           Return_PING 
+  bu           NextTokenAfterPing
 
 
 PrimaryBufferFull_PING:
@@ -32,9 +32,6 @@ PrimaryBufferFull_PING:
   nop
   ldc          r11, PIDn_NAK
   outpw        res[TXD], r11, 8
-  bu           Return_PING
+  bu           NextTokenAfterPing
 
-Return_PING:
-  bu NextTokenAfterPing
- 
-    .cc_bottom Pid_Ping.func
+.cc_bottom Pid_Ping.func

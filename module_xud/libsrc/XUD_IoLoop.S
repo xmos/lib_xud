@@ -476,12 +476,12 @@ NextTokenAfterIn:
     ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
     ldw         r1, dp[flag0_port]           		             
 NextTokenAfterInNak:
+Loop_BadPid: 
     ldw         r4, sp[(STACK_EXTEND+8)]        // Number of out Endpoints
+NextTokenAfterPing:
     clre
     setsr       1                               // Enable thread events
 
-NextTokenAfterPing:
-Loop_BadPid: 
 
 
 //------------------------------------------------------------------------------------------------

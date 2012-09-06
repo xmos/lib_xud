@@ -96,7 +96,7 @@ int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[])
   * @param      c
   * @param      epNum
   * @param      buffer
-  * @param      datalengh in bytes!
+  * @param      datalength in bytes!
   **/
 //int XUD_SetBuffer_ResetPid(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned char pid)
 //{

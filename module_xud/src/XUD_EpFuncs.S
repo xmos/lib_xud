@@ -49,18 +49,14 @@ XUD_GetSetupData_NoReq:                         // Entry for _NoReq
                                                 // TODO..
 
 XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
-#ifdef ARCH_S
     ldc         r11, PID_DATA1
-#else
-    ldc         r11, PID_DATA1
-#endif    
     stw         r11, r0[4]                      // Reset OUT toggle
 
-#ifdef ARCH_S
+//#ifdef ARCH_S
     ldc         r11, PIDn_DATA1
-#else
-    ldc         r11, PID_DATA1
-#endif  
+//#else
+    //ldc         r11, PID_DATA1
+//#endif  
 											
     stw         r11, r1[4]                      // Reset IN toggle
 

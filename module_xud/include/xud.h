@@ -298,7 +298,7 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
 
-inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
+static inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 {
     int chan_array_ptr;
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
@@ -308,7 +308,7 @@ inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 }
 
 /* Pointer version..*/
-inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
+static inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
     int chan_array_ptr;
     
@@ -319,7 +319,7 @@ inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 
 
 
-inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
+static inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;
@@ -353,7 +353,7 @@ inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 
 }
 
-inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
+static inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;

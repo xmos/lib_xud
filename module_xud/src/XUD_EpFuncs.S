@@ -152,7 +152,8 @@ Return2_:                                       // Reg restore
 .cc_top XUD_GetData_Select.func, XUD_GetData_Select
     
 XUD_GetData_Select:                             // Entry for _NoReq 
-    ecallf     r1
+    testct     r3, res[r0]
+    bt         r3, GetData_Select_ResetSuspend
     in         r3, res[r0]                      // Input packet "word" length  
     int        r11, res[r0]                     // r11 is tail length (bytes)
 	shr		   r11, r11, 3
@@ -184,9 +185,9 @@ XUD_GetData_ReturnOk_:
     stw        r0, r2[0]
     retsp      0
     
-ResetSuspend_:
+GetData_Select_ResetSuspend:
     mkmsk      r0, 32                           // Return -1 as length
-    ecallt r0
+   // ecallt      r0
     stw        r0, r2[0]
 
 Return_:

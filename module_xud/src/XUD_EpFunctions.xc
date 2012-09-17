@@ -91,24 +91,51 @@ int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[])
 
 
 
-/** XUD_SetBuffer_ResetPid(()
-  * @brief      Sends USB data with PID reset to specified
-  * @param      c
-  * @param      epNum
-  * @param      buffer
-  * @param      datalength in bytes!
-  **/
-//int XUD_SetBuffer_ResetPid(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned char pid)
-//{
-  //  return XUD_SetData(c, buffer, datalength, 0, pid);  
-//}
-
 int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
 {
     /* No PID reset, 0 start index */
     return XUD_SetData(c, buffer, datalength, 0, 0);  
 }
 
+/**
+ * Special case of set buffer for control EP's where you care if you receive a new SETUP instead of sending 
+ * the passed IN data.
+ *
+ * TODO we dont want to pass in channels here really.. get that out of the XUD_EP struct..
+ */
+int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer_out[], unsigned char buffer_in[], unsigned datalength)
+{
+    unsigned tmp;
+
+    /* Set ready on both the In and Out Eps */
+    XUD_SetReady_Out(ep_out, buffer_out);
+    XUD_SetReady_In(ep_in, buffer_in, datalength);
+
+    select
+    {   
+        case XUD_GetData_Select(c_out, ep_out, tmp):
+
+                if(tmp == -1)
+                {
+                    /* If tmp - then we got a reset */
+                    return tmp;
+                }
+                else
+                {
+                    /* Got data instead of sending */
+                    return 2;
+                }
+            break;
+
+
+        case XUD_SetData_Select(c_in, ep_in, tmp):
+
+            /* We sent the data we wanted to send... 
+             * Return 0 for no error */
+            return 0;
+            break;
+    }
+}
 
 
 

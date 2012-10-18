@@ -23,10 +23,13 @@
 .align 4        
 InNotReady:
 XUD_IN_TxNak:     
-    ldaw       r11, dp[handshakeTable_IN]                // Load handshake table
-    ldw        r11, r11[r10]                              // Load handshake PID    
+    ldaw       r11, dp[handshakeTable_IN]             // Load handshake table
+    ldw        r11, r11[r10]                          // Load handshake PID    
     outpw     res[TXD], r11, 8
-    syncr     res[TXD] 
+    //syncr     res[TXD] 
+
+    ldw         r4, sp[(STACK_EXTEND+8)]              // Number of out Endpoints
+
     ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
                                                       // We receive: | 0000 4-bit EP | 0000 4-bit PID |
     inpw       r11, res[RXD], 8                       // Read 8 bit PID

@@ -75,7 +75,6 @@ int XUD_DeviceAttachHS()
 #ifdef ARCH_S
     
     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010);
-    //read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, tmp);.
     
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
@@ -96,6 +95,14 @@ int XUD_DeviceAttachHS()
     //XUD_Sup_Delay(chirptime);
 
 #ifdef ARCH_S
+    /* Added a bit of a delay before chirp to match an example HS device */
+    {
+        unsigned time;
+        t :> time; 
+        t when timerafter(time+100000):> void;
+    }
+
+
     // output k-chirp for required time
     for (int i = 0; i < 25000; i++)
         p_usb_txd <: 0x0;

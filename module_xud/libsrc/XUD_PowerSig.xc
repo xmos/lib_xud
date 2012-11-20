@@ -218,11 +218,8 @@ int XUD_Suspend()
         /* Suspend Phy etc */
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
                                     (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) 
-                                    |(0x3 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
+                                    |(0x2 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
                                     | (1 << XS1_UIFM_PHY_CONTROL_FORCESUSPEND));
-
-
-       
 
         /* Mark scratch reg */
         {
@@ -239,9 +236,7 @@ int XUD_Suspend()
         /* Normally XCore will now be off and will reboot on resume/reset 
          * However, all supplies enabled to test suspend controller so we'll poll resume reason reg.. */
 
-
-
-         while(1)
+        while(1)
         {
             unsigned wakeReason = 0;
             read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, wakeReason);
@@ -282,7 +277,6 @@ int XUD_Suspend()
    
                     if(g_curSpeed == XUD_SPEED_HS)
                     {
-
                         /* Back to high-speed */
                         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
                     }

@@ -76,7 +76,6 @@ inline int XUD_GetData(XUD_ep c, unsigned char buffer[]);
 int XUD_GetSetupData(XUD_ep o, XUD_ep i, unsigned char buffer[]); 
 
 int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
-//int XUD_SetData_NoReq(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex);
 
 /*****************************/
 
@@ -196,11 +195,7 @@ int XUD_GetBuffer(XUD_ep c, unsigned char buffer[]);
   **/
 int XUD_GetSetupBuffer(XUD_ep o, XUD_ep i, unsigned char buffer[]);
 
-
-
-
 int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength);
-//int XUD_SetBuffer_ResetPid(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned char pid);
 
 /* Same as above but takes a max packet size for the endpoint, breaks up data to transfers of no 
  * greater than this.
@@ -224,8 +219,6 @@ int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, 
   * @return		Returns non-zero on error	
   **/
 int XUD_DoGetRequest(XUD_ep c_out, XUD_ep c_in,  uint8 buffer[], unsigned length, unsigned requested);
-
-
 
 int XUD_DoSetRequestStatus(XUD_ep c, unsigned epnNum);
 
@@ -278,27 +271,12 @@ void XUD_UnStall_Out(int epNum);
  */
 void XUD_UnStall_In(int epNum);
 
-
-//#if 0
-//inline void XUD_SetReady(XUD_ep e, int pid)
-//{
-  //  int chan_array_ptr;
-   // int xud_chan;
-   // int my_chan;
-   // asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
-   // asm ("ldw %0, %1[1]":"=r"(xud_chan):"r"(e));
-  //  asm ("ldw %0, %1[2]":"=r"(my_chan):"r"(e));
-  //  asm ("out res[%0], %1"::"r"(my_chan),"r"(pid));  
-  //  asm ("stw %0, %1[0]"::"r"(xud_chan),"r"(chan_array_ptr));
-//}
-//#endif
-
 #pragma select handler
 void XUD_GetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
 
-static inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
+inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 {
     int chan_array_ptr;
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
@@ -308,7 +286,7 @@ static inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 }
 
 /* Pointer version..*/
-static inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
+inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
     int chan_array_ptr;
     
@@ -317,9 +295,7 @@ static inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));        
 }
 
-
-
-static inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
+inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;
@@ -353,7 +329,7 @@ static inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 
 }
 
-static inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
+inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;
@@ -382,13 +358,9 @@ static inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     // Store tail len
     asm ("stw %0, %1[7]"::"r"(taillength),"r"(ep));             
 
-
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));      // Mark ready 
 
 }
-
-
-
 
 /* Error printing functions */
 #ifdef XUD_DEBUG_VERSION

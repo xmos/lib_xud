@@ -215,7 +215,11 @@ int XUD_Suspend()
             write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1,wData); 
         }
         
-        /* Suspend Phy etc */
+        /* Suspend Phy etc 
+         * SEOFILTBASE sets a bit in a counter for anti-glitch (i.e 2 looks for change in 0b10)
+         * This is a simple counter with check from wrap in this bit, so worst case could be x2 off
+         * Counter runs at 32kHz by (31.25uS period). So setting 2 is about 63-125uS
+         */
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
                                     (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) 
                                     |(0x2 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
@@ -229,8 +233,8 @@ int XUD_Suspend()
 
         // Finally power down Xevious,  keep sysclk running, keep USB enabled.
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 
-                       (1 << XS1_GLX_PWR_SLEEP_INIT_BASE)               /* Sleep */
-                     | (1<<XS1_GLX_PWR_SLEEP_CLK_SEL_BASE)           /* Default clock */ 
+                       (1 << XS1_GLX_PWR_SLEEP_INIT_BASE)            /* Sleep */
+                     | (1 << XS1_GLX_PWR_SLEEP_CLK_SEL_BASE)         /* Default clock */ 
                      | (0x3 << XS1_GLX_PWR_USB_PD_EN_BASE ) );       /* Enable usb power up/down */
 
         /* Normally XCore will now be off and will reboot on resume/reset 

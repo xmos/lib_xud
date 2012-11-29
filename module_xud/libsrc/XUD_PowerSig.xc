@@ -278,7 +278,6 @@ int XUD_Suspend()
                     /* Wait for se0 */
                     flag2_port when pinseq(1) :> void; 
                     
-   
                     if(g_curSpeed == XUD_SPEED_HS)
                     {
                         /* Back to high-speed */
@@ -307,6 +306,11 @@ int XUD_Suspend()
 
                 XUD_UIFM_PwrSigFlags();
 
+                {
+                    unsigned time;
+                    t :> time;
+                    t when timerafter(time+250000) :> void;
+                }
                 return 1;
             }
         }

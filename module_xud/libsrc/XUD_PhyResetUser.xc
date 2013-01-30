@@ -1,9 +1,8 @@
 
 #include <print.h>
 
-void XUD_PhyResetUser()
+void XUD_PhyReset_User()
 {
-    printintln(2);
     return;
 }
 

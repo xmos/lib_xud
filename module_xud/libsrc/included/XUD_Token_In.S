@@ -169,7 +169,6 @@ TxLoop2End:
 XUD_IN_TxCrc_Tail2:
     outpw       res[TXD], r7, 16
     bu          DoneTail
-.scheduling default
 
 .align 64
 .skip 0
@@ -198,6 +197,7 @@ TxLoop3End:
 XUD_IN_TxCrc_Tail3:
     outpw        res[TXD], r7, 16
   
+.scheduling default
 // Wait for handshake... or timeout
 DoneTail:
     //syncr       res[TXD]

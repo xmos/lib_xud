@@ -44,10 +44,12 @@ void XUD_Error_hex(char errString[], int i_err);
 #warning BUILDING WITH S SUPPORT
 #include "xa1_registers.h"
 #include "glx.h"
+#include <xs1_su.h>
 #endif
 
 void XUD_UserSuspend();
 void XUD_UserResume();
+void XUD_PhyReset_User();
 
 #if 0
 #pragma xta command "config threads stdcore[0] 6"        
@@ -457,7 +459,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     /* Enable fast mode on thread */
     set_thread_fast_mode_on();
-//#warning XUD FAST MODE OFF!!!!!!!!!!!!!
 
     /* Setup channel event vectors */
     SetupChannelVectors(epChans0, noEpOut, noEpIn);
@@ -674,11 +675,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 #endif
 
-
 #else
         /* Reset transceiver */
-        if (!isnull(p_rst)) {
-           XUD_PhyReset(p_rst, reset_time*10, rstMask);
+        if (!isnull(p_rst)) 
+        {
+            XUD_PhyReset(p_rst, reset_time*10, rstMask);
+        }
+        else
+        {
+            clearbuf(p_usb_rxd);
+            XUD_PhyReset_User();
         }
 #endif
 
@@ -689,20 +695,22 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         p_usb_clk when pinseq(0) :> int _;
 
 #ifdef VBUSHACK
-        {timer t;
-         unsigned x;
-         t :> x;
-         t when timerafter(x+100000) :> void;
+        {
+            timer t;
+            unsigned x;
+            t :> x;
+            t when timerafter(x+100000) :> void;
          }
  
         /* Driver STP low */
         p_usb_stp <: 0;
 
         /* Wait for dir low */
-        {timer t;
-         unsigned x;
-         t :> x;
-         t when timerafter(x+1000) :> void;
+        {
+            timer t;
+            unsigned x;
+            t :> x;
+            t when timerafter(x+1000) :> void;
          }
 
 
@@ -1120,13 +1128,19 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
 #ifndef ARCH_S
     /* Clock reset port from reference clock (required as clkblk 0 running from USB clock) */
-    if(!isnull(p_rst) && !isnull(clk)) {
+    if(!isnull(p_rst) && !isnull(clk)) 
+    {
+       set_port_clock(p_rst, clk);
+    }
+   
+    if(!isnull(clk))
+    {
        set_clock_on(clk);
        set_clock_ref(clk);
-       set_port_clock(p_rst, clk);
        start_clock(clk);
     }
-#endif
+    
+   #endif
 
     /* Run the main XUD loop */
     XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, c_usb_testmode);

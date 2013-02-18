@@ -3,6 +3,13 @@
   * @author    Ross Owen, XMOS Limited
   */
 #include <usb.h>
+
+.section        .cp.const4,"aMc",@progbits,4
+.align  4
+minus2:
+.long  0xfffffffe
+.text
+
     
 #define SR_EEBLE_BIT 0x1
 //int XUD_GetSetupData(XUD_ep e_out, XUD_ep in, unsigned buffer[]); 
@@ -153,7 +160,7 @@ Return2_:                                       // Reg restore
     
 XUD_GetData_Select:                             // Entry for _NoReq 
     testct     r3, res[r0]
-    bt         r3, GetData_Select_ResetSuspend
+    bt         r3, XUD_GetData_Select_Return_ResetSuspend
     in         r3, res[r0]                      // Input packet "word" length  
     int        r11, res[r0]                     // r11 is tail length (bytes)
 	shr		   r11, r11, 3
@@ -169,29 +176,34 @@ XUD_GetData_CheckPid_:
 
     xor        r11, r0, r11                     // Do the comparison
     ecallt     r11                              //  TODO TODO TODO TODO
-    //bt         r11, XUD_GetData_Select           // Ignore packet...
+    bt          r11, XUD_GetData_Select_Return_BadPid
+    //bt         r11, XUD_GetData_Select        // We can't just jump back to XUD_GetData_Select since 
 
 XUD_GetData_PidOkay_: 
-    ldw        r11, r1[5]                       // Load EP type
-    bf         r11, XUD_GetData_ReturnOk_        // Jump over PID toggle for ISO  
+    ldw         r11, r1[5]                       // Load EP type
+    bf          r11, XUD_GetData_ReturnOk_       // Jump over PID toggle for ISO  
 
 XUD_GetData_PidToggle_:
-    ldc        r11, 8
-    xor        r0, r0, r11
-    stw        r0, r1[4]
+    ldc         r11, 8
+    xor         r0, r0, r11
+    stw         r0, r1[4]
  
 XUD_GetData_ReturnOk_:
-    sub        r0, r3, 2                        // Length correction for CRC correction (return val in r0) 
-    stw        r0, r2[0]
-    retsp      0
+    sub         r0, r3, 2                        // Length correction for CRC correction (return val in r0) 
+    stw         r0, r2[0]
+    retsp       0
     
-GetData_Select_ResetSuspend:
-    mkmsk      r0, 32                           // Return -1 as length
-   // ecallt      r0
-    stw        r0, r2[0]
+XUD_GetData_Select_Return_ResetSuspend:
+    mkmsk       r0, 32                           // Return -1 as length
+    stw         r0, r2[0]
+    retsp       0
 
-Return_:
-    retsp      0
+XUD_GetData_Select_Return_BadPid:
+    ldw         r0, cp[minus2]
+    stw         r0, r2[0]
+    retsp       0
+
+
 
 .cc_bottom XUD_GetData_Select.func
 

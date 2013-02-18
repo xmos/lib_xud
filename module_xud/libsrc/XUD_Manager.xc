@@ -860,6 +860,13 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         break;
                     }
 
+                    /* Reset the OUT ep structures */
+                    for(int i = 0; i< noEpOut; i++)
+                    {
+                        ep_info[0+i].pid = PID_DATA0;
+                    }
+
+
                     /* Reset in the ep structures */
                     for(int i = 0; i< noEpIn; i++)
                     {

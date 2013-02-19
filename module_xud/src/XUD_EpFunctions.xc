@@ -135,6 +135,7 @@ int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_i
             return 0;
             break;
     }
+    return 0;
 }
 
 

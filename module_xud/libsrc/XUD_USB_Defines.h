@@ -110,7 +110,12 @@
 #define XUD_EP_TYPE_ISO 0
 #define XUD_EP_TYPE_INT 1
 
-
+// Test selector defines for Test mode
+#define WINDEX_TEST_J               (0x1<<8)
+#define WINDEX_TEST_K               (0x2<<8)
+#define WINDEX_TEST_SE0_NAK         (0x3<<8)
+#define WINDEX_TEST_PACKET          (0x4<<8)
+#define WINDEX_TEST_FORCE_ENABLE    (0x5<<8)
 
 
 

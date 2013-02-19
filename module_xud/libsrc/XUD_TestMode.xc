@@ -6,7 +6,7 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_Support.h"
 #include "XUD_TestMode.h"
-#include "usb.h"
+///#include "usb.h"
 #include "xud.h"
 
 #ifdef ARCH_L

@@ -6,10 +6,6 @@
   **/
 /* Error printing functions */
 
-#ifdef SIMULATION
-#warning !!!!!!!!!!!!!! BUILDING FOR SIM
-#endif
-
 #ifdef XUD_DEBUG_VERSION
 void XUD_Error(char errString[]);
 void XUD_Error_hex(char errString[], int i_err);
@@ -24,7 +20,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #include <platform.h>
 
 #include "xud.h"
-#include "usb.h"
+//#include "usb.h"
 #include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
 
@@ -41,7 +37,6 @@ void XUD_Error_hex(char errString[], int i_err);
 #endif
 
 #ifdef ARCH_S
-#warning BUILDING WITH S SUPPORT
 #include "xa1_registers.h"
 #include "glx.h"
 #include <xs1_su.h>

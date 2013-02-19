@@ -14,7 +14,6 @@
 #include "XUD_UIFM_Defines.h"
 
 #ifdef ARCH_S
-#warning BUILDING FOR S SUPPORT
 #include "xa1_registers.h"
 #include "glx.h"
 #endif

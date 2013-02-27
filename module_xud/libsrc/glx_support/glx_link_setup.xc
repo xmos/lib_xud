@@ -7,16 +7,33 @@ extern int write_sswitch_reg_noresp(unsigned coreid, unsigned reg, unsigned data
 extern int write_sswitch_reg_nodeid_noresp(unsigned coreid, unsigned reg, unsigned data);
 
 // Set the clock frequency in MHz
-#define CLK_FREQ_MHZ 24
+#define CLK_FREQ_MHZ 48
 
-//#define XVBGX1
+#define XVBS2
 
-#ifdef XVBGX1
-  #define SLINK_DEF XS1_SSWITCH_SLINK_3_NUM
-  #define XLINK_DEF XS1_SSWITCH_XLINK_3_NUM
+#if ( defined XVBGX1 )
+    // Xlink 3 connected in the separately packaged galaxian bringup board
+    #define SLINK_DEF XS1_SSWITCH_SLINK_3_NUM
+    #define XLINK_DEF XS1_SSWITCH_XLINK_3_NUM
+#elif ( defined MCM ) || ( defined XVBS1 )
+    //
+    #if ( defined SPECIAL_XVBS1 )
+        // Change the link setups when actually building for the separately packaged galaxian bringup board
+        // Xlink 3 is used.
+        #define SLINK_DEF XS1_SSWITCH_SLINK_3_NUM
+        #define XLINK_DEF XS1_SSWITCH_XLINK_3_NUM
+    #else
+        // Xlink 5 is used in the S1 and S2 MCMs
+        #define SLINK_DEF XS1_SSWITCH_SLINK_5_NUM
+        #define XLINK_DEF XS1_SSWITCH_XLINK_5_NUM
+    #endif
+#elif ( defined XVBS2 )
+    #define SLINK_DEF XS1_SSWITCH_SLINK_0_NUM
+    #define XLINK_DEF XS1_SSWITCH_XLINK_0_NUM
 #else
-  #define SLINK_DEF XS1_SSWITCH_SLINK_5_NUM
-  #define XLINK_DEF XS1_SSWITCH_XLINK_5_NUM
+    // Xlink 7 is used in the testbench
+    #define SLINK_DEF XS1_SSWITCH_SLINK_7_NUM
+    #define XLINK_DEF XS1_SSWITCH_XLINK_7_NUM
 #endif
 
 

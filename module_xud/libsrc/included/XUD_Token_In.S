@@ -4,7 +4,6 @@
 #define RXD r0
 #define RXA r1
 #define TXD r2
-#define RXE r3
 
 .text
 // On entry:
@@ -23,15 +22,25 @@
 .cc_top InNotReady.func, InNotReady
 .align 4        
 InNotReady:
-    
-    // LOAD HANDSHAKE (NAK OR STALL)   
-    //ldc       r11, PIDn_NAK			                 // TODO Ensure min inter-packet delay  
-    ldaw       r5, dp[handshakeTable_IN]                 // Load handshake table
-    ldw        r11, r5[r10]                              // Load handshake PID
-     
 XUD_IN_TxNak:     
-    outpw     res[TXD], r11, 8                           // Output handshake PID       
-    bu        NextTokenAfterIn
+    ldaw       r11, dp[handshakeTable_IN]             // Load handshake table
+    ldw        r11, r11[r10]                          // Load handshake PID    
+    outpw     res[TXD], r11, 8
+    //syncr     res[TXD] 
+
+    ldw         r4, sp[(STACK_EXTEND+8)]              // Number of out Endpoints
+
+    ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
+                                                      // We receive: | 0000 4-bit EP | 0000 4-bit PID |
+    inpw       r11, res[RXD], 8                       // Read 8 bit PID
+    shr        r11, r11, 24                           // Shift off junk 
+    
+    ldw        r10, r10[r11]                          // Load relevant branch address
+
+.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
+    bau        r10
+
+    bu          NextTokenAfterInNak
 .cc_bottom InNotReady.func
 
 
@@ -49,161 +58,161 @@ Pid_In:
     shr       r10, r10, 24;                            /* Shift off junk */  
 
     in         r11, res[r1];  
-    bf         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
+    bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token - PORT INVERTED! */
 #else
     #include "XUD_G_Crc.S"        
 #endif
-
-    //ldw         r11, sp[24]                         // Load EP channeltable 
-    add         r11, r4, r10                       // IN channel offset (R10: EP number)        
-    ldw         r5, r5[r11]                         // Load EP chan
+    add        r3, r4, r10                      // IN channel offset (R10: EP number, E4: Num out Eps)       
+    ldw        r4, r5[r3]                       // Load EP structure address
+    bf         r4, InNotReady                   // If 0 then not ready...
+       
+In_LoadPid:
+    ldw         r11, r4[4]                      // Load PID from structure 
         
-    bf          r5, InNotReady
-        
-InReady:                                            
-    out		    res[r5], r3                         // Reply to request to send (allows client to select)
-    in          r11, res[r5]                        // Input PID
+InReady: 
+    ldw         r8, r4[3]                       // Load buffer
+         
+    ldw         r6, r4[7]                       // Load tail length (bytes)
 
-    inct        r8, res[r5]                         // Get Tail length
-    testct      r6, res[r5]                         // Check for end of data stream
-
-    bt          r6,  SmallTxPacket
+    ldw         r4, r4[6]                       // Load buffer index 
+    bf          r4, SmallTxPacket               // Check for Short packet
 
 .xtabranch TxTail0, TxTail1, TxTail2, TxTail3
-    bru         r8                                  // Branch on tail length
+    bru         r6                              // Branch on tail length
 
 //--------------------------------------------------------------------------
 .align 64
 .skip 0
 TxTail0:
-    in       r6, res[r5]                            // Get first data word
-    testct   r8, res[r5]                            
+    ldw         r6, r8[r4]                      // Load first data word
+    add         r4, r4, 1                       // Buffer index increment 
 XUD_IN_TxPid_Tail0:
-    outpw    res[TXD], r11, 8                       // Out PID        
-    out      res[TXD], r6
-    crc32      r7, r6, r9
-    //testct   r8, res[r5]                            
-    bt         r8, TxLoop0End
+    outpw       res[TXD], r11, 8                // Output PID to port        
+    out         res[TXD], r6                    // Output first data word
+    crc32       r7, r6, r9                      // Run CRC
+    bf          r4, TxLoop0End
 TxLoop0:
-    in       r6, res[r5]                            // Get data word
-    testct   r11, res[r5]        
+    ldw         r6, r8[r4]                      // Load last data word
+    add         r4, r4, 1
 TxLoop0_Out:
-    out      res[TXD], r6
-    crc32      r7, r6, r9
-    bf         r11, TxLoop0
-TxLoop0End:                                         // Word aligned data (just output CRC)
-    crc32        r7, r3, r9                         // R3: 0
-    not          r7, r7
+    out         res[TXD], r6                    // Output last data word
+    crc32       r7, r6, r9
+    bt          r4, TxLoop0
+TxLoop0End:                                     // Word aligned data (just output CRC)
+    crc32       r7, r4, r9                      // R4: 0 (from bt)
+    not         r7, r7
 
 XUD_IN_TxCrc_Tail0:
-    outpw        res[TXD], r7, 16
-    inct         r6, res[r5]                        // Input end of stream token
-    in           r6, res[r5]                        // Input tail data (junk)
+    outpw        res[TXD], r7, 16               // Output CRC
     bu           DoneTail  
 
 .align 64
 .skip 0
 TxTail1:
-  in       r6, res[r5]                       // Get data word
-  testct   r8, res[r5]
+    ldw         r6, r8[r4]                      // Load first data word
+    add         r4, r4, 1                       // Buffer index increment 
+    // in       r6, res[r5]                     // Get data word
+    // testct   r8, res[r5]
 XUD_IN_TxPid_Tail1:
-  outpw    res[TXD], r11, 8                   // Out PID        
-  out      res[TXD], r6
-  crc32      r7, r6, r9
-  //testct   r8, res[r5]
-  bt         r8, TxLoop1End
+    outpw    res[TXD], r11, 8                   // Out PID        
+    out      res[TXD], r6
+    crc32         r7, r6, r9
+    //testct   r8, res[r5]
+    bf            r4, TxLoop1End
 TxLoop1:
-  in       r6, res[r5]                       // Get data word
-  testct   r11, res[r5]        
-  out      res[TXD], r6
-  crc32      r7, r6, r9
-  bf         r11, TxLoop1
+    //in       r6, res[r5]                      // Get data word
+    //testct   r11, res[r5]  
+    ldw         r6, r8[r4]                      // Load last data word
+    add         r4, r4, 1
+    out         res[TXD], r6   
+    crc32       r7, r6, r9
+    bt          r4, TxLoop1
 TxLoop1End:  
-  inct       r6, res[r5]                      // Input end of stream token
-  in         r6, res[r5]                      // Input tail data              
-  outpw        res[TXD], r6, 8 
-  crc8         r7, r4, r6, r9
-  crc32        r7, r3, r9                 // r3: 0 
-  not          r7, r7
+    //inct        r6, res[r5]                     // Input end of stream token
+    //in          r6, res[r5]                     // Input tail data              
+    ldw         r6, r8[r4]                      // Load last data word
+    outpw       res[TXD], r6, 8 
+    crc8        r7, r6, r6, r9
+    crc32       r7, r4, r9                      // r4: 0 (from bf) 
+    not         r7, r7
 
 XUD_IN_TxCrc_Tail1:
-  outpw        res[TXD], r7, 16
-  bu           DoneTail
+    outpw        res[TXD], r7, 16
+    bu           DoneTail
 
+.scheduling off
 .align 64
 .skip 0
 TxTail2:
-  in       r6, res[r5]                       // Get data word
-  testct   r8, res[r5]
+    ldw         r6, r8[r4]                        // Load first data word
+    crc32       r7, r6, r9
 XUD_IN_TxPid_Tail2:
-  outpw    res[TXD], r11, 8                   // Out PID        
-  out      res[TXD], r6
-  crc32      r7, r6, r9
-  //testct   r8, res[r5]					  // BREAK TIMING IF TEST CT HERE (DATA TO CRC)
-  bt         r8, TxLoop2End        
+    outpw       res[TXD], r11, 8                   // Out PID        
+    out         res[TXD], r6
+    add         r4, r4, 1
+    bf          r4, TxLoop2End        
 TxLoop2:
-  in       r6, res[r5]                       // Get data word
-  testct   r11, res[r5]        
-  out      res[TXD], r6
-  crc32      r7, r6, r9
-  bf         r11, TxLoop2
+    ldw         r6, r8[r4]                        // Load first data word
+    add         r4, r4, 1
+    crc32       r7, r6, r9
+    out         res[TXD], r6
+    bt          r4, TxLoop2
+
 TxLoop2End:
-  inct       r6, res[r5]                      // Input end of stream token  
-  in         r6, res[r5]                      // Input tail data              
-  // Two tail byte q
-        
-  outpw        res[TXD], r6, 16 
-  crc8         r7, r6, r6, r9
-  crc8         r7, r6, r6, r9
-  crc32        r7, r3, r9                 // r3: 0     
-  not          r7, r7
+    ldw         r6, r8[r4]                      // Load tail
+    crc8        r7, r11, r6, r9
+    outpw       res[TXD], r6, 16 
+    crc8        r7, r11, r11, r9
+    crc32       r7, r4, r9                      // r4: 0 (from bf)     
+    not         r7, r7
 
 XUD_IN_TxCrc_Tail2:
-  outpw        res[TXD], r7, 16
-  bu           DoneTail
+    outpw       res[TXD], r7, 16
+    bu          DoneTail
 
 .align 64
 .skip 0
 TxTail3:
-  in       r6, res[r5]                       // Get data word
-  testct   r8, res[r5]
+    ldw         r6, r8[r4]                      // Load first data word
+    add         r4, r4, 1
 XUD_IN_TxPid_Tail3:
-  outpw    res[TXD], r11, 8                   // Out PID        
-  out      res[TXD], r6
-  crc32      r7, r6, r9
-  //testct   r8, res[r5]			
-  bt         r8, TxLoop3End
+    outpw    res[TXD], r11, 8                   // Out PID        
+    out      res[TXD], r6
+    crc32      r7, r6, r9
+    bf         r4, TxLoop3End
 TxLoop3:
-  in       r6, res[r5]                       // Get data word
-  testct   r11, res[r5]        
-  out      res[TXD], r6
-  crc32      r7, r6, r9
-  bf         r11, TxLoop3
+    ldw         r6, r8[r4]                      // Load first data word
+    add         r4, r4, 1
+    crc32       r7, r6, r9
+    out         res[TXD], r6
+    bt          r4, TxLoop3
 TxLoop3End:
-        
-  inct       r6, res[r5]                      // Input end of stream token    
-  in         r6, res[r5]                      // Input tail data        
-  // Three tail byte  
-  outpw        res[TXD], r6, 24 
-  crc8         r7, r6, r6, r9
-  crc8         r7, r6, r6, r9
-  crc8         r7, r6, r6, r9
-  crc32        r7, r3, r9                // r3: 0     
-  not          r7, r7
+    ldw          r6, r8[r4]                      // Load tail
+    crc8         r7, r11, r6, r9
+    outpw        res[TXD], r6, 24 
+    crc8         r7, r11, r11, r9
+    crc8         r7, r11, r11, r9
+    crc32        r7, r4, r9                // r4: 0 (from bf)     
+    not          r7, r7
 XUD_IN_TxCrc_Tail3:
-  outpw        res[TXD], r7, 16
+    outpw        res[TXD], r7, 16
   
+.scheduling default
 // Wait for handshake... or timeout
 DoneTail:
-    syncr       res[TXD]
+    //syncr       res[TXD]
     //chkct         res[r5], XS1_CT_END
     ldw           r11, sp[22]       
     ldw           r11, r11[r10]                 // Load EP Type
     bt            r11, SetupReceiveHandShake
 
 InISO:
-    out           res[r5], r11                  // Output 0 to EP threaf for no error
-    bu            NextToken
+    //ldw         r11, r5[1]                      // Output a word to signal packet read
+    //out         res[r11], r11
+
+   // bu            NextToken
+    ldc r9, 0 //TODO
+    bu DoneTx
 
 InNonISO:
 SetupReceiveHandShake:			  
@@ -231,7 +240,7 @@ WaitForHandshake:			                            // Wait for timeout or handshake
 .align 4
 TxHandshakeTimeOut:
     in 	    	r11, res[r1]                    // This will clear port time
-    edu         res[r1]
+    edu         res[r1] 
     bu          BadHandShake
 
     //ldc         r11, 1
@@ -257,32 +266,37 @@ XUD_IN_RxAck:
 DoneTx:
     ldap        r11, NextRxWord                 // Restore RXD event vector
     setv        res[RXD], r11    
-    ldc         r11, 0                          // Send 0 to EP thread for no error
-    out         res[r5], r11
-        
-  bu        	NextToken
+
+ClearInEpReady:                                 // TODO Tidy this up
+    //ldw         r4, sp[(STACK_EXTEND+8)]      / Load num out EPs
+    //add         r11, r4, r10                  // IN channel offset (R10: EP number)      
+    
+    ldw         r10, r5[r3]                     // Load the EP struct
+    stw         r9, r5[r3]                      // Clear the ready
+    ldw         r11, r10[1]                     // Load channel
+    out         res[r11], r11                   // Output word to signal packet sent okay
+
+    bu        	NextToken
 
 BadHandShake:			                        // Received a bad (or no)handshake
     ldap        r11, NextRxWord                 // Restore RXD event vector
     setv        res[RXD], r11
-    ldc         r11, 1                          // Send 1 for error
-    out         res[r5], r11
-        
     bu 		    NextToken
 
 .align 32
-.skip 26
+.skip 28
 SmallTxPacket:
+    ldw          r8, r8[r4]                        // Load first data word
 //    inct       r8, res[r5]                      // Input tail length + 10
-    inct       r6, res[r5]                      // get end of packet token
+    //inct       r6, res[r5]                      // get end of packet token
     //sub        r8, r8, 10
-    in         r6, res[r5]                      // Input tail data
+    //in         r6, res[r5]                      // Input tail data
     //shl        r8, r8, 4                        // Tail length bytes to bits *2
 
 //    shr        r8, r8, 1
         
     .xtabranch TxTail0s, TxTail1s, TxTail2s, TxTail3s
-    bru       r8                                // branch taillength
+    bru         r6                              // branch taillength
 
 //--------------------------------------------------------------------------
 .align 64
@@ -303,13 +317,13 @@ XUD_IN_TxCrc_TailS0:
 .align 64
 .skip 0
 TxTail1s:
-    ldc        	r8, 0               
+    ldc        	r6, 0               
     // One tail byte
-    shl 		r6, r6, 8
-    or  		r11, r11, r6
-    shr 		r6, r6, 8
-    crc8        r7, r4, r6, r9        
-    crc32       r7, r8, r9               		// r5: 0 
+    shl 		r8, r8, 8                       // Concat PID and Data              
+    or  		r11, r11, r8
+    shr 		r8, r8, 8
+    crc8        r7, r4, r8, r9        
+    crc32       r7, r6, r9               		// r5: 0 
     not         r7, r7        
 
 XUD_IN_TxPid_TailS1:
@@ -322,19 +336,19 @@ XUD_IN_TxCrc_TailS1:
 .align 64
 .skip 0
 TxTail2s:
-    ldc        r8, 0           
+    ldc        r6, 0           
     // Two tail byte    
-    shl     r6, r6, 8
-    or      r11, r11, r6
-    shr     r6, r6, 8
-//    outpw     res[TXD], r11, 8        // PID
-//    outpw        res[TXD], r6, 16
+    shl         r8, r8, 8
+    or          r11, r11, r8
+    shr         r8, r8, 8
+    //outpw     res[TXD], r11, 8        // PID
+    //outpw        res[TXD], r6, 16
 
-    crc8         r7, r6, r6, r9
-    crc8         r7, r6, r6, r9
-    crc32        r7, r8, r9               // r5: 0     
+    crc8         r7, r8, r8, r9
+    crc8         r7, r8, r8, r9
+    crc32        r7, r6, r9               // r5: 0     
     not          r7, r7
-    shr        r6, r7, 8
+    shr          r6, r7, 8
     
     shl        r7, r7, 24
     zext       r11, 24
@@ -350,16 +364,16 @@ XUD_IN_TxCrc_TailS2:
 .align 64
 .skip 0
 TxTail3s:
-    ldc        r8, 0           
+    ldc        r6, 0           
 	// Two tail byte 
 XUD_IN_TxPid_TailS3:
   outpw        res[TXD], r11, 8         // PID
-  outpw        res[TXD], r6, 24
-  crc8         r7, r6, r6, r9
-  crc8         r7, r6, r6, r9
-  crc8         r7, r6, r6, r9
+  outpw        res[TXD], r8, 24
+  crc8         r7, r8, r8, r9
+  crc8         r7, r8, r8, r9
+  crc8         r7, r8, r8, r9
 	
-  crc32        r7, r8, r9               // r5: 0     
+  crc32        r7, r6, r9               // r5: 0     
   not          r7, r7
 
 XUD_IN_TxCrc_TailS3:
@@ -367,79 +381,3 @@ XUD_IN_TxCrc_TailS3:
   bu           DoneTail
 .cc_bottom Pid_In.func
 
-.globl XUD_InReady_Buffer
-.cc_top XUD_InReady_Buffer.func, XUD_InReady_Buffer
-// Specific IN code for L1 USB Audio Feedback EP (ep1_in)
-// This sends fixed length (4 bytes) packet, reading the feedback value from memory.
-// The event vector for the channel is set to this code, and data is never read from
-// the channel so that the event will always be taken.
-.align 4
-XUD_InReady_Buffer:     
-    //TODO LOOKUP EP TYPE
-    clre                                        // Endpoint has data to send 
-    //in         r11, res[r5]
-    //chkct       res[r5], XS1_CT_END
-    //out		     res[r5], r10                     // Reply to request to send
-
-    
-    
-//PidToggle:
-    //ld8u       r11, r6[r10]                     // Load data pid from table
-    //ldc        r7, 0x88
-    //xor        r8, r11, r7
-    //st8        r8, r6[r10]
-    
-	ldc			r11, PIDn_DATA0
-    ldc        r7, 0xf335                       // Init CRC
-
-//NormalTxPacket:
-//SendDataPid1:
-	
-	  ldw        r6, dp[Endpoint1_feedback_buffer] //in				r6, res[r5]                       // Get data word (loop unrolled once)
-	  crc32      r7, r6, r9
-	  
-    outpw      res[TXD], r11, 8                 // Output PID to bus
-    
-    out        res[TXD], r6 
-
-    crc32        r7, r3, r9                 // r3: 0
-    not          r7, r7
-    outpw        res[TXD], r7, 16
-
-    bu           DoneTail  
-       
-
-.cc_bottom XUD_InReady_Buffer.func
-
-.globl XUD_InReady_Buffer_3Byte
-.cc_top XUD_InReady_Buffer_3Byte.func, XUD_InReady_Buffer_3Byte
-// Specific IN code for L1 USB Audio Feedback EP (ep1_in)
-// This sends fixed length (**3** bytes) packet, reading the feedback value from memory.
-// The event vector for the channel is set to this code, and data is never read from
-// the channel so that the event will always be taken.
-.align 4
-XUD_InReady_Buffer_3Byte:     
-    //TODO LOOKUP EP TYPE
-    clre                                        // Endpoint has data to send 
-    
-	ldc			r11, PIDn_DATA0
-    
-    ldc        r7, 0xf335                       // Init CRC
-
-	ldw        r6, dp[Endpoint1_feedback_buffer] //in				r6, res[r5]                       // Get data word (loop unrolled once)
-    ldc        r5, 0	  
-    
-
-    // Two tail byte 
-    outpw        res[TXD], r11, 8     // PID
-    outpw        res[TXD], r6, 24
-    crc8         r7, r6, r6, r9
-    crc8         r7, r6, r6, r9
-    crc8         r7, r6, r6, r9
-
-    crc32        r7, r5, r9               // r5: 0     
-    not          r7, r7
-    outpw        res[TXD], r7, 16
-    bu           DoneTail
-        
-.cc_bottom XUD_InReady_Buffer_3Byte.func

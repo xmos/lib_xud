@@ -10,22 +10,21 @@ Pid_Ping:
     shr       r10, r10, 24;                            /* Shift off junk */  
 
     in         r11, res[r1];  
-    bf         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
+    bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
 #else
     #include "XUD_G_Crc.S"                       
 #endif
-//TODO PING CURRENTLY ALWAYS ACKS
 
 LoadStatTablePing:
-    ldw       r5, r5[r10]                       // Load relevant EP chanend
-    bf        r5, PrimaryBufferFull_PING
+    ldw       r11, r5[r10]                       // Load relevant EP chanend
+    bf        r11, PrimaryBufferFull_PING
   
 PrimaryBufferEmpty_PING:               // Send ACK
   nop
   nop
   ldc          r11, PIDn_ACK
   outpw        res[TXD], r11, 8
-  bu           Return_PING 
+  bu           NextTokenAfterPing
 
 
 PrimaryBufferFull_PING:
@@ -33,9 +32,6 @@ PrimaryBufferFull_PING:
   nop
   ldc          r11, PIDn_NAK
   outpw        res[TXD], r11, 8
-  bu           Return_PING
+  bu           NextTokenAfterPing
 
-Return_PING:
-  bu NextToken
- 
-    .cc_bottom Pid_Ping.func
+.cc_bottom Pid_Ping.func

@@ -6,10 +6,6 @@
   **/
 /* Error printing functions */
 
-#ifdef SIMULATION
-#warning !!!!!!!!!!!!!! BUILDING FOR SIM
-#endif
-
 #ifdef XUD_DEBUG_VERSION
 void XUD_Error(char errString[]);
 void XUD_Error_hex(char errString[], int i_err);
@@ -21,9 +17,10 @@ void XUD_Error_hex(char errString[], int i_err);
 #include <xs1.h>
 #include <print.h>
 #include <xclib.h>
+#include <platform.h>
 
 #include "xud.h"
-#include "usb.h"
+//#include "usb.h"
 #include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
 
@@ -40,13 +37,14 @@ void XUD_Error_hex(char errString[], int i_err);
 #endif
 
 #ifdef ARCH_S
-#warning BUILDING WITH S SUPPORT
 #include "xa1_registers.h"
 #include "glx.h"
+#include <xs1_su.h>
 #endif
 
 void XUD_UserSuspend();
 void XUD_UserResume();
+void XUD_PhyReset_User();
 
 #if 0
 #pragma xta command "config threads stdcore[0] 6"        
@@ -298,13 +296,13 @@ XUD_chan epChans0[32];
 typedef struct XUD_ep_info { 
   unsigned int chan_array_ptr;
   unsigned int ep_xud_chanend;
-  unsigned int ep_client_chanend;
-  unsigned int scratch;   // 3 used for datalength in
-  unsigned int pid;      //4 
-  unsigned int scratch2; // 5 Data 
-  //unsigned int scratch3; // 5 Data (used for datalenght in)
+  unsigned int ep_client_chanend;   // 2
+  unsigned int scratch;             // 3 used for datalength in
+  unsigned int pid;                 // 4 Expected out PID 
+  unsigned int epType;              // 5 Data
+  unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN. 
+  unsigned int tailLength;           // 7 "tail" length for IN (bytes)
 } XUD_ep_info;
-
 
 static XUD_ep_info ep_info[32];
 
@@ -351,7 +349,7 @@ extern int XUD_LLD_IoLoop(
 
 // Pid sequencing tables.. note currently only supports DATA0/DATA1 sequencing
 /* TODO these should be init in loop over EP COUNT */
-unsigned char ep_pid_sequence_table_OUT[] = {PID_DATA1, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0};
+//unsigned char ep_pid_sequence_table_OUT[] = {PID_DATA1, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0};
 
 unsigned handshakeTable_IN[16];
 unsigned handshakeTable_OUT[16];
@@ -419,7 +417,7 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
         }
     }
 }
-
+        
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed) 
 {
     for(int i = 0; i < nOut; i++) 
@@ -449,6 +447,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
     const int reset_time = RESET_TIME;
+
+
 
     XUD_USB_Done = 0;
 
@@ -481,8 +481,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #if defined(ARCH_S) 
 
 #ifndef SIMULATION
-    /* Setup link with Glx */
-    glx_link_setup(MYID, GLXID);
+    /* Setup link with Glx - THIS IS NOW DONE IN THE TOOLS SUPPORT */
+   //glx_link_setup(MYID, GLXID);
 #endif
 
 #ifdef GLX_PWRDWN
@@ -544,10 +544,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   //set_port_sample_delay(p_usb_rxd);
   //set_port_sample_delay(rx_rdy);
 
-  start_clock(tx_usb_clk);
-  start_clock(rx_usb_clk);
-  configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
-  configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
+  	set_port_inv(flag0_port);
+	set_pad_delay(flag1_port, 3);
+
+  	start_clock(tx_usb_clk);
+  	start_clock(rx_usb_clk);
+ 	configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
+  	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
+
+
 #endif
 
     while(!XUD_USB_Done)
@@ -642,12 +647,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifndef SIMULATION       
         /* Enable the USB clock */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
+        //write_node_config_reg(xs1_su, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
 
         /* Now reset the phy */
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
+        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,  (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
 
         /* Keep usb clock active, enter active mode */
         write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
+       // write_node_config_reg(xs1_su, XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
 #endif
 
 #ifdef GLX_PWRDWN
@@ -663,11 +670,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 #endif
 
-
 #else
         /* Reset transceiver */
-        if (!isnull(p_rst)) {
-           XUD_PhyReset(p_rst, reset_time*10, rstMask);
+        if (!isnull(p_rst)) 
+        {
+            XUD_PhyReset(p_rst, reset_time*10, rstMask);
+        }
+        else
+        {
+            clearbuf(p_usb_rxd);
+            XUD_PhyReset_User();
         }
 #endif
 
@@ -678,20 +690,22 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         p_usb_clk when pinseq(0) :> int _;
 
 #ifdef VBUSHACK
-        {timer t;
-         unsigned x;
-         t :> x;
-         t when timerafter(x+100000) :> void;
+        {
+            timer t;
+            unsigned x;
+            t :> x;
+            t when timerafter(x+100000) :> void;
          }
  
         /* Driver STP low */
         p_usb_stp <: 0;
 
         /* Wait for dir low */
-        {timer t;
-         unsigned x;
-         t :> x;
-         t when timerafter(x+1000) :> void;
+        {
+            timer t;
+            unsigned x;
+            t :> x;
+            t when timerafter(x+1000) :> void;
          }
 
 
@@ -729,6 +743,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Configure ports and clock blocks for use with UIFM */
         XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
 
+        set_pad_delay(flag1_port, 5);
+        set_port_inv(flag0_port);
        
         /* Enable UIFM and wait for connect */
         XUD_UIFM_Enable(UIFM_MODE);
@@ -773,7 +789,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
               //  {
 #ifndef SIMULATION
                 write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
-                    (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
+                      (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
                // }
 #endif
@@ -795,6 +811,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 {
                     /* Set flags up for pwr signalling */ 
                     reset = XUD_Init();
+                    //p_test <: 1;
                     one = 0;
                 }
                 else
@@ -838,10 +855,17 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         break;
                     }
 
+                    /* Reset the OUT ep structures */
+                    for(int i = 0; i< noEpOut; i++)
+                    {
+                        ep_info[0+i].pid = PID_DATA0;
+                    }
+
+
                     /* Reset in the ep structures */
                     for(int i = 0; i< noEpIn; i++)
                     {
-                        ep_info[noEpOut+i].pid = PIDn_DATA1;
+                        ep_info[noEpOut+i].pid = PIDn_DATA0;
                     }
 
                     /* Set default device address */
@@ -894,7 +918,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 }
             }
 
-            //p_test <: 1;
 
             /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
             NOTE: Need to do this every iteration since CHKTOK would break power signaling */
@@ -939,9 +962,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 flag0: Valid token flag
                 flag1: Rx Active
                 flag2: Rx Error */
-                     //toggle = !toggle;
-                     //p_test <: toggle;
-
             XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
                            reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof, c_usb_testmode); 
 
@@ -1047,6 +1067,10 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
       epStatFlagTableOut[i] = epTypeTableOut[i] & XUD_STATUS_ENABLE;
       epTypeTableOut[i] = epTypeTableOut[i] & 0x7FFFFFFF;
+      
+      ep_info[i].epType = epTypeTableOut[i];
+
+      ep_info[i].pid = PID_DATA0;
 
       handshakeTable_OUT[i] = PIDn_NAK;
     }
@@ -1069,10 +1093,12 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
         outuint(c_ep_in[i], x);
 
-        ep_info[noEpOut+i].pid = PIDn_DATA1;
+        ep_info[noEpOut+i].pid = PIDn_DATA0;
 	   
         epStatFlagTableIn[i] = epTypeTableIn[i] & XUD_STATUS_ENABLE;
         epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;
+
+        ep_info[noEpOut+i].epType = epTypeTableIn[i];
 
         handshakeTable_IN[i] = PIDn_NAK;
     }
@@ -1104,13 +1130,19 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
 #ifndef ARCH_S
     /* Clock reset port from reference clock (required as clkblk 0 running from USB clock) */
-    if(!isnull(p_rst) && !isnull(clk)) {
+    if(!isnull(p_rst) && !isnull(clk)) 
+    {
+       set_port_clock(p_rst, clk);
+    }
+   
+    if(!isnull(clk))
+    {
        set_clock_on(clk);
        set_clock_ref(clk);
-       set_port_clock(p_rst, clk);
        start_clock(clk);
     }
-#endif
+    
+   #endif
 
     /* Run the main XUD loop */
     XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, c_usb_testmode);
@@ -1142,12 +1174,14 @@ void ERR_BadToken()
 #endif
 }
 
-void ERR_BadCrc()
+void ERR_BadCrc(unsigned a, unsigned b)
 {
-#ifdef XUD_DEBUG_VERSION
-  printstrln("BAD DATA CRC");
+    printhex(a);
+    printhexln(0xffff);
+    printhex(b);
+
   while(1);
-#endif
+//#endif
 }
 
 void ERR_SetupBuffFull()

@@ -14,10 +14,10 @@
 #include "XUD_UIFM_Defines.h"
 
 #ifdef ARCH_S
-#warning BUILDING FOR S SUPPORT
 #include "xa1_registers.h"
 #include "glx.h"
 #endif
+
 
 void XUD_UIFM_PwrSigFlags();
 
@@ -147,6 +147,7 @@ int XUD_Init()
 
                     case SE0_timer when timerafter(SE0_start_time + STATE_START_TO) :> int:
                         host_signal = 1;
+                        
                         reset = 0;
                         break;
                 }
@@ -180,6 +181,7 @@ int XUD_Suspend()
     unsigned time;
     unsigned before;
     unsigned devAddr;
+
  
 #if defined(ARCH_L) && defined(GLX_SUSPHY)
 #ifdef GLX_PWRDWN
@@ -212,14 +214,15 @@ int XUD_Suspend()
             write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1,wData); 
         }
         
-        /* Suspend Phy etc */
+        /* Suspend Phy etc 
+         * SEOFILTBASE sets a bit in a counter for anti-glitch (i.e 2 looks for change in 0b10)
+         * This is a simple counter with check from wrap in this bit, so worst case could be x2 off
+         * Counter runs at 32kHz by (31.25uS period). So setting 2 is about 63-125uS
+         */
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
                                     (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) 
-                                    |(0x3 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
+                                    |(0x2 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
                                     | (1 << XS1_UIFM_PHY_CONTROL_FORCESUSPEND));
-
-
-       
 
         /* Mark scratch reg */
         {
@@ -229,20 +232,21 @@ int XUD_Suspend()
 
         // Finally power down Xevious,  keep sysclk running, keep USB enabled.
         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 
-                       (1 << XS1_GLX_PWR_SLEEP_INIT_BASE)               /* Sleep */
-                     | (1<<XS1_GLX_PWR_SLEEP_CLK_SEL_BASE)           /* Default clock */ 
+                       (1 << XS1_GLX_PWR_SLEEP_INIT_BASE)            /* Sleep */
+                     | (1 << XS1_GLX_PWR_SLEEP_CLK_SEL_BASE)         /* Default clock */ 
                      | (0x3 << XS1_GLX_PWR_USB_PD_EN_BASE ) );       /* Enable usb power up/down */
 
         /* Normally XCore will now be off and will reboot on resume/reset 
          * However, all supplies enabled to test suspend controller so we'll poll resume reason reg.. */
 
-         while(1)
+        while(1)
         {
             unsigned wakeReason = 0;
             read_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, wakeReason);
             
             if(wakeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMEK))
-            { 
+            {
+                 
                 /* Unsuspend phy */        
                 write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,0);
                 
@@ -275,7 +279,6 @@ int XUD_Suspend()
                     
                     if(g_curSpeed == XUD_SPEED_HS)
                     {
-
                         /* Back to high-speed */
                         write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
                     }
@@ -302,6 +305,11 @@ int XUD_Suspend()
 
                 XUD_UIFM_PwrSigFlags();
 
+                {
+                    unsigned time;
+                    t :> time;
+                    t when timerafter(time+250000) :> void;
+                }
                 return 1;
             }
         }
@@ -590,9 +598,6 @@ int XUD_Suspend()
             
                 if(tmp & UIFM_FLAGS_SE0)
                 {
-                    
-                    //printstr("RESUME1");
-                      // p_test <: 1; 
                     /* Resume detected from suspend: switch back to HS (suspendm high) and continue...*/                inSus = 0;
                     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
 

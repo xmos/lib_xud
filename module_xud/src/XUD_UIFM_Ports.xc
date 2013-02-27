@@ -25,7 +25,6 @@ out port p_usb_txd       = UIFM_TX_DATA_PORT;
 #ifndef USB_CORE
 //#error "Must define USB_CORE to core number with USB interface"
 #else
-
 #define UIFM_USB_CLK_PORT        XS1_PORT_1H
 
 #define UIFM_REG_WRITE_PORT      XS1_PORT_8C
@@ -46,7 +45,6 @@ on stdcore[USB_CORE]:in  port flag1_port      = UIFM_FLAG_1_PORT;
 on stdcore[USB_CORE]:in  port flag2_port      = UIFM_FLAG_2_PORT;
 on stdcore[USB_CORE]:out port p_usb_txd       = UIFM_TX_DATA_PORT;
 on stdcore[USB_CORE]:    port p_usb_rxd       = UIFM_RX_DATA_PORT;
-
 #endif
 #endif
 #endif

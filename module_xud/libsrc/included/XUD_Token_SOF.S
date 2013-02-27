@@ -6,20 +6,17 @@ Pid_Sof:
     shr       r10, r10, 24;                            /* Shift off junk */  
 
     in         r11, res[r1];  
-    bf         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
+    bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
 #else
 //    #include "XUD_G_Crc.S"
     in         r10, res[RXD]
 #endif
 
-    clrsr       0x2
+    clrsr       0x3
     ldw        r11, sp[(STACK_EXTEND+9)]
     
-    //bf         r11, noSofChannel
-//SofChannel:
     out        res[r11], r10
 
-noSofChannel:
     ldw        r10, sp[14]                      // Load timer from stack
     setc       res[r10], XS1_SETC_COND_NONE    // Read current time
 
@@ -30,7 +27,7 @@ noSofChannel:
     setd        res[r10], r11                    
     
     setc        res[r10], XS1_SETC_COND_AFTER    // Re-enable thread interrupts
-    setsr       0x2
+    setsr       0x3
 
 	bu Loop_BadPid
 
@@ -47,13 +44,13 @@ Pid_Sof_NoChan:
     shr       r10, r10, 24;                            /* Shift off junk */  
 
     in         r11, res[r1];  
-    bf         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
+    bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
 #else
 //    #include "XUD_G_Crc.S"
     in         r10, res[RXD]
 #endif
 
-    clrsr       0x2
+    clrsr       0x3
     ldw         r10, sp[14]                      // Load timer from stack
     setc        res[r10], XS1_SETC_COND_NONE    // Read current time
     ldw         r8, sp[13]
@@ -62,7 +59,7 @@ Pid_Sof_NoChan:
     setd        res[r10], r11                    
     ldw         r8, sp[13]
     setc        res[r10], XS1_SETC_COND_AFTER    // Re-enable thread interrupts
-    setsr       0x2
+    setsr       0x3
 	bu          Loop_BadPid
 
 

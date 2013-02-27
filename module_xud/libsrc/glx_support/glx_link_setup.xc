@@ -82,8 +82,7 @@ void glx_link_setup_no_link_or_hello (unsigned myid, unsigned glxid)
 
 void glx_link_setup (unsigned myid, unsigned glxid)
 {
-    unsigned link_delay_vals, link_delay_vals_rem, glx_period_val, link_setup_val,read_data_u;
-
+    unsigned link_delay_vals, link_delay_vals_rem, glx_period_val, link_setup_val;
     glx_link_setup_no_link_or_hello(myid,glxid);
 
     // Calc the value of the GLX clock period (in ps)

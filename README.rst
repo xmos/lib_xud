@@ -9,6 +9,10 @@ Binary Library Module Example
 
 :Description:  This repo is an example of how to build modules that can make an exportable binary library.
 
+Changelog
+=========
+- Not longer have to call _ResetPid functions for control requests, ISO EPs etc.  This is done automatically.
+
 
 To Do
 =====

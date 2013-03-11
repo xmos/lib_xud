@@ -272,9 +272,9 @@ void XUD_UnStall_Out(int epNum);
 void XUD_UnStall_In(int epNum);
 
 #pragma select handler
-void XUD_GetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
+void XUD_GetData_Select(chanend c, XUD_ep ep, int &tmp);
 #pragma select handler
-void XUD_SetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
+void XUD_SetData_Select(chanend c, XUD_ep ep, int &tmp);
 
 inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
 {

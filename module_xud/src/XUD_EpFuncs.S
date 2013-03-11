@@ -121,7 +121,10 @@ XUD_GetSetupData_ReturnOk:
 
 XUD_SetData_Select:
     entsp 4
-    stw   r4, sp[1]
+    stw         r4, sp[1]
+
+    testct      r3, res[r0]
+    bt          r3, XUD_SetData_Select_Return_ResetSuspend
 
     in          r3, res[r0]                   // Data sent okay 
 
@@ -136,14 +139,14 @@ XUD_SetData_PidToggle_:                          //
     stw         r11, r1[4]                      // Store back PID
 
 XUD_SetData_DonePid_:                        
-    //ldw         r0, sp[1]                  
-    //ldw         r1, sp[2]
-    //ldw         r2, sp[3]
-    //ldw         r3, sp[4]  
-Return2_:                                       // Reg restore
     ldw         r4, sp[1]        
     retsp       4
-    
+
+XUD_SetData_Select_Return_ResetSuspend:
+    mkmsk       r0, 32                           // Return -1 as length
+    stw         r0, r2[0]
+    ldw         r4, sp[1]        
+    retsp       4  
 .cc_bottom XUD_SetData_Select.func
 
 

@@ -105,7 +105,7 @@ int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
  */
 int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer_out[], unsigned char buffer_in[], unsigned datalength)
 {
-    unsigned tmp;
+    int tmp;
 
     /* Set ready on both the In and Out Eps */
     XUD_SetReady_Out(ep_out, buffer_out);

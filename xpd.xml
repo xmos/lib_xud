@@ -1,11 +1,24 @@
 <?xml version="1.0" ?>
-<xpkg>
-    <git_export>False</git_export>
-    <binary_only>module_xud</binary_only>
+<xpd>
+    <components>
+        <component name = "Low-Level USB Driver Library" type = "component" buildresults_path = "module_xud/.module_xud.buildinfo" scope = "General Use" path = "module_xud" metainfo_path = "module_xud/module_xud.metainfo" local = "false" id = "module_xud" description = "Low-level driver library for USB.">
+            <keyword>usb</keyword>
+            <keyword>xud</keyword>
+        </component>
+    </components>
     <dependency repo = "xcommon">
-        <githash>8ca5de9ea386263221049df224c912db0534cb26</githash>
-        <uri>ssh://git@github.com/xcore/xcommon</uri>
+        <githash>5d913493262b6ff5f372751cc6bb3378784b0720</githash>
+        <uri>git://github.com/xcore/xcommon.git</uri>
     </dependency>
-    <location>git@github.com:xcore/sc_lib_example.git</location>
+    <description>Low-Level USB Driver Library</description>
+    <binary_only>module_xud</binary_only>
+    <git_export>False</git_export>
+    <location>git://github.com/xcore/sc_xud.git</location>
     <name>sc_xud</name>
-</xpkg>
+    <maintainer>XMOS</maintainer>
+    <partnumber>XM-002825-DH</partnumber>
+    <subpartnumber>XM-002826-SM</subpartnumber>
+    <vendor>XMOS</vendor>
+    <xcore_repo>sc_xud.git</xcore_repo>
+    <xpd_version>1.0</xpd_version>
+</xpd>

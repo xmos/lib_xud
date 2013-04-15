@@ -1,0 +1,104 @@
+-- -*- mode: lua -*-
+
+configPoints = {}
+
+derivedValues = {}
+
+ports = {
+  p_usb_clock = {
+    short      = "USB Clock Port",
+    long       = "Port driving the USB clock",
+    help       = "",
+    width      = 1,
+    tile       = "stdcore[0]",
+    fixedValue = "XS1_PORT_1H" 
+  },
+  p_usb_reg_write = {
+    short      = "USB Register Write Port",
+    long       = "Configuration register write port",
+    help       = "",
+    width      = 8,
+    tile       = "stdcore[0]",
+    fixedValue = "XS1_PORT_8C" 
+  },
+  p_usb_reg_read = {
+    short      = "USB Register Read Port",
+    long       = "Configuration register read port",
+    help       = "",
+    width      = 8,
+    tile       = "stdcore[0]",
+    fixedValue = "XS1_PORT_8D" 
+  },
+  p_usb_flag_0 = {
+    short      = "USB Flag Port 0",
+    long       = "Flag 0 port",
+    help       = "",
+    width      = 1,
+    tile       = "stdcore[0]",
+    fixedValue = "XS1_PORT_1N" 
+  },
+  p_usb_flag_1 = {
+    short      = "USB Flag Port 1",
+    long       = "Flag 1 port",
+    help       = "",
+    width      = 1,
+    tile       = "stdcore[0]",
+    fixedValue = "XS1_PORT_1O" 
+  },
+  p_usb_flag_2 = {
+    short      = "USB Flag Port 2",
+    long       = "Flag 2 port",
+    help       = "",
+    width      = 1,
+    tile       = "stdcore[0]",
+    fixedValue = "XS1_PORT_1P" 
+  },
+  p_usb_tx_data = {
+    short      = "USB Transmit Data Port",
+    long       = "Port used to drive the transmit data",
+    help       = "",
+    width      = 8,
+    tile       = "stdcore[0]",
+    fixedValue = "XS1_PORT_8A" 
+  },
+  p_usb_rx_data = {
+    short      = "USB Receive Data Port",
+    long       = "Port used to receive data",
+    help       = "",
+    width      = 8,
+    tile       = "stdcore[0]",
+    fixedValue = "XS1_PORT_8B" 
+  }
+}
+
+channels = {}
+
+function getConfigStatus()
+   return "Trusted", {}
+end
+
+generatedCode = {
+   includes = {},
+   globals  = "",
+   body  = ""
+}
+
+api = {
+    "XUD_ParseSetupPacket",
+    "XUD_ClearStall_In",
+    "XUD_ClearStall_Out",
+    "XUD_DoGetRequest",
+    "XUD_DoSetRequestStatus",
+    "XUD_GetBuffer",
+    "XUD_GetSetupBuffer",
+    "XUD_GetSetupPacket",
+    "XUD_Init_Ep",
+    "XUD_Manager",
+    "XUD_ParseSetupPacket",
+    "XUD_PrintSetupPacket",
+    "XUD_ResetEndpoint",
+    "XUD_SetBuffer",
+    "XUD_SetDevAddr",
+    "XUD_SetStall_In",
+    "XUD_SetStall_Out"
+}

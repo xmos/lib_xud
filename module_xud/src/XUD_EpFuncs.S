@@ -441,29 +441,29 @@ XUD_SetStall_In:
     retsp 0
 .cc_bottom XUD_SetStall_In.func       
 
-.globl   XUD_UnStall_Out
-.globl   XUD_UnStall_Out.nstackwords
-.linkset XUD_UnStall_Out.nstackwords, 0
+.globl   XUD_ClearStall_Out
+.globl   XUD_ClearStall_Out.nstackwords
+.linkset XUD_ClearStall_Out.nstackwords, 0
         
 /* R0: ep number */
-.cc_top XUD_UnStall_Out.func, XUD_UnStall_Out
-XUD_UnStall_Out:
+.cc_top XUD_ClearStall_Out.func, XUD_ClearStall_Out
+XUD_ClearStall_Out:
     ldaw       r1,  dp[handshakeTable_OUT]
     ldc        r2, PIDn_NAK
     stw        r2, r1[r0]               
     retsp 0
-.cc_bottom XUD_UnStall_Out.func   
+.cc_bottom XUD_ClearStall_Out.func   
 
 
-.globl   XUD_UnStall_In
-.globl   XUD_UnStall_In.nstackwords
-.linkset XUD_UnStall_In.nstackwords, 0
+.globl   XUD_ClearStall_In
+.globl   XUD_ClearStall_In.nstackwords
+.linkset XUD_ClearStall_In.nstackwords, 0
         
 /* R0: ep number */
-.cc_top XUD_UnStall_In.func, XUD_UnStall_In
-XUD_UnStall_In:
+.cc_top XUD_ClearStall_In.func, XUD_ClearStall_In
+XUD_ClearStall_In:
     ldaw       r1,  dp[handshakeTable_IN]
     ldc        r2, PIDn_NAK
     stw        r2, r1[r0]               
     retsp 0
-.cc_bottom XUD_UnStall_In.func  
+.cc_bottom XUD_ClearStall_In.func  

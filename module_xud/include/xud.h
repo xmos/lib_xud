@@ -80,7 +80,7 @@ int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned 
 /*****************************/
 
 /* Typedef for BmRequestType structure */
-typedef struct bmRequestType
+typedef struct BmRequestType
 {
   unsigned char Recipient;       // [4..0]   Request directed to:
                                  //          0b00000: Device
@@ -92,20 +92,26 @@ typedef struct bmRequestType
                                  //          0b10: Request by vendor specific driver 
   unsigned char Direction;       // [7]      0 (Host->Dev)
                                  //          1 (Dev->Host)
-} BmRequestType;
+} BmRequestType_t;
 
 
 /* Typedef for SetupPacket structure */
-typedef struct setupPacket
+typedef struct SetupPacket
 { 
-  BmRequestType bmRequestType;   /* (1 byte) Specifies direction of dataflow, type of rquest and recipient */
+  BmRequestType_t bmRequestType;   /* (1 byte) Specifies direction of dataflow, type of rquest and recipient */
   unsigned char bRequest;        /* Specifies the request */
   unsigned short wValue;         /* Host can use this to pass info to the device in its own way */
   unsigned short wIndex;         /* Typically used to pass index/offset such as interface or EP no */
   unsigned short wLength;        /* Number of data bytes in the data stage (for Host -> Device this                                               this is exact count, for Dev->Host is a max. */
-} SetupPacket;
+} SetupPacket_t;
 
+#define XUD_SetupPacket_t SetupPacket_t
 
+int  XUD_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, XUD_SetupPacket_t &sp);
+
+    
+    
+    
 /** This performs the low level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
@@ -169,12 +175,12 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 /** XUD_ParseSetupPacket
   * @brief Parses a setup data buffer into passed SetupPacket structure 
   */
-void XUD_ParseSetupPacket(unsigned char b[], SetupPacket &p);
+void XUD_ParseSetupPacket(unsigned char b[], SetupPacket_t &p);
 
 /** XUD_PrintSetupPacket 
  *  @brief Prints out passed SetupPacket struct using debug IO
  */
-void XUD_PrintSetupPacket(SetupPacket sp);
+void XUD_PrintSetupPacket(SetupPacket_t sp);
 
 
 /** XUD_GetBuffer()  
@@ -260,7 +266,7 @@ void XUD_SetStall_In(int epNum);
  * @return  void
  * @warning must be run on USB core
  */
-void XUD_UnStall_Out(int epNum);
+void XUD_ClearStall_Out(int epNum);
 
 
 /** XUD_UnStall_In()
@@ -269,7 +275,7 @@ void XUD_UnStall_Out(int epNum);
  * @return  void
  * @warning must be run on USB core
  */
-void XUD_UnStall_In(int epNum);
+void XUD_ClearStall_In(int epNum);
 
 #pragma select handler
 void XUD_GetData_Select(chanend c, XUD_ep ep, int &tmp);

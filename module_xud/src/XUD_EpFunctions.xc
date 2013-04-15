@@ -24,7 +24,7 @@ static int min(int x, int y)
     return y;
 }
 
-void XUD_ParseSetupPacket(unsigned char b[], SetupPacket &p)
+void XUD_ParseSetupPacket(unsigned char b[], SetupPacket_t &p)
 {
   // Byte 0: bmRequestType.
   p.bmRequestType.Recipient = b[0] & 0x1f;
@@ -45,7 +45,7 @@ void XUD_ParseSetupPacket(unsigned char b[], SetupPacket &p)
 
 }
 
-void XUD_PrintSetupPacket(SetupPacket sp)
+void XUD_PrintSetupPacket(SetupPacket_t sp)
 {
   printstr("Setup data\n");
   printstr("bmRequestType.Recipient: ");

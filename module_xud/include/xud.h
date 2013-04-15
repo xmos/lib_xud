@@ -125,7 +125,7 @@ int  XUD_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, XUD_SetupPacket_t &sp);
                         per input endpoint (USB IN transaction); this
                         includes a channel to respond to
                         requests on Endpoint 0.
-      \param num_in The number of output endpoints, should be 
+      \param num_in The number of input endpoints, should be 
                     at least 1 (for Endpoint 0).
       \param c_sof   A channel to receive SOF tokens on. This channel
                      must be connected to a process that

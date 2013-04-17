@@ -9,6 +9,7 @@ XUD API
 -------
 
 .. doxygenenum:: XUD_EpType
+.. doxygentypedef:: XUD_ep
 
 .. doxygenfunction:: XUD_GetData
 .. doxygenfunction:: XUD_GetSetupData

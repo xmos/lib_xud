@@ -3,8 +3,8 @@
   * Author    Ross Owen, XMOS Limited
   **/
 
-#ifndef XUD_H
-#define XUD_H 1
+#ifndef __xud_h__
+#define __xud_h__
 
 #include <print.h>
 #include <xs1.h>
@@ -26,7 +26,10 @@ typedef enum XUD_EpType
     XUD_EPTYPE_DIS,              /**< Disabled */
 } XUD_EpType;
 
-
+/**
+ * \var     typedef XUD_ep
+ * \brief   Typedef for endpoint identifiers
+ */
 typedef unsigned int XUD_ep;
 
 /* Value to be or'ed in with EP type to enable bus state notifications */
@@ -49,7 +52,7 @@ typedef unsigned int XUD_ep;
  * Wrapper functions are provided for conveniance (implemented in XUD_EpFunctions.xc).  
  */
 
-/** XUD_GetData
+/**
  *  \brief      Gets a data from XUD
  *  \param      c   Out channel from XUD
  *  \param      buffer Buffer to store received data into
@@ -57,7 +60,7 @@ typedef unsigned int XUD_ep;
  */
 inline int XUD_GetData(XUD_ep c, unsigned char buffer[]);
 
-/** XUD_GetData_NoReq
+/**
  *  \brief      Essentially the same as XUD_GetData but does not perform the initial handshake 
  *  \param      c   Out channel from XUD
  *  \param      buffer Buffer to store received data into
@@ -65,7 +68,7 @@ inline int XUD_GetData(XUD_ep c, unsigned char buffer[]);
  */
 inline int XUD_GetData_NoReq(XUD_ep c, unsigned char buffer[]);
 
-/** XUD_GetSetupData
+/**
  *  \brief      Gets a data from XUD
  *  \param      o   Out ep from XUD
  *  \param      i   In ep to XUD
@@ -75,14 +78,17 @@ inline int XUD_GetData_NoReq(XUD_ep c, unsigned char buffer[]);
  */
 int XUD_GetSetupData(XUD_ep o, XUD_ep i, unsigned char buffer[]); 
 
-/** XUD_SetData
+/**
  *  \brief      TBD
  */
 int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 
 /*****************************/
 
-/* Typedef for BmRequestType structure */
+/**
+ * \var     typedef BmRequestType_t
+ * \brief   Typedef which determines the direction, type and recipient of a request
+ */
 typedef struct BmRequestType
 {
   unsigned char Recipient;       // [4..0]   Request directed to:
@@ -97,20 +103,23 @@ typedef struct BmRequestType
                                  //          1 (Dev->Host)
 } BmRequestType_t;
 
-
-/* Typedef for SetupPacket structure */
+/**
+ * \var     typedef SetupPacket_t
+ * \brief   Typedef for packet setup structure
+ */
 typedef struct SetupPacket
 { 
-  BmRequestType_t bmRequestType;   /* (1 byte) Specifies direction of dataflow, type of rquest and recipient */
-  unsigned char bRequest;        /* Specifies the request */
-  unsigned short wValue;         /* Host can use this to pass info to the device in its own way */
-  unsigned short wIndex;         /* Typically used to pass index/offset such as interface or EP no */
-  unsigned short wLength;        /* Number of data bytes in the data stage (for Host -> Device this                                               this is exact count, for Dev->Host is a max. */
+  BmRequestType_t bmRequestType;    /* (1 byte) Specifies direction of dataflow, type of rquest and recipient */
+  unsigned char bRequest;           /* Specifies the request */
+  unsigned short wValue;            /* Host can use this to pass info to the device in its own way */
+  unsigned short wIndex;            /* Typically used to pass index/offset such as interface or EP no */
+  unsigned short wLength;           /* Number of data bytes in the data stage (for Host -> Device this
+                                       this is exact count, for Dev->Host is a max. */
 } SetupPacket_t;
 
 #define XUD_SetupPacket_t SetupPacket_t
 
-/** XUD_GetSetupPacket
+/**
  *  \brief      TBD
  */
 int  XUD_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, XUD_SetupPacket_t &sp);
@@ -178,18 +187,18 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
 
 
-/** XUD_ParseSetupPacket
+/**
   * \brief Parses a setup data buffer into passed SetupPacket structure 
   */
 void XUD_ParseSetupPacket(unsigned char b[], SetupPacket_t &p);
 
-/** XUD_PrintSetupPacket
+/**
  *  \brief Prints out passed SetupPacket struct using debug IO
  */
 void XUD_PrintSetupPacket(SetupPacket_t sp);
 
 
-/** XUD_GetBuffer
+/**
   * \brief  Request data from USB buffer for specified EP, pauses untill data is available
   * \param  c Data channel from XUD
   * \param  buffer char buffer passed by ref into which data is returned
@@ -198,7 +207,7 @@ void XUD_PrintSetupPacket(SetupPacket_t sp);
 int XUD_GetBuffer(XUD_ep c, unsigned char buffer[]);
 
 
-/** XUD_GetSetupBuffer
+/**
   * \brief  Request setup data from usb buffer for a specific EP, pauses until data is available.  
   * \param  o EP from XUD
   * \param  i EP to XUD
@@ -217,7 +226,7 @@ int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength);
 int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, unsigned epMax);
 
 
-/** XUD_DoGetReuest
+/**
   * \brief  Does a "get" request.  These take the form:
   *                 - Send data (with reset pid sequencing)
   *	                - Zero-length out transaction status stage
@@ -234,7 +243,7 @@ int XUD_DoGetRequest(XUD_ep c_out, XUD_ep c_in,  uint8 buffer[], unsigned length
 
 int XUD_DoSetRequestStatus(XUD_ep c, unsigned epnNum);
 
-/** XUD_SetDevAddr
+/**
  * \brief   Sets current device address
  * \param   addr Address to be set
  * \return  void
@@ -242,28 +251,28 @@ int XUD_DoSetRequestStatus(XUD_ep c, unsigned epnNum);
  */
 void XUD_SetDevAddr(unsigned addr);
 
-/** XUD_ResetEndpoint
+/**
  *  \brief      TBD
  */
 int XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two);
 
-/** XUD_ResetDrain
+/**
  *  \brief      TBD
  */
 int XUD_ResetDrain(chanend one);
 
-/** XUD_GetBusSpeed
+/**
  *  \brief      TBD
  */
 int XUD_GetBusSpeed(chanend c);
 
-/** XUD_Init_Ep
+/**
  *  \brief      TBD
  */
 XUD_ep XUD_Init_Ep(chanend c_ep);
 
 
-/** XUD_SetStall_Out
+/**
  * \brief   Mark an OUT endpoint as STALL.  Note: is cleared automatically if a SETUP received on EP
  * \param   epNum Endpoint number
  * \return  void
@@ -272,7 +281,7 @@ XUD_ep XUD_Init_Ep(chanend c_ep);
 void XUD_SetStall_Out(int epNum);
 
 
-/** XUD_SetStall_In
+/**
  * \brief   Mark an IN endpoint as STALL.  Note: is cleared automatically if a SETUP received on EP
  * \param   epNum Endpoint number
  * \return  void
@@ -281,7 +290,7 @@ void XUD_SetStall_Out(int epNum);
 void XUD_SetStall_In(int epNum);
 
 
-/** XUD_UnStall_Out
+/**
  * \brief   Mark an OUT endpoint as NOT STALLed.
  * \param   epNum Endpoint number
  * \return  void
@@ -290,7 +299,7 @@ void XUD_SetStall_In(int epNum);
 void XUD_ClearStall_Out(int epNum);
 
 
-/** XUD_UnStall_In
+/**
  * \brief   Mark an IN endpoint as NOT STALLed.
  * \param   epNum Endpoint number
  * \return  void
@@ -298,19 +307,19 @@ void XUD_ClearStall_Out(int epNum);
  */
 void XUD_ClearStall_In(int epNum);
 
-/** XUD_GetData_Select
+/**
  * \brief   TBD
  */
 #pragma select handler
 void XUD_GetData_Select(chanend c, XUD_ep ep, int &tmp);
 
-/** XUD_SetData_Select
+/**
  * \brief   TBD
  */
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, int &tmp);
 
-/** XUD_SetReady_Out
+/**
  * \brief   TBD
  */
 inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
@@ -322,7 +331,7 @@ inline void XUD_SetReady_Out(XUD_ep e, unsigned char bufferPtr[])
   
 }
 
-/** XUD_SetReady_OutPtr
+/**
  * \brief   TBD
  */
 inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
@@ -334,7 +343,7 @@ inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));        
 }
 
-/** XUD_SetReady_In
+/**
  * \brief   TBD
  */
 inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
@@ -371,7 +380,7 @@ inline void XUD_SetReady_In(XUD_ep e, unsigned char bufferPtr[], int len)
 
 }
 
-/** XUD_SetReady_InPtr
+/**
  * \brief   TBD
  */
 inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
@@ -416,4 +425,4 @@ void XUD_Error_hex(char errString[], int i_err);
 #define XUD_Error_hex(a, b) /* */
 #endif
 
-#endif /* _XUD_H_ */
+#endif // __xud_h__

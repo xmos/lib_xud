@@ -1,5 +1,5 @@
-Binary Library Module Example
-.............................
+XMOS Low-Level USB Device Driver
+................................
 
 :Stable release:  None
 :Status:  alpha
@@ -21,3 +21,7 @@ Required Repositories
 
 * xcommon (git://github.com/xcore/xcommon.git)
 
+Support
+=======
+
+Issues may be submitted via the Issues tab in this github repo. Response to any issues submitted as at the discretion of the maintainer for this line.

@@ -7,10 +7,15 @@
         </component>
     </components>
     <dependency repo = "xcommon">
-        <githash>5d913493262b6ff5f372751cc6bb3378784b0720</githash>
+        <githash>e2d71a7a1eb2dbf611dcd57f6213459f037c8fb3</githash>
         <uri>git://github.com/xcore/xcommon.git</uri>
     </dependency>
+    <dependency repo = "sc_usb">
+        <githash>1c15d894ba82a977f62a6491ca85ff1718e9f65e</githash>
+        <uri>git://git/apps/sc_usb</uri>
+    </dependency>
     <description>Low-Level USB Driver Library</description>
+    <exclude_dir>app_test</exclude_dir>
     <binary_only>module_xud</binary_only>
     <git_export>False</git_export>
     <location>git://github.com/xcore/sc_xud.git</location>

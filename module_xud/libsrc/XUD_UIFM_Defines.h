@@ -1,7 +1,6 @@
-
-/** XUD_UIFM_Defines.h 
-  * @brief USeful defines for interfacing UIFM
-  * @Author Ross Owen
+/** 
+  * \brief USeful defines for interfacing UIFM
+  * Author Ross Owen
   **/
 
 #ifndef _XUD_UIFM_DEFINES_H_
@@ -147,4 +146,4 @@
 
 #endif
 
-#endif
+#endif // _XUD_UIFM_DEFINES_H_

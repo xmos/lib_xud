@@ -2,7 +2,7 @@
   * @brief     Functions for data transfer to/from XUD
   * @author    Ross Owen, XMOS Limited
   */
-#include <usb.h>
+#include "usb_defs.h"
 
 .section        .cp.const4,"aMc",@progbits,4
 .align  4

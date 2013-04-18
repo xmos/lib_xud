@@ -201,7 +201,8 @@ void XUD_PrintSetupPacket(SetupPacket_t sp);
 /**
   * \brief  Request data from USB buffer for specified EP, pauses untill data is available
   * \param  c Data channel from XUD
-  * \param  buffer char buffer passed by ref into which data is returned
+  * \param  buffer The buffer to store data in. This is a buffer of integers, containing
+  *         characters; the buffer must be word aligned.
   * \return datalength in bytes
   **/
 int XUD_GetBuffer(XUD_ep c, unsigned char buffer[]);
@@ -216,6 +217,12 @@ int XUD_GetBuffer(XUD_ep c, unsigned char buffer[]);
   **/
 int XUD_GetSetupBuffer(XUD_ep o, XUD_ep i, unsigned char buffer[]);
 
+/**
+ * \param c The endpoint structure created by ``XUD_Init_Ep``
+ * \param buffer The buffer of data to send out.  
+ * \param datalength The number of bytes in the buffer.
+ * \return TBD
+ */
 int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength);
 
 /* Same as above but takes a max packet size for the endpoint, breaks up data to transfers of no 

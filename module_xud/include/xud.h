@@ -1,6 +1,6 @@
 /**
  * \brief     User defines and functions for XMOS USB Device Layer 
- * Author    Ross Owen, XMOS Limited
+ * \author    Ross Owen, XMOS Limited
  **/
 
 #ifndef __xud_h__
@@ -142,8 +142,8 @@ int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned 
  *    \param  c_usb_testmode This should always be null.
  *
  */
-int XUD_Manager(chanend c_ep_out[], int noEpOut, 
-                chanend c_ep_in[], int noEpIn,
+int XUD_Manager(chanend c_epOut[], int noEpOut, 
+                chanend c_epIn[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 out port ?p_usb_rst, clock ?clk, unsigned rstMask, unsigned desiredSpeed,
@@ -163,35 +163,35 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
  *         characters; the buffer must be word aligned.
  * \return The number of bytes written to the buffer (Also see Status Reporting).
  **/
-int XUD_GetBuffer(XUD_ep c, unsigned char buffer[]);
+int XUD_GetBuffer(XUD_ep ep, unsigned char buffer[]);
 
 
 /**
  * \brief  Request setup data from usb buffer for a specific EP, pauses until data is available.  
- * \param  o EP from XUD
- * \param  i EP to XUD
+ * \param  ep_out EP from XUD
+ * \param  ep_in EP to XUD
  * \param  buffer char buffer passed by ref into which data is returned
  * \return datalength in bytes (always 8)
  **/
-int XUD_GetSetupBuffer(XUD_ep o, XUD_ep i, unsigned char buffer[]);
+int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
 
 /**
  * \brief  This function must be called by a thread that deals with an IN endpoint.
  *         When the host asks for data, the low level driver will transmit the buffer
  *         to the host.
- * \param  c The endpoint structure created by ``XUD_Init_Ep``
+ * \param  ep_in The endpoint structure created by ``XUD_Init_Ep``
  * \param  buffer The buffer of data to send out.  
  * \param  datalength The number of bytes in the buffer.
  * \return TBD
  */
-int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength);
+int XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
 
 /* Same as above but takes a max packet size for the endpoint, breaks up data to transfers of no 
  * greater than this.
  *
  * NOTE: This function reasonably assumes the max transfer size for an EP is word aligned  
  **/
-int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, unsigned epMax);
+int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax);
 
 
 /**
@@ -200,8 +200,8 @@ int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, 
  *         answer an IN request, and then waits for an OUT transaction on ``c_out``.
  *         This function is normally called to handle requests from endpoint 0.
  * 
- * \param  c_out The endpoint structure that handles endpoint 0 OUT data in the XUD manager.
- * \param  c_in The endpoint structure that handles endpoint 0 IN data in the XUD manager.
+ * \param  ep_out The endpoint structure that handles endpoint 0 OUT data in the XUD manager.
+ * \param  ep_in The endpoint structure that handles endpoint 0 IN data in the XUD manager.
  * \param  buffer The data to send in response to the IN transaction. Note that this data
  *         is chopped up in fragments of at most 64 bytes.
  * \param  length Length of data to be sent
@@ -209,17 +209,17 @@ int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, 
  * 
  * \return Returns non-zero on error
  **/
-int XUD_DoGetRequest(XUD_ep c_out, XUD_ep c_in,  unsigned char buffer[], unsigned length, unsigned requested);
+int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested);
 
 /**
  * \brief  This function sends an empty packet back on the next IN request with
  *         PID1. It is normally used by Endpoint 0 to acknowledge success.
- * \param  c The endpoint structure to the XUD manager for endpoint 0 in.
+ * \param  ep_in The endpoint structure to the XUD manager for endpoint 0 in.
  * \param  epnNum Not used, provide 0.
  * 
  * \return Returns non-zero on error
  **/
-int XUD_DoSetRequestStatus(XUD_ep c, unsigned epnNum);
+int XUD_DoSetRequestStatus(XUD_ep ep_in, unsigned epnNum);
 
 /**
  * \brief  This function must be called by endpoint 0 once a ``setDeviceAddress``

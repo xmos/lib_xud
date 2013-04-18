@@ -24,44 +24,23 @@ static int min(int x, int y)
     return y;
 }
 
-void XUD_ParseSetupPacket(unsigned char b[], SetupPacket_t &p)
+void XUD_PrintSetupPacket(USB_SetupPacket_t sp)
 {
-  // Byte 0: bmRequestType.
-  p.bmRequestType.Recipient = b[0] & 0x1f;
-  p.bmRequestType.Type      = (b[0] & 0x60) >> 5;
-  p.bmRequestType.Direction = b[0] >> 7;
-
-  // Byte 1:  bRequest 
-  p.bRequest = b[1];
-
-  // Bytes [2:3] wValue
-  p.wValue = (b[3] << 8) | (b[2]);
-
-  // Bytes [4:5] wIndex
-  p.wIndex = (b[5] << 8) | (b[4]);
-
-  // Bytes [6:7] wLength
-  p.wLength = (b[7] << 8) | (b[6]);
-
-}
-
-void XUD_PrintSetupPacket(SetupPacket_t sp)
-{
-  printstr("Setup data\n");
-  printstr("bmRequestType.Recipient: ");
-  printhexln(sp.bmRequestType.Recipient);
-  printstr("bmRequestType.Type: ");
-  printhexln(sp.bmRequestType.Type);
-  printstr("bmRequestType.Direction: ");
-  printhexln(sp.bmRequestType.Direction);  
-  printstr("bRequest: ");
-  printhexln(sp.bRequest); 
-  printstr("bmRequestType.wValue: ");
-  printhexln(sp.wValue);   
-  printstr("bmRequestType.wIndex: ");
-  printhexln(sp.wIndex);
-  printstr("bmRequestType.wLength: ");
-  printhexln(sp.wLength);
+    printstr("Setup data\n");
+    printstr("bmRequestType.Recipient: ");
+    printhexln(sp.bmRequestType.Recipient);
+    printstr("bmRequestType.Type: ");
+    printhexln(sp.bmRequestType.Type);
+    printstr("bmRequestType.Direction: ");
+    printhexln(sp.bmRequestType.Direction);  
+    printstr("bRequest: ");
+    printhexln(sp.bRequest); 
+    printstr("bmRequestType.wValue: ");
+    printhexln(sp.wValue);   
+    printstr("bmRequestType.wIndex: ");
+    printhexln(sp.wIndex);
+    printstr("bmRequestType.wLength: ");
+    printhexln(sp.wLength);
 }
 
 /** XUD_GetBuffer_()
@@ -75,7 +54,6 @@ int XUD_GetBuffer(XUD_ep c, unsigned char buffer[])
     return XUD_GetData(c, buffer);
 }
 
-
 /** XUD_GetSetupBuffer() 
   * @brief  Request setup data from usb buffer for a specific EP, pauses until data is available.  
   * @param  ep_out Out XUD ep 
@@ -87,8 +65,6 @@ int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[])
 {
     return XUD_GetSetupData(ep_out, ep_in, buffer);
 }
-
-
 
 
 int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
@@ -188,7 +164,7 @@ int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, 
 
 
 /* TODO Should take ep max length as a param - currently hardcoded as 64 (#11384) */
-int XUD_DoGetRequest(XUD_ep c, XUD_ep c_in, uint8 buffer[], unsigned length, unsigned requested)
+int XUD_DoGetRequest(XUD_ep c, XUD_ep c_in, unsigned char buffer[], unsigned length, unsigned requested)
 {
     unsigned char tmpBuffer[1024];
 

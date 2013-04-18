@@ -24,25 +24,6 @@ static int min(int x, int y)
     return y;
 }
 
-void XUD_PrintSetupPacket(USB_SetupPacket_t sp)
-{
-    printstr("Setup data\n");
-    printstr("bmRequestType.Recipient: ");
-    printhexln(sp.bmRequestType.Recipient);
-    printstr("bmRequestType.Type: ");
-    printhexln(sp.bmRequestType.Type);
-    printstr("bmRequestType.Direction: ");
-    printhexln(sp.bmRequestType.Direction);  
-    printstr("bRequest: ");
-    printhexln(sp.bRequest); 
-    printstr("bmRequestType.wValue: ");
-    printhexln(sp.wValue);   
-    printstr("bmRequestType.wIndex: ");
-    printhexln(sp.wIndex);
-    printstr("bmRequestType.wLength: ");
-    printhexln(sp.wLength);
-}
-
 /** XUD_GetBuffer_()
   * @brief        Requests data from the endpoint related to the passed channel
   * @param c      Channel to USB I/O thread for this endpoint 

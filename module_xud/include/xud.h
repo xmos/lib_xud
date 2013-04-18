@@ -1,7 +1,7 @@
 /**
-  * \brief     User defines and functions for XMOS USB Device Layer 
-  * Author    Ross Owen, XMOS Limited
-  **/
+ * \brief     User defines and functions for XMOS USB Device Layer 
+ * Author    Ross Owen, XMOS Limited
+ **/
 
 #ifndef __xud_h__
 #define __xud_h__
@@ -95,26 +95,26 @@ int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned 
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
  * 
- *    \param c_ep_out   An array of channel ends, one channel end per 
+ *    \param  c_ep_out   An array of channel ends, one channel end per 
  *                      output endpoint (USB OUT transaction); this includes
  *                      a channel to obtain requests on Endpoint 0.
- *    \param noEpOut    The number of output endpoints, should
+ *    \param  noEpOut    The number of output endpoints, should
  *                      be at least 1 (for Endpoint 0).
- *    \param c_ep_in    An array of channel ends, one channel end
+ *    \param  c_ep_in    An array of channel ends, one channel end
  *                      per input endpoint (USB IN transaction); this
  *                      includes a channel to respond to
  *                      requests on Endpoint 0.
- *    \param noEpIn The number of input endpoints, should be 
+ *    \param  noEpIn The number of input endpoints, should be 
  *                  at least 1 (for Endpoint 0).
- *    \param c_sof   A channel to receive SOF tokens on. This channel
+ *    \param  c_sof   A channel to receive SOF tokens on. This channel
  *                   must be connected to a process that
  *                   can receive a token once every 125 ms. If
  *                   tokens are not read, the USB layer will block up.
  *                   If no SOF tokens are required ``null`` 
  *                   should be used as this channel.
  *
- *    \param epTypeTableOut See epTypeTableIn
- *    \param epTypeTableIn This and epTypeTableOut are two arrays
+ *    \param  epTypeTableOut See epTypeTableIn
+ *    \param  epTypeTableIn This and epTypeTableOut are two arrays
  *                            indicating the type of channel ends. 
  *                            Legal types include: 
  *                           ``XUD_EPTYPE_CTL`` (Endpoint 0), 
@@ -126,20 +126,20 @@ int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned 
  *                            endpoints, the second array contains the
  *                            endpoint types for each of the IN
  *                            endpoints.
- *    \param p_usb_rst The port to send reset signals to.
- *    \param clk The clock block to use for the USB reset - 
+ *    \param  p_usb_rst The port to send reset signals to.
+ *    \param  clk The clock block to use for the USB reset - 
  *               this should not be clock block 0.
- *    \param rstMask   The mask to use when sending a reset. The mask is
+ *    \param  rstMask   The mask to use when sending a reset. The mask is
  *                      ORed into the port to enable reset, and unset when
  *                      deasserting reset. Use '-1' as a default mask if this
  *                      port is not shared.
- *    \param desiredSpeed This parameter specifies whether the
+ *    \param  desiredSpeed This parameter specifies whether the
  *                         device must be full-speed (ie, USB-1.0) or
  *                         whether high-speed is acceptable if supported
  *                         by the host (ie, USB-2.0). Pass ``XUD_SPEED_HS``
  *                         if high-speed is allowed, and ``XUD_SPEED_FS``
  *                         if not. Low speed USB is not supported by XUD.
- *    \param c_usb_testmode This should always be null.
+ *    \param  c_usb_testmode This should always be null.
  *
  */
 int XUD_Manager(chanend c_ep_out[], int noEpOut, 
@@ -147,7 +147,7 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 out port ?p_usb_rst, clock ?clk, unsigned rstMask, unsigned desiredSpeed,
-								chanend ?c_usb_testmode);
+                chanend ?c_usb_testmode);
 
 
 
@@ -155,28 +155,33 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
 
 /**
-  * \brief  Request data from USB buffer for specified EP, pauses untill data is available
-  * \param  c Data channel from XUD
-  * \param  buffer The buffer to store data in. This is a buffer of integers, containing
-  *         characters; the buffer must be word aligned.
-  * \return datalength in bytes
-  **/
+ * \brief  This function must be called by a thread that deals with an OUT endpoint.
+ *         When the host sends data, the low level driver will fill the buffer. It
+ *         pauses until data is available.
+ * \param  c Data channel from XUD
+ * \param  buffer The buffer to store data in. This is a buffer of integers, containing
+ *         characters; the buffer must be word aligned.
+ * \return The number of bytes written to the buffer (Also see Status Reporting).
+ **/
 int XUD_GetBuffer(XUD_ep c, unsigned char buffer[]);
 
 
 /**
-  * \brief  Request setup data from usb buffer for a specific EP, pauses until data is available.  
-  * \param  o EP from XUD
-  * \param  i EP to XUD
-  * \param  buffer char buffer passed by ref into which data is returned
-  * \return datalength in bytes (always 8)
-  **/
+ * \brief  Request setup data from usb buffer for a specific EP, pauses until data is available.  
+ * \param  o EP from XUD
+ * \param  i EP to XUD
+ * \param  buffer char buffer passed by ref into which data is returned
+ * \return datalength in bytes (always 8)
+ **/
 int XUD_GetSetupBuffer(XUD_ep o, XUD_ep i, unsigned char buffer[]);
 
 /**
- * \param c The endpoint structure created by ``XUD_Init_Ep``
- * \param buffer The buffer of data to send out.  
- * \param datalength The number of bytes in the buffer.
+ * \brief  This function must be called by a thread that deals with an IN endpoint.
+ *         When the host asks for data, the low level driver will transmit the buffer
+ *         to the host.
+ * \param  c The endpoint structure created by ``XUD_Init_Ep``
+ * \param  buffer The buffer of data to send out.  
+ * \param  datalength The number of bytes in the buffer.
  * \return TBD
  */
 int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength);
@@ -190,32 +195,50 @@ int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, 
 
 
 /**
-  * \brief  Does a "get" request.  These take the form:
-  *                 - Send data (with reset pid sequencing)
-  *	                - Zero-length out transaction status stage
-  * 
-  * \param  c_out 		XUD_Ep to/from XUD
-  * \param  c_in        XUD_Ep to XUD epNum
-  * \param  buffer 	    Data buffer to send
-  * \param  length	    Length of data to be sent
-  * \param  requested   Max length the host has requested
-  * 
-  * \return		Returns non-zero on error	
-  **/
+ * \brief  This function performs a combined ``XUD_SetBuffer`` and ``XUD_GetBuffer``.
+ *         It transmits the buffer of the given length over the ``c_in`` channel to 
+ *         answer an IN request, and then waits for an OUT transaction on ``c_out``.
+ *         This function is normally called to handle requests from endpoint 0.
+ * 
+ * \param  c_out The endpoint structure that handles endpoint 0 OUT data in the XUD manager.
+ * \param  c_in The endpoint structure that handles endpoint 0 IN data in the XUD manager.
+ * \param  buffer The data to send in response to the IN transaction. Note that this data
+ *         is chopped up in fragments of at most 64 bytes.
+ * \param  length Length of data to be sent
+ * \param  requested  The length that the host requested, pass the value ``sp.wLength``.
+ * 
+ * \return Returns non-zero on error
+ **/
 int XUD_DoGetRequest(XUD_ep c_out, XUD_ep c_in,  unsigned char buffer[], unsigned length, unsigned requested);
 
+/**
+ * \brief  This function sends an empty packet back on the next IN request with
+ *         PID1. It is normally used by Endpoint 0 to acknowledge success.
+ * \param  c The endpoint structure to the XUD manager for endpoint 0 in.
+ * \param  epnNum Not used, provide 0.
+ * 
+ * \return Returns non-zero on error
+ **/
 int XUD_DoSetRequestStatus(XUD_ep c, unsigned epnNum);
 
 /**
- * \brief   Sets current device address
- * \param   addr Address to be set
- * \return  void
+ * \brief  This function must be called by endpoint 0 once a ``setDeviceAddress``
+ *         request is made by the host. It has one parameter, the new device address.
+ * \param  addr Address to be set
  * \warning must be run on USB core
  */
 void XUD_SetDevAddr(unsigned addr);
 
 /**
- *  \brief      TBD
+ * \brief  This function will complete a reset on an endpoint. One can either pass
+ *         one or two channel-ends in (the second channel-end can be set to null).
+ *         The return value should be inspected to find out what type of reset was
+ *         performed. In endpoint 0 typically two channels are reset (IN and OUT).
+ *         In other endpoints ``null`` can be passed as the second parameter.
+ * \param  one IN or OUT endpoint structure to perform the reset on.
+ * \param  two Optional second IN or OUT endpoint structure to perform a reset on.
+ * \return One of: ``XUD_SPEED_HS`` The host has accepted that this device can execute
+ *         at high speed. ``XUD_SPEED_FS`` The device should run at full speed.
  */
 int XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two);
 

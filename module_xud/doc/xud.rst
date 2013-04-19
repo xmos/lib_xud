@@ -1,12 +1,10 @@
-XMOS USB Driver (XUD) Layer Library
-===================================
+XMOS USB Device (XUD) Library
+=============================
 
 Introduction
 ============
 
-This document details the use of the XMOS USB Device (XUD) Layer
-Library, which enables the development of high-speed USB 2.0 devices on
-the XMOS XS-1 architecture.
+This document details the use of the XMOS USB Device (XUD) Library, which enables the development of USB 2.0 devices on the XMOS XS-1 architecture.
 
 This document describes the structure of the library, its basic use, and
 resources required. A worked example that uses the XUD library is shown:
@@ -15,38 +13,37 @@ code for the example can be downloaded from the XMOS website.
 
 This document assumes familiarity with the XMOS XS-1 architecture, the
 Universal Serial Bus 2.0 Specification (and related specifications),
-XMOS tool chain and XC language.
+the XMOS tool chain and XC language.
 
 Overview
 ========
 
-The XUD library allows the implementation of high-speed USB 2.0 devices
-using a ULPI transceiver such as the SMSC USB33XX range.
+The XUD library allows the implementation of both full-speed and high-speed USB 2.0 devices on both XS1-L and XS1-U device families.
+
+For the XS1-L family the implementation requires the use of an external ULPI transceiver such as the SMSC USB33XX range.  The XS1-U familiy includes an integrated USB transceiver. 
+Two libraries, with identical interfaces, are provided, one of XS1-L and one for XS1-U series of processor
 
 The library performs all the low-level I/O operations required to meet
 the USB 2.0 specification. This processing goes up to and includes the
 transaction level. It removes all low-level timing requirements from the
 application, allowing quick prototyping of all manner of USB devices.
 
-Two libraries, with identical interfaces, are provided for the XS1-G and
-XS1-L series of processors.
-
-The XUD library runs in a single thread with endpoint and application
+The XUD library runs in a single core with endpoint and application
 threads communicating with it via a combination of channel communication
 and shared memory variables.
 
 There is one channel per IN or OUT endpoint. Endpoint 0 (the control
-endpoint) requires two channels, one for each direction. Note that
+endpoint) requires two channels, one for each direction. Note, that
 throughout this document the USB nomenclature is used: an OUT endpoint
 is used to transfer data from the host to the device, an IN endpoint is
 used when the host requests data from the device.
 
-An example thread diagram is shown  [figure:thread-diagram]. Circles
-represent threads running on the XS1 with arrows depicting communication
+An example task diagram is shown  [figure:thread-diagram]. Circles
+represent cores running on the XS1 with arrows depicting communication
 channels between these threads. In this configuration there is one
 thread that deals with endpoint 0, which has both the input and output
-channel for endpoint 0. IN endpoint 1 is dealt with by a second thread,
-and OUT endpoint 2 and IN endpoint 5 are dealt with by a third thread.
+channel for endpoint 0. IN endpoint 1 is dealt with by a second core,
+and OUT endpoint 2 and IN endpoint 5 are dealt with by a third core.
 Threads must be ready to communicate with the XUD library whenever the
 host demands its attention. If not, the XUD library will NAK.
 

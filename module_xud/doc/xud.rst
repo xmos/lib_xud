@@ -227,13 +227,22 @@ For example, a different tile on an L16 device is unaffected by this restriction
 Clock Blocks
 ------------
 
-The library uses clock block 0 and configures this clock block to be
+XS1-L Family
+..............
+
+The Library uses one clock block - clock block  0 - and configures this clock block to be
 clocked from the 60MHz clock from the ULPI transceiver. The ports it
 uses are in turn clocked from the clock block.
 
 Since clock block 0 is the default for all ports when enabled it is
 important that if a port is not required to be clocked from this 60MHz
 clock, then it is configured to use another clock block.
+
+XS1-U Family
+............
+
+The Library uses two clock-blocks (clock blocks 4 and 5).  These are clocked from the USB clock.
+
 
 Timers
 ------

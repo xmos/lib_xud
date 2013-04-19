@@ -261,7 +261,7 @@ Basic Usage
 
 This section outlines the basic usage of XUD and finishes with a worked
 example of a USB Human Interface Device (HID) Class compliant mouse.
-Basic use is termed to mean each endpoint has its own dedicated thread.
+Basic use is termed to mean each endpoint runs in its own dedicated core.
 Multiple endpoints in a single thread is possible but currently beyond
 the scope of this document.
 
@@ -271,12 +271,12 @@ applications, the option ``-DUSB_CORE=0`` can be passed to the compiler.
 In multi core systems, you should check which core is used for the USB
 code.
 
-XUD Thread: ``XUD_Manager()``
+XUD Core: ``XUD_Manager()``
 -----------------------------
 
-This function must be called as a thread (normally from a top level
+This function must be called as a core (normally from a top level
 ``par`` statement in ``main()``) around 100 ms after power up. This is
-the main XUD thread that interfaces with the ULPI transceiver. It
+the main XUD task that interfaces with the ULPI transceiver. It
 performs power-signalling/handshaking on the USB bus, and passes packets
 on for the various endpoints.
 
@@ -292,7 +292,7 @@ in an opaque type:
 
 All client calls communicating with the XUD library pass in this type.
 These data structures can be created at the start of execution of a
-client thread with the following call that takes as an argument the
+client core with the following call that takes as an argument the
 endpoint channel connected to the XUD library:
 
 .. doxygenfunction:: XUD_Init_Ep
@@ -305,7 +305,8 @@ communication with the ``XUD_Manager()`` thread. For developer
 convenience these calls are wrapped up by XC functions. It is rare that
 a developer would need to call the assembly access functions directly.
 
-These functions will automatically deal with any PID toggling required.
+These functions will automatically deal with any low level complications required
+such Packet ID toggling etc.
 
 ``XUD_GetBuffer()``
 ~~~~~~~~~~~~~~~~~~~
@@ -317,52 +318,21 @@ These functions will automatically deal with any PID toggling required.
 
 .. doxygenfunction:: XUD_SetBuffer
 
-``XUD_SetBuffer_ResetPid()``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This function acts like ``XUD_SetBuffer``, but it resets the PID to the
-requested value. See ``XUD_SetBuffer`` for a description of the first
-three parameters.
-
-This function is useful for control transfers when the PID toggling
-needs to be reset to DATA0 for the first transfer, PID toggling resumes
-on the next transaction.
-
-::
-
-    int retVal = XUD_SetBuffer_ResetPid(
-                     XUD_ep ep_in,
-                     unsigned char buffer[],
-                     unsigned datalength,
-                     unsigned char pid)
-
--  ``unsigned char pid`` The new PID to use, typically this either
-   ``PIDn_DATA1`` or ``PIDn_DATA0``.
-
-The function returns 0 on success (see also Status Reporting)
-
-``XUD_SetBuffer_ResetPid_EpMax()``
+``XUD_SetBuffer_EpMax()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This function acts like the previous function,
-``XUD_SetBuffer_ResetPid``, but it cuts the data up in packets of a
-fixed maximum size. This is especially useful for control transfers
-where large descriptors must be sent in typically 64 byte transactions.
+This function provides a similar function to that of the previously described ``XUD_SetBuffer`` functionnubut it cuts the data up in packets of a fixed maximum size. This is especially useful for control transfers where large descriptors must be sent in typically 64 byte transactions.
 
-See ``XUD_SetBuffer`` for a description of the first, third, fourth, and
-sixth parameter.
+See ``XUD_SetBuffer`` for a description of the first, second and third parameter.
 
 ::
 
-    int retVal = XUD_SetBuffer_ResetPid_EpMax(
+    int retVal = XUD_SetBuffer_EpMax(
                      XUD_ep ep_in,
-                     unsigned epNum,
                      unsigned char buffer[], 
                      unsigned datalength,
                      unsigned epMax,
-                     unsigned char pid)
-
--  ``unsigned epNum`` Not used, provide 0.
 
 -  ``unsigned epMax`` The maximum packet size in bytes.
 

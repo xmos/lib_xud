@@ -196,9 +196,9 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
 
 /**
  * \brief  This function performs a combined ``XUD_SetBuffer`` and ``XUD_GetBuffer``.
- *         It transmits the buffer of the given length over the ``c_in`` channel to 
- *         answer an IN request, and then waits for an OUT transaction on ``c_out``.
- *         This function is normally called to handle requests from endpoint 0.
+ *         It transmits the buffer of the given length over the ``ep_in`` channel to 
+ *         answer an IN request, and then waits for an OUT transaction on ``ep_out``.
+ *         This function is normally called to handle Get control requests to endpoint 0.
  * 
  * \param  ep_out The endpoint structure that handles endpoint 0 OUT data in the XUD manager.
  * \param  ep_in The endpoint structure that handles endpoint 0 IN data in the XUD manager.
@@ -213,13 +213,12 @@ int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsig
 
 /**
  * \brief  This function sends an empty packet back on the next IN request with
- *         PID1. It is normally used by Endpoint 0 to acknowledge success.
+ *         PID1. It is normally used by Endpoint 0 to acknowledge success of a control transfer.
  * \param  ep_in The endpoint structure to the XUD manager for endpoint 0 in.
- * \param  epnNum Not used, provide 0.
  * 
  * \return Returns non-zero on error
  **/
-int XUD_DoSetRequestStatus(XUD_ep ep_in, unsigned epnNum);
+int XUD_DoSetRequestStatus(XUD_ep ep_in);
 
 /**
  * \brief  This function must be called by endpoint 0 once a ``setDeviceAddress``

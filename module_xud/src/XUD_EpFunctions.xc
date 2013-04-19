@@ -98,7 +98,7 @@ int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_i
 
 
 /* Datalength in bytes */
-int XUD_SetBuffer_EpMax(XUD_ep ep, unsigned char buffer[], unsigned datalength, unsigned epMax)
+int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax)
 {
     int i = 0;
  
@@ -167,8 +167,7 @@ int XUD_DoGetRequest(XUD_ep c, XUD_ep c_in, unsigned char buffer[], unsigned len
 
 /* Send 0 length status 
  * Simply sends a 0 length packet */
- //TODO dont need epNum
-int XUD_DoSetRequestStatus(XUD_ep c, unsigned epNum)
+int XUD_DoSetRequestStatus(XUD_ep c)
 {
     unsigned char tmp[8];
 

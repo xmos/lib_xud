@@ -50,34 +50,26 @@ typedef unsigned int XUD_ep;
 
 /**
  *  \brief      Gets a data from XUD
- *  \param      c   Out channel from XUD
- *  \param      buffer Buffer to store received data into
+ *  \param      ep_out     Out channel from XUD
+ *  \param      buffer     Buffer to store received data into
  *  \return     Datalength (in bytes) 
  */
-inline int XUD_GetData(XUD_ep c, unsigned char buffer[]);
-
-/**
- *  \brief      Essentially the same as XUD_GetData but does not perform the initial handshake 
- *  \param      c   Out channel from XUD
- *  \param      buffer Buffer to store received data into
- *  \return     Datalength (in bytes) 
- */
-inline int XUD_GetData_NoReq(XUD_ep c, unsigned char buffer[]);
+inline int XUD_GetData(XUD_ep ep_out, unsigned char buffer[]);
 
 /**
  *  \brief      Gets a data from XUD
- *  \param      o   Out ep from XUD
- *  \param      i   In ep to XUD
- *  \param      buffer Buffer to store received data into
+ *  \param      ep_out     Out ep from XUD
+ *  \param      ep_in      In ep to XUD
+ *  \param      buffer     Buffer to store received data into
  *  \return     Datalength (in bytes) 
  *  TODO:       Use generic GetData from this 
  */
-int XUD_GetSetupData(XUD_ep o, XUD_ep i, unsigned char buffer[]); 
+int XUD_GetSetupData(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]); 
 
 /**
  *  \brief      TBD
  */
-int XUD_SetData(XUD_ep c, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
+int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 
 /*****************************/
 

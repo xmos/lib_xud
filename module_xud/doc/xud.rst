@@ -362,7 +362,8 @@ endpoint in the endpoint type table.
 
 This means that endpoints are notified of USB bus resets (and
 bus-speeds). The XUD access functions discussed previously
-(``XUD_GetData``, ``XUD_SetData`` etc)return less than 0 in this case.
+(``XUD_GetData``, ``XUD_SetData`` etc)return less than 0 if a USB bus reset is 
+detected.
 
 This reset notification is important if an endpoint thread is expecting
 alternating INs and OUTs. For example, consider the case where a
@@ -388,8 +389,32 @@ speed.
 
 .. doxygenfunction:: XUD_ResetEndpoint
 
-Descriptor Requests
-===================
+
+``XUD_SetStall_In()``
+~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_SetStall_In
+
+``XUD_SetStall_Out()``
+~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_SetStall_Out
+
+``XUD_ClearStall_In()``
+~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_ClearStall_In
+
+``XUD_ClearStall_Out()``
+~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_ClearStall_Out
+
+
+Standard Requests
+=================
+
+The previous sections dealt with main user functions in ``xud.h`` used to control and interract with the XUD library.  A USB device can be programmed using the above functions alone, however, to aid development some additional functions (that are essentially wrappers for the above) are provided.
 
 Endpoint 0 must deal with enumeration and configuration requests from
 the host. Many enumeration requests are compulsory and common to all

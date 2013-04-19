@@ -214,18 +214,15 @@ Core Speed
 ------------
 
 Due to I/O requirements the library requires a guaranteed MIPS rate to
-ensure correct operation. This means that thread count restrictions must
-be observed. The USB thread must run at at least 80 MIPS, and the
-threads that communicate with the USB thread must have a guaranteed 80
-MIPS.
+ensure correct operation. This means that core count restrictions must
+be observed. The XUD core must run at at least 80 MIPS.
 
 This means that for an XS1 running at 400MHz there should be no more
 than five threads executing at any one time that USB is being used. For
 a 500MHz device no more than six threads shall execute at any one time.
 
-Thisrestriction is only a requirement on the core on which USB threads
-are running. For example, a different core on an L2 device is unaffected
-by this restriction.
+This restriction is only a requirement on the tile on which the XUD core is running. 
+For example, a different tile on an L16 device is unaffected by this restriction.
 
 Clock Blocks
 ------------

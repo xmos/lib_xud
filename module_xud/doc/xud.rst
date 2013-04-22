@@ -434,28 +434,42 @@ At this point the request is in a reasonable state to be parsed by endpoint 0.  
 Note, this function can return -1 to indicate a bus-reset condition.
 
 
-A ``USB_StandardRequests()`` function is provided to deal with the mandatory requests required to be implented by a USB device.  This function takes a populated ``USB_SetupPacket_t`` structure as an argument. 
+A ``USB_StandardRequests()`` function is given to provide a bare-minimum implementaiton  of the mandatory requests required to be implented by a USB device.  This function takes a populated ``USB_SetupPacket_t`` structure as an argument. 
 
-The function inspects this SetupPacket structure and deals with the
-following Standard Device requests:
+The function inspects this SetupPacket structure and includes a minimum implentation of the Standard Device requests.  The requests handled as well as listing of the basic functinality associated with the request can be found below:
+
+Standard Device Requests
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``SET_ADDRESS``
 
-- ``SET_CONFIGURATION``
+    - The device address is set in XUD (using ``XUD_SetDevAddr()``)
 
+- ``SET_CONFIGURATION``
     
+    - A global variable is updated with the given configuration value
+    
+- ``GET_STATUS``
+    
+    - The status of the device is returned. This uses the device Configuration descriptor to return if the device is bus powered or not. 
+
+-  ``SET_CONFIGURATION``
+
+    - A global variable is returned with the current configuration last set by ``SET_CONFIGURATION``
 
 -  ``GET_DESCRIPTOR``
 
-   -  ``DEVICE``
+    - Returns the relevant descriptors:
 
-   -  ``CONFIGURATION``
+        -  ``DEVICE``
 
-   -  ``DEVICE_QUALIFIER``
+        -  ``CONFIGURATION``
+    
+        -  ``DEVICE_QUALIFIER``
 
-   -  ``OTHER_SPEED_CONFIGURATION``
+        -  ``OTHER_SPEED_CONFIGURATION``
 
-   -  ``STRING``
+        -  ``STRING``
 
 
 In addition the following test mode requests are dealt with (with the correct test mode set in XUD):   
@@ -467,9 +481,13 @@ In addition the following test mode requests are dealt with (with the correct te
     - ``TEST_PACKET``
     - ``FORCE_ENABLE``
 
+Standard Interface Requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The implementation in ``USB_StandardRequests()`` should be considered a bare minumim for device operation.  They could well be required to be over-ridden for many device implementations.  For example, a USB Audio device could well require a specialised version of ``SET_INTERFACE`` since this could mean that audio will be streamed imminantly.
 
-See Universal Serial Bus 2.0 spec for full details of these requests.
+Please see Universal Serial Bus 2.0 spec for full details of these requests.
+
 
 ``DescriptorRequests()`` takes various arrays and a reference to a
 SetupPacket structure as its parameters:

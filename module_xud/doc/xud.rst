@@ -469,7 +469,7 @@ Standard Device Requests
 
 -  ``GET_DESCRIPTOR``
 
-    - Returns the relevant descriptors:
+    - Returns the relevant descriptors. See ::ref:`sec_hid_ex_descriptors` for further details.
 
         -  ``DEVICE``
 
@@ -657,14 +657,26 @@ Should processing take longer that the host IN polls, the ``XUD_Manager``
 thread will simply NAK the host.  The ``XUD_SetBuffer()`` function will return when the packet 
 transmission is complete.
 
+
 Descriptors
 -----------
+.. _sec_hid_ex_descriptors:
+
+The ``USB_StandardRequests()`` function expects descriptors be declared as arrays of characters.  Descriptors are look at in depth in this section.
+
+Device Descriptor
+~~~~~~~~~~~~~~~~~
 The device descriptor contains basic information about the device.  This desciptor is the first descriptor the host reads during its eumumeration process and it includes information that enables the host to interogate further the device.\The descriptor includes information on the desciptor itself, the device (USB version, vendor ID etc), its configurations and any classes the device implements.
 
+For the HID Mouse example this descriptor looks like the following:
 
 .. literalinclude:: sc_usb_device/app_example_hid_mouse/src/endpoint0.xc
     :start-after: /* Device Descriptor 
     :end-before: };
+
+Device Qualifier Descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 The device qualifier descriptor defines how fields of a high speed
 device’s device descriptor would look if that device is run at a

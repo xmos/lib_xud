@@ -434,7 +434,11 @@ At this point the request is in a reasonable state to be parsed by endpoint 0.  
 Note, this function can return -1 to indicate a bus-reset condition.
 
 
-A ``USB_StandardRequests()`` function is given to provide a bare-minimum implementaiton  of the mandatory requests required to be implented by a USB device.  This function takes a populated ``USB_SetupPacket_t`` structure as an argument. 
+A ``USB_StandardRequests()`` function is given to provide a bare-minimum implementaiton  of the mandatory requests required to be implented by a USB device.  It is not intended that this replace a good knowledge of the requests required, since the implentation does not guarenatee a fully USB compliance device.  Each request could well be required to be over-ridden for many device implementations.  For example, a USB Audio device could well require a specialised version of ``SET_INTERFACE`` since this could mean that audio will be streamed imminantly.
+
+Please see Universal Serial Bus 2.0 spec for full details of these requests.
+
+This function takes a populated ``USB_SetupPacket_t`` structure as an argument. 
 
 The function inspects this SetupPacket structure and includes a minimum implentation of the Standard Device requests.  The requests handled as well as listing of the basic functinality associated with the request can be found below:
 
@@ -484,9 +488,27 @@ In addition the following test mode requests are dealt with (with the correct te
 Standard Interface Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The implementation in ``USB_StandardRequests()`` should be considered a bare minumim for device operation.  They could well be required to be over-ridden for many device implementations.  For example, a USB Audio device could well require a specialised version of ``SET_INTERFACE`` since this could mean that audio will be streamed imminantly.
+- ``SET_INTERFACE``
 
-Please see Universal Serial Bus 2.0 spec for full details of these requests.
+    - A global variable is maintained for each interfaces, this is updated by a ``SET_INTERFACE``.  Some basic range checking is included using the value ``numInterfaces`` from the ConfigurationDescriptor.  
+
+- ``GET_INTERFACE``
+
+    - Returns the value written by ``SET_INTERFACE``
+
+Standard Endpoint Requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``SET_FEATURE``
+
+- ``CLEAR_FEATURE``
+
+- ``GET_STATUS``
+
+
+If parsing the Request does not result in a match, the request is not handled, the Endpoint is marked "Halted" (Using ``SetStall_Out()`` and ``SetStall_In()``) and the function returns 1.
+
+
 
 
 ``DescriptorRequests()`` takes various arrays and a reference to a

@@ -71,17 +71,8 @@ int XUD_GetSetupData(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
  */
 int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 
-/*****************************/
+/***********************************************************************************************/
 
-
-
-/**
- *  \brief      TBD
- */
-//int  XUD_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, XUD_SetupPacket_t &sp);
-
-    
-    
     
 /** This performs the low level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
@@ -142,10 +133,6 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
                 chanend ?c_usb_testmode);
 
 
-
-
-
-
 /**
  * \brief  This function must be called by a thread that deals with an OUT endpoint.
  *         When the host sends data, the low level driver will fill the buffer. It
@@ -167,6 +154,7 @@ int XUD_GetBuffer(XUD_ep ep, unsigned char buffer[]);
  **/
 int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
 
+
 /**
  * \brief  This function must be called by a thread that deals with an IN endpoint.
  *         When the host asks for data, the low level driver will transmit the buffer
@@ -177,6 +165,7 @@ int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
  * \return TBD
  */
 int XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
+
 
 /* Same as above but takes a max packet size for the endpoint, breaks up data to transfers of no 
  * greater than this.
@@ -203,6 +192,7 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
  **/
 int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested);
 
+
 /**
  * \brief  This function sends an empty packet back on the next IN request with
  *         PID1. It is normally used by Endpoint 0 to acknowledge success of a control transfer.
@@ -212,6 +202,7 @@ int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsig
  **/
 int XUD_DoSetRequestStatus(XUD_ep ep_in);
 
+
 /**
  * \brief  This function must be called by endpoint 0 once a ``setDeviceAddress``
  *         request is made by the host. It has one parameter, the new device address.
@@ -219,6 +210,7 @@ int XUD_DoSetRequestStatus(XUD_ep ep_in);
  * \warning must be run on USB core
  */
 void XUD_SetDevAddr(unsigned addr);
+
 
 /**
  * \brief  This function will complete a reset on an endpoint. One can either pass
@@ -233,20 +225,11 @@ void XUD_SetDevAddr(unsigned addr);
  */
 int XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two);
 
-/**
- *  \brief      TBD
- */
-int XUD_ResetDrain(chanend one);
 
 /**
  *  \brief      TBD
  */
-int XUD_GetBusSpeed(chanend c);
-
-/**
- *  \brief      TBD
- */
-XUD_ep XUD_Init_Ep(chanend c_ep);
+XUD_ep XUD_InitEp(chanend c_ep);
 
 
 /**
@@ -283,6 +266,10 @@ void XUD_ClearStall_Out(int epNum);
  * \warning must be run on USB core
  */
 void XUD_ClearStall_In(int epNum);
+
+
+/* Advanced functions for supporting multple Endpoints in a single core */
+
 
 /**
  * \brief   TBD
@@ -393,13 +380,14 @@ inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 
 }
 
-/* Error printing functions */
-#ifdef XUD_DEBUG_VERSION
-void XUD_Error(char errString[]);
-void XUD_Error_hex(char errString[], int i_err);
-#else
-#define XUD_Error(a) /* */
-#define XUD_Error_hex(a, b) /* */
-#endif
+/**
+ *  \brief      TBD
+ */
+int XUD_ResetDrain(chanend one);
+
+/**
+ *  \brief      TBD
+ */
+int XUD_GetBusSpeed(chanend c);
 
 #endif // __xud_h__

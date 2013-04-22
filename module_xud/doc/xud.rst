@@ -1,6 +1,10 @@
 XMOS USB Device (XUD) Library
 =============================
 
+.. TODO 
+.. SOF channel
+.. Test modes
+
 Introduction
 ============
 
@@ -373,8 +377,8 @@ the host would return to sending the initial OUT after a replug, while
 the endpoint would hang on the IN. The endpoint needs to know of the bus
 reset in order to reset its state machine.
 
-Endpoint 0 therefore requires this functionality since it deals with
-bi-directional control transfers.
+*Endpoint 0 therefore requires this functionality since it deals with
+bi-directional control transfers.*
 
 This is also important for high-speed devices, since it is not
 guaranteed that the host will detect the device as a high-speed device.
@@ -555,48 +559,44 @@ Basic Example HS Device: USB HID device
 This section contains a full worked example of a HID device. Note, this
 is provided as a simple example, not a full HID Mouse reference design.
 
+The example code in this document is intended for XS1-U8 family processors.  The code would be very similar for an XS1-L processor (with external ULPI transceiver), with only the declarations and call to ``XUD_Manager()`` being different.
+
 Declarations
 ------------
 
 ::
 
     #include <xs1.h>
-    #include <print.h>
 
     #include "xud.h"
     #include "usb.h"
 
-    #define XUD_EP_COUNT_OUT 1
-    #define XUD_EP_COUNT_IN 2
+    #define XUD_EP_COUNT_OUT  1
+    #define XUD_EP_COUNT_IN   2
 
     /* Endpoint type tables */
-    XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] =
-               {XUD_EPTYPE_CTL};
-    XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] = 
-               {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL};
-
-    /* USB Port declarations */
-    out port p_usb_rst       = XS1_PORT_32A;
-    clock    clk             = XS1_CLKBLK_3;
+    XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
+    XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_BUL};
 
 Main program
 ------------
 
-The main function fires off three processes: the XUD manager, endpoint
+The main function creates three tasks: the XUD manager, endpoint
 0, and HID. An array of channels is used for both in and out endpoints,
-endpoint 0 requires both, HID is just an IN endpoint.
+endpoint 0 requires both, HID is just an IN endpoint for the mouse data to the host.
 
 ::
 
-    int main() {
-        chan c_ep_out[1], c_ep_in[2];
+    int main() 
+    {
+        chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
         par {
-            XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT,
-                         c_ep_in, XUD_EP_COUNT_IN,
-                         null, epTypeTableOut, epTypeTableIn,
-                         p_usb_rst, clk, -1, XUD_SPEED_HS, null);  
+            XUD_Manager(c_ep_out, EP_COUNT_OUT,
+                        c_ep_in, EP_COUNT_IN,
+                        null, epTypeTableOut, epTypeTableIn,
+                        null, null, null, XUD_SPEED_HS, null);  
             Endpoint0( c_ep_out[0], c_ep_in[0]);
-            hid(c_ep_in[1]);
+            hid_mouse(c_ep_in[1]);
         }
         return 0;
     }
@@ -653,8 +653,9 @@ Note, this endpoint does not receive or check for status data. It always
 performs IN transactions and its behavior would not change dependant on
 bus speed, so this is safe.
 
-Should processing take longer that the host IN polls, the XUD\_Manager
-thread will simply NAK.
+Should processing take longer that the host IN polls, the ``XUD_Manager``
+thread will simply NAK the host.  The ``XUD_SetBuffer()`` function will return when the packet 
+transmission is complete.
 
 Descriptors
 -----------
@@ -1051,7 +1052,7 @@ details:
 XUD API
 =======
 
-Other XUD functions and types are documented here:
+XUD user functions and types are documented here.
 
 .. doxygenenum:: XUD_EpType
 
@@ -1059,10 +1060,23 @@ Other XUD functions and types are documented here:
 .. doxygenfunction:: XUD_GetSetupData
 .. doxygenfunction:: XUD_SetData
 
+.. doxygenfunction:: XUD_Manager
+
+
+.. doxygenfunction:: XUD_GetBuffer
 .. doxygenfunction:: XUD_GetSetupBuffer
-.. doxygenfunction:: XUD_SetBuffer_EpMax
-.. doxygenfunction:: XUD_ResetDrain
-.. doxygenfunction:: XUD_GetBusSpeed
+.. doxygenfunction:: XUD_SetBuffer
+.. doxygenfunction:: XUD_SetBuffer_EpMan
+
+
+.. doxygenfunction:: XUD_DoGetRequest
+.. doxygenfunction:: XUD_DoSetRequestStatus
+
+.. doxygenfunction:: XUD_SetDevAddr
+
+.. doxygenfunction:: XUD_InitEp
+.. doxygenfunction:: XUD_ResetEndpoint
+
 .. doxygenfunction:: XUD_SetStall_Out
 .. doxygenfunction:: XUD_SetStall_In
 .. doxygenfunction:: XUD_ClearStall_Out
@@ -1074,21 +1088,21 @@ Other XUD functions and types are documented here:
 .. doxygenfunction:: XUD_SetReady_In
 .. doxygenfunction:: XUD_SetReady_InPtr
 
-Release History
-===============
 
-The XUD release history:
+Document Version History
+========================
 
 .. _table_xud_release_history:
 
-.. table:: Release History
+.. table:: Version History
     :class: horizontal-borders vertical_borders
 
-    +------------+---------+-------------------------------+
-    | Date       | Release | Comment                       |
-    +============+=========+===============================+
-    | 2010-07-22 | 1.0b    | Beta Release                  |
-    +------------+---------+-------------------------------+
-    | 2011-01-06 | 1.0     | Updates for API changes       |
-    +------------+---------+-------------------------------+
-
+    +------------+---------+----------------------------------------------------------+
+    | Date       | Version | Comment                                                  |
+    +============+=========+==========================================================+
+    | 2013-04-22 | 1.1     | API updates and changes to Standard Request handling     |
+    +------------+---------+----------------------------------------------------------+
+    | 2011-01-06 | 1.0     | Updates for API changes                                  |
+    +------------+---------+----------------------------------------------------------+
+    | 2010-07-22 | 1.0b    | Beta Release                                             |
+    +------------+---------+----------------------------------------------------------+

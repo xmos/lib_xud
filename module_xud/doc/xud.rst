@@ -436,8 +436,14 @@ Note, this function can return -1 to indicate a bus-reset condition.
 
 A ``USB_StandardRequests()`` function is provided to deal with the mandatory requests required to be implented by a USB device.  This function takes a populated ``USB_SetupPacket_t`` structure as an argument. 
 
-The function then inspects this SetupPacket structure and deals with the
+The function inspects this SetupPacket structure and deals with the
 following Standard Device requests:
+
+- ``SET_ADDRESS``
+
+- ``SET_CONFIGURATION``
+
+    
 
 -  ``GET_DESCRIPTOR``
 
@@ -450,6 +456,18 @@ following Standard Device requests:
    -  ``OTHER_SPEED_CONFIGURATION``
 
    -  ``STRING``
+
+
+In addition the following test mode requests are dealt with (with the correct test mode set in XUD):   
+   
+- ``SET_FEATURE``
+    - ``TEST_J``
+    - ``TEST_K``
+    - ``TEST_SE0_NAK``
+    - ``TEST_PACKET``
+    - ``FORCE_ENABLE``
+
+
 
 See Universal Serial Bus 2.0 spec for full details of these requests.
 

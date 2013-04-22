@@ -416,32 +416,25 @@ Standard Requests
 
 The previous sections dealt with main user functions in ``xud.h`` used to control and interract with the XUD library.  A USB device can be programmed using the above functions alone, however, to aid development some additional functions (that are essentially wrappers for the above) are provided.
 
-Endpoint 0 must deal with enumeration and configuration requests from
-the host. Many enumeration requests are compulsory and common to all
-devices, most of them being requests for mandatory descriptors
-(Configuration, Device, String etc).
+Endpoint 0 must deal with enumeration and configuration requests from the host. 
+Many enumeration requests are compulsory and common to all devices, most of them being requests for mandatory descriptors (Configuration, Device, String etc).  Since these requests are common across most (if not all) devices, a some useful functions are provided to deal with them. Although not
+strictly part of the XUD library and supporting files, their use is so fundamental to a USB device that they are covered in this document.
 
-Since these requests are common across all devices, a useful function
-(``DescriptorRequests()``) is provided to deal with them. Although not
-strictly part of the XUD library and supporting files, its use is so
-fundamental to a USB device that it is covered in this document.
+Firstly, the function ``USB_GetSetupPacket()`` is provided.  This makes a call to the standard XUD function ``XUD_GetSetupBuffer()`` from the 8 byte Setup packet and parses it into a SetupPacket structure for further inspection (A SetupPacket structure is passed by reference into the ``USB_GetSetupPacket()`` call, which is populated by the function).  This struture closely matches the structure defined in the USB 2.0 Specification:
 
-The ``DescriptorRequests()`` function receives a 8 bytes Setup packet
-and parses it into a SetupPacket structure for further inspection:
 
-::
+.. literalinclude:: sw_usb/module_usb_shared/src/usb.h
+    :start-after: \brief   Typedef for setup
+    :end-before: #endif
 
-    typedef struct setupPacket
-    { 
-      BmRequestType bmRequestType;   
-      unsigned char bRequest;        
-      unsigned short wValue;         
-      unsigned short wIndex;         
-      unsigned short wLength;                          
-    } SetupPacket;
+At this point the request is in a reasonable state to be parsed by endpoint 0.  Please see Universal Serial Bus 2.0 specification for full details of setup packet and request structure.
 
-Please see Universal Serial Bus 2.0 spec for full details of setup
-packet and request structure.
+.. doxygenfunction:: USB_GetSetupPacket
+
+Note, this function can return -1 to indicate a bus-reset condition.
+
+
+A ``USB_StandardRequests()`` function is provided to deal with the mandatory requests required to be implented by a USB device.  This function takes a populated ``USB_SetupPacket_t`` structure as an argument. 
 
 The function then inspects this SetupPacket structure and deals with the
 following Standard Device requests:

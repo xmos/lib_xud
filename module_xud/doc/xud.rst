@@ -427,7 +427,7 @@ strictly part of the XUD library and supporting files, their use is so fundament
 Firstly, the function ``USB_GetSetupPacket()`` is provided.  This makes a call to the standard XUD function ``XUD_GetSetupBuffer()`` from the 8 byte Setup packet and parses it into a SetupPacket structure for further inspection (A SetupPacket structure is passed by reference into the ``USB_GetSetupPacket()`` call, which is populated by the function).  This struture closely matches the structure defined in the USB 2.0 Specification:
 
 
-.. literalinclude:: sw_usb/module_usb_shared/src/usb.h
+.. literalinclude:: sc_usb/module_usb_shared/src/usb.h
     :start-after: \brief   Typedef for setup
     :end-before: #endif
 
@@ -659,33 +659,12 @@ transmission is complete.
 
 Descriptors
 -----------
+The device descriptor contains basic information about the device.  This desciptor is the first descriptor the host reads during its eumumeration process and it includes information that enables the host to interogate further the device.\The descriptor includes information on the desciptor itself, the device (USB version, vendor ID etc), its configurations and any classes the device implements.
 
-The device descriptor is used by the host to decide what to do with this
-device. It specifies the manufacture and product, and the device class
-of this device.
 
-::
-
-    static unsigned char hiSpdDesc[] = { 
-      0x12,  /* 0  bLength */
-      0x01,  /* 1  bdescriptorType */ 
-      0x00,  /* 2  bcdUSB */ 
-      0x02,  /* 3  bcdUSB */ 
-      0x00,  /* 4  bDeviceClass */ 
-      0x00,  /* 5  bDeviceSubClass */ 
-      0x00,  /* 6  bDeviceProtocol */ 
-      0x40,  /* 7  bMaxPacketSize */ 
-      0xb1,  /* 8  idVendor */ 
-      0x20,  /* 9  idVendor */ 
-      0x01,  /* 10 idProduct */ 
-      0x01,  /* 11 idProduct */ 
-      0x10,  /* 12 bcdDevice */
-      0x00,  /* 13 bcdDevice */
-      0x01,  /* 14 iManufacturer */
-      0x02,  /* 15 iProduct */
-      0x00,  /* 16 iSerialNumber */
-      0x01   /* 17 bNumConfigurations */
-    };
+.. literalinclude:: sc_usb_device/app_example_hid_mouse/src/endpoint0.xc
+    :start-after: /* Device Descriptor 
+    :end-before: };
 
 The device qualifier descriptor defines how fields of a high speed
 device’s device descriptor would look if that device is run at a
@@ -1081,12 +1060,7 @@ XUD user functions and types are documented here.
 .. doxygenfunction:: XUD_SetStall_In
 .. doxygenfunction:: XUD_ClearStall_Out
 .. doxygenfunction:: XUD_ClearStall_In
-.. doxygenfunction:: XUD_GetData_Select
-.. doxygenfunction:: XUD_SetData_Select
-.. doxygenfunction:: XUD_SetReady_Out
-.. doxygenfunction:: XUD_SetReady_OutPtr
-.. doxygenfunction:: XUD_SetReady_In
-.. doxygenfunction:: XUD_SetReady_InPtr
+
 
 
 Document Version History

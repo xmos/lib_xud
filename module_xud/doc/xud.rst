@@ -411,8 +411,8 @@ speed.
 .. doxygenfunction:: XUD_ClearStall_Out
 
 
-Standard Requests
-=================
+Standard Requests and Endpoint 0
+================================
 
 The previous sections dealt with main user functions in ``xud.h`` used to control and interract with the XUD library.  A USB device can be programmed using the above functions alone, however, to aid development some additional functions (that are essentially wrappers for the above) are provided.
 
@@ -439,6 +439,8 @@ A ``USB_StandardRequests()`` function is given to provide a bare-minimum impleme
 Please see Universal Serial Bus 2.0 spec for full details of these requests.
 
 This function takes a populated ``USB_SetupPacket_t`` structure as an argument. 
+
+.. doxygenfunction:: XUD_StandardRequests
 
 The function inspects this SetupPacket structure and includes a minimum implentation of the Standard Device requests.  The requests handled as well as listing of the basic functinality associated with the request can be found below:
 
@@ -506,108 +508,46 @@ Standard Endpoint Requests
 - ``GET_STATUS``
 
 
-If parsing the Request does not result in a match, the request is not handled, the Endpoint is marked "Halted" (Using ``SetStall_Out()`` and ``SetStall_In()``) and the function returns 1.
-
-
-
-
-``DescriptorRequests()`` takes various arrays and a reference to a
-SetupPacket structure as its parameters:
-
-::
-
-    int retVal = DescriptorRequests(
-                     XUD_ep ep0_out,
-                     XUD_ep c_ep0_in,
-                     char hi_spd_desc[], int sz_d,
-                     char hi_spd_conf_desc[], int sz_c,
-                     char full_spd_desc[], int sz_fd,
-                     char full_spd_cfg_desc[], int sz_fc,
-                     char str_descs[][40],
-                     SetupPacket &sp);
-
--  ``XUD_ep ep0_out``, ``XUD_ep ep0_in`` Two endpoint communication
-   structures for receiving OUT transactions and responding to IN
-   transactions for endpoint 0. Should be connected to the first two
-   channels passed to ``XUD_Manager()``./
-
--  ``char hi_spd_desc[], int sz_d`` The device descriptor to use,
-   encoded according to the USB standard. The size is passed as an
-   integer.
-
--  ``char hi_spd_cfg_desc[], int sz_c`` The configuration descriptor to
-   use, encoded according to the USB standard. The size is passed as an
-   integer.
-
--  ``char full_spd_desc[], int sz_fd`` The device descriptor to use if
-   the high-speed handshake fails, encoded according to the USB
-   standard. The size is passed as an integer.
-
--  ``char full_spd_cfg_desc[], int sz_fc`` The configuration descriptor
-   to use if the high-speed handshake fails, encoded according to the
-   USB standard. The size is passed as an integer.
-
--  ``char str_descs[][40]`` The strings to use when enumerating. These
-   strings are referred to from the descriptors.
-
--  ``SetupPacket &sp`` If ‘0’ is returned, then the setup packet is set
-   to contain a decoded SETUP request on endpoint 0. This is a structure
-   with the following members (that are all described in the USB
-   standard):
-
-   -  ``bmRequestType.Recipient``
-
-   -  ``bmRequestType.Type``
-
-   -  ``bmRequestType.Direction``
-
-   -  ``bRequest``
-
-   -  ``wValue``
-
-   -  ``wIndex``
-
-   -  ``wLength``
-
-This function returns 0 if a request was handled without error (See also
+If parsing the Request does not result in a match, the request is not handled, the Endpoint is marked "Halted" (Using ``SetStall_Out()`` and ``SetStall_In()``) and the function returns 1.  The function returns 0 if a request was handled without error (See also
 Status Reporting).
 
-Typically the minimal code for endpoint 0 calls ``DescriptorRequests``
-and then deals with the following cases:
+Minimal Endpoint 0 Implementation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Typically the minimal code for endpoint 0 makes a call to call ``USB_GetSetupPacket()``, parses the SetupPacket for any class/applicaton specific requests. Then makes a call to ``USB_StandardRequests()`` eg:   
 
 ::
 
-    switch(sp.bmRequestType.Type) {
-    case BM_REQTYPE_TYPE_STANDARD:
-        switch(sp.bmRequestType.Recipient) {
-        case BM_REQTYPE_RECIP_INTER:
-              switch(sp.bRequest) {
-              case SET_INTERFACE: break;
-              case GET_INTERFACE: break;
-              case GET_STATUS: break;
-              }
-              break;
-        case BM_REQTYPE_RECIP_DEV:
-              switch( sp.bRequest ) {    
-              case SET_CONFIGURATION: break;
-              case GET_CONFIGURATION: break;
-              case GET_STATUS: break;
-              case SET_ADDRESS: break;
-              }  
-              break;
-         }
-         break;
-    case BM_REQTYPE_TYPE_CLASS:
-         // Optional class specific requests.
-         break;
+    USB_GetSetupPacker(ep0_out, ep0_in, sp);
+
+    switch(sp.bmRequestType.Type) 
+    {
+        case BM_REQTYPE_TYPE_CLASS:
+
+            switch(sp.bmRequestType.Receipient)
+            {
+                case BM_REQTYPE_RECIP_INTER:
+         
+                    // Optional class specific requests.
+                    break;
+
+                ...
+            }
+
+            break;
+
+        ...
+
     }
 
-In some cases the code can simply remember the interface number and the
-configuration number and report those back, but only if a single
-interface and configuration are being used. These are single byte
-requests. The status requests use two bytes, and the simple response is
-a double zero. The set address command must result in the address being
-set in the XUD library by calling ``XUD_SetDevAddr()`` below.
+    USB_StandardRequests(ep0_out, ep0_in, devDesc, devDescLen, ..., );
+
+Note, the example code above ignores any bus reset.
+
+The code above could also over-ride any of the requests handled in ``USB_StandardRequests()`` for custom functionality.
+
+Note, custom class code should be inserted before ``USB_StandardRequests()`` is called since if ``USB_StandardRequests()`` cannot handle a request it marks the Endpoint stalled to indicate to the host that the Request is not supported byt the device.
+
 
 Basic Example HS Device: USB HID device
 =======================================

@@ -106,12 +106,12 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
     if(datalength <= epMax)
     {
         /* Datalength is less than the maximum per transaction of the EP, so just send */
-        return XUD_SetData(ep, buffer, datalength, 0, 0); 
+        return XUD_SetData(ep_in, buffer, datalength, 0, 0); 
     }
     else
     {
         /* Send first packet out and reset PID */
-        if (XUD_SetData(ep, buffer, epMax, 0, 0) < 0) 
+        if (XUD_SetData(ep_in, buffer, epMax, 0, 0) < 0) 
         {
             return -1;
         }
@@ -124,7 +124,7 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
             if(datalength > epMax)
 	        {
                 /* PID Automatically toggled */
-                if (XUD_SetData(ep, buffer, epMax, i, 0) < 0) return -1;
+                if (XUD_SetData(ep_in, buffer, epMax, i, 0) < 0) return -1;
 
                 datalength-=epMax;
                 i += epMax;
@@ -132,7 +132,7 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
 	        else
 	        {
                 /* PID automatically toggled */
-                if (XUD_SetData(ep, buffer, datalength, i, 0) < 0) return -1;
+                if (XUD_SetData(ep_in, buffer, datalength, i, 0) < 0) return -1;
 
 	            break; //out of while loop
 	        }
@@ -145,11 +145,11 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
 
 
 /* TODO Should take ep max length as a param - currently hardcoded as 64 (#11384) */
-int XUD_DoGetRequest(XUD_ep c, XUD_ep c_in, unsigned char buffer[], unsigned length, unsigned requested)
+int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsigned length, unsigned requested)
 {
     unsigned char tmpBuffer[1024];
 
-   if (XUD_SetBuffer_EpMax(c_in, buffer, min(length, requested), 64) < 0) 
+   if (XUD_SetBuffer_EpMax(ep_in, buffer, min(length, requested), 64) < 0) 
     {
         return -1;
     }
@@ -157,21 +157,21 @@ int XUD_DoGetRequest(XUD_ep c, XUD_ep c_in, unsigned char buffer[], unsigned len
     /* USB 2.0 8.5.3.2 */
     if((requested > length) && (length % 64) == 0)
     {
-        XUD_SetBuffer(c_in, tmpBuffer, 0);
+        XUD_SetBuffer(ep_in, tmpBuffer, 0);
     }
    
     /* Status stage */ 
-    return XUD_GetData(c, tmpBuffer);
+    return XUD_GetData(ep_out, tmpBuffer);
 }
 
 
 /* Send 0 length status 
  * Simply sends a 0 length packet */
-int XUD_DoSetRequestStatus(XUD_ep c)
+int XUD_DoSetRequestStatus(XUD_ep ep_in)
 {
     unsigned char tmp[8];
 
-    return XUD_SetData(c, tmp, 0, 0, PIDn_DATA1);
+    return XUD_SetData(ep_in, tmp, 0, 0, PIDn_DATA1);
 }
 
 #ifdef XUD_DEBUG_VERSION
@@ -238,7 +238,7 @@ int XUD_GetBusSpeed(chanend c)
     return inuint(c);
 }
 
-XUD_ep XUD_Init_Ep(chanend c)
+XUD_ep XUD_InitEp(chanend c)
 {
   XUD_ep ep = inuint(c);
   return ep;

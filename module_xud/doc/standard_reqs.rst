@@ -52,7 +52,7 @@ Standard Device Requests
 
 -  ``GET_DESCRIPTOR``
 
-    - Returns the relevant descriptors. See ::ref:`sec_hid_ex_descriptors` for further details.  Note, some changes of returned descirptor will occur based on the current bus speed the device is running, again see ::ref:`sec_hid_ex_descriptors` for details.
+    - Returns the relevant descriptors. See :ref:`sec_hid_ex_descriptors` for further details.  Note, some changes of returned descriptor will occur based on the current bus speed the device is running, again see :ref:`sec_hid_ex_descriptors` for details.
 
         -  ``DEVICE``
 

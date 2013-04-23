@@ -2,8 +2,6 @@ XMOS USB Device (XUD) Library
 =============================
 
 .. TODO 
-.. Test modes
-.. Describe descriptor modification based on speed
 .. Differnt mouse speed FS/HS
 
 Introduction
@@ -423,7 +421,30 @@ An application can pass a channel-end to the ``c_sof`` parameter of ``XUD_Manage
 USB Test Modes
 --------------
 
-XUD supports the required tests modes for 
+XUD supports the required tests modes for USB Compliance testing.  The ``XUD_Manager()`` task can take a channel-end argument for controlling the test mode required.  ``null`` can be passed if this functionality is not required.  
+
+XUD accepts a single word for from this channel to signal which test mode to enter, these commands are based on the definitions of the Test Mode Selector Codes in the USB 2.0 Specification Table 11-24.  The supported test modes are summarised in the :ref:`table_test_modes`.
+
+.. _table_test_modes:
+
+.. table:: Supported Test Mode Selector Codes
+    :class: horizontal-borders vertical_borders
+
+    +--------+-------------------------------------+
+    | Value  | Test Mode Description               |                
+    +========|=====================================+
+    | 1      | Test_J                              |
+    +--------+-------------------------------------+
+    | 2      | Test_K                              |
+    +--------+-------------------------------------+
+    | 3      | Test_SE0_NAK                        |
+    +--------+-------------------------------------+
+    | 4      | Test_Packet                         |
+    +--------+-------------------------------------+
+    | 5      | Test_Force_Enable                   |
+    +--------+-------------------------------------+
+
+The use of other codes is results in undefined behaviour.
 
 As per the USB 2.0 specification a power cycle or reboot is required to exit the test mode.
 
@@ -617,7 +638,7 @@ endpoint 0 requires both, HID is just an IN endpoint for the mouse data to the h
         return 0;
     }
 
-Since we do not require SOF notifications ``null`` is passed into the ``c_sof`` parameter.  ``XUD_SPEED_HS`` is passed for the ``desiredSpeed`` parameter as we wish to run as a high-speed device.
+Since we do not require SOF notifications ``null`` is passed into the ``c_sof`` parameter.  ``XUD_SPEED_HS`` is passed for the ``desiredSpeed`` parameter as we wish to run as a high-speed device.  Test mode support is not important for this example to ``null`` is also passed to the ``c_usb_testmode`` parameter.
 
 HID response function
 ---------------------

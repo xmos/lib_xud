@@ -4,6 +4,8 @@ XMOS USB Device (XUD) Library
 .. TODO 
 .. SOF channel
 .. Test modes
+.. Describe descriptor modification based on speed
+.. Differnt mouse speed FS/HS
 
 Introduction
 ============
@@ -469,7 +471,7 @@ Standard Device Requests
 
 -  ``GET_DESCRIPTOR``
 
-    - Returns the relevant descriptors. See ::ref:`sec_hid_ex_descriptors` for further details.
+    - Returns the relevant descriptors. See ::ref:`sec_hid_ex_descriptors` for further details.  Note, some changes of returned descirptor will occur based on the current bus speed the device is running, again see ::ref:`sec_hid_ex_descriptors` for details.
 
         -  ``DEVICE``
 
@@ -480,6 +482,8 @@ Standard Device Requests
         -  ``OTHER_SPEED_CONFIGURATION``
 
         -  ``STRING``
+
+
 
 
 In addition the following test mode requests are dealt with (with the correct test mode set in XUD):   
@@ -657,9 +661,8 @@ Should processing take longer that the host IN polls, the ``XUD_Manager``
 thread will simply NAK the host.  The ``XUD_SetBuffer()`` function will return when the packet 
 transmission is complete.
 
-
-Descriptors
------------
+Standard Descriptors
+--------------------
 .. _sec_hid_ex_descriptors:
 
 The ``USB_StandardRequests()`` function expects descriptors be declared as arrays of characters.  Descriptors are look at in depth in this section.
@@ -677,164 +680,66 @@ For the HID Mouse example this descriptor looks like the following:
 Device Qualifier Descriptor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-The device qualifier descriptor defines how fields of a high speed
-device’s device descriptor would look if that device is run at a
-different speed. If a high-speed device is running currently at
-full/high speed, fields of this descriptor reflect how device descriptor
-fields would look if speed was changed to high/full. Please refer to
-section 9.6.2 of the USB 2.0 specification.
-
-Typically this is derived mechanically from the device descriptor.
+Devices which support both full and high-speeds must implement a device qualifier descriptor.
+The device qualifier descriptor defines how fields of a high speed device’s device descriptor would look if that device is run at a different speed. If a high-speed device is running currently at full/high speed, fields of this descriptor reflect how device descriptor fields would look if speed was changed to high/full. Please refer to section 9.6.2 of the USB 2.0 specification for further details.
 
 For a full-speed only device this is not required.
 
-::
+Typically a device qualifier descriptor is derived mechanically from the device descriptor.  The ``XUD_StandardRequest`` function will build a device qualifier from the device desriptors passed to it based on the speed the device is currently running at.
 
-    unsigned char fullSpdDesc[] = { 
-      0x0a,  /* 0  bLength */
-      DEVICE_QUALIFIER, /* 1  bDescriptorType */ 
-      0x00,  /* 2  bcdUSB */
-      0x02,  /* 3  bcdUSB */ 
-      0x00,  /* 4  bDeviceClass */ 
-      0x00,  /* 5  bDeviceSubClass */ 
-      0x00,  /* 6  bDeviceProtocol */ 
-      0x40,  /* 7  bMaxPacketSize */ 
-      0x01,  /* 8  bNumConfigurations */ 
-      0x00   /* 9  bReserved  */ 
-    };
+Configuration Descriptor
+~~~~~~~~~~~~~~~~~~~~~~~
 
-The configuration descriptor specifies the capabilities of one
-configuration—in this case there is only one configuration.
+The configuration descriptor contains the devices features and abilities.  This descirptor includes Interface and Endpoint Descriptors. Every device must have atleast one configuration, in our example there is only one configuration.  The configuration descriptor is presented below:
 
-::
+.. literalinclude:: sc_usb_device/app_example_hid_mouse/src/endpoint0.xc
+    :start-after: /* Configuration Descriptor 
+    :end-before: };
 
-    static unsigned char hiSpdCfgDesc[] = {  
-      0x09,  /* 0  bLength */ 
-      0x02,  /* 1  bDescriptortype */ 
-      0x22, 0x00, /* 2  wTotalLength */ 
-      0x01,  /* 4  bNumInterfaces */ 
-      0x01,  /* 5  bConfigurationValue */
-      0x04,  /* 6  iConfiguration */
-      0x80,  /* 7  bmAttributes */ 
-      0xC8,  /* 8  bMaxPower */
-      
-      0x09,  /* 0  bLength */
-      0x04,  /* 1  bDescriptorType */ 
-      0x00,  /* 2  bInterfacecNumber */
-      0x00,  /* 3  bAlternateSetting */
-      0x01,  /* 4: bNumEndpoints */
-      0x03,  /* 5: bInterfaceClass */ 
-      0x01,  /* 6: bInterfaceSubClass */ 
-      0x02,  /* 7: bInterfaceProtocol*/ 
-      0x00,  /* 8  iInterface */ 
-      
-      0x09,  /* 0  bLength */ 
-      0x21,  /* 1  bDescriptorType (HID) */ 
-      0x10,  /* 2  bcdHID */ 
-      0x01,  /* 3  bcdHID */ 
-      0x00,  /* 4  bCountryCode */ 
-      0x01,  /* 5  bNumDescriptors */ 
-      0x22,  /* 6  bDescriptorType[0] (Report) */ 
-      0x48,  /* 7  wDescriptorLength */ 
-      0x00,  /* 8  wDescriptorLength */ 
-      
-      0x07,  /* 0  bLength */ 
-      0x05,  /* 1  bDescriptorType */ 
-      0x81,  /* 2  bEndpointAddress */ 
-      0x03,  /* 3  bmAttributes */ 
-      0x40,  /* 4  wMaxPacketSize */ 
-      0x00,  /* 5  wMaxPacketSize */ 
-      0x01   /* 6  bInterval */ 
-    }; 
+Other Speed Configuration Descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A other speed configuration for similar reasons as the device qualifier
-descriptor.
+descriptor.  The ``USB_StandardRequests()`` function generates this descriptor from the Configuration Descriptors passed to it based on the bus speed it is currentl running at.  For the HID mouse example we used the same configuration Descriptors if running on full-speed or high-speed.
 
-::
-
-    unsigned char fullSpdCfgDesc[] = {
-      0x09,  /* 0  bLength */
-      OTHER_SPEED_CONFIGURATION, /* 1  bDescriptorType */
-      0x12,  /* 2  wTotalLength */
-      0x00,  /* 3  wTotalLength */
-      0x01,  /* 4  bNumInterface: Number of interfaces*/
-      0x00,  /* 5  bConfigurationValue */
-      0x00,  /* 6  iConfiguration */
-      0x80,  /* 7  bmAttributes */
-      0xC8,  /* 8  bMaxPower */
-
-      0x09,  /* 0 bLength */
-      0x04,  /* 1 bDescriptorType */
-      0x00,  /* 2 bInterfaceNumber */
-      0x00,  /* 3 bAlternateSetting */
-      0x00,  /* 4 bNumEndpoints */
-      0x00,  /* 5 bInterfaceClass */
-      0x00,  /* 6 bInterfaceSubclass */
-      0x00,  /* 7 bInterfaceProtocol */
-      0x00,  /* 8 iInterface */
-    };
-
+String Descriptors 
+~~~~~~~~~~~~~~~~~~
 An array of strings supplies all the strings that are referenced from
 the descriptors (using fields such as ‘iInterace’, ‘iProduct’ etc).
 String 0 is the language descriptor, and is interpreted as “no string
-supplied” when used as an index value.
+supplied” when used as an index value.  The ``USB_StandardRequests()`` function deals with requests for strings using the table of strings passed to it.  The string table for the HID mouse example is shown below:
 
-::
 
-    static unsigned char stringDescriptors[][40] = {
-      "\009\004", 
-        "XMOS",            // iManufacturer 
-       "Example mouse",    // iProduct
-        "",
-       "Config name"       // Configuration name
-    };
 
-Finally, HID devices need an extra descriptor that will be requested via
-endpoint 0. See the USB HID documentation for details.
+.. literalinclude:: sc_usb_device/app_example_hid_mouse/src/endpoint0.xc
+    :start-after: /* String table 
+    :end-before: };
 
-::
+Application and Class Specific Requests 
+---------------------------------------
 
-    static unsigned char hidReportDescriptor[] = 
-    {
-        0x05, 0x01,  // Usage page (desktop)
-        0x09, 0x02,  // Usage (mouse)
-        0xA1, 0x01,  // Collection (app)
-        0x05, 0x09,  // Usage page (buttons)
-        0x19, 0x01, 
-        0x29, 0x03,
-        0x15, 0x00,  // Logical min (0)
-        0x25, 0x01,  // Logical max (1)
-        0x95, 0x03,  // Report count (3)
-        0x75, 0x01,  // Report size (1)
-        0x81, 0x02,  // Input (Data, Absolute)
-        0x95, 0x01,  // Report count (1)
-        0x75, 0x05,  // Report size (5)
-        0x81, 0x03,  // Input (Absolute, Constant)
-        0x05, 0x01,  // Usage page (desktop)
-        0x09, 0x01,  // Usage (pointer)
-        0xA1, 0x00,  // Collection (phys)
-        0x09, 0x30,  // Usage (x)
-        0x09, 0x31,  // Usage (y)
-        0x15, 0x81,  // Logical min (-127)
-        0x25, 0x7F,  // Logical max (127)
-        0x75, 0x08,  // Report size (8)
-        0x95, 0x02,  // Report count (2)
-        0x81, 0x06,  // Input (Data, Relative)
-        0xC0,        // End collection
-        0x09, 0x38,  // Usage (Wheel)
-        0x95, 0x01,  // Report count (1)
-        0x81, 0x06,  // Input (Data, Relative)
-        0x09, 0x3C,  // Usage (Motion Wakeup)
-        0x15, 0x00,  // Logical min (0)
-        0x25, 0x01,  // Logical max (1)
-        0x75, 0x01,  // Report size (1)
-        0x95, 0x01,  // Report count (1)
-        0xB1, 0x22,  // Feature (No preferred, Variable)
-        0x95, 0x07,  // Report count (7)
-        0xB1, 0x01,  // Feature (Constant)
-        0xC0         // End collection
-    };
+Although the ``USB_StandardRequests()`` function deals with many of the requests the device is required to handle in order to be properly enumerated by a host, typically an USB device will have Class (or Application) specific requests that must be handled.
+
+In the case of the HID mouse there are three mandatory Requests that must be handled:
+
+    - ``GET_DESCRIPTOR``
+
+        - ``HID``    Return the HID descriptor
+
+        - ``REPORT`` Return the HID report descriptor
+
+    - ``GET_REPORT`` Return the HID report data
+
+Please refer to the HID Specification and related documentation for full details of all HID requests.
+
+The HID report descriptor informs the hosts of the contents of the HID reports that it will be sending to the host periodically.For a mouse this could include X/Y axis values, button presses etc.  Tools for building these descriptors are available for download on the usb.org website.
+
+The HID report descriptor for the HID mouse example is shown below:
+
+.. literalinclude:: sc_usb_device/app_example_hid_mouse/src/endpoint0.xc
+    :start-after: /* HID Report Descriptor
+    :end-before: };
+
 
 Endpoint 0
 ----------
@@ -1086,7 +991,7 @@ Document Version History
     +------------+---------+----------------------------------------------------------+
     | Date       | Version | Comment                                                  |
     +============+=========+==========================================================+
-    | 2013-04-22 | 1.1     | API updates and changes to Standard Request handling     |
+    | 2013-04-23 | 1.1     | API updates and changes to Standard Request handling     |
     +------------+---------+----------------------------------------------------------+
     | 2011-01-06 | 1.0     | Updates for API changes                                  |
     +------------+---------+----------------------------------------------------------+

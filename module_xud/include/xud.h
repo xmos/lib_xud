@@ -78,12 +78,12 @@ int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsig
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
  * 
- *    \param  c_ep_out   An array of channel ends, one channel end per 
+ *    \param  c_epOut   An array of channel ends, one channel end per 
  *                      output endpoint (USB OUT transaction); this includes
  *                      a channel to obtain requests on Endpoint 0.
  *    \param  noEpOut    The number of output endpoints, should
  *                      be at least 1 (for Endpoint 0).
- *    \param  c_ep_in    An array of channel ends, one channel end
+ *    \param  c_epIn    An array of channel ends, one channel end
  *                      per input endpoint (USB IN transaction); this
  *                      includes a channel to respond to
  *                      requests on Endpoint 0.
@@ -137,9 +137,9 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
  * \brief  This function must be called by a thread that deals with an OUT endpoint.
  *         When the host sends data, the low level driver will fill the buffer. It
  *         pauses until data is available.
- * \param  c Data channel from XUD
- * \param  buffer The buffer to store data in. This is a buffer of integers, containing
- *         characters; the buffer must be word aligned.
+ * \param  ep_out   OUT EP
+ * \param  buffer   The buffer to store data in. This is a buffer of integers, containing
+ *                  characters; the buffer must be word aligned.
  * \return The number of bytes written to the buffer (Also see Status Reporting).
  **/
 int XUD_GetBuffer(XUD_ep ep, unsigned char buffer[]);

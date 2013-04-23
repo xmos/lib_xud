@@ -2,7 +2,6 @@ XMOS USB Device (XUD) Library
 =============================
 
 .. TODO 
-.. SOF channel
 .. Test modes
 .. Describe descriptor modification based on speed
 .. Differnt mouse speed FS/HS
@@ -416,6 +415,19 @@ speed.
 
 .. doxygenfunction:: XUD_ClearStall_Out
 
+SOF Channel
+-----------
+
+An application can pass a channel-end to the ``c_sof`` parameter of ``XUD_Manager()``.  This will cause a word of data to be output everytime the device receives a SOF from the host.  This can be used for timing information for audio devices etc.  If this functionality is not required ``null`` should be passed as the parameter.  Please note, if a channel-end is passed into ``XUD_Manager()`` there must be a reposive task ready to receive SOF notifications since else the ``XUD_Manager()`` task will be blocked attempting to send these messages.
+
+USB Test Modes
+--------------
+
+XUD supports the required tests modes for 
+
+As per the USB 2.0 specification a power cycle or reboot is required to exit the test mode.
+
+
 
 Standard Requests and Endpoint 0
 ================================
@@ -605,6 +617,8 @@ endpoint 0 requires both, HID is just an IN endpoint for the mouse data to the h
         return 0;
     }
 
+Since we do not require SOF notifications ``null`` is passed into the ``c_sof`` parameter.  ``XUD_SPEED_HS`` is passed for the ``desiredSpeed`` parameter as we wish to run as a high-speed device.
+
 HID response function
 ---------------------
 
@@ -740,210 +754,25 @@ The HID report descriptor for the HID mouse example is shown below:
     :start-after: /* HID Report Descriptor
     :end-before: };
 
+The request for this descriptor (and the other required requests) should be implemented before making the a call to ``USB_StandardRequests()``.  The programmer may decide not to make a call to ``USB_StandardRequests`` if the request is fully handled.  It is possible the pogrammer may choose to implement some functionality for a request, then allow ``USB_StandardRequests()`` to finalise.
 
-Endpoint 0
-----------
+The complete code listing for the main endpoint 0 task is show below:
 
-Most enumeration requests are dealt with by the DescriptorRequests()
-function. The complete HID endpoint 0 thread is supplied below:
+.. literalinclude:: sc_usb_device/app_example_hid_mouse/src/endpoint0.xc
+    :start-after: /* Endpoint 0 Task
+    :end-before: }// 
 
-::
-
-    void Endpoint0( chanend chan_ep0_out, chanend chan_ep0_in) {
-      unsigned char buffer[1024];
-      SetupPacket sp;
-      unsigned int current_config = 0;
-        
-      XUD_ep c_ep0_out = XUD_Init_Ep(chan_ep0_out);
-      XUD_ep c_ep0_in  = XUD_Init_Ep(chan_ep0_in);
-        
-      while(1) {
-        /* Do standard enumeration requests */ 
-        int retVal = 0;
-
-        retVal = DescriptorRequests(c_ep0_out, c_ep0_in, hiSpdDesc, 
-          sizeof(hiSpdDesc), hiSpdConfDesc, sizeof(hiSpdConfDesc), 
-          fullSpdDesc, sizeof(fullSpdDesc), fullSpdConfDesc, 
-          sizeof(fullSpdConfDesc), stringDescriptors, sp);
-            
-        if (retVal)
-        {
-          /* Request not covered by XUD_DoEnumReqs() so decode ourselves */
-          switch(sp.bmRequestType.Type)
-          {
-            /* Class request */
-              case BM_REQTYPE_TYPE_CLASS:
-                switch(sp.bmRequestType.Recipient)
-                {
-                  case BM_REQTYPE_RECIP_INTER:
-
-                  /* Inspect for HID interface num */
-                  if(sp.wIndex == 0)
-                  {
-                    HidInterfaceClassRequests(c_ep0_out, c_ep0_in, sp);
-                  }
-                  break;
-                                               
-                }
-                break;
-
-              case BM_REQTYPE_TYPE_STANDARD:
-                switch(sp.bmRequestType.Recipient)
-                {
-                  case BM_REQTYPE_RECIP_INTER:
-                        
-                    switch(sp.bRequest)
-                    {
-                      /* Set Interface */
-                        case SET_INTERFACE:
-                          /* No data stage for this request, 
-                           * just do data stage */
-                          XUD_DoSetRequestStatus(c_ep0_in, 0);
-                          break;
-                            
-                        case GET_INTERFACE:
-                          buffer[0] = 0;
-                          XUD_DoGetRequest(c_ep0_out, c_ep0_in, 
-                            buffer,1, sp.wLength );
-                          break;
-                            
-                        case GET_STATUS:
-                          buffer[0] = 0;
-                          buffer[1] = 0;
-                          XUD_DoGetRequest(c_ep0_out, c_ep0_in, 
-                            buffer, 2, sp.wLength);
-                          break; 
-                 
-                        case GET_DESCRIPTOR:
-                          if((sp.wValue & 0xff00) ==  0x2200) 
-                          {
-                            retVal = XUD_DoGetRequest(c_ep0_out, c_ep0_in,                          hidReportDescriptor, 
-                              sizeof(hidReportDescriptor),sp.wLength, 
-                              sp.wLength);
-                          }
-                          break;
-                            
-                      }       
-                      break;
-                        
-                  /* Recipient: Device */
-                  case BM_REQTYPE_RECIP_DEV:
-                        
-                    /* Standard Device requests (8) */
-                    switch( sp.bRequest )
-                    {      
-                      /* Standard request: SetConfiguration */
-                      case SET_CONFIGURATION:
-                            
-                        /* Set the config */
-                        current_config = sp.wValue;
-                            
-                        /* No data stage for this request, 
-                           just do status stage */
-                        XUD_DoSetRequestStatus(c_ep0_in,  0);
-                        break;
-                            
-                      case GET_CONFIGURATION:
-                        buffer[0] = (char)current_config;
-                        XUD_DoGetRequest(c_ep0_out, c_ep0_in, buffer, 
-                          1, sp.wLength);
-                        break; 
-                            
-                      case GET_STATUS:
-                        buffer[0] = 0;
-                        buffer[1] = 0;
-                        if (hiSpdConfDesc[7] & 0x40)
-                            buffer[0] = 0x1;
-                        XUD_DoGetRequest(c_ep0_out, c_ep0_in, buffer, 
-                          2, sp.wLength);
-                        break; 
-                        
-                      case SET_ADDRESS:
-                        /* Status stage: Send a zero length packet */
-                        retVal = XUD_SetBuffer_ResetPid(c_ep0_in,  
-                          buffer, 0, PIDn_DATA1);
-
-                        /* wait until ACK is received for status stage 
-                           before changing address */
-                        {
-                            timer t;
-                            unsigned time;
-                            t :> time;
-                            t when timerafter(time+50000) :> void;
-                        }
-
-                        /* Set device address in XUD */
-                        XUD_SetDevAddr(sp.wValue);
-                        break;
-                            
-                      default:
-                        break;
-                            
-                    }  
-                    break;
-                        
-                  default: 
-                    /* Request to a recipient we didn't recognize */ 
-                    break;
-                }
-                break;
-                
-              default:
-                /* Error */ 
-                break;
-        
-            }
-                
-          } /* if XUD_DoEnumReqs() */
-
-          if (retVal == -1) 
-          {
-            XUD_ResetEndpoint(c_ep0_out, c_ep0_in);
-          } 
-        }
-    }
 
 The skeleton HidInterfaceClassRequests() function deals with any
 outstanding HID requests. See the USB HID Specification for full request
 details:
 
-::
+.. literalinclude:: sc_usb_device/app_example_hid_mouse/src/endpoint0.xc
+    :start-after: /* HID Class Requests
+    :end-before: /* Endpoint 0 Task
 
-    int HidInterfaceClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, 
-      SetupPacket sp)
-    {
-      unsigned char buffer[64];
-      switch(sp.bRequest )
-      { 
-        case GET_REPORT:        
-          break;
+If the HID request is not handles, the function returns 1.  This results in ``USB_StandardRequests()`` being called, and eventually the endpoint being STALLed to indicate an unknown request.
 
-        case GET_IDLE:
-          break;
-
-        case GET_PROTOCOL:      /* Required only for boot devices */
-          break;
-
-        case SET_REPORT: 
-          XUD_GetBuffer(c_ep0_out, buffer);
-          return XUD_SetBuffer_ResetPid(c_ep0_in, buffer, 0, PIDn_DATA1);
-          break;
-
-        case SET_IDLE:      
-          return XUD_SetBuffer_ResetPid(c_ep0_in, buffer, 0, PIDn_DATA1);
-          break;
-                
-        case SET_PROTOCOL:      /* Required only for boot devices */
-          return XUD_SetBuffer_ResetPid(c_ep0_in, buffer, 0, PIDn_DATA1);
-          break;
-                
-        default:
-          /* Error case */
-          break;
-      }
-
-      return 0;
-    }
 
 XUD API
 =======

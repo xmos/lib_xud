@@ -1,9 +1,6 @@
 XMOS USB Device (XUD) Library
 =============================
 
-.. TODO 
-.. Differnt mouse speed FS/HS
-
 Introduction
 ============
 
@@ -650,7 +647,7 @@ input). It demonstrates the use of ``XUD_SetBuffer``.
 
 ::
 
-    void hid(chanend c_ep1) {
+    void hid_mouse(chanend c_ep1) {
         char buffer[] = {0, 0, 0, 0};
         int counter = 0;
         int state = 0;
@@ -689,8 +686,7 @@ input). It demonstrates the use of ``XUD_SetBuffer``.
     }
 
 Note, this endpoint does not receive or check for status data. It always
-performs IN transactions and its behavior would not change dependant on
-bus speed, so this is safe.
+performs IN transactions.  Since it's behaviour is not modified based on bus speed the mouse cursor will move more slowly when connected via a full-speed port.  Ideally the device would either modify its required polling rate in its descriptors (`'bInterval`` in the endpoint descriptor) or the counter value it is using in the ``hid_mouse()`` function. 
 
 Should processing take longer that the host IN polls, the ``XUD_Manager``
 thread will simply NAK the host.  The ``XUD_SetBuffer()`` function will return when the packet 

@@ -750,6 +750,8 @@ supplied” when used as an index value.  The ``USB_StandardRequests()`` functio
     :start-after: /* String table 
     :end-before: };
 
+Note that the ``null`` values and length ``0`` is passed for the full-speed descriptors, this means that the same descriptors will be used whether the device is running in full or high-speed.
+
 Application and Class Specific Requests 
 ---------------------------------------
 

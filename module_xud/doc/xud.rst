@@ -4,11 +4,11 @@ XMOS USB Device (XUD) Library
 Introduction
 ============
 
-This document details the use of the XMOS USB Device (XUD) Library, which enables the development of USB 2.0 devices on the XMOS XS-1 architecture.
+This document details the use of the XMOS USB Device (XUD) Library.  This library enables the development of USB 2.0 devices on the XMOS XS-1 architecture.
 
 This document describes the structure of the library, its basic use, and
 resources required. A worked example that uses the XUD library is shown:
-a USB Human Interface Device (HID) Class compliant mouse The full source
+a USB Human Interface Device (HID) Class compliant mouse. The full source
 code for the example can be downloaded from the XMOS website.
 
 This document assumes familiarity with the XMOS XS-1 architecture, the
@@ -21,7 +21,7 @@ Overview
 The XUD library allows the implementation of both full-speed and high-speed USB 2.0 devices on both XS1-L and XS1-U device families.
 
 For the XS1-L family the implementation requires the use of an external ULPI transceiver such as the SMSC USB33XX range.  The XS1-U familiy includes an integrated USB transceiver. 
-Two libraries, with identical interfaces, are provided, one of XS1-L and one for XS1-U series of processor
+Two libraries, with identical interfaces, are provided - one of XS1-L and one for XS1-U series of processor.
 
 The library performs all the low-level I/O operations required to meet
 the USB 2.0 specification. This processing goes up to and includes the
@@ -38,7 +38,7 @@ throughout this document the USB nomenclature is used: an OUT endpoint
 is used to transfer data from the host to the device, an IN endpoint is
 used when the host requests data from the device.
 
-An example task diagram is shown  [figure:thread-diagram]. Circles
+An example task diagram is shown in :ref:`figure_xud_overview`.  Circles
 represent cores running on the XS1 with arrows depicting communication
 channels between these threads. In this configuration there is one
 thread that deals with endpoint 0, which has both the input and output
@@ -51,6 +51,8 @@ Itis important to note that, for performance reasons, threads
 communicate with the XUD library using both XC channels and shared
 memory communication. Therefore, *all threads using the XUD library must
 be on the same tile as the library itself*.
+
+.. _figure_xud_overview:
 
 .. figure:: images/xud_overview.*
 
@@ -322,19 +324,12 @@ such Packet ID toggling etc.
 ``XUD_SetBuffer_EpMax()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This function provides a similar function to that of the previously described ``XUD_SetBuffer`` functionnubut it cuts the data up in packets of a fixed maximum size. This is especially useful for control transfers where large descriptors must be sent in typically 64 byte transactions.
+This function provides a similar function to that of the previously described ``XUD_SetBuffer`` functionn but it cuts the data up in packets of a fixed maximum size. This is especially useful for control transfers where large descriptors must be sent in typically 64 byte transactions.
 
 See ``XUD_SetBuffer`` for a description of the first, second and third parameter.
 
-::
+.. doxygenfunction:: XUD_SetBuffer_EpMax
 
-    int retVal = XUD_SetBuffer_EpMax(
-                     XUD_ep ep_in,
-                     unsigned char buffer[], 
-                     unsigned datalength,
-                     unsigned epMax,
-
--  ``unsigned epMax`` The maximum packet size in bytes.
 
 The function returns 0 on success (see also Status Reporting)
 
@@ -476,7 +471,7 @@ Please see Universal Serial Bus 2.0 spec for full details of these requests.
 
 This function takes a populated ``USB_SetupPacket_t`` structure as an argument. 
 
-.. doxygenfunction:: XUD_StandardRequests
+.. doxygenfunction:: USB_StandardRequests
 
 The function inspects this SetupPacket structure and includes a minimum implentation of the Standard Device requests.  The requests handled as well as listing of the basic functinality associated with the request can be found below:
 
@@ -716,7 +711,7 @@ The device qualifier descriptor defines how fields of a high speed device’s de
 
 For a full-speed only device this is not required.
 
-Typically a device qualifier descriptor is derived mechanically from the device descriptor.  The ``XUD_StandardRequest`` function will build a device qualifier from the device desriptors passed to it based on the speed the device is currently running at.
+Typically a device qualifier descriptor is derived mechanically from the device descriptor.  The ``USB_StandardRequest`` function will build a device qualifier from the device desriptors passed to it based on the speed the device is currently running at.
 
 Configuration Descriptor
 ~~~~~~~~~~~~~~~~~~~~~~~

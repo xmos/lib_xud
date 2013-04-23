@@ -172,6 +172,17 @@ int XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
  *
  * NOTE: This function reasonably assumes the max transfer size for an EP is word aligned  
  **/
+
+/**
+ * \brief   Similar to XUD_SetBuffer but breaks up data transfers of into smaller packets.
+ *          This function must be called by a thread that deals with an IN endpoint.
+ *          When the host asks for data, the low level driver will transmit the buffer
+ *          to the host.  
+ * \param   ep_in        The endpoint structure created by ``XUD_Init_Ep``
+ * \param   buffer       The buffer of data to send out.  
+ * \param   datalength   The number of bytes in the buffer.
+ * \param   epMax        The maximum packet size in bytes
+ */
 int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax);
 
 
@@ -227,7 +238,7 @@ int XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two);
 
 
 /**
- *  \brief      TBD
+ *  \brief  Initialises an XUD_ep
  */
 XUD_ep XUD_InitEp(chanend c_ep);
 

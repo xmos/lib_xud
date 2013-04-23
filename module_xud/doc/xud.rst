@@ -295,7 +295,7 @@ These data structures can be created at the start of execution of a
 client core with the following call that takes as an argument the
 endpoint channel connected to the XUD library:
 
-.. doxygenfunction:: XUD_Init_Ep
+.. doxygenfunction:: XUD_InitEp
 
 Endpoint data is sent/received using three main functions,
 ``XUD_SetData()``. ``XUD_GetData()`` and ``XUD_GetSetupData()``.
@@ -429,7 +429,7 @@ XUD accepts a single word for from this channel to signal which test mode to ent
 
     +--------+-------------------------------------+
     | Value  | Test Mode Description               |                
-    +========|=====================================+
+    +========+=====================================+
     | 1      | Test_J                              |
     +--------+-------------------------------------+
     | 2      | Test_K                              |
@@ -792,6 +792,23 @@ details:
 
 If the HID request is not handles, the function returns 1.  This results in ``USB_StandardRequests()`` being called, and eventually the endpoint being STALLed to indicate an unknown request.
 
+Document Version History
+========================
+
+.. _table_xud_release_history:
+
+.. table:: Version History
+    :class: horizontal-borders vertical_borders
+
+    +------------+---------+----------------------------------------------------------+
+    | Date       | Version | Comment                                                  |
+    +============+=========+==========================================================+
+    | 2013-04-23 | 1.1     | API updates and changes to Standard Request handling     |
+    +------------+---------+----------------------------------------------------------+
+    | 2011-01-06 | 1.0     | Updates for API changes                                  |
+    +------------+---------+----------------------------------------------------------+
+    | 2010-07-22 | 1.0b    | Beta Release                                             |
+    +------------+---------+----------------------------------------------------------+
 
 XUD API
 =======
@@ -810,7 +827,7 @@ XUD user functions and types are documented here.
 .. doxygenfunction:: XUD_GetBuffer
 .. doxygenfunction:: XUD_GetSetupBuffer
 .. doxygenfunction:: XUD_SetBuffer
-.. doxygenfunction:: XUD_SetBuffer_EpMan
+.. doxygenfunction:: XUD_SetBuffer_EpMax
 
 
 .. doxygenfunction:: XUD_DoGetRequest
@@ -828,20 +845,4 @@ XUD user functions and types are documented here.
 
 
 
-Document Version History
-========================
 
-.. _table_xud_release_history:
-
-.. table:: Version History
-    :class: horizontal-borders vertical_borders
-
-    +------------+---------+----------------------------------------------------------+
-    | Date       | Version | Comment                                                  |
-    +============+=========+==========================================================+
-    | 2013-04-23 | 1.1     | API updates and changes to Standard Request handling     |
-    +------------+---------+----------------------------------------------------------+
-    | 2011-01-06 | 1.0     | Updates for API changes                                  |
-    +------------+---------+----------------------------------------------------------+
-    | 2010-07-22 | 1.0b    | Beta Release                                             |
-    +------------+---------+----------------------------------------------------------+

@@ -24,6 +24,12 @@ on for the various endpoints.
 
 .. doxygenfunction:: XUD_Manager
 
+Endpoint Type Table 
+~~~~~~~~~~~~~~~~~~~
+
+
+
+
 EP Communication with ``XUD_Manager()``
 ---------------------------------------
 

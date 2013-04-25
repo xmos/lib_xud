@@ -30,9 +30,13 @@ typedef unsigned int XUD_ep;
 /* Value to be or'ed in with EP type to enable bus state notifications */
 #define XUD_STATUS_ENABLE           0x80000000                   
 
-/* Bus state defines */
-#define XUD_SPEED_FS                1
-#define XUD_SPEED_HS                2
+typedef enum XUD_BusSpeed
+{
+    XUD_SPEED_FS = 1,
+    XUD_SPEED_HS = 2,
+
+} XUD_BusSpeed;
+
 
 #define XUD_SUSPEND                 3
 
@@ -103,7 +107,7 @@ int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsig
  *
  *    \param  epTypeTableOut See ``epTypeTableIn``
  *    \param  epTypeTableIn This and ``epTypeTableOut`` are two arrays
- *                            indicating the type of channel ends. 
+ *                            indicating the type of the endpoint. 
  *                            Legal types include: 
  *                           ``XUD_EPTYPE_CTL`` (Endpoint 0), 
  *                           ``XUD_EPTYPE_BUL`` (Bulk endpoint),
@@ -134,7 +138,7 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
                 chanend c_epIn[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                out port ?p_usb_rst, clock ?clk, unsigned rstMask, unsigned desiredSpeed,
+                out port ?p_usb_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed desiredSpeed,
                 chanend ?c_usb_testmode);
 
 
@@ -194,8 +198,8 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
 
 /**
  * \brief  This function performs a combined ``XUD_SetBuffer`` and ``XUD_GetBuffer``.
- *         It transmits the buffer of the given length over the ``ep_in`` channel to 
- *         answer an IN request, and then waits for an OUT transaction on ``ep_out``.
+ *         It transmits the buffer of the given length over the ``ep_in`` endpoint to 
+ *         answer an IN request, and then waits for a 0 length Status OUT transaction on ``ep_out``.
  *         This function is normally called to handle Get control requests to endpoint 0.
  * 
  * \param  ep_out The endpoint identifier that handles endpoint 0 OUT data in the XUD manager.
@@ -240,7 +244,7 @@ void XUD_SetDevAddr(unsigned addr);
  * \return One of: ``XUD_SPEED_HS`` The host has accepted that this device can execute
  *         at high speed. ``XUD_SPEED_FS`` The device should run at full speed.
  */
-int XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two);
+XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two);
 
 
 /**
@@ -407,6 +411,6 @@ int XUD_ResetDrain(chanend one);
 /**
  *  \brief      TBD
  */
-int XUD_GetBusSpeed(chanend c);
+XUD_BusSpeed XUD_GetBusSpeed(chanend c);
 
 #endif // __xud_h__

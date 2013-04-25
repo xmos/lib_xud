@@ -191,7 +191,7 @@ void XUD_Error_hex(char errString[], int i_err)
 }
 #endif
 
-int XUD_ResetEndpoint0(chanend one, chanend ?two) 
+XUD_BusSpeed XUD_ResetEndpoint0(chanend one, chanend ?two) 
 {
     int busStateCt;
     int busSpeed;
@@ -213,7 +213,7 @@ int XUD_ResetEndpoint0(chanend one, chanend ?two)
         {
             inuint(two);
         }
-        return busSpeed;
+        return (XUD_BusSpeed) busSpeed;
     }
     else
     {
@@ -233,7 +233,7 @@ int XUD_ResetDrain(chanend one)
     return busStateCt;
 }
 
-int XUD_GetBusSpeed(chanend c)
+XUD_BusSpeed XUD_GetBusSpeed(chanend c)
 {
     return inuint(c);
 }

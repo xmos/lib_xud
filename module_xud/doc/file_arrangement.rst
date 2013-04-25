@@ -7,10 +7,10 @@ the XUD layer:
 include/xud.h
     User defines and functions for the XUD library.
 
-lib/libxud_l.a
+lib/xs1b/libxud_l.a
     Library for XS1-L series processors.
 
-lib/libxud_u.a
+lib/xs1b/libxud_u.a
     Library for XS1-U series processors.
 
 src/XUD_EpFunctions.xc

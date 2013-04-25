@@ -21,7 +21,7 @@ the XMOS tool chain and XC language.
     Basic Usage <basic_usage>
     Standard Requests and Endpoint 0 <standard_reqs>
     Basic Example HS Device: USB HID Device <hid_example>
-    Document Version History <version_history>
     XUD API <xud_api>
+    Document Version History <version_history>
 
 

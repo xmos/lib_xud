@@ -3,7 +3,7 @@ Document Version History
 
 .. _table_xud_release_history:
 
-Document version history.
+Version history of this document.
 
 .. table:: Version History
     :class: horizontal-borders vertical_borders

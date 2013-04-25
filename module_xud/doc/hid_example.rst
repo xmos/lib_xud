@@ -23,8 +23,12 @@ Declarations
     #define XUD_EP_COUNT_IN   2
 
     /* Endpoint type tables */
-    XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
-    XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_BUL};
+    XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {
+        XUD_EPTYPE_CTL | XUD_STATUS_ENABLE
+    };
+    XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] = {
+        XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_BUL
+    };
 
 Main program
 ------------
@@ -37,13 +41,13 @@ endpoint 0 requires both, HID is just an IN endpoint for the mouse data to the h
 
     int main() 
     {
-        chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
+        chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
         par {
-            XUD_Manager(c_ep_out, EP_COUNT_OUT,
-                        c_ep_in, EP_COUNT_IN,
+            XUD_Manager(c_ep_out, XUD_EP_COUNT_OUT,
+                        c_ep_in, XUD_EP_COUNT_IN,
                         null, epTypeTableOut, epTypeTableIn,
                         null, null, null, XUD_SPEED_HS, null);  
-            Endpoint0( c_ep_out[0], c_ep_in[0]);
+            Endpoint0(c_ep_out[0], c_ep_in[0]);
             hid_mouse(c_ep_in[1]);
         }
         return 0;
@@ -74,7 +78,7 @@ input). It demonstrates the use of ``XUD_SetBuffer``.
         counter = 0;
         while(1) {
             counter++;
-            if(counter == 400) {
+            if(counter == 100) {
                 if(state == 0) {
                     buffer[1] = 40;
                     buffer[2] = 0; 
@@ -113,19 +117,20 @@ Should processing take longer that the host IN polls, the ``XUD_Manager``
 core will simply NAK the host.  The ``XUD_SetBuffer()`` function will
 return when the packet transmission is complete.
 
-Standard Descriptors
---------------------
 .. _sec_hid_ex_descriptors:
 
+Standard Descriptors
+--------------------
+
 The ``USB_StandardRequests()`` function expects descriptors be declared as
-arrays of characters.  Descriptors are look at in depth in this section.
+arrays of characters.  Descriptors are looked at in depth in this section.
 
 Device Descriptor
 ~~~~~~~~~~~~~~~~~
 The device descriptor contains basic information about the device. This
 descriptor is the first descriptor the host reads during its enumeration
-process and it includes information that enables the host to interrogate
-further the device. The descriptor includes information on the descriptor
+process and it includes information that enables the host to further
+interrogate the device. The descriptor includes information on the descriptor
 itself, the device (USB version, vendor ID etc.), its configurations and
 any classes the device implements.
 
@@ -140,7 +145,7 @@ Device Qualifier Descriptor
 
 Devices which support both full and high-speeds must implement a device
 qualifier descriptor. The device qualifier descriptor defines how fields
-of a high speed device’s device descriptor would look if that device is
+of a high speed device’s descriptor would look if that device is
 run at a different speed. If a high-speed device is running currently at
 full/high speed, fields of this descriptor reflect how device descriptor
 fields would look if speed was changed to high/full. Please refer to
@@ -178,7 +183,7 @@ or high-speed.
 String Descriptors 
 ~~~~~~~~~~~~~~~~~~
 An array of strings supplies all the strings that are referenced from
-the descriptors (using fields such as ‘iInterace’, ‘iProduct’ etc.).
+the descriptors (using fields such as ‘iInterface’, ‘iProduct’ etc.).
 String 0 is the language descriptor, and is interpreted as “no string
 supplied” when used as an index value.  The ``USB_StandardRequests()``
 function deals with requests for strings using the table of strings
@@ -197,10 +202,10 @@ Application and Class Specific Requests
 
 Although the ``USB_StandardRequests()`` function deals with many of the
 requests the device is required to handle in order to be properly enumerated
-by a host, typically an USB device will have Class (or Application) specific
+by a host, typically a USB device will have Class (or Application) specific
 requests that must be handled.
 
-In the case of the HID mouse there are three mandatory Requests that must be handled:
+In the case of the HID mouse there are three mandatory requests that must be handled:
 
     - ``GET_DESCRIPTOR``
 
@@ -214,8 +219,8 @@ Please refer to the HID Specification and related documentation for full
 details of all HID requests.
 
 The HID report descriptor informs the hosts of the contents of the HID reports
-that it will be sending to the host periodically.For a mouse this could include
-X/Y axis values, button presses etc.  Tools for building these descriptors are
+that it will be sending to the host periodically. For a mouse this could include
+X/Y axis values, button presses etc. Tools for building these descriptors are
 available for download on the usb.org website.
 
 The HID report descriptor for the HID mouse example is shown below:
@@ -225,7 +230,7 @@ The HID report descriptor for the HID mouse example is shown below:
     :end-before: };
 
 The request for this descriptor (and the other required requests) should be
-implemented before making the call to ``USB_StandardRequests()``.  The programmer
+implemented before making the call to ``USB_StandardRequests()``. The programmer
 may decide not to make a call to ``USB_StandardRequests`` if the request is
 fully handled.  It is possible the programmer may choose to implement some
 functionality for a request, then allow ``USB_StandardRequests()`` to finalize.
@@ -234,10 +239,10 @@ The complete code listing for the main endpoint 0 task is show below:
 
 .. literalinclude:: sc_usb_device/app_example_hid_mouse/src/endpoint0.xc
     :start-after: /* Endpoint 0 Task
-    :end-before: }// 
+    :end-before: //:
 
 
-The skeleton HidInterfaceClassRequests() function deals with any
+The skeleton ``HidInterfaceClassRequests()`` function deals with any
 outstanding HID requests. See the USB HID Specification for full request
 details:
 

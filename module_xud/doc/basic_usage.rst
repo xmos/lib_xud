@@ -40,15 +40,14 @@ endpoint channel connected to the XUD library:
 .. doxygenfunction:: XUD_InitEp
 
 Endpoint data is sent/received using three main functions,
-``XUD_SetData()``. ``XUD_GetData()`` and ``XUD_GetSetupData()``.
+``XUD_SetData()``, ``XUD_GetData()`` and ``XUD_GetSetupData()``.
 
 These assembly functions implement the low level shared memory/channel
-communication with the ``XUD_Manager()`` core. For developer
-convenience these calls are wrapped up by XC functions. It is rare that
-a developer would need to call the assembly access functions directly.
+communication with the ``XUD_Manager()`` core. For developer convenience
+these calls are wrapped up by XC functions.
 
 These functions will automatically deal with any low level complications required
-such Packet ID toggling etc.
+such as Packet ID toggling etc.
 
 ``XUD_GetBuffer()``
 ~~~~~~~~~~~~~~~~~~~
@@ -73,9 +72,6 @@ See ``XUD_SetBuffer`` for a description of the first, second and third parameter
 
 .. doxygenfunction:: XUD_SetBuffer_EpMax
 
-
-The function returns 0 on success (see also Status Reporting)
-
 ``XUD_DoGetRequest()``
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -91,6 +87,8 @@ The function returns 0 on success (see also Status Reporting)
 
 .. doxygenfunction:: XUD_SetDevAddr
 
+.. _xud_status_reporting:
+
 Status Reporting
 ~~~~~~~~~~~~~~~~
 
@@ -100,12 +98,12 @@ endpoint in the endpoint type table.
 
 This means that endpoints are notified of USB bus resets (and
 bus-speeds). The XUD access functions discussed previously
-(``XUD_GetData``, ``XUD_SetData`` etc)return less than 0 if a USB bus reset is 
-detected.
+(``XUD_GetData``, ``XUD_SetData``, etc.) return less than 0 if
+a USB bus reset is detected.
 
 This reset notification is important if an endpoint core is expecting
-alternating INs and OUTs. For example, consider the case where a
-endpoint is always expecting the sequence OUT, IN, OUT (such a control
+alternating INs and OUTs. For example, consider the case where an
+endpoint is always expecting the sequence OUT, IN, OUT (such as a control
 transfer). If an unplug/reset event was received after the first OUT,
 the host would return to sending the initial OUT after a replug, while
 the endpoint would hang on the IN. The endpoint needs to know of the bus
@@ -160,10 +158,12 @@ is passed into ``XUD_Manager()`` there must be a responsive task ready to
 receive SOF notifications since else the ``XUD_Manager()`` task will be
 blocked attempting to send these messages.
 
+.. _xud_usb_test_modes:
+
 USB Test Modes
 --------------
 
-XUD supports the required tests modes for USB Compliance testing. The
+XUD supports the required test modes for USB Compliance testing. The
 ``XUD_Manager()`` task can take a channel-end argument for controlling the
 test mode required.  ``null`` can be passed if this functionality is not required.  
 
@@ -191,7 +191,7 @@ summarised in the :ref:`table_test_modes`.
     | 5      | Test_Force_Enable                   |
     +--------+-------------------------------------+
 
-The use of other codes is results in undefined behaviour.
+The use of other codes results in undefined behaviour.
 
 As per the USB 2.0 specification a power cycle or reboot is required to exit the test mode.
 

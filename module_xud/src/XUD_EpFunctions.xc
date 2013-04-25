@@ -72,7 +72,7 @@ int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_i
     {   
         case XUD_GetData_Select(c_out, ep_out, tmp):
 
-                if(tmp == -1)
+                if (tmp == -1)
                 {
                     /* If tmp - then we got a reset */
                     return tmp;
@@ -103,7 +103,7 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
     int i = 0;
  
     /* Note: We could encompass this in the SetData function */ 
-    if(datalength <= epMax)
+    if (datalength <= epMax)
     {
         /* Datalength is less than the maximum per transaction of the EP, so just send */
         return XUD_SetData(ep_in, buffer, datalength, 0, 0); 
@@ -118,10 +118,10 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
         i+= epMax;
         datalength-=epMax;
 
-        while(1)
+        while (1)
 	    {
 	  
-            if(datalength > epMax)
+            if (datalength > epMax)
 	        {
                 /* PID Automatically toggled */
                 if (XUD_SetData(ep_in, buffer, epMax, i, 0) < 0) return -1;
@@ -155,7 +155,7 @@ int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsign
     }
 
     /* USB 2.0 8.5.3.2 */
-    if((requested > length) && (length % 64) == 0)
+    if ((requested > length) && (length % 64) == 0)
     {
         XUD_SetBuffer(ep_in, tmpBuffer, 0);
     }
@@ -179,7 +179,7 @@ void XUD_Error(char errString[])
 {
     printstr("XUD Err: ");
     printstr(errString);
-    while(1);
+    while (1);
 }
 
 void XUD_Error_hex(char errString[], int i_err)
@@ -187,7 +187,7 @@ void XUD_Error_hex(char errString[], int i_err)
     printstr("XUD Err: ");
     printstr(errString);
     printhexln(i_err);
-    while(1);
+    while (1);
 }
 #endif
 
@@ -206,10 +206,10 @@ int XUD_ResetEndpoint0(chanend one, chanend ?two)
     }
 
     /* Inspect for reset, if so we expect a CT with speed */
-    if(busStateCt == USB_RESET_TOKEN)
+    if (busStateCt == USB_RESET_TOKEN)
     {
         busSpeed = inuint(one);
-        if(!isnull(two))
+        if (!isnull(two))
         {
             inuint(two);
         }

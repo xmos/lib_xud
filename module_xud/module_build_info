@@ -3,8 +3,8 @@
 # The LIBRARY variable needs to be set to the name of the library to
 # be built
 
-LIBRARIES = xud_l xud_g xud_u 
-#xud_s_sim
+LIBRARIES = xud_u xud_l
+#xud_s_sim xud_g
 
 # You can set flags specifically for your module by using the MODULE_XCC_FLAGS
 # variable. So the following

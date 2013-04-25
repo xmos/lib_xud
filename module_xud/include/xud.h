@@ -117,8 +117,8 @@ int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsig
  *    \param  p_usb_rst The port to send reset signals to.
  *    \param  clk The clock block to use for the USB reset - 
  *               this should not be clock block 0.
- *    \param  rstMask   The mask to use when sending a reset. The mask is
- *                      ORed into the port to enable reset, and unset when
+ *    \param  rstMask   The mask to use when taking an external phy into/out of reset. The mask is
+ *                      ORed into the port to disable reset, and unset when
  *                      deasserting reset. Use '-1' as a default mask if this
  *                      port is not shared.
  *    \param  desiredSpeed This parameter specifies whether the

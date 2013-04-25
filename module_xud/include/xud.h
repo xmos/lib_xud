@@ -68,11 +68,11 @@ int XUD_GetSetupData(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
 /**
  *  \brief      TBD
  *  \param      ep_in      The IN endpoint identifier
- *  \param      buffer     TBD
- *  \param      datalength TBD
- *  \param      startIndex TBD
- *  \param      pidToggle  TBD
- *  \return     TBD
+ *  \param      buffer     The packet buffer to send data from
+ *  \param      datalength The length of the packet to send (in bytes)
+ *  \param      startIndex The start index of the packet in the buffer (typically 0)
+ *  \param      pidToggle  Normal usage is 0 causing XUD to toggle packet ID normally. Anything other than 0 is used as the packet ID.
+ *  \return                0 on non-error, -1 on bus-reset
  */
 int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 

@@ -1,7 +1,8 @@
 XMOS USB Device (XUD) Library
 =============================
 
-This document details the use of the XMOS USB Device (XUD) Library.  This library enables the development of USB 2.0 devices on the XMOS XS-1 architecture.
+This document details the use of the XMOS USB Device (XUD) Library.  This
+library enables the development of USB 2.0 devices on the XMOS XS-1 architecture.
 
 This document describes the structure of the library, its basic use, and
 resources required. A worked example that uses the XUD library is shown:

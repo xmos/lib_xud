@@ -27,6 +27,12 @@ on for the various endpoints.
 Endpoint Type Table 
 ~~~~~~~~~~~~~~~~~~~
 
+The endpoint type table should take an array of ``XUD_EpType`` to inform XUD about endpoints being used.  This is mainly used to indicate the transfer-type of each endpoint (bulk, control, isochronous or interrupt) as well as whether the endpoint wishs to be informed about bus-resets (see :ref:`xud_status_reporting`).
+
+Note, endpoints can also be marked as disabled.
+
+Endpoints that are not used will NAK any traffic from the host.
+
 
 
 

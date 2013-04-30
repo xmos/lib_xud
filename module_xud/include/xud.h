@@ -1,5 +1,5 @@
 /*
- * \brief     User defines and functions for XMOS USB Device Layer 
+ * \brief     User defines and functions for XMOS USB Device library 
  */
 
 #ifndef __xud_h__
@@ -9,17 +9,23 @@
 #include <xs1.h>
 
 /**
- * \var     typedef XUD_EpType
- * \brief   Typedef for endpoint types.  Note: it is important that ISO is 0
+ * \var     typedef XUD_EpTransferType
+ * \brief   Typedef for endpoint data transfer types.  Note: it is important that ISO is 0
  */
-typedef enum XUD_EpType
+typedef enum XUD_EpTransferType
 {
     XUD_EPTYPE_ISO = 0,          /**< Isoc */
     XUD_EPTYPE_INT,              /**< Interrupt */
     XUD_EPTYPE_BUL,              /**< Bulk */
     XUD_EPTYPE_CTL,              /**< Control */
     XUD_EPTYPE_DIS,              /**< Disabled */
-} XUD_EpType;
+} XUD_EpTransferType;
+
+/**
+ * \var     typedef XUD_EpType
+ * \brief   Typedef for endpoint type
+ */
+typedef unsigned int XUD_EpType;
 
 /**
  * \var     typedef XUD_ep
@@ -27,14 +33,14 @@ typedef enum XUD_EpType
  */
 typedef unsigned int XUD_ep;
 
-/* Value to be or'ed in with EP type to enable bus state notifications */
+/* Value to be or'ed in with EpTransferType to enable bus state notifications */
 #define XUD_STATUS_ENABLE           0x80000000                   
+
 
 typedef enum XUD_BusSpeed
 {
     XUD_SPEED_FS = 1,
-    XUD_SPEED_HS = 2,
-
+    XUD_SPEED_HS = 2
 } XUD_BusSpeed;
 
 
@@ -256,44 +262,44 @@ XUD_ep XUD_InitEp(chanend c_ep);
 
 
 /**
- * \brief   Mark an OUT endpoint as STALL.  Note: is cleared automatically if a SETUP received on endpoint
+ * \brief   Mark an IN endpoint as STALL based on its EP address.  Cleared automatically if a SETUP received on the endpoint. 
+ *          Note: the IN bit of the endpoint address is used.
  * \param   epNum Endpoint number
  * \return  void
  * \warning Must be run on USB core
  */
-void XUD_SetStall_Out(int epNum);
+void XUD_SetStallByAddr(int epNum);
 
 
 /**
- * \brief   Mark an IN endpoint as STALL.  Note: is cleared automatically if a SETUP received on endpoint
+ * \brief   Mark an OUT endpoint as NOT STALLed based on its EP address.
+ *          Note: the IN bit of the endpoint address is used.
  * \param   epNum Endpoint number
  * \return  void
  * \warning Must be run on USB core
  */
-void XUD_SetStall_In(int epNum);
+void XUD_ClearStallByAddr(int epNum);
+
+/**
+ * \brief   Mark an endpoint as STALLed.  It is cleared automatically if a SETUP received on the endpoint. 
+ * \param   ep XUD_ep type
+ * \return  void
+ * \warning Must be run on USB core
+ */
+void XUD_SetStall(XUD_ep ep);
 
 
 /**
- * \brief   Mark an OUT endpoint as NOT STALLed.
- * \param   epNum Endpoint number
+ * \brief   Mark an OUT endpoint as NOT STALLed
+ * \param   ep XUD_ep type
  * \return  void
  * \warning Must be run on USB core
  */
-void XUD_ClearStall_Out(int epNum);
+void XUD_ClearStall(XUD_ep ep);
 
-
-/**
- * \brief   Mark an IN endpoint as NOT STALLed.
- * \param   epNum Endpoint number
- * \return  void
- * \warning Must be run on USB core
- */
-void XUD_ClearStall_In(int epNum);
 
 
 /* Advanced functions for supporting multple Endpoints in a single core */
-
-
 /**
  * \brief   TBD
  */
@@ -393,7 +399,7 @@ inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     // Store neg index 
     asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));            // Store index 
     
-    // Store buffer poinr
+    // Store buffer pointer
     asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));             
 
     // Store tail len

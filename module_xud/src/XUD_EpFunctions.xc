@@ -149,7 +149,7 @@ int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsign
 {
     unsigned char tmpBuffer[1024];
 
-   if (XUD_SetBuffer_EpMax(ep_in, buffer, min(length, requested), 64) < 0) 
+    if (XUD_SetBuffer_EpMax(ep_in, buffer, min(length, requested), 64) < 0) 
     {
         return -1;
     }
@@ -160,7 +160,7 @@ int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsign
         XUD_SetBuffer(ep_in, tmpBuffer, 0);
     }
    
-    /* Status stage */ 
+    /* Status stage - this should return -1 for reset or 0 for 0 length status stage packet */ 
     return XUD_GetData(ep_out, tmpBuffer);
 }
 
@@ -174,22 +174,26 @@ int XUD_DoSetRequestStatus(XUD_ep ep_in)
     return XUD_SetData(ep_in, tmp, 0, 0, PIDn_DATA1);
 }
 
-#ifdef XUD_DEBUG_VERSION
-void XUD_Error(char errString[])
+void XUD_SetStall(XUD_ep ep)
 {
-    printstr("XUD Err: ");
-    printstr(errString);
-    while (1);
+    /* Get EP address from XUD_ep structure */
+    unsigned int epAddress;
+
+    asm ("ldw %0, %1[8]":"=r"(epAddress):"r"(ep));
+
+    XUD_SetStallByAddr(epAddress);
 }
 
-void XUD_Error_hex(char errString[], int i_err)
+void XUD_ClearStall(XUD_ep ep)
 {
-    printstr("XUD Err: ");
-    printstr(errString);
-    printhexln(i_err);
-    while (1);
+    /* Get EP address from XUD_ep structure */
+    unsigned int epAddress;
+
+    asm ("ldw %0, %1[8]":"=r"(epAddress):"r"(ep));
+
+    XUD_ClearStallByAddr(epAddress);
 }
-#endif
+
 
 XUD_BusSpeed XUD_ResetEndpoint0(chanend one, chanend ?two) 
 {

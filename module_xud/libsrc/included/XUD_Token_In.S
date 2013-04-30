@@ -28,7 +28,8 @@ XUD_IN_TxNak:
     outpw     res[TXD], r11, 8
     //syncr     res[TXD] 
 
-    ldw         r4, sp[(STACK_EXTEND+8)]              // Number of out Endpoints
+    //ldw         r4, sp[(STACK_EXTEND+8)]              // Number of out Endpoints
+    ldc         r4, XUD_MAX_NUM_EP_OUT
 
     ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
                                                       // We receive: | 0000 4-bit EP | 0000 4-bit PID |

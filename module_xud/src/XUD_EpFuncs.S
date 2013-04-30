@@ -365,10 +365,11 @@ XUD_SetData_PidToggle:                          //
     stw         r11, r0[4]                      // Store back PID
 
 XUD_SetData_DonePid:
-    ldw         r0, sp[1]
-    ldw         r1, sp[2]
-    ldw         r2, sp[3]
-    ldw         r3, sp[4]  
+    ldc         r0, 0
+    //ldw         r0, sp[1]
+    //ldw         r1, sp[2]
+    //ldw         r2, sp[3]
+    //ldw         r3, sp[4]  
 Return2:
     ldw         r4, sp[0]        
     ldw         r5, sp[5] 
@@ -414,56 +415,48 @@ XUD_SetReady:
 .cc_bottom XUD_SetReady.func     
 
 
-.globl   XUD_SetStall_Out
-.globl   XUD_SetStall_Out.nstackwords
-.linkset XUD_SetStall_Out.nstackwords, 0
+.globl   XUD_SetStallByAddr
+.globl   XUD_SetStallByAddr.nstackwords
+.linkset XUD_SetStallByAddr.nstackwords, 0
         
 /* R0: ep number */
-.cc_top XUD_SetStall_Out.func, XUD_SetStall_Out
-XUD_SetStall_Out:
-    ldaw       r1,  dp[handshakeTable_OUT]
-    ldc        r2, PIDn_STALL
-    stw        r2, r1[r0]               
-    retsp 0
-.cc_bottom XUD_SetStall_Out.func   
+.cc_top XUD_SetStallByAddr.func, XUD_SetStallByAddr
+XUD_SetStallByAddr:
+    ldc         r2, PIDn_STALL
+    ldc         r11, 0x80               /* Check for IN bit */
+    and         r11, r11, r0
+    bf          r11, XUD_SetStallByAddr_OUT
+    ldaw        r1,  dp[handshakeTable_IN]
+    mkmsk       r11, 7
+    and         r11, r11, r0
+    stw         r2, r1[r11]               
+    retsp       0
+XUD_SetStallByAddr_OUT:
+    ldaw        r1,  dp[handshakeTable_OUT]
+    stw         r2, r1[r0]               
+    retsp       0
+.cc_bottom XUD_SetStallByAddr.func   
 
 
- .globl   XUD_SetStall_In
-.globl   XUD_SetStall_In.nstackwords
-.linkset XUD_SetStall_In.nstackwords, 0
+.globl   XUD_ClearStallByAddr
+.globl   XUD_ClearStallByAddr.nstackwords
+.linkset XUD_ClearStallByAddr.nstackwords, 0
         
 /* R0: ep number */
-.cc_top XUD_SetStall_In.func, XUD_SetStall_In
-XUD_SetStall_In:
-    ldaw       r1,  dp[handshakeTable_IN]
-    ldc        r2, PIDn_STALL
-    stw        r2, r1[r0]               
-    retsp 0
-.cc_bottom XUD_SetStall_In.func       
+.cc_top XUD_ClearStallByAddr.func, XUD_ClearStallByAddr
+XUD_ClearStallByAddr:
+    ldc         r2, PIDn_NAK
+    ldc         r11, 0x80               /* Check for IN bit */
+    and         r11, r11, r0
+    bf          r11, XUD_ClearStallByAddr_OUT
+    ldaw        r1,  dp[handshakeTable_IN]
+    mkmsk       r11, 7
+    and         r11, r11, r0
+    stw         r2, r1[r11]               
+    retsp       0
+XUD_ClearStallByAddr_OUT:
+    ldaw        r1,  dp[handshakeTable_OUT]
+    stw         r2, r1[r0]               
+    retsp       0
+.cc_bottom XUD_ClearStallByAddr.func   
 
-.globl   XUD_ClearStall_Out
-.globl   XUD_ClearStall_Out.nstackwords
-.linkset XUD_ClearStall_Out.nstackwords, 0
-        
-/* R0: ep number */
-.cc_top XUD_ClearStall_Out.func, XUD_ClearStall_Out
-XUD_ClearStall_Out:
-    ldaw       r1,  dp[handshakeTable_OUT]
-    ldc        r2, PIDn_NAK
-    stw        r2, r1[r0]               
-    retsp 0
-.cc_bottom XUD_ClearStall_Out.func   
-
-
-.globl   XUD_ClearStall_In
-.globl   XUD_ClearStall_In.nstackwords
-.linkset XUD_ClearStall_In.nstackwords, 0
-        
-/* R0: ep number */
-.cc_top XUD_ClearStall_In.func, XUD_ClearStall_In
-XUD_ClearStall_In:
-    ldaw       r1,  dp[handshakeTable_IN]
-    ldc        r2, PIDn_NAK
-    stw        r2, r1[r0]               
-    retsp 0
-.cc_bottom XUD_ClearStall_In.func  

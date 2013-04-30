@@ -19,10 +19,10 @@ void XUD_Error_hex(char errString[], int i_err);
 #include <xclib.h>
 #include <platform.h>
 
-#include "xud.h"
-//#include "usb.h"
+#include "xud.h"                 /* External user include file */
 #include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
+#include "XUD_internal_defines.h"
 
 #include "XUD_Support.h"
 #include "XUD_UIFM_Functions.h"
@@ -290,21 +290,25 @@ in port p_usb_dir = XS1_PORT_1G;
 int xud_counter = 0;
 #endif
 
-XUD_chan epChans[32];
-XUD_chan epChans0[32];
 
-typedef struct XUD_ep_info { 
-  unsigned int chan_array_ptr;
-  unsigned int ep_xud_chanend;
-  unsigned int ep_client_chanend;   // 2
-  unsigned int scratch;             // 3 used for datalength in
-  unsigned int pid;                 // 4 Expected out PID 
-  unsigned int epType;              // 5 Data
-  unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN. 
-  unsigned int tailLength;           // 7 "tail" length for IN (bytes)
+
+XUD_chan epChans[XUD_MAX_NUM_EP];
+XUD_chan epChans0[XUD_MAX_NUM_EP];
+
+typedef struct XUD_ep_info 
+{ 
+    unsigned int chan_array_ptr;
+    unsigned int ep_xud_chanend;
+    unsigned int ep_client_chanend;    // 2
+    unsigned int scratch;              // 3 used for datalength in
+    unsigned int pid;                  // 4 Expected out PID 
+    unsigned int epType;               // 5 Data
+    unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN. 
+    unsigned int tailLength;           // 7 "tail" length for IN (bytes)
+    unsigned int epAddress;            // 8 EP address assigned by XUD 
 } XUD_ep_info;
 
-static XUD_ep_info ep_info[32];
+static XUD_ep_info ep_info[XUD_MAX_NUM_EP];
 
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
@@ -320,8 +324,8 @@ void XUD_UIFM_PwrSigFlags()
 }
 
 /* Tables storing if EP's are signed up to bus state updates */
-int epStatFlagTableIn[16];
-int epStatFlagTableOut[16];
+int epStatFlagTableIn[XUD_MAX_NUM_EP_IN];
+int epStatFlagTableOut[XUD_MAX_NUM_EP_OUT];
 
 /* Used for terminating XUD loop */
 int XUD_USB_Done = 0;
@@ -347,16 +351,11 @@ extern int XUD_LLD_IoLoop(
                             XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
                             int  epCount, chanend? c_sof, chanend ?c_usb_testmode) ;
 
-// Pid sequencing tables.. note currently only supports DATA0/DATA1 sequencing
-/* TODO these should be init in loop over EP COUNT */
-//unsigned char ep_pid_sequence_table_OUT[] = {PID_DATA1, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0, PID_DATA0};
-
-unsigned handshakeTable_IN[16];
-unsigned handshakeTable_OUT[16];
+unsigned handshakeTable_IN[XUD_MAX_NUM_EP_IN];
+unsigned handshakeTable_OUT[XUD_MAX_NUM_EP_OUT];
 
 unsigned crcmask = 0b11111111111;
 unsigned chanArray;
-//int gotReset = 0;
 
 #define STATE_START 0
 #define STATE_START_SE0 1
@@ -388,7 +387,7 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
     { 
         if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i]) 
         {
-            XUD_Sup_outct(c[i + nOut], token);
+            XUD_Sup_outct(c[i + XUD_MAX_NUM_EP_OUT], token);
         }
     }
     for(int i = 0; i < nOut; i++) 
@@ -408,11 +407,11 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
         {    
           int tok=-1;
           while (tok != XS1_CT_END) {
-            while(!XUD_Sup_testct(c[i + nOut])) 
+            while(!XUD_Sup_testct(c[i + XUD_MAX_NUM_EP_OUT])) 
             {
-                XUD_Sup_int(c[i + nOut]);
+                XUD_Sup_int(c[i + XUD_MAX_NUM_EP_OUT]);
             }
-            tok = XUD_Sup_inct(c[i + nOut]);       // TODO chkct
+            tok = XUD_Sup_inct(c[i + XUD_MAX_NUM_EP_OUT]);       // TODO chkct
           }
         }
     }
@@ -431,7 +430,7 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
     { 
         if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i]) 
         {    
-            XUD_Sup_outuint(c[i + nOut], speed);
+            XUD_Sup_outuint(c[i + XUD_MAX_NUM_EP_OUT], speed);
         }
     }
 
@@ -1044,8 +1043,22 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
     XUD_USB_Done = 0;
 
-    for (int i=0; i < 32;i++)
-      epChans[i] = 0;
+    for (int i=0; i < XUD_MAX_NUM_EP;i++)
+    {
+        epChans[i] = 0;
+    }
+    
+    for(int i = 0; i < XUD_MAX_NUM_EP_OUT; i++)
+    {
+        handshakeTable_OUT[i] = PIDn_NAK;
+        ep_info[i].epAddress = i;
+    }
+    
+    for(int i = 0; i < XUD_MAX_NUM_EP_IN; i++)
+    {
+        handshakeTable_IN[i] = PIDn_NAK;
+        ep_info[XUD_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
+    }
 
     /* Populate arrays of channels and status flag tabes */
     for(int i = 0; i < noEpOut; i++)
@@ -1072,37 +1085,40 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
       ep_info[i].pid = PID_DATA0;
 
-      handshakeTable_OUT[i] = PIDn_NAK;
+     // ep_info[i].epAddress = i;
+        
     }
-
+    
     for(int i = 0; i< noEpIn; i++)
     {
         int x;
-        epChans0[i+noEpOut] = XUD_Sup_GetResourceId(c_ep_in[i]);
+        epChans0[i+XUD_MAX_NUM_EP_OUT] = XUD_Sup_GetResourceId(c_ep_in[i]);
 
-        asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(noEpOut+i));
-        ep_info[noEpOut+i].chan_array_ptr = x;
+        asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(XUD_MAX_NUM_EP_OUT+i));
+        ep_info[XUD_MAX_NUM_EP_OUT+i].chan_array_ptr = x;
 
         asm("mov %0, %1":"=r"(x):"r"(c_ep_in[i]));
-        ep_info[noEpOut+i].ep_xud_chanend = x;      
+        ep_info[XUD_MAX_NUM_EP_OUT+i].ep_xud_chanend = x;      
       
 	    asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_in[i]));
-        ep_info[noEpOut+i].ep_client_chanend = x;      
+        ep_info[XUD_MAX_NUM_EP_OUT+i].ep_client_chanend = x;      
       
-	    asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((noEpOut+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
+	    asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((XUD_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
 
         outuint(c_ep_in[i], x);
 
-        ep_info[noEpOut+i].pid = PIDn_DATA0;
+        ep_info[XUD_MAX_NUM_EP_OUT+i].pid = PIDn_DATA0;
 	   
         epStatFlagTableIn[i] = epTypeTableIn[i] & XUD_STATUS_ENABLE;
         epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;
 
-        ep_info[noEpOut+i].epType = epTypeTableIn[i];
+        ep_info[XUD_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
 
-        handshakeTable_IN[i] = PIDn_NAK;
+        //ep_info[XUD_MAX_NUM_EP_OUT+i].epAddress = 0x80; // OR in the IN bit
+
     }
 
+    
 
     /* EpTypeTable Checks.  Note, currently this is not too crucial since we only really care if the EP is ISO or not */
 

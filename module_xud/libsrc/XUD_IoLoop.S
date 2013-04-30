@@ -9,7 +9,7 @@
 
 #include <xs1.h>
 #include "XUD_USB_Defines.h"
-//#include "XUD_Defines_Internal.h"
+#include "XUD_internal_defines.h"
 #include "XUD_UIFM_Defines.h"
 
 
@@ -56,8 +56,8 @@ SetupChannelVectors:
     stw         r2, sp[3]
         
 EnableEpChanEvents_Out2:
-    mov           r3, r1
-
+    //mov           r3, r1
+    ldc         r3, XUD_MAX_NUM_EP_OUT
 
 OutEventLoop:                                      // Set event vectors for all channels 
     bf          r1, InEventLoop                
@@ -477,7 +477,8 @@ NextTokenAfterIn:
     ldw         r1, dp[flag0_port]           		             
 NextTokenAfterInNak:
 Loop_BadPid: 
-    ldw         r4, sp[(STACK_EXTEND+8)]        // Number of out Endpoints
+    //ldw         r4, //sp[(STACK_EXTEND+8)]        // Number of out Endpoints
+    ldc         r4, XUD_MAX_NUM_EP_OUT
 NextTokenAfterPing:
     clre
     setsr       1                               // Enable thread events

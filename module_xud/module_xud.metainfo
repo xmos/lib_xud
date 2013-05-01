@@ -1,8 +1,43 @@
 -- -*- mode: lua -*-
 
-configPoints = {}
+configPoints = {
+    series = {
+        short = "Device series being used",
+        long = "The devices series for which the library will be compiled",
+        help = [[
+The XUD library supports both the U-Series and L-Series devices. The library provides
+binaries for each device series. However, the tools currently don't fully support
+changing libraries and will hence require the user to make a change to the Makefile
+if they change from the default series.
+                ]],
+        type = "string",
+        default = "U-Series",
+        options = { ["U-Series"] = 1, ["L-Series"] = 2},
+        define = "XUD_DEVICE_SERIES"
+    }
+}
 
 derivedValues = {}
+
+if swblock.params.series == 'U-Series' then
+  p_usb_clock_define     = "XS1_PORT_1H";
+  p_usb_reg_write_define = "XS1_PORT_8C";
+  p_usb_reg_read_define  = "XS1_PORT_8D";
+  p_usb_flag_0_define    = "XS1_PORT_1N";
+  p_usb_flag_1_define    = "XS1_PORT_1O";
+  p_usb_flag_2_define    = "XS1_PORT_1P";
+  p_usb_tx_data_define   = "XS1_PORT_8A";
+  p_usb_rx_data_define   = "XS1_PORT_8B";
+else
+  p_usb_clock_define     = "XS1_PORT_1H";
+  p_usb_reg_write_define = "XS1_PORT_8C";
+  p_usb_reg_read_define  = "XS1_PORT_8D";
+  p_usb_flag_0_define    = "XS1_PORT_1N";
+  p_usb_flag_1_define    = "XS1_PORT_1O";
+  p_usb_flag_2_define    = "XS1_PORT_1P";
+  p_usb_tx_data_define   = "XS1_PORT_8A";
+  p_usb_rx_data_define   = "XS1_PORT_8B";
+end
 
 ports = {
   p_usb_clock = {
@@ -11,7 +46,7 @@ ports = {
     help       = "",
     width      = 1,
     tile       = "stdcore[0]",
-    fixedValue = "XS1_PORT_1H" 
+    fixedValue = p_usb_clock_define
   },
   p_usb_reg_write = {
     short      = "USB Register Write Port",
@@ -19,7 +54,7 @@ ports = {
     help       = "",
     width      = 8,
     tile       = "stdcore[0]",
-    fixedValue = "XS1_PORT_8C" 
+    fixedValue = p_usb_reg_write_define
   },
   p_usb_reg_read = {
     short      = "USB Register Read Port",
@@ -27,7 +62,7 @@ ports = {
     help       = "",
     width      = 8,
     tile       = "stdcore[0]",
-    fixedValue = "XS1_PORT_8D" 
+    fixedValue = p_usb_reg_read_define
   },
   p_usb_flag_0 = {
     short      = "USB Flag Port 0",
@@ -35,7 +70,7 @@ ports = {
     help       = "",
     width      = 1,
     tile       = "stdcore[0]",
-    fixedValue = "XS1_PORT_1N" 
+    fixedValue = p_usb_flag_0_define
   },
   p_usb_flag_1 = {
     short      = "USB Flag Port 1",
@@ -43,7 +78,7 @@ ports = {
     help       = "",
     width      = 1,
     tile       = "stdcore[0]",
-    fixedValue = "XS1_PORT_1O" 
+    fixedValue = p_usb_flag_1_define
   },
   p_usb_flag_2 = {
     short      = "USB Flag Port 2",
@@ -51,7 +86,7 @@ ports = {
     help       = "",
     width      = 1,
     tile       = "stdcore[0]",
-    fixedValue = "XS1_PORT_1P" 
+    fixedValue = p_usb_flag_2_define
   },
   p_usb_tx_data = {
     short      = "USB Transmit Data Port",
@@ -59,7 +94,7 @@ ports = {
     help       = "",
     width      = 8,
     tile       = "stdcore[0]",
-    fixedValue = "XS1_PORT_8A" 
+    fixedValue = p_usb_tx_data_define
   },
   p_usb_rx_data = {
     short      = "USB Receive Data Port",
@@ -67,7 +102,7 @@ ports = {
     help       = "",
     width      = 8,
     tile       = "stdcore[0]",
-    fixedValue = "XS1_PORT_8B" 
+    fixedValue = p_usb_rx_data_define
   }
 }
 
@@ -79,26 +114,27 @@ end
 
 generatedCode = {
    includes = {},
-   globals  = "",
+   globals  = 
+       [[
+#if XUD_DEVICE_SERIES == 2
+#warning "You need to change the makefile to use the L-Series library"
+#endif
+       ]],
    body  = ""
 }
 
 api = {
-    "XUD_ParseSetupPacket",
-    "XUD_ClearStall_In",
-    "XUD_ClearStall_Out",
+    "XUD_ClearStallByAddr",
+    "XUD_ClearStall",
     "XUD_DoGetRequest",
     "XUD_DoSetRequestStatus",
     "XUD_GetBuffer",
     "XUD_GetSetupBuffer",
-    "XUD_GetSetupPacket",
-    "XUD_Init_Ep",
+    "XUD_InitEp",
     "XUD_Manager",
-    "XUD_ParseSetupPacket",
-    "XUD_PrintSetupPacket",
     "XUD_ResetEndpoint",
     "XUD_SetBuffer",
     "XUD_SetDevAddr",
-    "XUD_SetStall_In",
-    "XUD_SetStall_Out"
+    "XUD_SetStallByAddr",
+    "XUD_SetStall"
 }

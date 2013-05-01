@@ -44,30 +44,11 @@ MODULE_LIBRARIES = xud_s_sim
 
 # Use the main Makefile from module_xmos_common
 XMOS_MAKE_DIR ?= ../..
-include $(XMOS_MAKE_DIR)/xcommon/module_xcommon/build/Makefile.common
 
 
-#all: build
+#=============================================================================
+# The following part of the Makefile includes the common build infrastructure
+# for compiling XMOS applications. You should not need to edit below here.
 
-#
-# Compile the example
-#
-#build:
-#	xcc -O3 -target=XS1-G4B-FB512 -march=xs1b main.xc -o app_test.xe
-
-#
-# Connect the pins together that map to XS1_PORT_1A and XS1_PORT_1B
-# NOTE: Requires the testbench to have been built (src/testbenches/ExampleTestbench)
-#
-run:
-	ExampleTestbench   '--vcd-tracing "-o trace.vcd -ports -pads"  ./bin/app_test.xe '
-	
-runtrace:
-	ExampleTestbench   '-t --vcd-tracing "-o trace.vcd -ports -pads"  ./bin/app_test.xe '
-	#--vcd-tracing "-o trace.vcd -pads" app_test.xe
-
-#
-# This will give a list of the pins which correspond to the ports
-#
-list:
-	xsim --dump-ios app_test.xe
+XMOS_MAKE_PATH ?= ../..
+include $(XMOS_MAKE_PATH)/xcommon/module_xcommon/build/Makefile.common

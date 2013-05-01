@@ -11,8 +11,17 @@
         <uri>git://github.com/xcore/xcommon.git</uri>
     </dependency>
     <dependency repo = "sc_usb">
-        <githash>1c15d894ba82a977f62a6491ca85ff1718e9f65e</githash>
+        <githash>30bc8b53b942798e32e1d3a2b2452660a3d7c05a</githash>
         <uri>git://git/apps/sc_usb</uri>
+    </dependency>
+    <dependency repo = "sc_periph">
+        <githash>7cfd34fdf821b6e810b5ab403cc53586911cd2db</githash>
+        <uri>git@github.com:xcore/sc_periph</uri>
+        <version>1.0.0beta1</version>
+    </dependency>
+    <dependency repo = "sc_util">
+        <githash>2e01d7324df84ad199833e012b5942e43fb0ccbb</githash>
+        <uri>git@github.com:xcore/sc_util</uri>
     </dependency>
     <description>Low-Level USB Driver Library</description>
     <exclude_dir>app_test</exclude_dir>

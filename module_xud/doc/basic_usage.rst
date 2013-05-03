@@ -7,12 +7,6 @@ Basic use is termed to mean each endpoint runs in its own dedicated core.
 Multiple endpoints in a single core are possible but currently beyond
 the scope of this document.
 
-When building, the preprocessor macro ``USB_CORE`` should be defined as
-the core number to which the USB PHY is attached. On single core
-applications, the option ``-DUSB_CORE=0`` can be passed to the compiler.
-In multi core systems, you should check which core is used for the USB
-code.
-
 XUD Core: ``XUD_Manager()``
 -----------------------------
 

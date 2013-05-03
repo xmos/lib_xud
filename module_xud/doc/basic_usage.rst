@@ -132,25 +132,25 @@ speed.
 .. doxygenfunction:: XUD_ResetEndpoint
 
 
-``XUD_SetStall_In()``
-~~~~~~~~~~~~~~~~~~~~~
-
-.. doxygenfunction:: XUD_SetStall_In
-
-``XUD_SetStall_Out()``
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. doxygenfunction:: XUD_SetStall_Out
-
-``XUD_ClearStall_In()``
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. doxygenfunction:: XUD_ClearStall_In
-
-``XUD_ClearStall_Out()``
+``XUD_SetStallByAddr()``
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: XUD_ClearStall_Out
+.. doxygenfunction:: XUD_SetStallByAddr
+
+``XUD_SetStall()``
+~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_SetStall
+
+``XUD_ClearStallByAddr()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_ClearStallByAddr
+
+``XUD_ClearStall()``
+~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_ClearStall
 
 SOF Channel
 -----------

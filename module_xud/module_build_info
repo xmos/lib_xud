@@ -27,6 +27,7 @@ LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DXCORE_FREQ_MHz=400 -DREF_CLK_D
 
 #LIB_XCC_FLAGS_xud_s_sim =  -Wall -O3 -D UIFM_MODE=3 -DXCORE_FREQ_MHz=400 -DREF_CLK_DIVIDER=3 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -D SIMULATION
 
+DEPENDENT_MODULES = module_usb_shared
 
 EXCLUDE_FILES = XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S XUD_Token_Setup.S XUD_G_Crc.S
 

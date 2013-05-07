@@ -118,20 +118,19 @@ ports = {
   }
 }
 
-tmp = ""
+reset_port = ""
 if swblock.params.series == "2" then
   -- L-Series
-  tmp = tmp .. "#define USB_RST_PORT    XS1_PORT_32A\n"
-  tmp = tmp .. "/* USB Port declarations */\n"
-  tmp = tmp .. "on tile[0]: out port p_usb_rst   = USB_RST_PORT;\n"
-  tmp = tmp .. "on tile[0]: clock    clk_usb_rst = XS1_CLKBLK_3;\n"
+  reset_port = reset_port .. "/* USB Port declarations */\n"
+  reset_port = reset_port .. "#define USB_RST_PORT    XS1_PORT_32A\n"
+  reset_port = reset_port .. "on tile[0]: out port p_usb_rst   = USB_RST_PORT;\n"
+  reset_port = reset_port .. "on tile[0]: clock    clk_usb_rst = XS1_CLKBLK_3;\n"
 
 else
   -- U-Series
-  tmp = tmp .. "#define p_usb_rst null\n"
-  tmp = tmp .. "#define clk_usb_rst null\n"
+  reset_port = reset_port .. "#define p_usb_rst null\n"
+  reset_port = reset_port .. "#define clk_usb_rst null\n"
 end
-reset_port_declaration = tmp
 
 channels = {
    c_ep_out = {
@@ -168,7 +167,7 @@ generatedCode = {
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 
-${reset_port_declaration}
+${reset_port}
         ]],
 
    body  = 

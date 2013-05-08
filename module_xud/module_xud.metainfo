@@ -156,25 +156,29 @@ generatedCode = {
    globals  = 
         [[
 #define XUD_DEVICE_SERIES ${swblock.params.series}
-#define XUD_EP_COUNT_OUT ${swblock.params.num_ep_out}
-#define XUD_EP_COUNT_IN  ${swblock.params.num_ep_in}
-
 #if XUD_DEVICE_SERIES == 2
 #warning "You need to change the makefile to use the L-Series library"
 #endif
+
+#ifndef USB_DEVICE_EXISTS
+#define XUD_EP_COUNT_OUT ${swblock.params.num_ep_out}
+#define XUD_EP_COUNT_IN  ${swblock.params.num_ep_in}
 
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 
 ${reset_port}
+#endif // USB_DEVICE_EXISTS
         ]],
 
    body  = 
        [[
+#ifndef USB_DEVICE_EXISTS
         XUD_Manager(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 p_usb_rst, clk_usb_rst, -1, XUD_SPEED_HS, null); 
+#endif // USB_DEVICE_EXISTS
        ]]
 }
 

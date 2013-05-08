@@ -56,11 +56,11 @@ XUD_GetSetupData_NoReq:                         // Entry for _NoReq
                                                 // TODO..
 
 XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
-    ldc         r11, PID_DATA1
+    ldc         r11, USB_PID_DATA1
     stw         r11, r0[4]                      // Reset OUT toggle
 
 //#ifdef ARCH_S
-    ldc         r11, PIDn_DATA1
+    ldc         r11, USB_PIDn_DATA1
 //#else
     //ldc         r11, PID_DATA1
 //#endif  
@@ -422,7 +422,7 @@ XUD_SetReady:
 /* R0: ep number */
 .cc_top XUD_SetStallByAddr.func, XUD_SetStallByAddr
 XUD_SetStallByAddr:
-    ldc         r2, PIDn_STALL
+    ldc         r2, USB_PIDn_STALL
     ldc         r11, 0x80               /* Check for IN bit */
     and         r11, r11, r0
     bf          r11, XUD_SetStallByAddr_OUT
@@ -445,7 +445,7 @@ XUD_SetStallByAddr_OUT:
 /* R0: ep number */
 .cc_top XUD_ClearStallByAddr.func, XUD_ClearStallByAddr
 XUD_ClearStallByAddr:
-    ldc         r2, PIDn_NAK
+    ldc         r2, USB_PIDn_NAK
     ldc         r11, 0x80               /* Check for IN bit */
     and         r11, r11, r0
     bf          r11, XUD_ClearStallByAddr_OUT

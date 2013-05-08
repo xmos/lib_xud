@@ -14,30 +14,34 @@ if they change from the default series.
         default = "U-Series",
         options = { ["U-Series"] = 1, ["L-Series"] = 2},
         define = "XUD_DEVICE_SERIES"
+    },
+    num_ep_in = {
+        short = "Number of IN endpoints",
+        long = "The number of IN endpoints to create",
+        help = [[
+The number of IN endpoints.
+                ]],
+        type = "int",
+        default = "1",
+        min = 1,
+        max = 1,
+        define = "XUD_EP_COUNT_IN"
+    },
+    num_ep_out = {
+        short = "Number of OUT endpoints",
+        long = "The number of OUT endpoints to create",
+        help = [[
+The number of OUT endpoints.
+                ]],
+        type = "int",
+        default = "1",
+        min = 1,
+        max = 1,
+        define = "XUD_EP_COUNT_OUT"
     }
 }
 
 derivedValues = {}
-
-if swblock.params.series == 'U-Series' then
-  p_usb_clock_define     = "XS1_PORT_1H";
-  p_usb_reg_write_define = "XS1_PORT_8C";
-  p_usb_reg_read_define  = "XS1_PORT_8D";
-  p_usb_flag_0_define    = "XS1_PORT_1N";
-  p_usb_flag_1_define    = "XS1_PORT_1O";
-  p_usb_flag_2_define    = "XS1_PORT_1P";
-  p_usb_tx_data_define   = "XS1_PORT_8A";
-  p_usb_rx_data_define   = "XS1_PORT_8B";
-else
-  p_usb_clock_define     = "XS1_PORT_1H";
-  p_usb_reg_write_define = "XS1_PORT_8C";
-  p_usb_reg_read_define  = "XS1_PORT_8D";
-  p_usb_flag_0_define    = "XS1_PORT_1N";
-  p_usb_flag_1_define    = "XS1_PORT_1O";
-  p_usb_flag_2_define    = "XS1_PORT_1P";
-  p_usb_tx_data_define   = "XS1_PORT_8A";
-  p_usb_rx_data_define   = "XS1_PORT_8B";
-end
 
 ports = {
   p_usb_clock = {
@@ -45,82 +49,137 @@ ports = {
     long       = "Port driving the USB clock",
     help       = "",
     width      = 1,
-    tile       = "stdcore[0]",
-    fixedValue = p_usb_clock_define
+    tile       = "tile[0]",
+    fixedValue = "XS1_PORT_1H"
   },
   p_usb_reg_write = {
     short      = "USB Register Write Port",
     long       = "Configuration register write port",
     help       = "",
     width      = 8,
-    tile       = "stdcore[0]",
-    fixedValue = p_usb_reg_write_define
+    tile       = "tile[0]",
+    fixedValue = "XS1_PORT_8C"
   },
   p_usb_reg_read = {
     short      = "USB Register Read Port",
     long       = "Configuration register read port",
     help       = "",
     width      = 8,
-    tile       = "stdcore[0]",
-    fixedValue = p_usb_reg_read_define
+    tile       = "tile[0]",
+    fixedValue = "XS1_PORT_8D"
   },
   p_usb_flag_0 = {
     short      = "USB Flag Port 0",
     long       = "Flag 0 port",
     help       = "",
     width      = 1,
-    tile       = "stdcore[0]",
-    fixedValue = p_usb_flag_0_define
+    tile       = "tile[0]",
+    fixedValue = "XS1_PORT_1N"
   },
   p_usb_flag_1 = {
     short      = "USB Flag Port 1",
     long       = "Flag 1 port",
     help       = "",
     width      = 1,
-    tile       = "stdcore[0]",
-    fixedValue = p_usb_flag_1_define
+    tile       = "tile[0]",
+    fixedValue = "XS1_PORT_1O"
   },
   p_usb_flag_2 = {
     short      = "USB Flag Port 2",
     long       = "Flag 2 port",
     help       = "",
     width      = 1,
-    tile       = "stdcore[0]",
-    fixedValue = p_usb_flag_2_define
+    tile       = "tile[0]",
+    fixedValue = "XS1_PORT_1P"
   },
   p_usb_tx_data = {
     short      = "USB Transmit Data Port",
     long       = "Port used to drive the transmit data",
     help       = "",
     width      = 8,
-    tile       = "stdcore[0]",
-    fixedValue = p_usb_tx_data_define
+    tile       = "tile[0]",
+    fixedValue = "XS1_PORT_8A"
   },
   p_usb_rx_data = {
     short      = "USB Receive Data Port",
     long       = "Port used to receive data",
     help       = "",
     width      = 8,
-    tile       = "stdcore[0]",
-    fixedValue = p_usb_rx_data_define
+    tile       = "tile[0]",
+    fixedValue = "XS1_PORT_8B"
+  },
+  p_usb_rst_n = {
+    short      = "USB Reset Port",
+    long       = "Port used to reset the USB PHY (only required on the L-Series)",
+    help       = "",
+    width      = 1,
+    tile       = "tile[0]",
+    enableIf   = swblock.params.series == "2"
   }
 }
 
-channels = {}
+reset_port = ""
+if swblock.params.series == "2" then
+  -- L-Series
+  reset_port = reset_port .. "/* USB Port declarations */\n"
+  reset_port = reset_port .. "#define USB_RST_PORT    XS1_PORT_32A\n"
+  reset_port = reset_port .. "on tile[0]: out port p_usb_rst   = USB_RST_PORT;\n"
+  reset_port = reset_port .. "on tile[0]: clock    clk_usb_rst = XS1_CLKBLK_3;\n"
+
+else
+  -- U-Series
+  reset_port = reset_port .. "#define p_usb_rst null\n"
+  reset_port = reset_port .. "#define clk_usb_rst null\n"
+end
+
+channels = {
+   c_ep_out = {
+      short = "OUT endpoint channels",
+      long = "Channels for communicating with OUT endpoints",
+      help = "",
+      arraySize = swblock.params.num_ep_out
+   },
+   c_ep_in = {
+      short = "IN endpoint channels",
+      long = "Channel for communicating with IN endpoints",
+      help = "",
+      arraySize = swblock.params.num_ep_in
+   }
+}
 
 function getConfigStatus()
    return "Trusted", {}
 end
 
 generatedCode = {
-   includes = {},
+   includes = {"xud.h", "usb.h", "xud_config.h"},
    globals  = 
-       [[
+        [[
+#define XUD_DEVICE_SERIES ${swblock.params.series}
 #if XUD_DEVICE_SERIES == 2
 #warning "You need to change the makefile to use the L-Series library"
 #endif
-       ]],
-   body  = ""
+
+#ifndef USB_DEVICE_EXISTS
+#define XUD_EP_COUNT_OUT ${swblock.params.num_ep_out}
+#define XUD_EP_COUNT_IN  ${swblock.params.num_ep_in}
+
+/* Endpoint type tables */
+XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
+XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
+
+${reset_port}
+#endif // USB_DEVICE_EXISTS
+        ]],
+
+   body  = 
+       [[
+#ifndef USB_DEVICE_EXISTS
+        XUD_Manager(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+                                null, epTypeTableOut, epTypeTableIn,
+                                p_usb_rst, clk_usb_rst, -1, XUD_SPEED_HS, null); 
+#endif // USB_DEVICE_EXISTS
+       ]]
 }
 
 api = {
@@ -138,3 +197,5 @@ api = {
     "XUD_SetStallByAddr",
     "XUD_SetStall"
 }
+
+files = {["module_xud/xud_config_example.h"] = "src/xud_config.h"}

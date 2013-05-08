@@ -62,7 +62,7 @@ XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on
 //#ifdef ARCH_S
     ldc         r11, USB_PIDn_DATA1
 //#else
-    //ldc         r11, PID_DATA1
+    //ldc         r11, USB_PID_DATA1
 //#endif  
 											
     stw         r11, r1[4]                      // Reset IN toggle

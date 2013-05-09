@@ -25,6 +25,7 @@
     </dependency>
     <description>Low-Level USB Driver Library</description>
     <exclude_dir>app_test</exclude_dir>
+    <exclude_dir>tb</exclude_dir>
     <binary_only>module_xud</binary_only>
     <git_export>False</git_export>
     <location>git://github.com/xcore/sc_xud.git</location>

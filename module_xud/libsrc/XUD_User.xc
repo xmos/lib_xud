@@ -1,5 +1,5 @@
 
-/* User functions to be overriddern by app */
+/* User functions to be overridden by app */
 
 void XUD_UserSuspend()
 {

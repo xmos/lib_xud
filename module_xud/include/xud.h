@@ -5,8 +5,51 @@
 #ifndef __xud_h__
 #define __xud_h__
 
-#include <print.h>
 #include <xs1.h>
+#include <platform.h>
+#include <print.h>
+
+#if !defined(USB_TILE)
+#define USB_TILE tile[0]
+#endif
+
+/* If the ports have not been defined in the .xn file then the following defines
+ * will be used. In this case the user must specify either
+ *   XUD_ON_U_SERIES 
+ * or
+ *   XUD_ON_L_SERIES
+ */
+#if !defined(PORT_USB_CLK)
+
+  #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
+  #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
+  #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
+  
+  #if defined(XUD_ON_U_SERIES)
+    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
+    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
+    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8C
+    #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K
+    #define PORT_USB_TX_READYIN  on USB_TILE: XS1_PORT_1H
+    #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1M
+  #else
+    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1H
+    #define PORT_USB_REG_WRITE   on USB_TILE: XS1_PORT_8C
+    #define PORT_USB_REG_READ    on USB_TILE: XS1_PORT_8D
+    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
+    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
+  #endif // XUD_ON_U_SERIES
+
+#else // PORT_USB_CLK
+
+  /* Ports declared in the .xn file. Automatically detect device series */
+  #if defined(PORT_USB_RX_READY)
+  #define XUD_ON_U_SERIES
+  #else
+  #define XUD_ON_L_SERIES
+  #endif
+
+#endif // PORT_USB_CLK
 
 /**
  * \var     typedef XUD_EpTransferType

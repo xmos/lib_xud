@@ -10,7 +10,7 @@
 #include <print.h>
 
 #if !defined(USB_TILE)
-#define USB_TILE tile[0]
+  #define USB_TILE tile[0]
 #endif
 
 /* If the ports have not been defined in the .xn file then the following defines
@@ -38,15 +38,27 @@
     #define PORT_USB_REG_READ    on USB_TILE: XS1_PORT_8D
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
-  #endif // XUD_ON_U_SERIES
+  #endif
 
 #else // PORT_USB_CLK
 
   /* Ports declared in the .xn file. Automatically detect device series */
   #if defined(PORT_USB_RX_READY)
-  #define XUD_ON_U_SERIES
+    #if defined(XUD_ON_L_SERIES)
+      #error Both XUD_ON_L_SERIES and the PORT_USB_RX_READY defined
+    #endif
+  
+    #if !defined(XUD_ON_U_SERIES)
+      #define XUD_ON_U_SERIES 1
+    #endif
   #else
-  #define XUD_ON_L_SERIES
+    #if defined(XUD_ON_U_SERIES)
+      #error XUD_ON_U_SERIES and the PORT_USB_RX_READY is not defined
+    #endif
+  
+    #if !defined(XUD_ON_L_SERIES)
+      #define XUD_ON_L_SERIES 1
+    #endif
   #endif
 
 #endif // PORT_USB_CLK

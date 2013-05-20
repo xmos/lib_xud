@@ -9,9 +9,11 @@
 ///#include "usb.h"
 #include "xud.h"
 
-#ifdef ARCH_L
+#ifdef ARCH_S
 #include "glx.h"
 #include "xa1_registers.h"
+extern unsigned get_tile_id(tileref ref);
+extern tileref xs1_su_periph;
 #endif
 
 extern in  port flag0_port;
@@ -47,7 +49,7 @@ unsigned int test_packet[TEST_PACKET_LEN] =
     0xfbf7efdf,
     0xbf7efcfd,
     0xfbf7efdf,
-	0xceb67efd
+    0xceb67efd
 };
 
 
@@ -90,75 +92,75 @@ int XUD_TestMode_TestK ()
 
 int XUD_TestMode_TestPacket () 
 {
-	// Repetitively transmit specific test packet forever.
-	// Timings must still meet minimum interpacket gap
-	// Have to relate KJ pairings to data.
-	unsigned i;
-	timer test_packet_timer;
+    // Repetitively transmit specific test packet forever.
+    // Timings must still meet minimum interpacket gap
+    // Have to relate KJ pairings to data.
+    unsigned i;
+    timer test_packet_timer;
 
 #pragma unsafe arrays
-	while (1) 
+    while (1) 
     {
 #pragma loop unroll
-		for (i=0; i < TEST_PACKET_LEN; i++ ) 
+        for (i=0; i < TEST_PACKET_LEN; i++ ) 
         {
-			p_usb_txd <: test_packet[i];
-		};
+            p_usb_txd <: test_packet[i];
+        };
         sync(p_usb_txd);
-	    test_packet_timer :> i;
-		test_packet_timer when timerafter (i +   T_INTER_TEST_PACKET) :> int _;
-	}
-	return 0;
+        test_packet_timer :> i;
+        test_packet_timer when timerafter (i +   T_INTER_TEST_PACKET) :> int _;
+    }
+    return 0;
 }
 
 // Runs in XUD thread with interrupt on entering testmode.
 int XUD_UsbTestModeHandler() 
 {
-	unsigned cmd = UsbTestModeHandler_asm();
-	
+    unsigned cmd = UsbTestModeHandler_asm();
+    
     switch(cmd) 
     {
-	    case WINDEX_TEST_J:
+        case WINDEX_TEST_J:
             //Function Control Reg. Suspend: 1 Opmode 10
-#ifdef ARCH_L
-            write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
+#ifdef ARCH_S
+            write_glx_periph_word(get_tile_id(xs1_su_periph), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
 #else
-		    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
+            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif
     
-    		while(1) 
+            while(1) 
             {
-			    p_usb_txd <: 0xffffffff;
-			}
-		    break;
-	
+                p_usb_txd <: 0xffffffff;
+            }
+            break;
+    
         case WINDEX_TEST_K:
             //Function Control Reg. Suspend: 1 Opmode 10
-#ifdef ARCH_L
-            write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
+#ifdef ARCH_S
+            write_glx_periph_word(get_tile_id(xs1_su_periph), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
 #else
-		    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
+            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif
     
-    		while(1) 
+            while(1) 
             {
-				p_usb_txd <: 0;
-			}
-	        break;
+                p_usb_txd <: 0;
+            }
+            break;
  
         case WINDEX_TEST_SE0_NAK:
-	        // NAK every IN packet if the CRC is correct.
-	        // Drop into asm to deal with.
-		    XUD_UsbTestSE0();
-	        break;
+            // NAK every IN packet if the CRC is correct.
+            // Drop into asm to deal with.
+            XUD_UsbTestSE0();
+            break;
         
         case WINDEX_TEST_PACKET:
-	        XUD_TestMode_TestPacket();
-	        break;
+            XUD_TestMode_TestPacket();
+            break;
         
         default:
-	        break;
-	}
-	while(1);
+            break;
+    }
+    while(1);
     return -1;  // Unreachable
 }

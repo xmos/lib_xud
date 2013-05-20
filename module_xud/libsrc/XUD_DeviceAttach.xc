@@ -10,8 +10,9 @@
 
 #ifdef ARCH_S
 #include <xa1_registers.h>
-int write_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned data);
-int read_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned &data);
+#include "glx.h"
+extern unsigned get_tile_id(tileref ref);
+extern tileref xs1_su_periph;
 #endif
 
 extern in  port flag0_port;
@@ -44,9 +45,6 @@ extern out port p_usb_txd;
 #define INVALID_DELAY     (INVALID_DELAY_us * (XCORE_FREQ_MHz) / (REF_CLK_DIVIDER+1))
 
 unsigned chirptime = TUCHEND_DELAY;
-
-#define MYID   0x0000
-#define GLXID  0x0001
 extern int resetCount;
 
 /* Assumptions:
@@ -73,9 +71,7 @@ int XUD_DeviceAttachHS()
     // opmode = 0b10, termsel = 1, xcvrsel = 0b00;
 
 #ifdef ARCH_S
-    
-    write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010);
-    
+    write_glx_periph_word(get_tile_id(xs1_su_periph), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010);
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
 #endif
@@ -267,7 +263,7 @@ int XUD_DeviceAttachHS()
     {
 
 #ifdef ARCH_S
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b0000); 
+        write_glx_periph_word(get_tile_id(xs1_su_periph), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b0000); 
 #else
         // Three pairs of KJ received... de-assert TermSelect... (and opmode = 0, suspendm = 1)
         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
@@ -281,7 +277,7 @@ int XUD_DeviceAttachHS()
     {
 #ifdef ARCH_S
         /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-        write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
+        write_glx_periph_word(get_tile_id(xs1_su_periph), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
                     (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
 #endif

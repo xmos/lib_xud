@@ -38,7 +38,7 @@ doRXDataReturn:
 CheckEpTypeOut:    
     ldw         r11, r3[5]                        // Load EP type
     bf          r11, StoreTailDataOutIso             // ISO endpoint 
-    bf          r1, ReportBadCrc                 // Check for bad crc
+    bf          r1, NextTokenAfterOut                // Check for bad crc
 
 
 DoOutHandShakeOut:                              // Data CRC good and EP not Iso: Send Ack
@@ -100,16 +100,6 @@ BranchOnTokenPid_:
 #else
 #WARNING PUT ARCH_G CODE IN!!
 #endif
-
-
-ReportBadCrc: 
-    ldc r1, 0
-    ecallf     r1
-    //mov         r0, r11 
-    //mov         r1, r11   
-    //bl        ERR_BadCrc     
-    //bu ReportBadCrc                         // Don't notify EP thread
-    bu        NextToken
 
 // Various Error handling functions -------------------------------------------------------------------
 Err_RxErr:                                      // RxError signal high during data packet receive:

@@ -413,7 +413,8 @@ PortsOnStack:                                   // Put ports on stack (loads the
     //ldw        r11, dp[flag2_port]              // 
     //stw        r11, sp[15]
 
-    ldc         r11, 0x0070                          
+    //ldc         r11, 0x0070                          
+    ldc        r11, 0x3ffe
     stw         r11, sp[12]
 
     ldw         r11, sp[(STACK_EXTEND+7)]

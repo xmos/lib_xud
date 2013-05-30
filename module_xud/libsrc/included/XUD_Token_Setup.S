@@ -73,10 +73,11 @@ OutTail2:
 // Three Tail Bytes
 .align 16
 OutTail3:
-    ldc         r11, 0        
+    //ldc         r11, 0        
     shr         r7, r7, 8
     crc32       r6, r7, r9
-    crc32       r6, r11, r9 
+    crc8       r6, r9, r2, r9 // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc 
+    //crc32       r6, r11, r9 
     //ldc       r11, 0x0070
     ldw         r11, sp[12]
     retsp       0

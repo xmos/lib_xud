@@ -394,9 +394,7 @@ SetupSuspendResetTimer:
     setc       res[r10], XS1_SETC_IE_MODE_INTERRUPT 
     eeu        res[r10]                         // Enable events/interupts on resource 
 
-
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
-    ldw         r1, sp[11]                            // Load Valid Token port
  
     clre 
     setsr       0x2                             // Enable thread interrupts

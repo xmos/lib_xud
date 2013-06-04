@@ -9,23 +9,44 @@
 #include <platform.h>
 #include <print.h>
 
+#define XUD_U_SERIES 1
+#define XUD_L_SERIES 2
+
 #if !defined(USB_TILE)
   #define USB_TILE tile[0]
 #endif
 
-/* If the ports have not been defined in the .xn file then the following defines
- * will be used. In this case the user must specify either
- *   XUD_ON_U_SERIES 
- * or
- *   XUD_ON_L_SERIES
- */
-#if !defined(PORT_USB_CLK)
+#if defined(PORT_USB_CLK)
 
+  /* Ports declared in the .xn file. Automatically detect device series */
+  #if defined(PORT_USB_RX_READY)
+    #if !defined(XUD_SERIES_SUPPORT)
+      #define XUD_SERIES_SUPPORT XUD_U_SERIES
+    #endif
+
+    #if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
+      #error (XUD_SERIES_SUPPORT != XUD_U_SERIES) with PORT_USB_RX_READY defined
+    #endif
+  
+  #else
+    #if !defined(XUD_SERIES_SUPPORT)
+      #define XUD_SERIES_SUPPORT XUD_L_SERIES
+    #endif
+
+    #if (XUD_SERIES_SUPPORT != XUD_L_SERIES)
+      #error (XUD_SERIES_SUPPORT != XUD_L_SERIES) when PORT_USB_RX_READY not defined
+    #endif
+  
+  #endif
+
+#else // PORT_USB_CLK
+
+  /* Ports have not been defined in the .xn file */
   #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
   #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
   #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
   
-  #if defined(XUD_ON_U_SERIES)
+  #if (XUD_SERIES_SUPPORT == XUD_U_SERIES)
     #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8C
@@ -38,27 +59,6 @@
     #define PORT_USB_REG_READ    on USB_TILE: XS1_PORT_8D
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
-  #endif
-
-#else // PORT_USB_CLK
-
-  /* Ports declared in the .xn file. Automatically detect device series */
-  #if defined(PORT_USB_RX_READY)
-    #if defined(XUD_ON_L_SERIES)
-      #error Both XUD_ON_L_SERIES and the PORT_USB_RX_READY defined
-    #endif
-  
-    #if !defined(XUD_ON_U_SERIES)
-      #define XUD_ON_U_SERIES 1
-    #endif
-  #else
-    #if defined(XUD_ON_U_SERIES)
-      #error XUD_ON_U_SERIES and the PORT_USB_RX_READY is not defined
-    #endif
-  
-    #if !defined(XUD_ON_L_SERIES)
-      #define XUD_ON_L_SERIES 1
-    #endif
   #endif
 
 #endif // PORT_USB_CLK

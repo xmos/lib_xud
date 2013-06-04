@@ -543,7 +543,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   //set_port_sample_delay(rx_rdy);
 
   	set_port_inv(flag0_port);
-	set_pad_delay(flag1_port, 3);
+	//set_pad_delay(flag1_port, 3);
 
   	start_clock(tx_usb_clk);
   	start_clock(rx_usb_clk);
@@ -741,7 +741,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Configure ports and clock blocks for use with UIFM */
         XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
 
-        set_pad_delay(flag1_port, 5);
+        //set_pad_delay(flag1_port, 5);
         set_port_inv(flag0_port);
        
         /* Enable UIFM and wait for connect */

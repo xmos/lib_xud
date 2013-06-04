@@ -28,16 +28,12 @@ CheckEpTypeOut:
     bt         r11, DoOutNonIso                 // ISO endpoint 
 
 OutReady:
+    stw        r11, r5[r10]                     // Clear ready
     bl         doRXData
     clre
-    stw        r7, r1[r4]                       // Store last data - note, we don't check the CRC for ISO data
+    stw        r7, r1[r4]                       // Store last data - note, we don't check the CRC for Iso data
        
-//doRXDataReturn:                               // Clear RxA event data
-    //get        r11, ed                        // Get ed marginally better that a ldw as no mem access..
-    //in         r11, res[r11]
-
-StoreTailDataOutIso:                            // ISO EP - no handshake - also we don't bother with CRC
-    stw        r11, r5[r10]                     // Clear ready
+StoreTailDataOutIso:                            // Iso EP - no handshake 
     ldw        r11, r3[1]                       // Load EP chanend
         
     out        res[r11], r4                     // Output datalength (words)
@@ -50,7 +46,7 @@ NextTokenAfterIn_:
     ldc        r6, 0x3334                       // CRC16 init (out) - Needs reseting after an out
     ldw        r1, sp[STACK_FLAG0_PORT]
 NextTokenAfterInNak_:
-    ldc        r4, XUD_MAX_NUM_EP_OUT           // *******
+    ldc        r4, XUD_MAX_NUM_EP_OUT           // This could be shaved if XUD_MAX_NUM_EP's < 12
 
 //------------------------------------------------------------------------------------------------
 #ifdef ARCH_L

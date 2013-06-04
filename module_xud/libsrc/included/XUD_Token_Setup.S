@@ -19,7 +19,7 @@ WaitForEndDataPacket:
 .skip 2
 doRXData:
     ldw         r11, sp[10]           	        // Load RxA Port ID (r1) 
-    in          r8, res[r11]                    // By doing an in we clear any previous event data - saves us havin to reload the port ID later...
+    in          r8, res[r11]                    // Doing an IN to clear any previous event data - saves us havin to reload the port ID later...
     inpw        r8, res[r0], 8                  // Input PID
 GotRxPid:
     stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
@@ -82,9 +82,9 @@ OutTail3:
 // Four Tail Bytes
 .align 16
 OutTail4:
-    ldc         r11, 0
-    //retsp 0
-    ecallf      r11
+    mov         r0, r6
+    bu          ERR_EndIn4
+
 
 // Five Tail Bytes
 .align 16

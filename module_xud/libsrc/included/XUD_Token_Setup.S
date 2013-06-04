@@ -19,30 +19,30 @@ WaitForEndDataPacket:
 .skip 2
 doRXData:
     ldw         r11, sp[10]           	        // Load RxA Port ID (r1) 
-    
-    inpw        r8, res[RXD], 8
+    in          r8, res[r11]                    // By doing an in we clear any previous event data - saves us havin to reload the port ID later...
+    inpw        r8, res[r0], 8                  // Input PID
 GotRxPid:
-    stw         r8, r3[6]                     // Store (NON-SHIFTED) PID into EP structure
+    stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
     eeu         res[r11] 
+    setsr       1                               // Enable thread events
 
 .align 4
 .skip 0
 NextRxWord:				                        // RXD port has event vector here
-    in 	        r11, res[RXD]
-    crc32       r6, r11, r9
-    stw         r11, r1[r4]
+    in 	        r8, res[r0]
+    crc32       r6, r8, r9
+    stw         r8, r1[r4]
     add         r4, r4, 1
 .xtabranch NextRxWord, RxALow
     bu          NextRxWord
-
 
 /////////////////////////////////////////////////////////////////////////////
 .align 16
 .skip 10
 RxALow:
-    endin       r8, res[RXD]
+    endin       r8, res[r0]
 XUD_OUT_RxTail:
-    in          r7, res[RXD]
+    in          r7, res[r0]
 
 .xtabranch OutTail0, OutTail1, OutTail2, OutTail3, OutTail4, OutTail5
     bru	        r8
@@ -50,17 +50,17 @@ XUD_OUT_RxTail:
 // Word aligned data (0 byte tail)
 .align 16
 OutTail0:
-    crc32       r6, r8, r9                          // CRC zero step                    
-    ldc         r11, 0x7000                         // Load relevant CRC magic number
-    retsp 0
+    crc32       r6, r8, r9                      // CRC zero step                    
+    ldc         r11, 0x7000                     // Load relevant CRC magic number
+    retsp       0
 
 // 1 Tail Byte
 .align 16
 OutTail1:
-    ldc         r11, 0x80be                         // Load CRC magic number             
-    shr         r7, r7, 24                          // Shift off junk
+    ldc         r11, 0x80be                     // Load CRC magic number             
+    shr         r7, r7, 24                      // Shift off junk
     crc32       r6, r7, r9
-    retsp 0
+    retsp       0
 
 // Two Tail Bytes
 .align 16
@@ -68,17 +68,14 @@ OutTail2:
     ldc         r11, 0x3ffe
     shr         r7, r7, 16
     crc32       r6, r7, r9
-    retsp 0
+    retsp       0
 
 // Three Tail Bytes
 .align 16
 OutTail3:
-    //ldc         r11, 0        
     shr         r7, r7, 8
     crc32       r6, r7, r9
-    crc8       r6, r9, r2, r9 // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc 
-    //crc32       r6, r11, r9 
-    //ldc       r11, 0x0070
+    crc8        r6, r9, r2, r9 // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc 
     ldw         r11, sp[12]
     retsp       0
 
@@ -86,10 +83,10 @@ OutTail3:
 .align 16
 OutTail4:
     ldc         r11, 0
+    //retsp 0
     ecallf      r11
-    bu          ERR_EndIn4
 
-
+// Five Tail Bytes
 .align 16
 OutTail5:
     mov         r0, r6
@@ -133,9 +130,9 @@ SetupReady:
 
 LoadSetupBuffer:
     bl          doRXData			            // RXData writes available data to buffer and does crc check. 
-                                                // r7: CRC check outcome	
-                                                // r8: Data tail size (bytes)   
-    //bf          r1, BadDataCrcSetup
+                                                // r7: CRC check	
+                                                // r8: Data tail size (bytes)  
+    clre
     stw         r7, r1[r4]                      // Store last data
     eq          r1, r6, r11                     // Check for good CRC16
        
@@ -143,13 +140,7 @@ doRXDataReturn_:
     ldw         r11, dp[flag1_port]
     in          r11, res[r11]
 
-
-
-//CheckEpType:                                  // Always handshake for control EP/Setup transactions
-//  bf      r1, StoreTailData                       
-
 DoOutHandShake:                                 // Data CRC good: Send Ack
-                                              
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint. 
     ldaw        r11, dp[handshakeTable_OUT]
     ldc         r7, PIDn_NAK
@@ -164,12 +155,11 @@ StoreTailData:                                  // TODO: don't assume setups are
     stw         r11, r5[r10]        
     ldw         r5, r3[1]                       // Load chanend
 
-ldc         r11, PIDn_ACK
+    ldc         r11, PIDn_ACK
     outpw       res[TXD], r11, 8
 
-
     out         res[r5], r10    
-    outct       res[r5], 0                      // Send zero control token for SETUP. Tail ignored since always expect 8 bytes                        
+    outct       res[r5], 0                      // Send zero control token for SETUP. Tail ignored since always expect 8 bytes            
     bu          NextToken 				        // Go to next wait for next token 
 
 

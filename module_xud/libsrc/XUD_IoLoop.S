@@ -91,7 +91,34 @@ InEventLoopEnd:
 .cc_bottom SetupChannelVectors.func
 
 
-#define STACK_EXTEND 16
+#define STACK_EXTEND 32
+
+// Stack frame:
+// 0
+// 1..7:             : Reg save
+// 8                 : TX handshake timer
+// 9                 : Out timer
+#define STACK_FLAG1_PORT (STACK_EXTEND-12)// 10                : RXA_port
+#define STACK_FLAG0_PORT (STACK_EXTEND-11)// 11                : Valid token port
+// 12                : ?
+// 13                : Suspend timeout
+// 14                : Suspend/Reset timer
+
+#define STACK_PID_JUMP_TABLE (STACK_EXTEND-3)
+
+// Params
+// STACK_EXTEND + 1  : Flag0_port
+// STACK_EXTEND + 2  : reg_read_port
+// STACK_EXTEND + 3  : reg_write_port
+// STACK_EXTEND + 4  : 0
+// STACK_EXTEND + 5  : c_ctl_buf
+
+#define SP_EPTYPES_OUT  (STACK_EXTEND +6)    // STACK_EXTEND + 6  : EP Type table (out)
+#define SP_EPTYPES_IN   (STACK_EXTEND + 7)   // EP Type table (in)
+#define SP_EPCHANS      (STACK_EXTEND + 7)
+#define SP_EPCOUNT      (STACK_EXTEND + 9)
+#define SP_REGREAD      (STACK_EXTEND + 10)
+#define SP_REGWRITE     (STACK_EXTEND + 11)
 
 #include "./included/XUD_Token_Out.S"
 #include "./included/XUD_Token_Ping.S"
@@ -100,30 +127,7 @@ InEventLoopEnd:
 #include "./included/XUD_Token_SOF.S"
 
 
-// Stack frame:
-// 0
-// 1..7:             : Reg save
-// 8                 : TX handshake timer
-// 9                 : Out timer
-// 10                : RXA_port
-// 11                : Valid token port
-// 12                : ?
-// 13                : Suspend timeout
-// 14                : Suspend/Reset timer
 
-
-// Params
-// STACK_EXTEND + 1  : Flag0_port
-// STACK_EXTEND + 2  : reg_read_port
-// STACK_EXTEND + 3  : reg_write_port
-// STACK_EXTEND + 4  : 0
-// STACK_EXTEND + 5  : c_ctl_buf
-// STACK_EXTEND + 6  : EP Type table (out)
-#define SP_EPTYPES_IN (STACK_EXTEND + 7)  //: EP Type table (in)
-#define SP_EPCHANS    (STACK_EXTEND + 7)
-#define SP_EPCOUNT    (STACK_EXTEND + 9)
-#define SP_REGREAD    (STACK_EXTEND + 10)
-#define SP_REGWRITE   (STACK_EXTEND + 11)
 
 //////////////////////////////////////////////////////////////////////////
 // void UsbTestModeHandler()
@@ -217,49 +221,6 @@ ResetIntHandler:
     ldw     r10, dp[SavedSp]                    // Restore stack pointer
     set     sp, r10
 
-#if 0
-    // Reset flags
-    ldc     r10, UIFM_CMD_WRITE                 
-    ldc     r9, UIFM_REG_FLAGS
-    or      r10, r10, r9
-    ldw     r9, sp[19]                          // Reg write port
-    out     res[r9], r10
-    ldc     r10, 0
-    out     res[r9], r10
-
-    // Put in FS mode s(XcvrSelect and TermSelect = 1)
-    ldc     r10, UIFM_CMD_WRITE                 
-    ldc     r9, UIFM_REG_PHYCON
-    or      r10, r10, r9
-    ldw     r9, sp[19]
-    out     res[r9], r10
-    ldc     r10, 0x7
-    out     res[r9], r10
-
-    // Delay by SUSPEND_WTWRSTHS
-    setc    res[r11], XS1_SETC_COND_NONE     // Read current time
-    in      r10, res[r11]
-    ldw     r9, cp[suspend_t_wtwrsths]
-    add     r10, r10, r9
-    setd    res[r11], r10   
-    setc    res[r11], XS1_SETC_COND_AFTER    
-    in      r10, res[r11]
-
-    // Check for J state. If so the initial SE0 was due to suspend (remain in HS) else was reset 
-    ldc     r10, UIFM_CMD_READ                 
-    ldc     r9, UIFM_REG_FLAGS
-    or      r10, r10, r9
-    ldw     r9, sp[19]                       // Reg Write Port
-    out     res[r9], r10
-    ldw     r9, sp[18]                       // Reg Read Port
-    in      r10, res[r9]                    
-
-    // Check for suspend (full speed J)       
-    ldc        r9, UIFM_FLAGS_FS_J          // HS K / FS J bit
-    and        r9, r10, r9
-    bt         r9, SuspendDetect
-
-#endif
 ResetDetect:
     ldc        r0, 0                         // Return 0 for reset
     bu         writesuspendvar
@@ -313,6 +274,8 @@ SaveStackPointer:
 
     ldw           r11, cp[suspendTimeout]         
     stw           r11, sp[13]
+ 
+ 
         
     //ldc           r11, 0
     //stw           r11, sp[15]
@@ -326,34 +289,11 @@ SaveStackPointer:
     //setsr       0x2                           // Enable thread interupts on kill channel
 
 
-#if 0                                           // To speed up reset this is now only done once
-EnableEpChanEvents_Out:
-    ldw         r9, sp[SP_EPCOUNT]              // Load passed EP count from stack
-    ldw         r7, sp[SP_EPCOUNT]
-    ldw         r8, sp[SP_EPCHANS]              // Load EP Channels array
-
-EventLoop:                                      // Set event vectors for all channels 
-    bf          r9, EventLoopEnd                
-    sub         r9, r9, 1
-    ldw         r5, r8[r9]
-    ldap        r11, OutReady
-    setv        res[r5], r11
-
-    add         r6, r7, r9                    // Add in channel offset
-    ldw         r5, r8[r6]
-    ldap        r11, InReady
-    setv        res[r5], r11
-    bu          EventLoop
-
-EventLoopEnd:
-#endif     
-        
-
 ConfigRxDEventVector:                         // Configure events
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT  
     ldap        r11, NextRxWord
     setv        res[RXD], r11
-    eeu         res[RXD]
+    //eeu         res[RXD]
 
 ConfigRxErrEventVector:
     //setc       res[RXE], XS1_SETC_IE_MODE_EVENT 
@@ -409,7 +349,7 @@ PortsOnStack:                                   // Put ports on stack (loads the
     ldw        r11, dp[flag1_port]              // RxA
     stw        r11, sp[10]
     ldw        r11, dp[flag0_port]              // Valid token port
-    stw        r11, sp[11]
+    stw        r11, sp[STACK_FLAG0_PORT]
     //ldw        r11, dp[flag2_port]              // 
     //stw        r11, sp[15]
 
@@ -453,12 +393,13 @@ SetupSuspendResetTimer:
     setc       res[r10], XS1_SETC_COND_AFTER
     setc       res[r10], XS1_SETC_IE_MODE_INTERRUPT 
     eeu        res[r10]                         // Enable events/interupts on resource 
-    setsr       0x2                             // Enable thread interrupts
+
 
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     ldw         r1, sp[11]                            // Load Valid Token port
-    //ldc         r3, 0 
-                                          
+ 
+    clre 
+    setsr       0x2                             // Enable thread interrupts
     bu         Loop
 
 // Main IO Loop
@@ -472,16 +413,13 @@ PreLoads:
 
 NextTokenAfterOut:
     ldc         r7, 0xf335                      // TX Crc init 
-
 NextTokenAfterIn:
     ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
-    ldw         r1, dp[flag0_port]           		             
+    ldw         r1, sp[STACK_FLAG0_PORT]           		             
 NextTokenAfterInNak:
 Loop_BadPid: 
-    //ldw         r4, //sp[(STACK_EXTEND+8)]        // Number of out Endpoints
-    ldc         r4, XUD_MAX_NUM_EP_OUT
+    ldc         r4, XUD_MAX_NUM_EP_OUT          // Number of OUT endpoints
 NextTokenAfterPing:
-    clre
     setsr       1                               // Enable thread events
 
 

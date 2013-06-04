@@ -311,10 +311,6 @@ Return:
 .cc_top XUD_SetData.func, XUD_SetData
 XUD_SetData:
     entsp       7    
-    stw         r0, sp[1]                        // Reg save (for retry) 
-    stw         r1, sp[2]
-    stw         r2, sp[3]
-    stw         r3, sp[4]
     stw         r5, sp[5]
     stw         r10, sp[6]
 

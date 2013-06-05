@@ -28,14 +28,13 @@ CheckEpTypeOut:
     bt         r11, DoOutNonIso                 // ISO endpoint 
 
 OutReady:
-    stw        r11, r5[r10]                     // Clear ready
     bl         doRXData
     clre
     stw        r7, r1[r4]                       // Store last data - note, we don't check the CRC for Iso data
        
 StoreTailDataOutIso:                            // Iso EP - no handshake 
+    stw        r11, r5[r10]                     // Clear ready
     ldw        r11, r3[1]                       // Load EP chanend
-        
     out        res[r11], r4                     // Output datalength (words)
     outt       res[r11], r8                     // Send tail length
 
@@ -74,9 +73,7 @@ DoOutNonIso:
     stw        r7, r1[r4]                       // Store last data
     eq         r1, r6, r11                      // Check for good CRC16
        
-doRXDataReturn_NonIso:                          // RxA event data
-    //get        r11, ed                        // Get ed marginally better that a ldw as no mem access..
-    //in         r11, res[r11]
+doRXDataReturn_NonIso:
     bf         r1, NextTokenAfterOut            // Check for bad crc
     ldc        r11, PIDn_ACK                    // Data CRC good and EP not Iso: Send Ack
     outpw      res[TXD], r11, 8

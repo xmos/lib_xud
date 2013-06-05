@@ -278,7 +278,6 @@ ClearInEpReady:                                 // TODO Tidy this up
     stw         r9, r5[r3]                      // Clear the ready
     ldw         r11, r10[1]                     // Load channel
     out         res[r11], r11                   // Output word to signal packet sent okay
-
     bu        	NextToken
 
 BadHandShake:			                        // Received a bad (or no)handshake

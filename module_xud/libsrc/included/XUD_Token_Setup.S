@@ -38,11 +38,12 @@ NextRxWord:				                        // RXD port has event vector here
 
 /////////////////////////////////////////////////////////////////////////////
 .align 16
-.skip 10
+.skip 6
 RxALow:
     endin       r8, res[r0]
 XUD_OUT_RxTail:
-    in          r7, res[r0]
+    in          r11, res[r0]
+    stw         r11, r1[r4]                      // Store tail data
 
 .xtabranch OutTail0, OutTail1, OutTail2, OutTail3, OutTail4, OutTail5
     bru	        r8
@@ -57,24 +58,24 @@ OutTail0:
 // 1 Tail Byte
 .align 16
 OutTail1:
+    shr         r11, r11, 24                      // Shift off junk
+    crc32       r6, r11, r9
     ldc         r11, 0x80be                     // Load CRC magic number             
-    shr         r7, r7, 24                      // Shift off junk
-    crc32       r6, r7, r9
     retsp       0
 
 // Two Tail Bytes
 .align 16
 OutTail2:
+    shr         r11, r11, 16
+    crc32       r6, r11, r9
     ldc         r11, 0x3ffe
-    shr         r7, r7, 16
-    crc32       r6, r7, r9
     retsp       0
 
 // Three Tail Bytes
 .align 16
 OutTail3:
-    shr         r7, r7, 8
-    crc32       r6, r7, r9
+    shr         r11, r11, 8
+    crc32       r6, r11, r9
     crc8        r6, r9, r2, r9 // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc 
     ldw         r11, sp[12]
     retsp       0
@@ -133,7 +134,7 @@ LoadSetupBuffer:
                                                 // r7: CRC check	
                                                 // r8: Data tail size (bytes)  
     clre
-    stw         r7, r1[r4]                      // Store last data
+    //stw         r7, r1[r4]                      // Store last data
     eq          r1, r6, r11                     // Check for good CRC16
        
 doRXDataReturn_:
@@ -143,10 +144,10 @@ doRXDataReturn_:
 DoOutHandShake:                                 // Data CRC good: Send Ack
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint. 
     ldaw        r11, dp[handshakeTable_OUT]
-    ldc         r7, PIDn_NAK
-    stw         r7, r11[r10]
+    ldc         r6, PIDn_NAK
+    stw         r6, r11[r10]
     ldaw        r11, dp[handshakeTable_IN]
-    stw         r7, r11[r10]
+    stw         r6, r11[r10]
 
     
 StoreTailData:                                  // TODO: don't assume setups are 8 bytes + crc

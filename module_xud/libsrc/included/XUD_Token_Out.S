@@ -30,16 +30,17 @@ CheckEpTypeOut:
 OutReady:
     bl         doRXData
     clre
-    stw        r7, r1[r4]                       // Store last data - note, we don't check the CRC for Iso data
+    //stw        r7, r1[r4]                       // Store last data - note, we don't check the CRC for Iso data
        
 StoreTailDataOutIso:                            // Iso EP - no handshake 
     stw        r11, r5[r10]                     // Clear ready
     ldw        r11, r3[1]                       // Load EP chanend
+        
     out        res[r11], r4                     // Output datalength (words)
     outt       res[r11], r8                     // Send tail length
 
-NextTokenAfterOut_:
-    ldc        r7, 0xf335                       // TX Crc init 
+//NextTokenAfterOut_:
+  //  ldc        r7, 0xf335                       // TX Crc init 
 
 NextTokenAfterIn_:
     ldc        r6, 0x3334                       // CRC16 init (out) - Needs reseting after an out
@@ -70,7 +71,7 @@ DoOutNonIso:
     bl         doRXData
     clre
  
-    stw        r7, r1[r4]                       // Store last data
+    //stw        r7, r1[r4]                       // Store last data
     eq         r1, r6, r11                      // Check for good CRC16
        
 doRXDataReturn_NonIso:

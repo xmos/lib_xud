@@ -29,68 +29,6 @@ suspend_t_wtwrsths:
 .text
 
 
-.extern SetupChannelVectors
-.globl SetupChannelVectors.nstackwords
-.globl SetupChannelVectors.maxthreads
-.globl SetupChannelVectors.maxtimers
-.globl SetupChannelVectors.maxchanends
-
-.linkset SetupChannelVectors.nstackwords, 16
-.linkset SetupChannelVectors.maxchanends, 0
-.linkset SetupChannelVectors.maxtimers, 0
-.linkset SetupChannelVectors.maxthreads, 0
-
-.globl SetupChannelVectors
-.cc_top SetupChannelVectors.func, SetupChannelVectors
-.text 
-
-
-// void SetupChannelVectors(chans[], CountOut, CountIn);
-
-.align 4
-.skip 0
-SetupChannelVectors:
-    entsp 16
-    stw         r5, sp[1]
-    stw         r6, sp[2]
-    stw         r2, sp[3]
-        
-EnableEpChanEvents_Out2:
-    //mov           r3, r1
-    ldc         r3, XUD_MAX_NUM_EP_OUT
-
-OutEventLoop:                                      // Set event vectors for all channels 
-    bf          r1, InEventLoop                
-    sub         r1, r1, 1
-    ldw         r5, r0[r1]
-    ldap        r11, OutReady
-    setv        res[r5], r11
-    bu          OutEventLoop
-
-InEventLoop:
-    bf          r2, InEventLoopEnd
-    sub         r2, r2, 1
-    add         r6, r2, r3                    // Add in channel offset
-    ldw         r5, r0[r6]
-    ldap        r11, InReady
-    setv        res[r5], r11
-    bu          InEventLoop
-
-InEventLoopEnd:
-
-    // Some applications may want to override the
-    // handling of some channels
-    mov         r1, r3
-    ldw         r2, sp[2]
-    bl          SetupChannelVectorsOverride
-
-    ldw         r5, sp[1]
-    ldw         r6, sp[2]
-    retsp       16
-
-.cc_bottom SetupChannelVectors.func
-
-
 #define STACK_EXTEND 32
 
 // Stack frame:
@@ -291,8 +229,10 @@ SaveStackPointer:
 
 ConfigRxDEventVector:                         // Configure events
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT  
-    ldap        r11, NextRxWord
-    setv        res[RXD], r11
+    //ldap        r11, NextRxWord
+    ldap         r11,  TxHandShakeReceived
+    setv         res[RXD], r11
+    //setv        res[RXD], r11
     //eeu         res[RXD]
 
 ConfigRxErrEventVector:
@@ -408,9 +348,9 @@ NextToken:
 PreLoads:
     ldc         r9, 0xa001                      // CRC16 poly, used in doRxData              
     ldw         r5, sp[(STACK_EXTEND+7)]        // EP structures array - pointers to EP tables or 0
+    ldc         r7, 0xf335                      // TX Crc init 
 
 NextTokenAfterOut:
-    ldc         r7, 0xf335                      // TX Crc init 
 NextTokenAfterIn:
     ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
     ldw         r1, sp[STACK_FLAG0_PORT]           		             

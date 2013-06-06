@@ -219,8 +219,8 @@ InNonISO:
 SetupReceiveHandShake:			  
     ldc	       	 r11, 8
     setpsc       res[RXD], r11		            // Set port shift count (expect 8 bit handshake)
-    ldap         r11,  TxHandShakeReceived
-    setv         res[RXD], r11
+    //ldap         r11,  TxHandShakeReceived
+    //setv         res[RXD], r11
     eeu		     res[RXD]                       // Events on RXD always enabled - Can;t be any more due to using events on channels
 
 SetupTimeout:				                    // Timeout done using another port off same clock block we dont happen to already be using events on. Cunning.
@@ -267,8 +267,8 @@ XUD_IN_RxAck:
     bt          r9, BadHandShake                // Invalid handshake received from host. we need to resend...
    
 DoneTx:
-    ldap        r11, NextRxWord                 // Restore RXD event vector
-    setv        res[RXD], r11    
+    //ldap        r11, NextRxWord                 // Restore RXD event vector
+    //setv        res[RXD], r11    
 
 ClearInEpReady:                                 // TODO Tidy this up
     //ldw         r4, sp[(STACK_EXTEND+8)]      / Load num out EPs
@@ -282,8 +282,8 @@ ClearInEpReady:                                 // TODO Tidy this up
     bu        	NextToken
 
 BadHandShake:			                        // Received a bad (or no)handshake
-    ldap        r11, NextRxWord                 // Restore RXD event vector
-    setv        res[RXD], r11
+    //ldap        r11, NextRxWord                 // Restore RXD event vector
+    //setv        res[RXD], r11
     bu 		    NextToken
 
 .align 32

@@ -150,9 +150,8 @@ DoOutHandShake:                                 // Data CRC good: Send Ack
 
     
 StoreTailData:                                  // TODO: don't assume setups are 8 bytes + crc
-    ldw         r3, r5[r10]                      // Load relevant EP pointer
     ldc         r11, 0
-    stw         r11, r5[r10]        
+    stw         r11, r5[r10]                    // Clear ready       
     ldw         r5, r3[1]                       // Load chanend
 
     ldc         r11, PIDn_ACK

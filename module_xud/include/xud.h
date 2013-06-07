@@ -12,6 +12,10 @@
 #define XUD_U_SERIES 1
 #define XUD_L_SERIES 2
 
+#ifdef __xud_conf_h_exists__
+#include "xud_conf.h"
+#endif
+
 #if !defined(USB_TILE)
   #define USB_TILE tile[0]
 #endif

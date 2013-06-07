@@ -66,7 +66,7 @@ OutTail1:
 OutTail2:
     shr         r11, r11, 16
     crc32       r6, r11, r9
-    stw         r7, r1[r4]                      // Store last data
+    stw         r11, r1[r4]                      // Store last data
     ldc         r11, 0x3ffe
     retsp       0
 

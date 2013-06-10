@@ -8,10 +8,10 @@ include/xud.h
     User defines and functions for the XUD library.
 
 lib/xs1b/libxud_l.a
-    Library for XS1-L series processors.
+    Library for L-Series processors.
 
 lib/xs1b/libxud_u.a
-    Library for XS1-U series processors.
+    Library for U-Series processors.
 
 src/XUD_EpFunctions.xc
     Functions that control the XUD library.
@@ -19,5 +19,5 @@ src/XUD_EpFunctions.xc
 src/XUD_EpFuncs.S
     Assembler stubs of access functions.
 
-src/XUD_UIFM_Ports.xc
+src/XUD_Ports.xc
     Definition of port mapping.

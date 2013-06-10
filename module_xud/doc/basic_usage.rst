@@ -4,34 +4,36 @@ Basic Usage
 This section outlines the basic usage of XUD and finishes with a worked
 example of a USB Human Interface Device (HID) Class compliant mouse.
 Basic use is termed to mean each endpoint runs in its own dedicated core.
-Multiple endpoints in a single core are possible but currently beyond
+Multiple endpoints in a single core are possible, but currently beyond
 the scope of this document.
 
 XUD Core: ``XUD_Manager()``
 -----------------------------
 
-This function must be called as a core (normally from a top level
-``par`` statement in ``main()``) around 100 ms after power up. This is
-the main XUD task that interfaces with the ULPI transceiver. It
-performs power-signalling/handshaking on the USB bus, and passes packets
+This is the main XUD task that interfaces with the ULPI transceiver.
+It performs power-signalling/handshaking on the USB bus, and passes packets
 on for the various endpoints.
+
+This function should be called directly from the top-level ``par``
+statement in ``main()`` to ensure that the XUD library is ready
+within the 100ms allowed by the USB specification. 
 
 .. doxygenfunction:: XUD_Manager
 
 Endpoint Type Table 
 ~~~~~~~~~~~~~~~~~~~
 
-The endpoint type table should take an array of ``XUD_EpType`` to inform XUD about endpoints being used.  This is mainly used to indicate the transfer-type of each endpoint (bulk, control, isochronous or interrupt) as well as whether the endpoint wishs to be informed about bus-resets (see :ref:`xud_status_reporting`).
+The endpoint type table should take an array of ``XUD_EpType`` to inform XUD
+about endpoints being used.  This is mainly used to indicate the transfer-type
+of each endpoint (bulk, control, isochronous or interrupt) as well as
+whether the endpoint wishes to be informed about bus-resets (see :ref:`xud_status_reporting`).
 
-Note, endpoints can also be marked as disabled.
+*Note:* endpoints can also be marked as disabled.
 
-Endpoints that are not used will NAK any traffic from the host.
+Endpoints that are not used will ``NAK`` any traffic from the host.
 
-
-
-
-EP Communication with ``XUD_Manager()``
----------------------------------------
+Endpoint Communication with ``XUD_Manager()``
+---------------------------------------------
 
 Communication state between a core and the XUD library is encapsulated
 in an opaque type:
@@ -48,11 +50,11 @@ endpoint channel connected to the XUD library:
 Endpoint data is sent/received using three main functions,
 ``XUD_SetData()``, ``XUD_GetData()`` and ``XUD_GetSetupData()``.
 
-These assembly functions implement the low level shared memory/channel
+These assembly functions implement the low-level shared memory/channel
 communication with the ``XUD_Manager()`` core. For developer convenience
 these calls are wrapped up by XC functions.
 
-These functions will automatically deal with any low level complications required
+These functions will automatically deal with any low-level complications required
 such as Packet ID toggling etc.
 
 ``XUD_GetBuffer()``
@@ -69,12 +71,10 @@ such as Packet ID toggling etc.
 ``XUD_SetBuffer_EpMax()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This function provides a similar function to that of the previously described
-``XUD_SetBuffer`` function but it cuts the data up in packets of a fixed
+This function provides a similar function to ``XUD_SetBuffer`` function
+but it cuts the data up in packets of a fixed
 maximum size. This is especially useful for control transfers where large 
 descriptors must be sent in typically 64 byte transactions.
-
-See ``XUD_SetBuffer`` for a description of the first, second and third parameter.
 
 .. doxygenfunction:: XUD_SetBuffer_EpMax
 
@@ -103,7 +103,7 @@ known. This is achieved by ORing ``XUD_STATUS_ENABLE`` into the relevant
 endpoint in the endpoint type table.
 
 This means that endpoints are notified of USB bus resets (and
-bus-speeds). The XUD access functions discussed previously
+bus-speed changes). The XUD access functions discussed previously
 (``XUD_GetData``, ``XUD_SetData``, etc.) return less than 0 if
 a USB bus reset is detected.
 

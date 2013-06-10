@@ -132,7 +132,7 @@ InEventLoopEnd:
 //////////////////////////////////////////////////////////////////////////
 // void UsbTestModeHandler()
 // Interrupt handler for entering USB Test mode
-// ASM level for low level interrupt handling.
+// ASM level for low-level interrupt handling.
 .extern UsbTestModeHandler_asm
 .globl UsbTestModeHandler_asm.nstackwords
 .linkset UsbTestModeHandler_asm.nstackwords, 0

@@ -7,8 +7,8 @@ sections.
 Ports/Pins
 ----------
 
-XS1-L Family
-............
+L-Series
+........
 
 The ports used for the physical connection to the external ULPI transceiver must
 be connected as shown in :ref:`table_xud_ulpi_required_pin_port`.
@@ -57,17 +57,17 @@ an XS1-L8-128 device should not be used.
 Please refer to the device datasheet for further information on which ports
 are available.
 
-XS1-U Series Processors
-.......................
+U-Series
+........
 
-The XS1-U series of processors has an integrated USB transceiver. Some ports
-are used to communicate with the USB transceiver inside the XS1-U packages.
+The U-Series of processors has an integrated USB transceiver. Some ports
+are used to communicate with the USB transceiver inside the U-Series packages.
 These ports/pins should not be used when USB functionality is enabled.
 The ports/pins are shown in :ref:`table_xud_u_required_pin_port`.
 
 .. _table_xud_u_required_pin_port:
 
-.. table:: XS1-U required pin/port connections
+.. table:: U-Series required pin/port connections
     :class: horizontal-borders vertical_borders
 
     +-------+-------+------+-------+-------+--------+
@@ -130,7 +130,7 @@ Due to I/O requirements, the library requires a guaranteed MIPS rate to
 ensure correct operation. This means that core count restrictions must
 be observed. The XUD core must run at at least 80 MIPS.
 
-This means that for an XS1 running at 400MHz there should be no more
+This means that for an xCORE device running at 400MHz there should be no more
 than five cores executing at any time when using the XUD. For
 a 500MHz device no more than six cores shall execute at any one time
 when using the XUD.
@@ -141,10 +141,10 @@ For example, a different tile on an L16 device is unaffected by this restriction
 Clock Blocks
 ------------
 
-XS1-L Family
-..............
+L-Series
+........
 
-The XUD library uses one clock block - clock block  0 - and configures this
+The XUD library uses one clock block (clock block  0) and configures this
 clock block to be clocked by the 60MHz clock from the ULPI transceiver.
 The ports it uses are in turn clocked from the clock block.
 
@@ -152,10 +152,11 @@ Since clock block 0 is the default for all ports when enabled it is
 important that if a port is not required to be clocked from this 60MHz
 clock, then it is configured to use another clock block.
 
-XS1-U Family
-............
+U-Series
+........
 
-The XUD library uses two clock-blocks (clock blocks 4 and 5).  These are clocked from the USB clock.
+The XUD library uses two clock blocks (clock blocks 4 and 5). These are
+clocked from the USB clock.
 
 Timers
 ------

@@ -2,13 +2,13 @@ Overview
 ========
 
 The XUD library allows the implementation of both full-speed and
-high-speed USB 2.0 devices on both XS1-L and XS1-U device families.
+high-speed USB 2.0 devices on both L-Series and U-Series devices.
 
-For the XS1-L family the implementation requires the use of an
-external ULPI transceiver such as the SMSC USB33XX range. The XS1-U
+For the L-Series family the implementation requires the use of an
+external ULPI transceiver such as the SMSC USB33XX range. The U-Series
 family includes an integrated USB transceiver. Two libraries, with
-identical interfaces, are provided - one of XS1-L and one for XS1-U
-series of processor.
+identical interfaces, are provided - one for L-Series and one for 
+U-Series devices.
 
 The library performs all the low-level I/O operations required to meet
 the USB 2.0 specification. This processing goes up to and includes the
@@ -26,7 +26,7 @@ is used to transfer data from the host to the device, an IN endpoint is
 used when the host requests data from the device.
 
 An example task diagram is shown in :ref:`figure_xud_overview`.  Circles
-represent cores running on the XS1 with arrows depicting communication
+represent cores running with arrows depicting communication
 channels between these cores. In this configuration there is one
 core that deals with endpoint 0, which has both the input and output
 channel for endpoint 0. IN endpoint 1 is dealt with by a second core,

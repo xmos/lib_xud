@@ -19,15 +19,13 @@ WaitForEndDataPacket:
 .skip 2
 doRXData:
     ldw         r11, sp[10]           	        // Load RxA Port ID (r1) 
-    in          r8, res[r11]                    // By doing an in we clear any previous event data - saves us havin to reload the port ID later...
+    in          r8, res[r11]                    // Doing an IN to clear any previous event data - saves us havin to reload the port ID later...
     inpw        r8, res[r0], 8                  // Input PID
 GotRxPid:
     stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
     eeu         res[r11] 
     setsr       1                               // Enable thread events
 
-.align 4
-.skip 0
 NextRxWord:				                        // RXD port has event vector here
     in 	        r8, res[r0]
     crc32       r6, r8, r9
@@ -42,7 +40,7 @@ NextRxWord:				                        // RXD port has event vector here
 RxALow:
     endin       r8, res[r0]
 XUD_OUT_RxTail:
-    in          r7, res[r0]
+    in          r11, res[r0]
 
 .xtabranch OutTail0, OutTail1, OutTail2, OutTail3, OutTail4, OutTail5
     bru	        r8
@@ -57,39 +55,39 @@ OutTail0:
 // 1 Tail Byte
 .align 16
 OutTail1:
+    shr         r11, r11, 24                    // Shift off junk
+    crc32       r6, r11, r9
+    stw         r11, r1[r4]                     // Store last data
     ldc         r11, 0x80be                     // Load CRC magic number             
-    shr         r7, r7, 24                      // Shift off junk
-    crc32       r6, r7, r9
     retsp       0
 
 // Two Tail Bytes
 .align 16
 OutTail2:
+    shr         r11, r11, 16
+    crc32       r6, r11, r9
+    stw         r11, r1[r4]                      // Store last data
     ldc         r11, 0x3ffe
-    shr         r7, r7, 16
-    crc32       r6, r7, r9
     retsp       0
 
 // Three Tail Bytes
 .align 16
 OutTail3:
-    shr         r7, r7, 8
-    crc32       r6, r7, r9
-    crc8        r6, r9, r2, r9 // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc 
+    shr         r11, r11, 8
+    crc32       r6, r11, r9
+    crc8        r6, r9, r2, r9                  // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc 
+    stw         r11, r1[r4]                     // Store last data
     ldw         r11, sp[12]
     retsp       0
 
 // Four Tail Bytes
-.align 16
 OutTail4:
-    ldc         r11, 0
-    //retsp 0
-    ecallf      r11
+    bu          ERR_EndIn4
+
 
 // Five Tail Bytes
 .align 16
 OutTail5:
-    mov         r0, r6
     bu          ERR_EndIn5
 
 .cc_bottom doRXData.func
@@ -133,7 +131,7 @@ LoadSetupBuffer:
                                                 // r7: CRC check	
                                                 // r8: Data tail size (bytes)  
     clre
-    stw         r7, r1[r4]                      // Store last data
+    //stw         r7, r1[r4]                      // Store last data
     eq          r1, r6, r11                     // Check for good CRC16
        
 doRXDataReturn_:
@@ -143,16 +141,15 @@ doRXDataReturn_:
 DoOutHandShake:                                 // Data CRC good: Send Ack
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint. 
     ldaw        r11, dp[handshakeTable_OUT]
-    ldc         r7, PIDn_NAK
-    stw         r7, r11[r10]
+    ldc         r6, PIDn_NAK
+    stw         r6, r11[r10]
     ldaw        r11, dp[handshakeTable_IN]
-    stw         r7, r11[r10]
+    stw         r6, r11[r10]
 
     
 StoreTailData:                                  // TODO: don't assume setups are 8 bytes + crc
-    ldw         r3, r5[r10]                      // Load relevant EP pointer
     ldc         r11, 0
-    stw         r11, r5[r10]        
+    stw         r11, r5[r10]                    // Clear ready       
     ldw         r5, r3[1]                       // Load chanend
 
     ldc         r11, PIDn_ACK
@@ -165,8 +162,6 @@ StoreTailData:                                  // TODO: don't assume setups are
 
 SBuffFull:
     ldc         r11, 0
-//    ecallf      r11
- //   bl          ERR_SetupBuffFull			    // Wait for end of data then go to next token
     ldw         r10, sp[10]                     // Load RxA Port ID (r1)
     in 	        r11, res[r10]			        // RXA event cond = 0 TODO: Wait for RXA high first?
     endin       r11, res[RXD]

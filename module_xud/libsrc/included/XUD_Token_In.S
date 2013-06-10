@@ -203,7 +203,7 @@ XUD_IN_TxCrc_Tail3:
 DoneTail:
     //syncr       res[TXD]
     //chkct         res[r5], XS1_CT_END
-    ldw           r11, sp[22]       
+    ldw           r11, sp[SP_EPTYPES_OUT]       
     ldw           r11, r11[r10]                 // Load EP Type
     bt            r11, SetupReceiveHandShake
 
@@ -219,20 +219,20 @@ InNonISO:
 SetupReceiveHandShake:			  
     ldc	       	 r11, 8
     setpsc       res[RXD], r11		            // Set port shift count (expect 8 bit handshake)
-    ldap         r11,  TxHandShakeReceived
-    setv         res[RXD], r11
+    //ldap         r11,  TxHandShakeReceived
+    //setv         res[RXD], r11
     eeu		     res[RXD]                       // Events on RXD always enabled - Can;t be any more due to using events on channels
 
-SetupTimeout:				                              // Timeout done using another port off same clock block we dont happen to already be using events on. Cunning.
-    ldw 		    r1, sp[11]        	                    // Load saved ValidToken port. Event vector already set.
-    in           	r11, res[r1]		                  // Do input and get port time/timestamps
-    getts	       	r11, res[r1]
-    ldw             r9, dp[g_txHandshakeTimeout]
-    add          	r11, r11, r9
-    setpt	       	res[r1], r11		                  // Set port time and enable events
-    eeu	        	res[r1]
+SetupTimeout:				                    // Timeout done using another port off same clock block we dont happen to already be using events on. Cunning.
+    ldw 		r1, sp[STACK_FLAG0_PORT]        // Load saved ValidToken port. Event vector already set.
+    in          r11, res[r1]		            // Do input and get port time/timestamps
+    getts	    r11, res[r1]
+    ldw         r9, dp[g_txHandshakeTimeout]
+    add         r11, r11, r9
+    setpt	    res[r1], r11		            // Set port time and enable events
+    eeu	        res[r1]
 
-WaitForHandshake:			                            // Wait for timeout or handshake
+WaitForHandshake:			                    // Wait for timeout or handshake
     .xtabranch TxHandshakeTimeOut, TxHandShakeReceived
     waiteu
 
@@ -242,6 +242,7 @@ WaitForHandshake:			                            // Wait for timeout or handshake
 TxHandshakeTimeOut:
     in 	    	r11, res[r1]                    // This will clear port time
     edu         res[r1] 
+    edu         res[RXD]
     bu          BadHandShake
 
     //ldc         r11, 1
@@ -254,6 +255,7 @@ TxHandShakeReceived:
 XUD_IN_RxAck:
     in 		    r11, res[RXD]                   // Input data from RXD port
     clrpt		res[r1]			                // Clear port time on valid token port
+    edu         res[RXD]
     shr         r11, r11, 24                    // Shift off junk data to leave ACK
 #ifdef ARCH_L
     ldc         r9, PID_ACK                     // Check for good ACK (L series strips of negated bits from PID)
@@ -265,8 +267,8 @@ XUD_IN_RxAck:
     bt          r9, BadHandShake                // Invalid handshake received from host. we need to resend...
    
 DoneTx:
-    ldap        r11, NextRxWord                 // Restore RXD event vector
-    setv        res[RXD], r11    
+    //ldap        r11, NextRxWord                 // Restore RXD event vector
+    //setv        res[RXD], r11    
 
 ClearInEpReady:                                 // TODO Tidy this up
     //ldw         r4, sp[(STACK_EXTEND+8)]      / Load num out EPs
@@ -280,8 +282,8 @@ ClearInEpReady:                                 // TODO Tidy this up
     bu        	NextToken
 
 BadHandShake:			                        // Received a bad (or no)handshake
-    ldap        r11, NextRxWord                 // Restore RXD event vector
-    setv        res[RXD], r11
+    //ldap        r11, NextRxWord                 // Restore RXD event vector
+    //setv        res[RXD], r11
     bu 		    NextToken
 
 .align 32

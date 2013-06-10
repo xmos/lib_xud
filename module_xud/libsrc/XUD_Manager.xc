@@ -333,9 +333,9 @@ int epStatFlagTableOut[XUD_MAX_NUM_EP_OUT];
 /* Used for terminating XUD loop */
 int XUD_USB_Done = 0;
 
-extern void SetupChannelVectorsOverride(XUD_chan chans[]);
+//extern void SetupChannelVectorsOverride(XUD_chan chans[]);
 
-extern void SetupChannelVectors(XUD_chan chans[], int countOut, int countIn);
+//extern void SetupChannelVectors(XUD_chan chans[], int countOut, int countIn);
 
 extern int XUD_LLD_IoLoop(
 #ifdef ARCH_S
@@ -459,7 +459,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_thread_fast_mode_on();
 
     /* Setup channel event vectors */
-    SetupChannelVectors(epChans0, noEpOut, noEpIn);
+    //SetupChannelVectors(epChans0, noEpOut, noEpIn);
 
     /* Make sure ports are on and reset port states */
     set_port_use_on(p_usb_clk);
@@ -911,7 +911,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Send speed to EPs */
                     SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
 
-                    SetupChannelVectorsOverride(epChans0);
+                    //SetupChannelVectorsOverride(epChans0);
 
                 }
             }

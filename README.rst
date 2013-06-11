@@ -19,7 +19,7 @@ Known Issues
 Required Repositories
 =====================
 
-* xcommon (git://github.com/xcore/xcommon.git)
+* None
 
 Support
 =======

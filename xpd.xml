@@ -6,10 +6,6 @@
             <keyword>xud</keyword>
         </component>
     </components>
-    <dependency repo = "xcommon">
-        <githash>e2d71a7a1eb2dbf611dcd57f6213459f037c8fb3</githash>
-        <uri>git://github.com/xcore/xcommon.git</uri>
-    </dependency>
     <dependency repo = "sc_usb">
         <githash>30bc8b53b942798e32e1d3a2b2452660a3d7c05a</githash>
         <uri>git://git/apps/sc_usb</uri>

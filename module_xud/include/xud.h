@@ -241,7 +241,7 @@ int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
  * \brief  This function must be called by a thread that deals with an IN endpoint.
  *         When the host asks for data, the low-level driver will transmit the buffer
  *         to the host.
- * \param  ep_in The endpoint identifier created by ``XUD_Init_Ep``.
+ * \param  ep_in The endpoint identifier created by ``XUD_InitEp``.
  * \param  buffer The buffer of data to send out.
  * \param  datalength The number of bytes in the buffer.
  * \return  0 on success, for errors see :ref:`xud_status_reporting`.
@@ -260,7 +260,7 @@ int XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
  *          This function must be called by a thread that deals with an IN endpoint.
  *          When the host asks for data, the low-level driver will transmit the buffer
  *          to the host.  
- * \param   ep_in        The IN endpoint identifier created by ``XUD_Init_Ep``.
+ * \param   ep_in        The IN endpoint identifier created by ``XUD_InitEp``.
  * \param   buffer       The buffer of data to send out.  
  * \param   datalength   The number of bytes in the buffer.
  * \param   epMax        The maximum packet size in bytes.

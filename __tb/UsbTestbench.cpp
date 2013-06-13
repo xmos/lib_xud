@@ -214,7 +214,7 @@ int parse_connect(int argc, char **argv, int index)
   return index + 5;
 }
 
-void parse_args(int argc, char **argv)
+string parse_args(int argc, char **argv)
 {
   g_sim_exe_name = argv[0];
   unsigned int char_index = g_sim_exe_name.find_last_of("\\/");
@@ -243,11 +243,9 @@ void parse_args(int argc, char **argv)
     index++;
   }
 
-  XsiStatus status = xsi_create(&g_device, args.c_str());
-  if (status != XSI_STATUS_OK) {
-    fprintf(stderr, "ERROR: failed to create device with args '%s'\n", args.c_str());
-    print_usage();
-  }
+  return args;
+
+ 
 }
 
 bool is_pin_driving(const char *package, const char *pin)
@@ -1111,9 +1109,23 @@ int AddOutTransaction(USBEvent **UsbEventList, int eventIndex, int epNum, unsign
     return eventIndex;
 }
 
-void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo)
+void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo, string args)
 {
-    node *head;
+    node *head = NULL;
+    
+    XsiStatus status = xsi_create(&g_device, args.c_str());
+    if (status != XSI_STATUS_OK) 
+    {
+        fprintf(stderr, "ERROR: failed to create device with args '%s'\n", args.c_str());
+        print_usage();
+    }
+   
+    /* Init port state */
+    drive_port("tile[0]", RX_RXA_PORT, 0x1, 0);
+    drive_port("tile[0]", RX_RXV_PORT, 0x1, 0);
+    drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
+    drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0x0);
+    drive_port("tile[0]", TX_RDY_IN_PORT, 0xFF, 0x1);
 
     for(int i = eventIndex-1; i >= 0; i--)
     {
@@ -1149,15 +1161,15 @@ void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo)
 
     if(done == END_PASS)
     {
-        fprintf(stdout, "TEST PASS PASS PASS PASS PASS PASS PASS PASS PASS PASS PASS\n");
+        fprintf(stdout, "TEST %d PASS!\n\n", testNo);
 
     }  
     else
     {
-        fprintf(stdout, "TEST FAIL");
+        fprintf(stdout, "TEST %d FAIL!\n\n", testNo);
     }
 
-    XsiStatus status = xsi_terminate(g_device);
+    status = xsi_terminate(g_device);
     if (status != XSI_STATUS_OK) 
     {
         fprintf(stderr, "ERROR: failed to terminate device\n");
@@ -1169,21 +1181,11 @@ void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo)
 
 int main(int argc, char **argv)
 {
-    parse_args(argc, argv);
+    string args = parse_args(argc, argv);
 
-    // Empty linked list
-    node *head = NULL;
+   
 
-    
-    
-    /* Init port state */
-    drive_port("tile[0]", RX_RXA_PORT, 0x1, 0);
-    drive_port("tile[0]", RX_RXV_PORT, 0x1, 0);
-    drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
-    drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0x0);
-    drive_port("tile[0]", TX_RDY_IN_PORT, 0xFF, 0x1);
-
-    /* Create test datapacket */
+        /* Create test datapacket */
     unsigned char *data;
     unsigned char *dataPacket;
     data = new unsigned char[RX_DATALENGTH];
@@ -1579,7 +1581,15 @@ int main(int argc, char **argv)
     UsbEventList[eventIndex++] = new USBDelay(500);
 
     /* Test 1 */
-    RunTest(UsbEventList, eventIndex, 0);
+    /**** TEST 1
+     * Simple control transfer test 
+     * Note Payload should *always* be 8 bytes
+     * Note Device should *never* NAK a SETUP 
+     * Data PID *always* DATA0
+     */
+
+    RunTest(UsbEventList, eventIndex, 0, args);
+    RunTest(UsbEventList, eventIndex, 1, args);
 
     return 0;
 }

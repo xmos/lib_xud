@@ -13,7 +13,7 @@
 #include "xsidevice.h"
 using namespace std;
 #include "crc.h"
-#include "test.h"
+//#include "test.h"
 
 
 /* TODO List*/
@@ -340,6 +340,7 @@ typedef enum USBState {
                             RX_DATA_END,
                             TX_DATA,
                             TX_DATA_WAIT,
+                            END_PASS,
                         };
 
 USBState g_currentState;
@@ -366,8 +367,8 @@ USBState usb_rising(USBState curState, node *head)
     unsigned expectTxData = 0;
 
     /* Sample data from device on rising edge */
-    unsigned txdRdyOut = sample_port("stdcore[0]", TX_RDY_OUT_PORT, 0xFF);
-    unsigned txData = sample_port("stdcore[0]", TX_DATA_PORT, 0xFF);
+    unsigned txdRdyOut = sample_port("tile[0]", TX_RDY_OUT_PORT, 0xFF);
+    unsigned txData = sample_port("tile[0]", TX_DATA_PORT, 0xFF);
 
     switch(curState)
     {
@@ -432,10 +433,10 @@ USBState usb_rising(USBState curState, node *head)
                     g_txDataCount = myUsbTxPacket->GetDataLength();
                     g_txTimeout = myUsbTxPacket->GetTimeout();
                     g_txDataIndex = 0;                  
-                    drive_port("stdcore[0]", V_TOK_PORT, 0x1, 0);
-                    drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 0);
-                    drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 0);
-                    drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0);
+                    drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
+                    drive_port("tile[0]", RX_RXA_PORT, 0xFF, 0);
+                    drive_port("tile[0]", RX_RXV_PORT, 0xFF, 0);
+                    drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0);
 
 
                 }
@@ -458,8 +459,8 @@ USBState usb_rising(USBState curState, node *head)
             else
             {
                 fprintf(stdout, "END OF EVENT LIST\n");
-                fprintf(stdout, "PASS PASS PASS PASS PASS PASS PASS PASS PASS PASS PASS\n");
-                while(1);
+                return END_PASS;
+                //while(1);
             }           
 
             break;
@@ -468,10 +469,10 @@ USBState usb_rising(USBState curState, node *head)
 
             //fprintf(stdout, "TB: IN_DELAY (%d)\n", g_delayCount);
 
-            drive_port("stdcore[0]", RX_RXA_PORT, 0x1, 0);
-            drive_port("stdcore[0]", RX_RXV_PORT, 0x1, 0);
-            //drive_port("stdcore[0]", V_TOK_PORT, 0x1, 0);
-            drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0x0);
+            drive_port("tile[0]", RX_RXA_PORT, 0x1, 0);
+            drive_port("tile[0]", RX_RXV_PORT, 0x1, 0);
+            //drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
+            drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0x0);
 
             /* Reduce delay once per period (so every other usb_tick)*/
             if(g_usbClock == 1)
@@ -496,10 +497,11 @@ USBState usb_rising(USBState curState, node *head)
 
         case RX_DATA:
 
-            fprintf(stdout, "TB: RX_DATA %d : %d\n", g_rxDataIndex, myUsbRxPacket->GetData(g_rxDataIndex));
+            fprintf(stdout, "TB: RX_DATA[%d] : 0x%x (%d)\n", g_rxDataIndex, myUsbRxPacket->GetData(g_rxDataIndex),
+                    myUsbRxPacket->GetData(g_rxDataIndex));
             nextState = RX_DATA;
 
-            //drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, myUsbRxPacket->GetData(g_rxDataIndex));
+            //drive_port("tile[0]", RX_DATA_PORT, 0xFF, myUsbRxPacket->GetData(g_rxDataIndex));
 
             // Change data on falling edge
             if(g_usbClock)
@@ -533,12 +535,12 @@ USBState usb_rising(USBState curState, node *head)
 
             expectTxData = 1;
 
-            unsigned txVld = sample_port("stdcore[0]", TX_RDY_OUT_PORT, 0xFF);
+            unsigned txVld = sample_port("tile[0]", TX_RDY_OUT_PORT, 0xFF);
 
             if(txVld)
             {
 
-                unsigned char sample = sample_port("stdcore[0]", TX_DATA_PORT, 0xFF);
+                unsigned char sample = sample_port("tile[0]", TX_DATA_PORT, 0xFF);
                 fprintf(stdout, "TB: RECEIVED BYTE: %x : ", sample);
 
                 if(sample == (unsigned)myUsbTxPacket->GetData(g_txDataIndex))
@@ -578,13 +580,13 @@ USBState usb_rising(USBState curState, node *head)
             /* TODO CHECK FOR PACKET ENDING EARLY */
             fprintf(stdout, "TB: TX_DATA\n");
            
-            unsigned txVld = sample_port("stdcore[0]", TX_RDY_OUT_PORT, 0xFF);
+            unsigned txVld = sample_port("tile[0]", TX_RDY_OUT_PORT, 0xFF);
 
             expectTxData = 1;
 
             if(txVld)
             {
-                unsigned char sample = sample_port("stdcore[0]", TX_DATA_PORT, 0xFF);
+                unsigned char sample = sample_port("tile[0]", TX_DATA_PORT, 0xFF);
                 fprintf(stdout, "TB: RECEIVED BYTE: %x : ", sample);
 
                 if(sample == (unsigned)myUsbTxPacket->GetData(g_txDataIndex))
@@ -614,6 +616,12 @@ USBState usb_rising(USBState curState, node *head)
             
             break; 
         }
+        case RX_DATA_END:
+        
+            // Do nothing on rising edge
+
+            break;
+
         default:
             
             fprintf(stdout, "TB: UNKNOWN STATE: %d\n", g_currentState);
@@ -650,10 +658,10 @@ USBState usb_falling(USBState curState)
         case RX_TOKEN_DELAY1:
 
             /* Drive out start of token (PID) */
-            drive_port("stdcore[0]", V_TOK_PORT, 0x1, 0);
-            drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 1);
-            drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 1);
-            drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, myUsbRxToken->GetPid());
+            drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
+            drive_port("tile[0]", RX_RXA_PORT, 0xFF, 1);
+            drive_port("tile[0]", RX_RXV_PORT, 0xFF, 1);
+            drive_port("tile[0]", RX_DATA_PORT, 0xFF, myUsbRxToken->GetPid());
 
             fprintf(stdout, "TB: RX_TOKEN_DELAY1\n");
             nextState = RX_TOKEN_DELAY2;
@@ -662,8 +670,8 @@ USBState usb_falling(USBState curState)
         case RX_TOKEN_DELAY2:
 
             /* End of PID cycle */
-            drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 0);
-            drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0);
+            drive_port("tile[0]", RX_RXV_PORT, 0xFF, 0);
+            drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0);
 
             fprintf(stdout, "TB: RX_TOKEN_DELAY2\n");
             nextState = RX_TOKEN_DELAY3;
@@ -681,15 +689,15 @@ USBState usb_falling(USBState curState)
 
             /* Drive out EP number */
             /* Valid token high also */
-            drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, myUsbRxToken->GetEp());
-            drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 1);
+            drive_port("tile[0]", RX_DATA_PORT, 0xFF, myUsbRxToken->GetEp());
+            drive_port("tile[0]", RX_RXV_PORT, 0xFF, 1);
             if(myUsbRxToken->GetValid()==true)
             {
-                drive_port("stdcore[0]", V_TOK_PORT, 0xFF, 1);
+                drive_port("tile[0]", V_TOK_PORT, 0xFF, 1);
             }
             else
             {
-                drive_port("stdcore[0]", V_TOK_PORT, 0xFF, 0);
+                drive_port("tile[0]", V_TOK_PORT, 0xFF, 0);
             }
             nextState = RX_TOKEN_EP2;
             break;
@@ -697,9 +705,9 @@ USBState usb_falling(USBState curState)
          case RX_TOKEN_EP2:
             
             /* End of EP */
-            drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 0);
-            drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 0);
-            drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0);
+            drive_port("tile[0]", RX_RXV_PORT, 0xFF, 0);
+            drive_port("tile[0]", RX_RXA_PORT, 0xFF, 0);
+            drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0);
             nextState = START;
 
             break;
@@ -707,25 +715,25 @@ USBState usb_falling(USBState curState)
         case RX_DATA:
 
             /* Drive out RX DATA on falling edge */
-            drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, myUsbRxPacket->GetData(g_rxDataIndex));
+            drive_port("tile[0]", RX_DATA_PORT, 0xFF, myUsbRxPacket->GetData(g_rxDataIndex));
 
-            drive_port("stdcore[0]", V_TOK_PORT, 0x1, 0);
-            drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 1);
-            drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 1);
-            drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, myUsbRxPacket->GetData(g_rxDataIndex));
+            drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
+            drive_port("tile[0]", RX_RXA_PORT, 0xFF, 1);
+            drive_port("tile[0]", RX_RXV_PORT, 0xFF, 1);
+            drive_port("tile[0]", RX_DATA_PORT, 0xFF, myUsbRxPacket->GetData(g_rxDataIndex));
 
 
             /* End of RX data */
             if(g_rxDataIndex == g_rxDataCount)
             {
                     /* Return to start state */
-                    //drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 0);
-                    drive_port("stdcore[0]", RX_RXV_PORT, 0xFF, 0);
-                    drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0);
+                    //drive_port("tile[0]", RX_RXA_PORT, 0xFF, 0);
+                    drive_port("tile[0]", RX_RXV_PORT, 0xFF, 0);
+                    drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0);
                     nextState = RX_DATA_END;
                     g_rxEndDelay = RX_END_DELAY;
 
-                    fprintf(stdout, "TB: EN OF RX DATA\n");
+                    fprintf(stdout, "TB: END OF RX DATA\n");
             }
             break;
 
@@ -735,7 +743,7 @@ USBState usb_falling(USBState curState)
 
             if(g_rxEndDelay < 0)
             {
-                drive_port("stdcore[0]", RX_RXA_PORT, 0xFF, 0);
+                drive_port("tile[0]", RX_RXA_PORT, 0xFF, 0);
                 nextState = START;
             }
                 
@@ -758,7 +766,7 @@ USBState usb_falling(USBState curState)
 
   
 
-void usb_tick(node *head)
+USBState usb_tick(node *head)
 {
 
     node *temp1 = head; 
@@ -768,7 +776,7 @@ void usb_tick(node *head)
     /* Toggle USB clock port */
     g_usbClock = !g_usbClock;
 
-    drive_port("stdcore[0]", CLK_PORT, 0x1, g_usbClock);
+    drive_port("tile[0]", CLK_PORT, 0x1, g_usbClock);
 
     if(g_usbClock)
     {
@@ -779,7 +787,13 @@ void usb_tick(node *head)
         nextState = usb_falling(g_currentState);
     }
 
+    if(nextState == END_PASS)
+    {
+        return nextState;
+    }
     g_currentState = nextState;
+
+    return (USBState)0; // FIXME
 
 }
 
@@ -1096,6 +1110,63 @@ int AddOutTransaction(USBEvent **UsbEventList, int eventIndex, int epNum, unsign
 
     return eventIndex;
 }
+
+void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo)
+{
+    node *head;
+
+    for(int i = eventIndex-1; i >= 0; i--)
+    {
+        AddUSBEventToList(&head, UsbEventList[i]);
+    } 
+
+    fprintf(stdout, "******* TEST %d ******\n", testNo);
+
+    PrintUSBEventList(head);
+
+    printf("\nRunning Sim...\n");
+
+    int time = 0;
+
+    int done = 0;
+    while (!done) 
+    {
+        XsiStatus status = sim_clock();
+        if (status == XSI_STATUS_DONE)
+        {
+            done = END_PASS;
+        }
+    
+        time++;
+
+        // USB tick every 8 sim ticks
+        if(time == 8)
+        {
+            time = 0;
+            done = usb_tick(head);
+        }
+    }
+
+    if(done == END_PASS)
+    {
+        fprintf(stdout, "TEST PASS PASS PASS PASS PASS PASS PASS PASS PASS PASS PASS\n");
+
+    }  
+    else
+    {
+        fprintf(stdout, "TEST FAIL");
+    }
+
+    XsiStatus status = xsi_terminate(g_device);
+    if (status != XSI_STATUS_OK) 
+    {
+        fprintf(stderr, "ERROR: failed to terminate device\n");
+        exit(1);
+    }
+}
+
+
+
 int main(int argc, char **argv)
 {
     parse_args(argc, argv);
@@ -1106,11 +1177,11 @@ int main(int argc, char **argv)
     
     
     /* Init port state */
-    drive_port("stdcore[0]", RX_RXA_PORT, 0x1, 0);
-    drive_port("stdcore[0]", RX_RXV_PORT, 0x1, 0);
-    drive_port("stdcore[0]", V_TOK_PORT, 0x1, 0);
-    drive_port("stdcore[0]", RX_DATA_PORT, 0xFF, 0x0);
-    drive_port("stdcore[0]", TX_RDY_IN_PORT, 0xFF, 0x1);
+    drive_port("tile[0]", RX_RXA_PORT, 0x1, 0);
+    drive_port("tile[0]", RX_RXV_PORT, 0x1, 0);
+    drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
+    drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0x0);
+    drive_port("tile[0]", TX_RDY_IN_PORT, 0xFF, 0x1);
 
     /* Create test datapacket */
     unsigned char *data;
@@ -1164,8 +1235,9 @@ int main(int argc, char **argv)
     /* Create test packet list */
     UsbEventList[eventIndex++] = new USBDelay(1500);
 
-#if 0
-    /**** Simple control transfer test 
+#if 1
+    /**** TEST 1
+     * Simple control transfer test 
      * Note Payload should *always* be 8 bytes
      * Note Device should *never* NAK a SETUP 
      * Data PID *always* DATA0
@@ -1200,7 +1272,7 @@ int main(int argc, char **argv)
 
     eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, 0, badcrc,  PID_ACK); /* EP, Length, handshake */
 
-#if 1
+#if 0
     /* Simulate a GET request */
      /* SETUP Stage */
     dataPid = PID_DATA0;
@@ -1226,7 +1298,7 @@ int main(int argc, char **argv)
     /****/
 #endif
 
-#if 1
+#if 0
 /**** Test bad CRC in OUT data */
     badcrc = 1;
     dataPid = 0;
@@ -1245,7 +1317,7 @@ int main(int argc, char **argv)
 #endif
 
 
-#if 1
+#if 0
 #if 1
     /***** Test out of sequence OUT data PIDS - i.e. situation where XCore ack didn't make it to host 
      * i.e. PID sequence DATA0 DATA1 DATA1 DATA0
@@ -1357,7 +1429,7 @@ int main(int argc, char **argv)
 
 #endif
 #endif
-#if 1
+#if 0
 #if 1 
     /**** Basic bulk IN test */
     dataPid = 0;
@@ -1388,7 +1460,7 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-#if 1
+#if 0
     /* IN ISO */
     ep = 2;
     handshake = 0;
@@ -1457,7 +1529,7 @@ int main(int argc, char **argv)
     /*****/
 #endif
 
-
+#if 0
     /*** Test the shared thread EP model (EP's 3+4) */
     UsbEventList[eventIndex++] = new USBDelay(700);
     eventIndex = AddOutTransaction(UsbEventList, eventIndex, 3, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
@@ -1476,6 +1548,8 @@ int main(int argc, char **argv)
 
     UsbEventList[eventIndex++] = new USBDelay(50);
     eventIndex = AddInTransaction(UsbEventList, eventIndex, 3, RX_DATALENGTH, badcrc, PID_ACK); 
+#endif
+
 #if 0
     /***** Test some invalid IN tokens */
     UsbEventList[eventIndex++] = new USBDelay(50);
@@ -1504,43 +1578,8 @@ int main(int argc, char **argv)
     /* Must give enough delay for exit() on xcore to run .. this is a TODO item */
     UsbEventList[eventIndex++] = new USBDelay(500);
 
-    for(int i = eventIndex-1; i >= 0; i--)
-    {
-        AddUSBEventToList(&head, UsbEventList[i]);
-    }    
+    /* Test 1 */
+    RunTest(UsbEventList, eventIndex, 0);
 
-    PrintUSBEventList(head);
-
-    printf("\nRunning Sim...\n");
-        
-
-    int time = 0;
-
-    bool done = false;
-    while (!done) 
-    {
-        XsiStatus status = sim_clock();
-        if (status == XSI_STATUS_DONE)
-        {
-            done = true;
-        }
-    
-        time++;
-
-        // USB tick every 8 sim ticks
-        if(time == 8)
-        {
-            time = 0;
-            usb_tick(head);
-        }
-
-   
-    }
-
-  XsiStatus status = xsi_terminate(g_device);
-  if (status != XSI_STATUS_OK) {
-    fprintf(stderr, "ERROR: failed to terminate device\n");
-    exit(1);
-  }
-  return 0;
+    return 0;
 }

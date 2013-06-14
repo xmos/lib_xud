@@ -56,7 +56,7 @@ run:
 	UsbTestbench   '--vcd-tracing "-o trace.vcd -ports -pads"  ./bin/app_test.xe '
 	
 runtrace:
-	UsbTestbench   '-t --vcd-tracing "-o trace.vcd -ports -pads"  ./bin/app_test.xe '
+	UsbTestbench   '-t --vcd-tracing "-o trace.vcd -ports -pads -cycles -instructions"  ./bin/app_test.xe '
 	#--vcd-tracing "-o trace.vcd -pads" app_test.xe
 
 #

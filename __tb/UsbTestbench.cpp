@@ -21,6 +21,7 @@ using namespace std;
  * - Ideally RXA done properly - requires two more states using RxAStartDelay and RxAEndDelay
  * - RxV bubbles in packets
  * - USB clock not right - currently /17
+ * - Min inter-packet gaps - ep should just buffer 5 or so packets before checking
  */
 
 #define PID_OUT   1
@@ -163,22 +164,28 @@ void print_usage()
 #define FAIL_TX_TIMEOUT 0
 #define FAIL_TX_TOOSHORT 1
 #define FAIL_TX_MISMATCH 2
+#define FAIL_TX_NAK 3
 
 void fail(int failReason)
 {
     switch (failReason)
     {
         case FAIL_TX_TIMEOUT:
-            fprintf(stderr, "ERROR: Tx Timeout (Expected packet from XCore but did not receive within timeout\n");
+            fprintf(stderr, "FAIL: Tx Timeout (Expected packet from XCore but did not receive within timeout\n");
             break;
         
         case FAIL_TX_TOOSHORT:
-            fprintf(stderr, "ERROR: Tx Packed ended before expected\n");
+            fprintf(stderr, "FAIL: Tx Packed ended before expected\n");
             break;
         
         case FAIL_TX_MISMATCH:
-            fprintf(stderr, "ERROR: Tx data mismatch\n");
+            fprintf(stderr, "FAIL: Tx data mismatch\n");
             break;
+        
+        case FAIL_TX_NAK:
+            fprintf(stderr, "FAIL: Device Naked when TX data was expected\n");
+            break;
+
 
     }
     fprintf(stderr, "Terminating due to Error\n");
@@ -431,7 +438,7 @@ USBState usb_rising(USBState curState, node *head)
                     g_txDataCount = myUsbTxPacket->GetDataLength();
                     g_txTimeout = myUsbTxPacket->GetTimeout();
                     g_txDataIndex = 0;                  
-                    drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
+                    //drive_port("tile[0]", V_TOK_PORT, 0x1, 0);
                     drive_port("tile[0]", RX_RXA_PORT, 0xFF, 0);
                     drive_port("tile[0]", RX_RXV_PORT, 0xFF, 0);
                     drive_port("tile[0]", RX_DATA_PORT, 0xFF, 0);
@@ -539,17 +546,19 @@ USBState usb_rising(USBState curState, node *head)
             {
 
                 unsigned char sample = sample_port("tile[0]", TX_DATA_PORT, 0xFF);
-                fprintf(stdout, "TB: RECEIVED BYTE: %x : ", sample);
 
                 if(sample == (unsigned)myUsbTxPacket->GetData(g_txDataIndex))
                 {
+                    fprintf(stdout, "TB: RECEIVED BYTE: %x : ", sample);
                     fprintf(stdout, "MATCH\n");
                 }
                 else
                 {
-                    //fprintf(stdout, "ERROR!!\n");
-                    //while(1);
-                    fail(FAIL_TX_MISMATCH);
+                   // fprintf(stdout, "TB: RECEIVED BYTE: %x : ", sample);
+                    if(sample == 0x5a)
+                        fail(FAIL_TX_NAK);
+                    else
+                        fail(FAIL_TX_MISMATCH);
                 }
                 g_txDataIndex++;
 
@@ -1140,6 +1149,7 @@ void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo, string args)
 
     int time = 0;
 
+    stop = 0;
     int done = 0;
     while (!done) 
     {
@@ -1152,7 +1162,7 @@ void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo, string args)
         time++;
 
         // USB tick every 8 sim ticks
-        if(time == 8)
+        if(time == 4)
         {
             time = 0;
             done = usb_tick(head);
@@ -1162,7 +1172,6 @@ void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo, string args)
     if(done == END_PASS)
     {
         fprintf(stdout, "TEST %d PASS!\n\n", testNo);
-
     }  
     else
     {
@@ -1177,7 +1186,191 @@ void RunTest(USBEvent *UsbEventList[], int eventIndex, int testNo, string args)
     }
 }
 
+#define NUM_EVENTS 100
+#define BOOT_DELAY_CLKS 4000
 
+void Test1(string args)
+{
+    /**** TEST 1
+     * Simple control transfer test 
+     * Note Payload should *always* be 8 bytes
+     * Note Device should *never* NAK a SETUP 
+     * Data PID *always* DATA0
+     */
+    bool valid = true;
+    int ep = 0;
+    int badcrc = 0;
+    int  handshake = 1;
+    unsigned char dataPid = PID_DATA0;
+    USBEvent *UsbEventList[NUM_EVENTS];
+    int eventIndex = 0;
+
+    /* Create test packet list */
+    UsbEventList[eventIndex++] = new USBDelay(BOOT_DELAY_CLKS);
+
+    /* Simulate a SET request */
+    /* SETUP Stage */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddSetupTransaction(UsbEventList, eventIndex, 0, dataPid, 8, badcrc, handshake, valid);
+
+    /* Data Stage*/
+    dataPid = 0;
+    badcrc = 0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH, badcrc, 1, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
+    
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH+2, badcrc, 1, true); /* EP, Length */
+
+    /* Status stage - zero length IN */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    g_pidTableIn[0] = PIDn_DATA1;
+
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, 0, badcrc,  PID_ACK); /* EP, Length, handshake */
+
+    RunTest(UsbEventList, eventIndex, 1, args);
+}
+
+void Test2(string args)
+{
+    /* Simulate a GET request */
+   
+    unsigned char dataPid = PID_DATA0;
+    int eventIndex = 0; 
+    int badcrc = 0;
+    USBEvent *UsbEventList[NUM_EVENTS];
+    bool valid = true;
+    int  handshake = 1;
+    
+    /* Boot time delay */
+    UsbEventList[eventIndex++] = new USBDelay(BOOT_DELAY_CLKS);
+
+    /* Simulate a SET request - the XCORE test app expects SET then GET */
+    /* SETUP Stage */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddSetupTransaction(UsbEventList, eventIndex, 0, dataPid, 8, badcrc, handshake, valid);
+
+    /* Data Stage*/
+    dataPid = 0;
+    badcrc = 0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH, badcrc, 1, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
+    
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH+2, badcrc, 1, true); /* EP, Length */
+
+    /* Status stage - zero length IN */
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    g_pidTableIn[0] = PIDn_DATA1;
+
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, 0, badcrc,  PID_ACK); /* EP, Length, handshake */
+     /* SETUP Stage */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddSetupTransaction(UsbEventList, eventIndex, 0, dataPid, 8, badcrc, handshake, valid);
+
+    /* Data stage IN */
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    /* Need to reset PID toggling on a setup */
+    g_pidTableIn[0] = PIDn_DATA1;
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
+
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
+
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
+
+    /* Status stage - zero length OUT (DATA1 PID) */
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, PID_DATA1, 0, 0, 1, true); /* EP, Length */
+    
+    RunTest(UsbEventList, eventIndex, 2, args);
+}
+
+
+void Test3(string args)
+{
+    /**** Test bad CRC in OUT data - to EP 1 */
+    int badcrc = 1;
+    int dataPid = 0;
+    int eventIndex = 0;   
+    USBEvent *UsbEventList[NUM_EVENTS];
+    
+    /* Boot time delay */
+    UsbEventList[eventIndex++] = new USBDelay(BOOT_DELAY_CLKS);
+    
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
+ 
+    /* We should not receive ACK from XCore (due to bad CRC) - re-send same packet */
+    /* If we get an ACK back - FAIL! */
+    badcrc = 0;
+    UsbEventList[eventIndex++] = new USBDelay(100);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
+
+    /* Send another to check things are okay.. */
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, badcrc, 1, true); /* EP, Length */
+
+    RunTest(UsbEventList, eventIndex, 3, args);
+
+}
+
+void Test4(string args)
+{
+    /***** Test out of sequence OUT data PIDS - i.e. situation where XCore ack didn't make it to host 
+     * i.e. PID sequence DATA0 DATA1 DATA1 DATA0
+     * Expected behaviour is that the second DATA1 packet is ACKed but the data is junked.
+     * USB Spec page 159
+     */
+    bool valid = true;
+    int badcrc = 0;
+    int handshake = 1;
+    unsigned dataPid = PID_DATA1;
+    int eventIndex = 0;   
+    USBEvent *UsbEventList[NUM_EVENTS];
+
+    /* Boot time delay */
+    UsbEventList[eventIndex++] = new USBDelay(BOOT_DELAY_CLKS);
+
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
+     
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    g_rxDataVal[1] -= RX_DATALENGTH; /* Manual reset of length counter */
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(500);
+   
+    /***** Basic OUT Testing with different tail lengths */
+    dataPid = 0;
+    badcrc = 0;
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
+    
+
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, 0, 1, true); /* EP, Length */
+    
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+2, 0, 1, true); /* EP, Length */
+
+    UsbEventList[eventIndex++] = new USBDelay(200);
+    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+3, 0, 1, true); /* EP, Length */
+   
+    UsbEventList[eventIndex++] = new USBDelay(1000);
+    RunTest(UsbEventList, eventIndex, 4, args);
+}
 
 int main(int argc, char **argv)
 {
@@ -1230,139 +1423,22 @@ int main(int argc, char **argv)
     dataPacket[RX_PKTLENGTH-2] = crc & 0xff;
     dataPacket[RX_PKTLENGTH-1] = (crc>>8);
 #endif
-
-#define NUM_EVENTS 100
     USBEvent *UsbEventList[NUM_EVENTS];
 
     /* Create test packet list */
-    UsbEventList[eventIndex++] = new USBDelay(1500);
+    //UsbEventList[eventIndex++] = new USBDelay(1500);
 
-#if 1
-    /**** TEST 1
-     * Simple control transfer test 
-     * Note Payload should *always* be 8 bytes
-     * Note Device should *never* NAK a SETUP 
-     * Data PID *always* DATA0
-     */
-     
-    valid = true;
-    ep = 0;
-    badcrc = 0;
-    handshake = 1;
-    dataPid = PID_DATA0;
 
-    /* Simulate a SET request */
-    /* SETUP Stage */
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddSetupTransaction(UsbEventList, eventIndex, 0, dataPid, 8, badcrc, handshake, valid);
 
-    /* Data Stage*/
-    dataPid = 0;
-    badcrc = 0;
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH, badcrc, 1, true); /* EP, Length */
-
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
-    
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, dataPid, RX_DATALENGTH+2, badcrc, 1, true); /* EP, Length */
-
-    /* Status stage - zero length IN */
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    g_pidTableIn[0] = PIDn_DATA1;
-
-    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, 0, badcrc,  PID_ACK); /* EP, Length, handshake */
-
-#if 0
-    /* Simulate a GET request */
-     /* SETUP Stage */
-    dataPid = PID_DATA0;
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddSetupTransaction(UsbEventList, eventIndex, 0, dataPid, 8, badcrc, handshake, valid);
-
-    /* Data stage IN */
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    /* Need to reset PID toggling on a setup */
-    g_pidTableIn[0] = PIDn_DATA1;
-    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
-
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
-
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddInTransaction(UsbEventList, eventIndex, 0, RX_DATALENGTH+2, badcrc,  PID_ACK); /* EP, Length, handshake */
-
-    /* Status stage - zero length OUT (DATA1 PID) */
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 0, PID_DATA1, 0, 0, 1, true); /* EP, Length */
-    
-    /****/
-#endif
-
-#if 0
-/**** Test bad CRC in OUT data */
-    badcrc = 1;
-    dataPid = 0;
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
-    
-    /* We should not receive ACK from XCore (due to bad CRC) - re-send same packet */
-    badcrc = 0;
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, badcrc, 1, true); /* EP, Length */
-
-    /* Send another to check things are okay.. */
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, badcrc, 1, true); /* EP, Length */
-    /* End test */
-#endif
 
 
 #if 0
 #if 1
-    /***** Test out of sequence OUT data PIDS - i.e. situation where XCore ack didn't make it to host 
-     * i.e. PID sequence DATA0 DATA1 DATA1 DATA0
-     * Expected behaviour is that the second DATA1 packet is ACKed but the data is junked.
-     * USB Spec page 159
-     */
-    valid = true;
-    badcrc = 0;
-    handshake = 1;
-    dataPid = PID_DATA1;
 
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
-
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
-     
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    g_rxDataVal[1] -= RX_DATALENGTH; /* Manual reset of length counter */
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
-
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, 0, RX_DATALENGTH, badcrc, handshake, valid); /* EP, Length */
-
-    UsbEventList[eventIndex++] = new USBDelay(500);
-    /*****/
 #endif
 
 #if 1
-    /***** Basic OUT Testing with different tail lengths */
-    dataPid = 0;
-    badcrc = 0;
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH, 0, 1, true); /* EP, Length */
-    
-
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+1, 0, 1, true); /* EP, Length */
-    
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+2, 0, 1, true); /* EP, Length */
-
-    UsbEventList[eventIndex++] = new USBDelay(100);
-    eventIndex = AddOutTransaction(UsbEventList, eventIndex, 1, dataPid, RX_DATALENGTH+3, 0, 1, true); /* EP, Length */
+   
     /*End test */
 #endif
 
@@ -1487,7 +1563,6 @@ int main(int argc, char **argv)
     }
 
 #endif
-#endif
 
 #if 0
     /**** Test emulation of BAD crc for IN - no ACK from host. We expect a resend of same data */
@@ -1578,18 +1653,17 @@ int main(int argc, char **argv)
 #endif
 
     /* Must give enough delay for exit() on xcore to run .. this is a TODO item */
-    UsbEventList[eventIndex++] = new USBDelay(500);
+    //UsbEventList[eventIndex++] = new USBDelay(500);
 
-    /* Test 1 */
-    /**** TEST 1
+    /* Test 1 
      * Simple control transfer test 
      * Note Payload should *always* be 8 bytes
      * Note Device should *never* NAK a SETUP 
      * Data PID *always* DATA0
      */
-
-    RunTest(UsbEventList, eventIndex, 0, args);
-    RunTest(UsbEventList, eventIndex, 1, args);
-
+    //Test1(args);
+    //Test2(args);
+    Test3(args);
+    //Test4(args);
     return 0;
 }

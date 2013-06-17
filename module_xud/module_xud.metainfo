@@ -194,4 +194,4 @@ api = {
     "XUD_SetStall"
 }
 
-files = {["module_xud/xud_config_example.h"] = "src/xud_config.h"}
+files = {["module_xud/xud_conf_example.h"] = "src/xud_conf.h"}

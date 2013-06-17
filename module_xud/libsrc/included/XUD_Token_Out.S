@@ -20,7 +20,7 @@ Pid_Out:
 #endif
         
     ldw        r3, r5[r10]                      // Load relevant EP pointer
-    bf         r3, PrimaryBufferFull
+    bf         r3, XUD_TokenOut_BufferFull
     ldw        r1, r3[3]                        // Load buffer from EP structure
 
 CheckEpTypeOut:    
@@ -107,10 +107,11 @@ Err_EndpointProblem:
 Err_BadPidSeq:                            // Bad pid sequencing (already ACKed good data).  Ignore data
   bu        NextToken
 
-PrimaryBufferFull:                        // Wait for end of data then send NAK
+XUD_TokenOut_BufferFull:
   ldw       r9, dp[flag1_port]
   setc      res[r9], XS1_SETC_RUN_CLRBUF  
   setc      res[r9], XS1_SETC_COND_NEQ 
+XUD_TokenOut_WaitForPacketEnd:                        // Wait for end of data then send NAK
   in        r11, res[r9]
   setc      res[r9], XS1_SETC_COND_EQ 
   in        r11, res[r9]

@@ -47,7 +47,7 @@ void hid(chanend chan_ep1)
     int counter = 0;
     int state = 0;
     
-    XUD_ep c_ep1 = XUD_Init_Ep(chan_ep1);
+    XUD_ep c_ep1 = XUD_InitEp(chan_ep1);
    
     counter = 0;
     while(1) 
@@ -177,7 +177,7 @@ void TestEp_out(chanend chan_ep, chanend c_sync, int epNum)
 
 	char x;
 
-    XUD_ep ep = XUD_Init_Ep(chan_ep);
+    XUD_ep ep = XUD_InitEp(chan_ep);
     
     int one = 1;
 
@@ -235,7 +235,7 @@ void TestEp_in(chanend chan_ep, chanend c_sync, int epNum)
     int y;
     unsigned length;
 
-    XUD_ep ep = XUD_Init_Ep(chan_ep);
+    XUD_ep ep = XUD_InitEp(chan_ep);
 
     c_sync :> y;
     //asm("ldw   %0, %1[%2]" : "=r" (length) :"r"(g_txLength), "r" (epNum));
@@ -267,8 +267,8 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
     int slength;
     int length;
 
-    XUD_ep c_ep0_out = XUD_Init_Ep(c_out);
-    XUD_ep c_ep0_in  = XUD_Init_Ep(c_in);
+    XUD_ep c_ep0_out = XUD_InitEp(c_out);
+    XUD_ep c_ep0_in  = XUD_InitEp(c_in);
 
     /* Buffer for Setup data */
     unsigned char buffer[120]; 
@@ -344,24 +344,18 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
     }
 }
 
-#pragma select handler
-void XUD_GetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
-#pragma select handler
-void XUD_SetData_Select(chanend c, XUD_ep ep, unsigned &tmp);
-
-
 void TestEp_select(chanend c_out1, chanend c_out2, chanend c_in1, chanend c_in2)
 {
-    XUD_ep ep_out1 = XUD_Init_Ep(c_out1);
-    XUD_ep ep_out2  = XUD_Init_Ep(c_out2);
-    XUD_ep ep_in1  = XUD_Init_Ep(c_in1);
-    XUD_ep ep_in2  = XUD_Init_Ep(c_in2);
+    XUD_ep ep_out1 = XUD_InitEp(c_out1);
+    XUD_ep ep_out2  = XUD_InitEp(c_out2);
+    XUD_ep ep_in1  = XUD_InitEp(c_in1);
+    XUD_ep ep_in2  = XUD_InitEp(c_in2);
 
     unsigned char buffer1[1024];
     unsigned char buffer1_in[1024];
     unsigned char buffer2[1024];
     unsigned char buffer2_in[1024];
-    unsigned tmp;
+    int tmp;
 
 #pragma unsafe arrays
     for(int i = 0; i < 10; i++)

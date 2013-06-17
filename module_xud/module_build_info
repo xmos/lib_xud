@@ -3,7 +3,7 @@
 # The LIBRARY variable needs to be set to the name of the library to
 # be built
 
-LIBRARIES = xud_u xud_l
+LIBRARIES = xud_u xud_l xud_u_sim
 #xud_s_sim xud_g
 
 # You can set flags specifically for your module by using the MODULE_XCC_FLAGS
@@ -25,7 +25,7 @@ LIB_XCC_FLAGS_xud_l =  -Wall -O3 -D UIFM_MODE=2 -DXCORE_FREQ_MHz=400 -DREF_CLK_D
 
 LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DXCORE_FREQ_MHz=400 -DREF_CLK_DIVIDER=3 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN
 
-#LIB_XCC_FLAGS_xud_s_sim =  -Wall -O3 -D UIFM_MODE=3 -DXCORE_FREQ_MHz=400 -DREF_CLK_DIVIDER=3 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -D SIMULATION
+LIB_XCC_FLAGS_xud_u_sim =  -Wall -O3 -D UIFM_MODE=3 -DXCORE_FREQ_MHz=400 -DREF_CLK_DIVIDER=3 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -DSIMULATION
 
 DEPENDENT_MODULES = module_usb_shared
 

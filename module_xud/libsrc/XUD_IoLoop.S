@@ -451,18 +451,17 @@ Pid_MData:
 Pid_Datam:
 Pid_Data0:
 Pid_Data1:
-Pid_Bad:                                           // Bad PID received, ignore
-    
-InvalidToken:  
-    ldw        r10, sp[10]           		        // Load RxA Port ID (r1) 
-waitforRXALow:  
+Pid_Bad:                                        // Bad PID received, ignore
 
+InvalidToken:    
+XUD_InvalidToken:  
+    ldw        r10, sp[10]           		    // Load RxA Port ID (r1) 
+waitforRXALow:
+XUD_InvalidTok_waitforRXALow:  
     in         r11, res[r10]
     bt         r11, waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF   
-
-   
-    bu         Loop_BadPid                                 // Invalid token received Ignore unknown toks
+    bu         Loop_BadPid                      // Invalid token received Ignore unknown toks
 
 
 .align 4

@@ -1,3 +1,5 @@
+sc_xud Change Log
+=================
 XMOS Low-Level USB Driver Library
 =================================
 

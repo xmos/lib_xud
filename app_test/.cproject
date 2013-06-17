@@ -156,44 +156,17 @@
 								<option id = "com.xmos.xc.compiler.option.include.paths.55744047" name="com.xmos.xc.compiler.option.include.paths" superClass="com.xmos.xc.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test/bin}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test/.build}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/fake_inc}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.xc.compiler.input.55373955" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
@@ -305,44 +278,17 @@
 								<option id = "com.xmos.c.compiler.option.include.paths.99232640" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test/bin}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test/.build}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/fake_inc}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.c.compiler.input.c.30306416" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
@@ -460,44 +406,17 @@
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1/xcore-xmos-elf&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test/bin}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test/.build}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_g/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc/included}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s/libsrc}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/fake_inc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_u/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_l/fake_inc}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim/libsrc}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/.build_xud_s_sim}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.cxx.compiler.input.cpp.89499761" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>

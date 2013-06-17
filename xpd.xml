@@ -32,6 +32,7 @@
     <maintainer>XMOS</maintainer>
     <partnumber>XM-002825-DH</partnumber>
     <release parenthash = "751855edc8c96eab8d9972412c5d0cde8bc31488" version = "1.0.0alpha0" githash = "e2abc8bf7c81ea02d3741ec8c10a7c7658e13862"></release>
+    <release parenthash = "ee99024896a5b766fa5b762b97b1356303dfdeae" version = "1.0.0alpha1"></release>
     <subpartnumber>XM-002826-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <xcore_repo>sc_xud.git</xcore_repo>

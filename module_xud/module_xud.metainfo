@@ -11,9 +11,9 @@ changing libraries and will hence require the user to make a change to the Makef
 if they change from the default series.
                 ]],
         type = "string",
-        default = "U-Series",
+        default = 1,
         options = { ["U-Series"] = 1, ["L-Series"] = 2},
-        define = "XUD_DEVICE_SERIES"
+        define = "XUD_SERIES_SUPPORT"
     },
     num_ep_in = {
         short = "Number of IN endpoints",
@@ -22,7 +22,7 @@ if they change from the default series.
 The number of IN endpoints.
                 ]],
         type = "int",
-        default = "1",
+        default = 1,
         min = 1,
         max = 1,
         define = "XUD_EP_COUNT_IN"
@@ -34,7 +34,7 @@ The number of IN endpoints.
 The number of OUT endpoints.
                 ]],
         type = "int",
-        default = "1",
+        default = 1,
         min = 1,
         max = 1,
         define = "XUD_EP_COUNT_OUT"
@@ -42,6 +42,8 @@ The number of OUT endpoints.
 }
 
 derivedValues = {}
+
+buildResultsTarget = "XP-SKC-U16"
 
 ports = {
   p_usb_clock = {
@@ -121,15 +123,17 @@ ports = {
 reset_port = ""
 if swblock.params.series == "2" then
   -- L-Series
-  reset_port = reset_port .. "/* USB Port declarations */\n"
   reset_port = reset_port .. "#define USB_RST_PORT    XS1_PORT_32A\n"
   reset_port = reset_port .. "on tile[0]: out port p_usb_rst   = USB_RST_PORT;\n"
   reset_port = reset_port .. "on tile[0]: clock    clk_usb_rst = XS1_CLKBLK_3;\n"
 
+  moduleLibraries = "xud_l"
 else
   -- U-Series
   reset_port = reset_port .. "#define p_usb_rst null\n"
   reset_port = reset_port .. "#define clk_usb_rst null\n"
+
+  moduleLibraries = "xud_u"
 end
 
 channels = {
@@ -152,17 +156,9 @@ function getConfigStatus()
 end
 
 generatedCode = {
-   includes = {"xud.h", "usb.h", "xud_config.h"},
+   includes = {"xud.h", "usb.h", "xud_conf.h"},
    globals  = 
         [[
-#define XUD_DEVICE_SERIES ${swblock.params.series}
-#if XUD_DEVICE_SERIES == 2
-#warning "You need to change the makefile to use the L-Series library"
-#endif
-
-#define XUD_EP_COUNT_OUT ${swblock.params.num_ep_out}
-#define XUD_EP_COUNT_IN  ${swblock.params.num_ep_in}
-
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};

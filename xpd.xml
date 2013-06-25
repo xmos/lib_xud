@@ -38,5 +38,6 @@
     <vendor>XMOS</vendor>
     <xcore_repo>sc_xud.git</xcore_repo>
     <xpd_version>1.0</xpd_version>
-    <xsoftip_exclude></xsoftip_exclude>
+    <xsoftip_exclude>app_test</xsoftip_exclude>
+    <xsoftip_exclude>module_xud</xsoftip_exclude>
 </xpd>

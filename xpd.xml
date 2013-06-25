@@ -1,20 +1,14 @@
 <?xml version="1.0" ?>
 <xpd>
-    <components>
-        <component name = "Low-Level USB Driver Library" type = "component" buildresults_path = "module_xud/.module_xud.buildinfo" scope = "General Use" path = "module_xud" metainfo_path = "module_xud/module_xud.metainfo" local = "false" id = "module_xud" description = "Low-level driver library for USB.">
-            <componentDependency>module_usb_shared</componentDependency>
-            <keyword>usb</keyword>
-            <keyword>xud</keyword>
-        </component>
-    </components>
+    <components></components>
     <dependency repo = "sc_usb">
         <githash>a04385760343826cb48a7e1f653d91f8fb6089de</githash>
         <uri>git://git/apps/sc_usb</uri>
     </dependency>
     <dependency repo = "sc_periph">
-        <githash>7cfd34fdf821b6e810b5ab403cc53586911cd2db</githash>
+        <githash>133fe49deb5ff1d277d8fc5f32ee0eade56cbd12</githash>
         <uri>git@github.com:xcore/sc_periph</uri>
-        <version>1.0.0beta1</version>
+        <version>1.0.0rc0</version>
     </dependency>
     <dependency repo = "sc_util">
         <githash>1ed35a50e2d9cc98fcff4c7cc3fb399385ec5d70</githash>
@@ -33,7 +27,8 @@
     <partnumber>XM-002825-DH</partnumber>
     <release parenthash = "751855edc8c96eab8d9972412c5d0cde8bc31488" version = "1.0.0alpha0" githash = "e2abc8bf7c81ea02d3741ec8c10a7c7658e13862"></release>
     <release parenthash = "ee99024896a5b766fa5b762b97b1356303dfdeae" version = "1.0.0alpha1" githash = "71c6a76b99193984a9a01c3696754c8223a65e77"></release>
-    <release parenthash = "bb37f84f9618ae608a8af3dc7259e9b876a7dae9" version = "1.0.0alpha2"></release>
+    <release parenthash = "bb37f84f9618ae608a8af3dc7259e9b876a7dae9" version = "1.0.0alpha2" githash = "66078939390de340cf795bd6f551456a11a72740"></release>
+    <release parenthash = "a2b94bf1830ade7d28a01134a44051016b022568" version = "1.0.0alpha3"></release>
     <subpartnumber>XM-002826-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <xcore_repo>sc_xud.git</xcore_repo>

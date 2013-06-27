@@ -36,8 +36,8 @@ MODULE_LIBRARIES = xud_u_sim
 
 
 # Use the main Makefile from module_xmos_common
-XMOS_MAKE_DIR ?= ../..
-include $(XMOS_MAKE_DIR)/xcommon/module_xcommon/build/Makefile.common
+XMOS_MAKE_PATH ?= ../..
+include $(XMOS_MAKE_PATH)/xcommon/module_xcommon/build/Makefile.common
 
 
 #all: build

@@ -38,5 +38,5 @@ EXCLUDE_FILES = XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S 
 
 EXPORT_SOURCE_DIRS = src include
 
-
+OPTIONAL_HEADERS += xud_conf.h
 

@@ -1,6 +1,5 @@
 /** @file       XUD_PowerSig.xc
   * @brief      Functions for USB power signaling
-  * @version    0.2
   * @author     Ross Owen, XMOS Limited 
   **/
 

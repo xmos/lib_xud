@@ -44,5 +44,8 @@ be on the same tile as the library itself*.
 .. _figure_xud_overview:
 
 .. figure:: images/xud_overview.*
+   :width: 120mm
+   :align: center
 
-    XUD Overview
+   XUD Overview
+

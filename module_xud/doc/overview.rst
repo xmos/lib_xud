@@ -1,3 +1,5 @@
+.. _xmos_usb_device_library:
+
 Overview
 ========
 

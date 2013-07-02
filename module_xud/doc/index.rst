@@ -1,5 +1,3 @@
-.. _xmos_usb_device_library:
-
 XMOS USB Device (XUD) Library
 =============================
 

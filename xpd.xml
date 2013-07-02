@@ -25,8 +25,9 @@
     <release parenthash = "ee99024896a5b766fa5b762b97b1356303dfdeae" version = "1.0.0alpha1" githash = "71c6a76b99193984a9a01c3696754c8223a65e77"></release>
     <release parenthash = "bb37f84f9618ae608a8af3dc7259e9b876a7dae9" version = "1.0.0alpha2" githash = "66078939390de340cf795bd6f551456a11a72740"></release>
     <release parenthash = "a2b94bf1830ade7d28a01134a44051016b022568" version = "1.0.0alpha3" githash = "7209086b4815f0bf3a05005e4b4f97b746a57bb3"></release>
+    <release parenthash = "fe0731ee6ded43226c05c1028409a2583f1607c4" version = "1.0.0beta0"></release>
     <release parenthash = "e43287a0e38cbd51ea6095a065cfb13d1072478a" version = "1.0.0rc0" githash = "5464ad520df716a1752a0a4e45c94d65a610fd13"></release>
-    <release parenthash = "8c610e3717baf12f75fe6889b6eb5bddb18edd7b" version = "1.0.0rc1"></release>
+    <release parenthash = "8c610e3717baf12f75fe6889b6eb5bddb18edd7b" version = "1.0.0rc1" githash = "bd6e17d01cc7c1726441846c90ba7eeb6b2b979f"></release>
     <subpartnumber>XM-002826-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <xcore_repo>sc_xud.git</xcore_repo>

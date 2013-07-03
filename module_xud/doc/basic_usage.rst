@@ -1,9 +1,8 @@
 Basic Usage
 ===========
 
-This section outlines the basic usage of XUD and finishes with a worked
-example of a USB Human Interface Device (HID) Class compliant mouse.
-Basic use is termed to mean each endpoint runs in its own dedicated core.
+This section outlines the basic usage of XUD. Basic use is termed to
+mean each endpoint runs in its own dedicated core.
 Multiple endpoints in a single core are possible, but currently beyond
 the scope of this document.
 

@@ -19,13 +19,13 @@ LIBRARIES = xud_u xud_l xud_u_sim
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) -g -O3
 
-LIB_XCC_FLAGS_xud_l =  -Wall -O3 -D UIFM_MODE=2 -DXCORE_FREQ_MHz=400 -DREF_CLK_DIVIDER=3 -fasm-linenum -fcomment-asm  -fsubword-select -D ARCH_L -DXUD_FULL_PIDTABLE=1 -fschedule 
+LIB_XCC_FLAGS_xud_l =  -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -D ARCH_L -DXUD_FULL_PIDTABLE=1 -fschedule 
 
 #LIB_XCC_FLAGS_xud_g =  -Wall -O3 -D UIFM_MODE=2 -DXCORE_FREQ_MHz=400 -DREF_CLK_DIVIDER=3 -fasm-linenum -fcomment-asm  -fsubword-select -D ARCH_G -DXUD_FULL_PIDTABLE=1 -fschedule 
 
-LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DXCORE_FREQ_MHz=400 -DREF_CLK_DIVIDER=3 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN
+LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN
 
-LIB_XCC_FLAGS_xud_u_sim =  -Wall -O3 -D UIFM_MODE=3 -DXCORE_FREQ_MHz=400 -DREF_CLK_DIVIDER=3 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -DSIMULATION
+LIB_XCC_FLAGS_xud_u_sim =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -DSIMULATION
 
 DEPENDENT_MODULES = module_usb_shared
 

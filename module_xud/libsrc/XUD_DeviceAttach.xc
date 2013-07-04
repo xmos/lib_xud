@@ -44,7 +44,6 @@ extern out port p_usb_txd;
 #define INVALID_DELAY_us  2500 // 2.5ms
 #define INVALID_DELAY     (INVALID_DELAY_us * (XCORE_FREQ_MHz) / (REF_CLK_DIVIDER+1))
 
-unsigned chirptime = TUCHEND_DELAY;
 extern int resetCount;
 
 /* Assumptions:
@@ -103,7 +102,6 @@ int XUD_DeviceAttachHS()
     for (int i = 0; i < 25000; i++)
         p_usb_txd <: 0x0;
     
-    XUD_Sup_Delay(chirptime);    
 #else
    for (int i = 0; i < 25000; i++)
         p_usb_txd <: 0;

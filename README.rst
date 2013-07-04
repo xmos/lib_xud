@@ -1,7 +1,7 @@
 XMOS Low-Level USB Device Driver
 ................................
 
-:Latest release: 1.0.0alpha2
+:Latest release: 1.0.0rc1
 :Maintainer: XMOS
 :Description: Low-Level USB Driver Library
 
@@ -25,6 +25,5 @@ Required software (dependencies)
 ================================
 
   * sc_usb (git://git/apps/sc_usb)
-  * sc_periph (git@github.com:xcore/sc_periph)
   * sc_util (git@github.com:xcore/sc_util)
 

@@ -5,78 +5,60 @@
 
 // Defines relating to USB/ULPI/UTMI/Phy specs
 
-//---------------------------------------
-// Absolute times are relative to the system clock freq and the reference clock divider
-// Their values must correspond to the values derived from the XN file,
-// and must be the same for all code domains
-
-//#define XCORE_FREQ_MHz        500
-#define XCORE_FREQ_Hz         (XCORE_FREQ_MHz * 1000000)
-
-// The value is that written to the ref clock divider register.  The actual divide ratio is 1 more than this.
-// E.g. for a divide by 4, the value 3 should be used
-//#define REF_CLK_DIVIDER         4    // Ref freq = sys freq / (REF_CLK_DIVIDER +1)
-//---------------------------------------
-
-
 #define RESET_TIME_us                5 // 5us
-#define RESET_TIME                       (RESET_TIME_us           * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define RESET_TIME                   (RESET_TIME_us * REF_CLK_FREQ)
 
 // Device attach timing defines
-#define T_SIGATT_ULPI_us          5000 // 5ms
-#define T_SIGATT_ULPI                    (T_SIGATT_ULPI_us        * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
-#define T_ATTDB_us             1000000 // 1000ms
-#define T_ATTDB                          (T_ATTDB_us              * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
-#define T_UCHEND_T_UCH_us      1000000 // 1000ms
-#define T_UCHEND_T_UCH                   (T_UCHEND_T_UCH_us       * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
-#define T_UCHEND_T_UCH_ULPI_us    2000 //    2ms
-#define T_UCHEND_T_UCH_ULPI              (T_UCHEND_T_UCH_us       * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
-#define T_FILT_us                   40 //   40us
-#define T_FILT                           (T_FILT_us               * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define T_SIGATT_ULPI_us            5000     // 5ms
+#define T_SIGATT_ULPI               (T_SIGATT_ULPI_us * REF_CLK_FREQ)
+#define T_ATTDB_us                  1000000  // 1000ms
+#define T_ATTDB                     (T_ATTDB_us * REF_CLK_FREQ)
+#define T_UCHEND_T_UCH_us           1000000  // 1000ms
+#define T_UCHEND_T_UCH              (T_UCHEND_T_UCH_us * REF_CLK_FREQ)
+#define T_UCHEND_T_UCH_ULPI_us      2000     //    2ms
+#define T_UCHEND_T_UCH_ULPI         (T_UCHEND_T_UCH_us * REF_CLK_FREQ)
+#define T_FILT_us                   40       //   40us
+#define T_FILT                      (T_FILT_us * REF_CLK_FREQ)
 
 
-#define T_SUSPEND_TIMEOUT_us      2000 // 2ms
-#define T_SUSPEND_TIMEOUT                (T_SUSPEND_TIMEOUT_us    * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
-#define SUSPEND_T_WTWRSTHS_us      200 // 200us How long before checking for J after asserting XcvrSelect and Termselect
-#define SUSPEND_T_WTWRSTHS               (SUSPEND_T_WTWRSTHS_us   * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define T_SUSPEND_TIMEOUT_us        2000     // 2ms
+#define T_SUSPEND_TIMEOUT           (T_SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
+#define SUSPEND_T_WTWRSTHS_us       200 // 200us Time beforechecking for J after asserting XcvrSelect and Termselect
+#define SUSPEND_T_WTWRSTHS          (SUSPEND_T_WTWRSTHS_us * REF_CLK_FREQ)
 
-#define OUT_TIMEOUT_us             500 // How long we wait for data after OUT token
-#define OUT_TIMEOUT                      (OUT_TIMEOUT_us          * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define OUT_TIMEOUT_us              500 // How long we wait for data after OUT token
+#define OUT_TIMEOUT                 (OUT_TIMEOUT_us * REF_CLK_FREQ)
 #define TX_HANDSHAKE_TIMEOUT_us      5 // How long we wait for handshake after sending tx data
-#define TX_HANDSHAKE_TIMEOUT             (TX_HANDSHAKE_TIMEOUT_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define TX_HANDSHAKE_TIMEOUT        (TX_HANDSHAKE_TIMEOUT_us * REF_CLK_FREQ)
 
 
 //////////////////////////////////////////////////////////////////////////////////
 // String descriptor defines:
-#define XUD_DESC_STR_USENG     0x0409 // US English
+#define XUD_DESC_STR_USENG             0x0409 // US English
 
 ////////////////////////////////////////////////////////////////////////////////
 // Interface descriptor defines:
 //
 // Classes:
-#define XUD_DESC_INT_B_CLASS_HID  0x3
-#define XUD_DESC_INT_B_SUBCLASS_BOOT  0x1
+#define XUD_DESC_INT_B_CLASS_HID       0x3
+#define XUD_DESC_INT_B_SUBCLASS_BOOT   0x1
 
-#define XUD_DESC_INT_B_CLASS_AUDIO      0x1
+#define XUD_DESC_INT_B_CLASS_AUDIO     0x1
 #define XUD_DESC_INT_B_SUBCLASS_AUDIOCONTROL 0x1
 
 // Protocols:
-#define XUD_DESC_INT_B_PROTOCOL_MOUSE   0x2
+#define XUD_DESC_INT_B_PROTOCOL_MOUSE  0x2
 
 ////////////////////////////////////////////////////////////////////////////////
 // Endpoint descriptor defines:
 //
 // bmAtributes.TransferType
-#define DESC_EP_BM_ATTRIBS_TTYPE_INT  0x3 // Interupt
+#define DESC_EP_BM_ATTRIBS_TTYPE_INT   0x3 // Interupt
               // Control
               // Bulk... iso
               //
-#define XUD_DESC_EP_ADDRESS_IN              0x80
-#define XUD_DESC_EP_ADDRESS_OUT             0x00
-
-///////////////////////////////////////////////////////////////////////////////////
-// HID Descriptor defines
-
+#define XUD_DESC_EP_ADDRESS_IN         0x80
+#define XUD_DESC_EP_ADDRESS_OUT        0x00
 
 // Raw PIDs
 #define PID_OUT   0x01
@@ -103,8 +85,6 @@
 #define PIDn_NAK 0x5a
 #define PIDn_STALL 0x1e
 
-
-
 #define XUD_EP_TYPE_CON 1
 #define XUD_EP_TYPE_DIS 1
 #define XUD_EP_TYPE_ISO 0
@@ -116,13 +96,5 @@
 #define WINDEX_TEST_SE0_NAK         (0x3<<8)
 #define WINDEX_TEST_PACKET          (0x4<<8)
 #define WINDEX_TEST_FORCE_ENABLE    (0x5<<8)
-
-
-
-
-
-
-
-
 
 #endif

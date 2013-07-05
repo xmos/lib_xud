@@ -32,7 +32,7 @@ extern port p_usb_rxd;
 #endif
 #define TEST_PACKET_LEN 14
 #define T_INTER_TEST_PACKET_us 2
-#define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * REF_CLK_FREQ)
 
 unsigned int test_packet[TEST_PACKET_LEN] = 
 {

@@ -23,11 +23,11 @@ extern tileref xs1_su_periph;
 void XUD_UIFM_PwrSigFlags();
 
 #define T_WTRSTFS_us        26 // 26us
-#define T_WTRSTFS            (T_WTRSTFS_us      * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define T_WTRSTFS            (T_WTRSTFS_us * REF_CLK_FREQ)
 #define STATE_START_TO_us 3000 // 3ms
-#define STATE_START_TO       (STATE_START_TO_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define STATE_START_TO       (STATE_START_TO_us * REF_CLK_FREQ)
 #define DELAY_6ms_us      6000
-#define DELAY_6ms            (DELAY_6ms_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define DELAY_6ms            (DELAY_6ms_us * REF_CLK_FREQ)
 
 extern in  port p_usb_clk;
 extern in  port reg_read_port;

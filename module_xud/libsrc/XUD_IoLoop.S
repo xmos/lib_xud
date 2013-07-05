@@ -14,7 +14,7 @@
 
 
 #define SUSPEND_TIMEOUT_us   3000 // 3ms
-#define SUSPEND_TIMEOUT           (SUSPEND_TIMEOUT_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define SUSPEND_TIMEOUT           (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
 
 .section        .cp.const4,"aMc",@progbits,4
 .align  4

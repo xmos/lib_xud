@@ -364,8 +364,8 @@ unsigned chanArray;
 #define STATE_START_SE0 1
 #define STATE_START_J 2
 
-#define RESET_TIME_us              5 // 5us
-#define RESET_TIME                   (RESET_TIME_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
+#define RESET_TIME_us               5 // 5us
+#define RESET_TIME                  (RESET_TIME_us * REF_CLK_FREQ)
 
 #ifndef ARCH_L
 extern unsigned char crc5Table[2048];

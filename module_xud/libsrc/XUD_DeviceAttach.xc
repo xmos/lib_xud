@@ -39,10 +39,10 @@ extern out port p_usb_txd;
 #define STATE_FILT_CHECK_K 7
 #define STATE_FILT_CHECK_J 8
 
-#define TUCHEND_DELAY_us  1500 // 1.5ms
-#define TUCHEND_DELAY            (TUCHEND_DELAY_us * XCORE_FREQ_MHz / (REF_CLK_DIVIDER+1))
-#define INVALID_DELAY_us  2500 // 2.5ms
-#define INVALID_DELAY     (INVALID_DELAY_us * (XCORE_FREQ_MHz) / (REF_CLK_DIVIDER+1))
+#define TUCHEND_DELAY_us   1500 // 1.5ms
+#define TUCHEND_DELAY      (TUCHEND_DELAY_us * REF_CLK_FREQ)
+#define INVALID_DELAY_us   2500 // 2.5ms
+#define INVALID_DELAY      (INVALID_DELAY_us * REF_CLK_FREQ)
 
 extern int resetCount;
 

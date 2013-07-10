@@ -455,12 +455,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     XUD_USB_Done = 0;
 
-    /* Enable fast mode on thread */
-    set_thread_fast_mode_on();
-
-    /* Setup channel event vectors */
-    //SetupChannelVectors(epChans0, noEpOut, noEpIn);
-
     /* Make sure ports are on and reset port states */
     set_port_use_on(p_usb_clk);
 #ifndef ARCH_S
@@ -960,9 +954,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 flag0: Valid token flag
                 flag1: Rx Active
                 flag2: Rx Error */
+            set_thread_fast_mode_on();
             XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
                            reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof, c_usb_testmode); 
-
+            set_thread_fast_mode_off();
 
             /* Put UIFM back to default state */
 #ifdef ARCH_L

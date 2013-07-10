@@ -3,6 +3,8 @@
 #ifndef _XUD_USB_DEFINES_H_
 #define _XUD_USB_DEFINES_H_
 
+#define USB_TILE_REF usb_tile
+
 // Defines relating to USB/ULPI/UTMI/Phy specs
 
 #define RESET_TIME_us                5 // 5us

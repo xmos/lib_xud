@@ -157,16 +157,24 @@
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
                                     <listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs1b}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.xc.compiler.input.55373955" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
@@ -279,16 +287,24 @@
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
                                     <listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs1b}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.c.compiler.input.c.30306416" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
@@ -407,16 +423,24 @@
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1/xcore-xmos-elf&quot;"/>
                                     <listOptionValue builtIn="false" value='&quot;${workspace_loc:/app_test}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs1b}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.cxx.compiler.input.cpp.89499761" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>

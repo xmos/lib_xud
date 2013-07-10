@@ -1,7 +1,7 @@
 XMOS Low-Level USB Device Driver
 ................................
 
-:Latest release: 1.0.0rc2
+:Latest release: 1.0.0rc3
 :Maintainer: XMOS
 :Description: Low-Level USB Driver Library
 

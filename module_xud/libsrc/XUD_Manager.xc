@@ -749,34 +749,35 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 #else        
         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
-      
-
 #endif
+
+        
         while(1)
         {
-            //if(waking && !wakingReset)
-            //{
-#ifdef ARCH_S
-                /* Restore address */
-              //  {  
-                //    char rData[1];
-
-                  //  read_glx_periph_reg(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1, rData);
-
-                   // write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, (unsigned) rData[0]);
-               // }
-                 
-                // sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
-                 //SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
-
-                //SetupChannelVectorsOverride(epChans0);
-#endif
-           // }
-            //else
             {
-
-                /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
 #ifdef ARCH_S
+                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+
+                /* Wait for VBUS before enabling pull-up. The USB Spec (page 150) allows 100ms
+                 * between vbus valid and signalling attach */
+                {
+                    timer t;
+                    unsigned time;
+                    t :> time;
+                    while(1)
+                    {
+                        unsigned x;
+                        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+                        if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
+                        {
+                            break;
+                        }
+                        time + 20000 * REF_CLK_FREQ; // 20ms poll
+                        t when timerafter(time+REF_CLK_FREQ):> void;
+                    }
+                }
+                
+                /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
             //    if(!waking)
               //  {
 #ifndef SIMULATION
@@ -826,7 +827,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Run user suspend code */
                     XUD_UserSuspend();
 
-                    /* Run suspend code, returns 1 if reset from suspend, else resume */
+                    /* Run suspend code, returns 1 if reset from suspend, 0 for resume, -1 for invalid vbus */
                     reset = XUD_Suspend();
                 
                     /* Run user resume code */
@@ -834,7 +835,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 }
                 
                 /* Test if coming back from reset or suspend */
-                if(reset)
+                if(reset==1)
                 {
                     sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
                 

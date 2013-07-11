@@ -5,6 +5,7 @@
 
 #include <xs1.h>
 #include <print.h>
+#include <xs1_su.h>
 
 #include "xud.h"
 #include "XUD_Support.h"
@@ -235,9 +236,25 @@ int XUD_Suspend()
         /* Normally XCore will now be off and will reboot on resume/reset 
          * However, all supplies enabled to test suspend controller so we'll poll resume reason reg.. */
 
+        t :> time;
         while(1)
         {
             unsigned wakeReason = 0;
+            unsigned x = 0;
+            time+= 100000;
+            t when timerafter(time):> void;
+            
+            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+
+            if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
+            {
+                // VBUS VALID
+            }
+            else
+            {
+                return -1;
+            }
+
             read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, wakeReason);
             
             if(wakeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMEK))

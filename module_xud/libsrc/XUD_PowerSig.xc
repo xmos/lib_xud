@@ -171,285 +171,297 @@ extern unsigned susresettime;
 /** XUD_DoSuspend
   * @brief  Function called when device is suspended. This should include any clock down code etc.
   * @return True if reset detected during resume */
+  unsigned counter =0;
 int XUD_Suspend()
 {
     unsigned tmp;
     timer t;
+    unsigned x;
     unsigned time;
     unsigned before;
     unsigned devAddr;
 
  
+    /* Suspend can be handled in multiple ways:
+    - Poll flags registers for resume/reset
+    - Suspend phy and poll line status in test status reg for resume/reset
+    - Power down zevious and use the suspend controller to wake zevious up
+    */
 #if defined(ARCH_L) && defined(GLX_SUSPHY)
 #ifdef GLX_PWRDWN
-        XUD_UIFM_PwrSigFlags();
-
-        /* NOTE CURRENTLY XEV DOES NOT GET TURNED OFF, WE JUST ARE USING SUSPEND CONTROLLER TO 
-         * VERIFY FUNCTIONALITY */
-
-        /* Wait for suspend J to make its way through filter */
-        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, before);
-
-        while(1)
-        {
-            unsigned  x;
-            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
-            x >>= 9;
-            x &= 0x3;
-            if(x == 1)
-            {
-                break;
-            }
-        }
-
-        /* Save device address to Glx scratch*/
-        {
-            char wData[] = {0};
-            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, devAddr);
-            wData[0] = (char) devAddr;
-
-            write_glx_periph_reg(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1,wData); 
-        }
-        
-        /* Suspend Phy etc 
-         * SEOFILTBASE sets a bit in a counter for anti-glitch (i.e 2 looks for change in 0b10)
-         * This is a simple counter with check from wrap in this bit, so worst case could be x2 off
-         * Counter runs at 32kHz by (31.25uS period). So setting 2 is about 63-125uS
-         */
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
-                                    (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) 
-                                    |(0x2 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
-                                    | (1 << XS1_UIFM_PHY_CONTROL_FORCESUSPEND));
-
-        /* Mark scratch reg */
-        {
-            char x[] = {1};
-            write_glx_periph_reg(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_SCTH_ID, 0xff, 0, 1,x); 
-        }
-
-        // Finally power down Xevious,  keep sysclk running, keep USB enabled.
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 
-                       (1 << XS1_GLX_PWR_SLEEP_INIT_BASE)            /* Sleep */
-                     | (1 << XS1_GLX_PWR_SLEEP_CLK_SEL_BASE)         /* Default clock */ 
-                     | (0x3 << XS1_GLX_PWR_USB_PD_EN_BASE ) );       /* Enable usb power up/down */
-
-        /* Normally XCore will now be off and will reboot on resume/reset 
-         * However, all supplies enabled to test suspend controller so we'll poll resume reason reg.. */
-
-        t :> time;
-        while(1)
-        {
-            unsigned wakeReason = 0;
-            unsigned x = 0;
-            time+= 100000;
-            t when timerafter(time):> void;
-            
-            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
-
-            if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
-            {
-                // VBUS VALID
-            }
-            else
-            {
-                return -1;
-            }
-
-            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, wakeReason);
-            
-            if(wakeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMEK))
-            {
-                 
-                /* Unsuspend phy */        
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,0);
-                
-                /* Wait for usb clock */
-                p_usb_clk when pinseq(1) :> int _;
-                p_usb_clk when pinseq(0) :> int _;
-                p_usb_clk when pinseq(1) :> int _;
-                p_usb_clk when pinseq(0) :> int _;              
-
-                /* Func control reg will be default of 0x4 here term: 0 xcvSel: 0, opmode: 0b01 (non-driving) */
-
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
-                            (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
-                            | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
-
-                /* Set IFM to decoding linestate.. IFM regs reset when phy suspended */ 
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, 
-                    (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE)
-                    | (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
-
-                XUD_UIFM_PwrSigFlags();
-                
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, devAddr);
-                
-                /* Wait for end of resume */
-                while(1)
-                {
-                    /* Wait for se0 */
-                    flag2_port when pinseq(1) :> void; 
-                    
-                    if(g_curSpeed == XUD_SPEED_HS)
-                    {
-                        /* Back to high-speed */
-                        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
-                    }
-                    return 0;
-                }
-            }
-            else if(wakeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMESE0))
-            {
-                /* Unsuspend phy */        
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0); 
-                
-                /* Wait for usb clock */
-                p_usb_clk when pinseq(1) :> int _;
-                p_usb_clk when pinseq(0) :> int _;
-                p_usb_clk when pinseq(1) :> int _;
-                p_usb_clk when pinseq(0) :> int _;  
-
-                /* Set IFM to decoding linestate.. IFM regs reset when phy suspended */ 
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, 
-                    (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE)
-                    | (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
-                
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
-
-                XUD_UIFM_PwrSigFlags();
-
-                {
-                    unsigned time;
-                    t :> time;
-                    t when timerafter(time+250000) :> void;
-                }
-                return 1;
-            }
-        }
-
-
-#endif
+    /* Power suspend phy, power down zevious and used suspend controller to wake up */
     
+    /* NOTE CURRENTLY XEV DOES NOT GET TURNED OFF, WE JUST ARE USING SUSPEND CONTROLLER TO 
+     * VERIFY FUNCTIONALITY */
 
+    /* Wait for suspend J to make its way through filter */
+    read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, before);
 
+    while(1)
     {
-        unsigned rdata = 0;
-
-        /* TODO Wait for suspend (j) to come through filter */
-        while(1)
+        unsigned  x;
+        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
+        x >>= 9;
+        x &= 0x3;
+        if(x == 1)
         {
-            unsigned  x;
-            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
-            x >>= 9;
-            x &= 0x3;
-            if(x == 1)
-            {
-                break;
-            }
-        }
-    
-        while(1)
-        {
-            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata);
-            rdata >>= 9;
-            rdata &= 0x3; 
-            
-            if(rdata == 2)
-            {
-                /* Resume */
-                
-                /* Un-suspend phy */ 
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0);
-
-                /* TODO WAIT FOR CLK */
-                if(g_curSpeed == XUD_SPEED_HS)
-                        {
-                            
-                            /* Back to high-speed */
-                            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
-                        }              
-                /* Wait for end of resume */
-                while(1)
-                {
-                    read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata);
-                    rdata >>= 9;
-                    rdata &= 0x3; 
-
-                    /* SE0 */            
-                    if(rdata == 0)
-                    {
-                        
-                        return 0;
-                    }
-                    else if(rdata == 1)
-                    {
-                        break;
-                    }
-                }
-            }
-            else if(rdata == 0)
-            {
-                /* Reset */
-                //while(1)
-                {
-                    //int count = 0;
-                    //read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata);
-                    //rdata >>= 9;
-                    //rdata &= 0x3;
-                    
-                    //if(rdata != 0)
-                    //{
-                        /* Se0 gone away...*/  
-                      //  break; 
-                    //}
-                    //else
-                    //{
-                      //  count++;
-                        //if(count>0)
-                       // {
-                        /* Un-suspend phy */
-                        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0);
-                        return 1;
-                        //}
-                  //  }
-
-                }
-            }
+             break;
         }
     }
 
+    /* Save device address to Glx scratch*/
+    {
+        char wData[] = {0};
+        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, devAddr);
+        wData[0] = (char) devAddr;
+
+        write_glx_periph_reg(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1,wData); 
+    }
+ 
+    /* Suspend Phy etc 
+     * SEOFILTBASE sets a bit in a counter for anti-glitch (i.e 2 looks for change in 0b10)
+     * This is a simple counter with check from wrap in this bit, so worst case could be x2 off
+     * Counter runs at 32kHz by (31.25uS period). So setting 2 is about 63-125uS
+     */
+    write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 
+                                    (1 << XS1_UIFM_PHY_CONTROL_AUTORESUME) | 
+                                    (0x2 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE)
+                                    | (1 << XS1_UIFM_PHY_CONTROL_FORCESUSPEND)
+                                    );
+
+    /* Mark scratch reg */
+    {
+        char x[] = {1};
+        write_glx_periph_reg(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_SCTH_ID, 0xff, 0, 1,x); 
+    }
+
+    /* Finally power down Xevious,  keep sysclk running, keep USB enabled. */
+    write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 
+                    (1 << XS1_GLX_PWR_SLEEP_INIT_BASE)               /* Sleep */
+                     | (1 << XS1_GLX_PWR_SLEEP_CLK_SEL_BASE)         /* Default clock */ 
+                     | (0x3 << XS1_GLX_PWR_USB_PD_EN_BASE ) );       /* Enable usb power up/down */
+
+     /* Normally XCore will now be off and will reboot on resume/reset 
+      * However, all supplies enabled to test suspend controller so we'll poll resume reason reg.. */
+
+    while(1)
+    {
+        unsigned wakeReason = 0;
+           
+        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, wakeReason);
+            
+        if(wakeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMEK))
+        {
+            /* Unsuspend phy */        
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,0);
+                
+            /* Wait for usb clock */
+            p_usb_clk when pinseq(1) :> int _;
+            p_usb_clk when pinseq(0) :> int _;
+            p_usb_clk when pinseq(1) :> int _;
+            p_usb_clk when pinseq(0) :> int _;              
+
+            /* Func control reg will be default of 0x4 here term: 0 xcvSel: 0, opmode: 0b01 (non-driving) */
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
+                (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) |
+                (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+
+            /* Set IFM to decoding linestate.. IFM regs reset when phy suspended */ 
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, 
+                (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE) | 
+                (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
+
+            XUD_UIFM_PwrSigFlags();
+                
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, devAddr);
+                
+            /* Wait for end of resume */
+            while(1)
+            {
+                /* Wait for se0 */
+                flag2_port when pinseq(1) :> void; 
+                    
+                if(g_curSpeed == XUD_SPEED_HS)
+                {
+                    /* Back to high-speed */
+                    write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+                }
+                return 0;
+            }
+        }
+        else if(wakeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMESE0))
+        {
+            /* RESET! -  Unsuspend phy */        
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0); 
+                
+            /* Wait for usb clock */
+            p_usb_clk when pinseq(1) :> int _;
+            p_usb_clk when pinseq(0) :> int _;
+            p_usb_clk when pinseq(1) :> int _;
+            p_usb_clk when pinseq(0) :> int _;  
+
+            /* Set IFM to decoding linestate.. IFM regs reset when phy suspended */ 
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, 
+                (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE) | 
+                (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
+                
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
+
+            //XUD_UIFM_PwrSigFlags();
+
+            {
+                unsigned time;
+                t :> time;
+                t when timerafter(time+250000) :> void;
+            }
+            return 1;
+        }
+
+#else /* GLX_PWRDWN */
+    unsigned rdata = 0;
+
+    /* TODO Wait for suspend (j) to come through filter */
+    while(1)
+    {
+        unsigned  x;
+        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
+        x >>= 9;
+        x &= 0x3;
+        if(x == 1)
+        {
+            break;
+        }
+    }
+    
+    while(1)
+    {
+        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata);
+        rdata >>= 9;
+        rdata &= 0x3; 
+            
+        if(rdata == 2)
+        {
+            /* Resume */
+                
+            /* Un-suspend phy */ 
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0);
+
+            /* Wait for usb clock */
+            p_usb_clk when pinseq(1) :> int _;
+            p_usb_clk when pinseq(0) :> int _;
+            p_usb_clk when pinseq(1) :> int _;
+            p_usb_clk when pinseq(0) :> int _; 
+            if(g_curSpeed == XUD_SPEED_HS)
+            {
+                /* Back to high-speed */
+                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+            }              
+                
+            /* Wait for end of resume */
+            while(1)
+            {
+                read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata);
+                rdata >>= 9;
+                rdata &= 0x3; 
+
+                if(rdata == 0)
+                {
+                    /* SE0 */            
+                    return 0;
+                }
+                else if(rdata == 1)
+                {
+                    /* Glitch */
+                    break;
+                }
+            }
+        }
+        else if(rdata == 0)
+        {
+#if 0
+            /* Reset */
+            while(1)
+            {
+                int count = 0;
+                read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, rdata);
+                rdata >>= 9;
+                rdata &= 0x3;
+                    
+                if(rdata != 0)
+                {
+                    /* Se0 gone away...*/  
+                    break; 
+                }
+                else
+                {
+                    count++;
+                    if(count>0)
+                    {
+#endif
+                        /* Un-suspend phy */
+                        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0);
+                        return 1;
+#if 0
+                    }
+                }
+#endif
+            }
+        }
+    }
+#endif
 
 
 #else
 
-
-    
+    /* "Normal" polling suspend for L or S series */
     while(1)
     {
+        /* TODO - Use a timer to save some power */
+        unsigned x;
+#ifdef ARCH_S
+        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+#else
+#warning TODO TODO  
+#endif      
+        if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
+        {
+            // VBUS VALID
+        }
+        else
+        {
+
+#ifdef ARCH_S
+            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
+#else
+#warning TODO TODO!!
+#endif
+            return -1;
+        }
+
         /* Read flags reg... */
-    
 #ifdef ARCH_S
         read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
 #else
         tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
 #endif
+        /* Look for SE0 - RESET! */
         if(tmp & UIFM_FLAGS_SE0)
         {
-            //printint(1);
             t :> time;
             select
             {
                 case flag2_port when pinseq(0) :> void:
-                    //Se0 gone away, keep looping
+                    /* SE0 gone away, keep looping */
                     break;
 
-                case t when timerafter(time+250000) :> void:
-                    return 1;
+                case t when timerafter(time+250) :> void: /* TFILTSEO */
+                    t :> time;
+                    t when timerafter(time+250000) :> void;
 
+                    return 1;
             }
         }
-
-        /* Look for HS J / FS K */
+        /* Look for HS J / FS K - RESUME! */
         if (tmp & UIFM_FLAGS_FS_K)
         {
             /* Wait for end of resume (SE0) */
@@ -465,7 +477,7 @@ int XUD_Suspend()
                 {
                    break;
                 }
-                else if(tmp & UIFM_FLAGS_SE0)
+                if(tmp & UIFM_FLAGS_SE0)
                 {
                     /* Resume detected from suspend: switch back to HS (suspendm high) and continue...*/                              
                     if(g_curSpeed == XUD_SPEED_HS)
@@ -492,13 +504,10 @@ int XUD_Suspend()
                     }
                 }
             }
-
             return 0;
         }
-    }
 #endif
-
-    return 0;
+    }
 }
 
 

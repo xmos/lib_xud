@@ -530,11 +530,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   //this delay controls the launch of data.
   set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY);
   
-  //this delay th capture of the rdyIn and data. 
-  set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
-  set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
-  //set_port_sample_delay(p_usb_rxd);
-  //set_port_sample_delay(rx_rdy);
+    //this delay th capture of the rdyIn and data. 
+    set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
+    set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
+    //set_port_sample_delay(p_usb_rxd);
+    //set_port_sample_delay(rx_rdy);
 
   	set_port_inv(flag0_port);
 	//set_pad_delay(flag1_port, 3);
@@ -543,10 +543,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   	start_clock(rx_usb_clk);
  	configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
   	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
-
-
 #endif
-
     while(!XUD_USB_Done)
     {
 #ifdef VBUSHACK
@@ -649,8 +646,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
        // write_node_config_reg(xs1_su, XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
 #endif
 
-#ifdef GLX_PWRDWN
         }
+#ifdef GLX_PWRDWN
 #ifndef SIMULATION
         /* Setup sleep timers and supplies */
         write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
@@ -750,16 +747,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #else        
         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
 #endif
-
-        
         while(1)
         {
             {
 #ifdef ARCH_S
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
-
+                unsigned x;
+               
                 /* Wait for VBUS before enabling pull-up. The USB Spec (page 150) allows 100ms
                  * between vbus valid and signalling attach */
+#if 1
                 {
                     timer t;
                     unsigned time;
@@ -772,22 +768,19 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         {
                             break;
                         }
-                        time + 20000 * REF_CLK_FREQ; // 20ms poll
+                        time + 200 * REF_CLK_FREQ; // 2ms poll
                         t when timerafter(time+REF_CLK_FREQ):> void;
                     }
                 }
+#endif     
                 
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-            //    if(!waking)
-              //  {
 #ifndef SIMULATION
                 write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
                       (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
-               // }
 #endif
 #else
-
                 XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
 #endif      
                 
@@ -829,7 +822,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                     /* Run suspend code, returns 1 if reset from suspend, 0 for resume, -1 for invalid vbus */
                     reset = XUD_Suspend();
+
+#ifdef ARCH_S
+                    if(reset==-1)
+                    {
+                        //printintln(4);
+                        continue;
                 
+                    }            
+#endif
+
                     /* Run user resume code */
                     XUD_UserResume();
                 }
@@ -963,7 +965,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             /* Put UIFM back to default state */
 #ifdef ARCH_L
 #ifdef ARCH_S
-            //TODO
+           // write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG,
+                //(1<<XS1_UIFM_IFM_CONTROL_DOTOKENS) | 
+                //(1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS) | 
+             //   (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE));
+                 //(1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
 #else
             /* Disable SOF passing */
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_MISC, 0);

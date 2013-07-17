@@ -424,7 +424,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
 #else
             x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
-            if(x&(UIFM_OTG_FLAGS_SESSVLD))
+            if(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))
 #endif      
             {
                 // VBUS VALID
@@ -435,7 +435,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #ifdef ARCH_S
                 write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
 #else
-                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0b1001);
+                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x81);
 #endif
                 return -1;
             }

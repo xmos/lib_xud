@@ -738,7 +738,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Enable UIFM and wait for connect */
         XUD_UIFM_Enable(UIFM_MODE);
 #endif
- 
+
+        
 #ifdef ARCH_S
 #ifndef SIMULATION
         write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, 
@@ -765,9 +766,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
 #else
                         x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
-                        if(x&(UIFM_OTG_FLAGS_SESSVLD))
+                        if(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))
 #endif
-                        {            
+                        {
                             break;
                         }
                         time + 200 * REF_CLK_FREQ; // 2ms poll

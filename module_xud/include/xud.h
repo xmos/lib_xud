@@ -100,7 +100,6 @@ typedef unsigned int XUD_ep;
 /* Value to be or'ed in with EpTransferType to enable bus state notifications */
 #define XUD_STATUS_ENABLE           0x80000000                   
 
-
 typedef enum XUD_BusSpeed
 {
     XUD_SPEED_FS = 1,
@@ -108,11 +107,11 @@ typedef enum XUD_BusSpeed
 } XUD_BusSpeed;
 
 
-#define XUD_SUSPEND                 3
-
-/* Control token defines - used to inform EPs of bus-state types */
-#define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
-#define USB_SUSPEND_TOKEN           9        /* Control token value that signals SUSPEND */
+typedef enum XUD_PwrConfig
+{
+    XUD_PWR_BUS,
+    XUD_PWR_SELF
+} XUD_PwrConfig;
 
 
 /**********************************************************************************************
@@ -122,7 +121,7 @@ typedef enum XUD_BusSpeed
  */
 
 /**
- *  \brief      Gets a data from XUD
+ *  \brief      Gets a data buffer from XUD
  *  \param      ep_out     The OUT endpoint identifier.
  *  \param      buffer     The buffer to store received data into.
  *  \return     Datalength (in bytes) 
@@ -130,7 +129,7 @@ typedef enum XUD_BusSpeed
 inline int XUD_GetData(XUD_ep ep_out, unsigned char buffer[]);
 
 /**
- *  \brief      Gets a data from XUD
+ *  \brief      Gets a setup data from XUD
  *  \param      ep_out     The OUT endpoint identifier.
  *  \param      ep_in      The IN endpoint identifier.
  *  \param      buffer     The buffer to store received data into.
@@ -140,7 +139,7 @@ inline int XUD_GetData(XUD_ep ep_out, unsigned char buffer[]);
 int XUD_GetSetupData(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]); 
 
 /**
- *  \brief      TBD
+ *  \brief      Gives a data buffer to XUD from transmission to the host
  *  \param      ep_in      The IN endpoint identifier.
  *  \param      buffer     The packet buffer to send data from.
  *  \param      datalength The length of the packet to send (in bytes).
@@ -152,7 +151,6 @@ int XUD_GetSetupData(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
 int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 
 /***********************************************************************************************/
-
     
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
@@ -167,14 +165,14 @@ int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsig
  *                      per input endpoint (USB IN transaction); this
  *                      includes a channel to respond to
  *                      requests on Endpoint 0.
- *    \param  noEpIn The number of input endpoints, should be 
- *                  at least 1 (for Endpoint 0).
- *    \param  c_sof   A channel to receive SOF tokens on. This channel
- *                   must be connected to a process that
- *                   can receive a token once every 125 ms. If
- *                   tokens are not read, the USB layer will lock up.
- *                   If no SOF tokens are required ``null`` 
- *                   should be used as this channel.
+ *    \param  noEpIn    The number of input endpoints, should be 
+ *                      at least 1 (for Endpoint 0).
+ *    \param  c_sof     A channel to receive SOF tokens on. This channel
+ *                      must be connected to a process that
+ *                      can receive a token once every 125 ms. If
+ *                      tokens are not read, the USB layer will lock up.
+ *                      If no SOF tokens are required ``null`` 
+ *                      should be used as this channel.
  *
  *    \param  epTypeTableOut See ``epTypeTableIn``.
  *    \param  epTypeTableIn This and ``epTypeTableOut`` are two arrays
@@ -192,27 +190,30 @@ int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsig
  *                            endpoints.
  *    \param  p_usb_rst The port to send reset signals to. Should be ``null`` for
  *                      U-Series.
- *    \param  clk The clock block to use for the USB reset - 
- *               this should not be clock block 0. Should be ``null`` for U-Series.
+ *    \param  clk       The clock block to use for the USB reset - 
+ *                      this should not be clock block 0. Should be ``null`` for U-Series.
  *    \param  rstMask   The mask to use when taking an external phy into/out of reset. The mask is
  *                      ORed into the port to disable reset, and unset when
  *                      deasserting reset. Use '-1' as a default mask if this
  *                      port is not shared.
- *    \param  desiredSpeed This parameter specifies whether the
- *                         device must be full-speed (ie, USB-1.0) or
- *                         whether high-speed is acceptable if supported
- *                         by the host (ie, USB-2.0). Pass ``XUD_SPEED_HS``
- *                         if high-speed is allowed, and ``XUD_SPEED_FS``
- *                         if not. Low speed USB is not supported by XUD.
+ *    \param  desiredSpeed  This parameter specifies whether the
+ *                          device must be full-speed (ie, USB-1.0) or
+ *                          whether high-speed is acceptable if supported
+ *                          by the host (ie, USB-2.0). Pass ``XUD_SPEED_HS``
+ *                          if high-speed is allowed, and ``XUD_SPEED_FS``
+ *                          if not. Low speed USB is not supported by XUD.
  *    \param  c_usb_testmode See :ref:`xud_usb_test_modes`
+ *    \param  pwrConfig     Specifies whether the device is bus or self-powered. When self-powered the XUD will monitor the VBUS line for host disconnections. This is required for compliance reasons. 
  *
  */
 int XUD_Manager(chanend c_epOut[], int noEpOut, 
                 chanend c_epIn[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                out port ?p_usb_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed desiredSpeed,
-                chanend ?c_usb_testmode);
+                out port ?p_usb_rst, clock ?clk, unsigned rstMask, 
+                XUD_BusSpeed desiredSpeed,
+                chanend ?c_usb_testmode,
+                XUD_PwrConfig pwrConfig);
 
 
 /**
@@ -481,5 +482,11 @@ int XUD_ResetDrain(chanend one);
  *  \brief      TBD
  */
 XUD_BusSpeed XUD_GetBusSpeed(chanend c);
+
+#define XUD_SUSPEND                 3
+
+/* Control token defines - used to inform EPs of bus-state types */
+#define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
+#define USB_SUSPEND_TOKEN           9        /* Control token value that signals SUSPEND */
 
 #endif // __xud_h__

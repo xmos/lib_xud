@@ -116,13 +116,11 @@ XUD_TokenOut_WaitForPacketEnd:                        // Wait for end of data th
   setc      res[r9], XS1_SETC_COND_EQ 
   in        r11, res[r9]
                                               // TODO: Observe interpacket delay 
-  //nop
- // nop
-  //nop
-        
-  //ldw       r4, sp[(STACK_EXTEND+5)]          // Load ep type table      
-  //ldw       r4, r4[r10]                       // load EP type
-  //bf        r4, PrimaryBufferFull_NoNak
+#ifndef XUD_NAK_ISO_OUT    
+  ldw       r4, sp[(STACK_EXTEND+5)]          // Load ep type table      
+  ldw       r4, r4[r10]                       // load EP type
+  bf        r4, PrimaryBufferFull_NoNak
+#endif
 
   // LOAD HANDSHAKE PID or STALL
   ldaw       r5, dp[handshakeTable_OUT]                // Load handshake table

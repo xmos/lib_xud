@@ -172,7 +172,7 @@ extern unsigned susresettime;
   * @brief  Function called when device is suspended. This should include any clock down code etc.
   * @return True if reset detected during resume */
   unsigned counter =0;
-int XUD_Suspend()
+int XUD_Suspend(XUD_PwrConfig pwrConfig)
 {
     unsigned tmp;
     timer t;
@@ -180,7 +180,6 @@ int XUD_Suspend()
     unsigned time;
     unsigned before;
     unsigned devAddr;
-
  
     /* Suspend can be handled in multiple ways:
     - Poll flags registers for resume/reset
@@ -417,25 +416,29 @@ int XUD_Suspend()
     while(1)
     {
         /* TODO - Use a timer to save some power */
-        unsigned x;
+        if(pwrConfig == XUD_PWR_SELF)
+        {
+            unsigned x;
 #ifdef ARCH_S
-        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+            if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
 #else
-#warning TODO TODO  
+            x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
+            if(x&(UIFM_OTG_FLAGS_SESSVLD))
 #endif      
-        if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
-        {
-            // VBUS VALID
-        }
-        else
-        {
+            {
+                // VBUS VALID
+            }
+            else
+            {
 
 #ifdef ARCH_S
-            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
+                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
 #else
-#warning TODO TODO!!
+                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0b1001);
 #endif
-            return -1;
+                return -1;
+            }
         }
 
         /* Read flags reg... */

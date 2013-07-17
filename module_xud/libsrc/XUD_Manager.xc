@@ -445,7 +445,7 @@ int wakingReset = 0;
 void XUD_ULPIReg(out port p_usb_txd);
 
 // Main XUD loop
-static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, chanend ?c_usb_testmode)
+static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, chanend ?c_usb_testmode, XUD_PwrConfig pwrConfig)
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
 #ifndef ARCH_S
@@ -750,40 +750,41 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         while(1)
         {
             {
-#ifdef ARCH_S
-                unsigned x;
                
                 /* Wait for VBUS before enabling pull-up. The USB Spec (page 150) allows 100ms
                  * between vbus valid and signalling attach */
-#if 1
+                if(pwrConfig == XUD_PWR_SELF)
                 {
                     timer t;
-                    unsigned time;
+                    unsigned time, x;
                     t :> time;
                     while(1)
                     {
-                        unsigned x;
+#ifdef ARCH_S
                         read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
-                        {
+#else
+                        x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
+                        if(x&(UIFM_OTG_FLAGS_SESSVLD))
+#endif
+                        {            
                             break;
                         }
                         time + 200 * REF_CLK_FREQ; // 2ms poll
                         t when timerafter(time+REF_CLK_FREQ):> void;
                     }
                 }
-#endif     
-                
-                /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
+ 
 #ifndef SIMULATION
+#ifdef ARCH_S
+                /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
                       (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
-#endif
 #else
                 XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
 #endif      
-                
+#endif  /* SIMULATION */
  
 #ifdef SIMULATION
                 reset = 1;
@@ -821,17 +822,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     XUD_UserSuspend();
 
                     /* Run suspend code, returns 1 if reset from suspend, 0 for resume, -1 for invalid vbus */
-                    reset = XUD_Suspend();
+                    reset = XUD_Suspend(pwrConfig);
 
-#ifdef ARCH_S
-                    if(reset==-1)
+                    if((pwrConfig == XUD_PWR_SELF) && (reset==-1))
                     {
-                        //printintln(4);
+                        /* Lost VBUS */
                         continue;
-                
                     }            
-#endif
-
+                    
                     /* Run user resume code */
                     XUD_UserResume();
                 }
@@ -1035,7 +1033,7 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
                 chanend c_ep_in[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], 
-                out port ?p_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed speed, chanend ?c_usb_testmode)
+                out port ?p_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed speed, chanend ?c_usb_testmode, XUD_PwrConfig pwrConfig)
 {
     /* Arrays for channels... */
     /* TODO use two arrays? */
@@ -1162,7 +1160,7 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
    #endif
 
     /* Run the main XUD loop */
-    XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, c_usb_testmode);
+    XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, c_usb_testmode, pwrConfig);
 
     // TODO --- Could do with a cleaner mechanism for this cleaning up all endpoints
     // If the global variable XUD_USB_Done is set the manager loop will exit and return us to main()
@@ -1193,12 +1191,7 @@ void ERR_BadToken()
 
 void ERR_BadCrc(unsigned a, unsigned b)
 {
-    printhex(a);
-    printhexln(0xffff);
-    printhex(b);
-
   while(1);
-//#endif
 }
 
 void ERR_SetupBuffFull()

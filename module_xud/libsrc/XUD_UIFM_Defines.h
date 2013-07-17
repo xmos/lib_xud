@@ -95,7 +95,13 @@
 #define UIFM_REG_MISC            55 
 #define UIFM_MISC_SOFISTOKEN     0b10000
 
-
+/* OTG Flags Reg */
+#define UIFM_OTG_FLAGS_REG          5
+#define UIFM_OTG_FLAGS_SESSEND      0
+#define UIFM_OTG_FLAGS_SESSVLD      1
+#define UIFM_OTG_FLAGS_VBUSVLD      2
+#define UIFM_OTG_FLAGS_HOSTDIS      3
+#define UIFM_OTG_FLAGS_NIDGND       4
 
 #define UIFM_IN_REG_OFFSET       36
 #define UIFM_OUT_REG_OFFSET      20

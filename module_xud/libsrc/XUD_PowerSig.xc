@@ -255,10 +255,12 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,0);
                 
             /* Wait for usb clock */
+            set_thread_fast_mode_on();
             p_usb_clk when pinseq(1) :> int _;
             p_usb_clk when pinseq(0) :> int _;
             p_usb_clk when pinseq(1) :> int _;
             p_usb_clk when pinseq(0) :> int _;              
+            set_thread_fast_mode_off();
 
             /* Func control reg will be default of 0x4 here term: 0 xcvSel: 0, opmode: 0b01 (non-driving) */
             write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
@@ -294,10 +296,12 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0); 
                 
             /* Wait for usb clock */
+            set_thread_fast_mode_on();
             p_usb_clk when pinseq(1) :> int _;
             p_usb_clk when pinseq(0) :> int _;
             p_usb_clk when pinseq(1) :> int _;
             p_usb_clk when pinseq(0) :> int _;  
+            set_thread_fast_mode_off();
 
             /* Set IFM to decoding linestate.. IFM regs reset when phy suspended */ 
             write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, 
@@ -346,10 +350,12 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0);
 
             /* Wait for usb clock */
+            set_thread_fast_mode_on();
             p_usb_clk when pinseq(1) :> int _;
             p_usb_clk when pinseq(0) :> int _;
             p_usb_clk when pinseq(1) :> int _;
             p_usb_clk when pinseq(0) :> int _; 
+            set_thread_fast_mode_off();
             if(g_curSpeed == XUD_SPEED_HS)
             {
                 /* Back to high-speed */

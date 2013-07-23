@@ -452,7 +452,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     const int reset_time = RESET_TIME;
 #endif
 
-
     XUD_USB_Done = 0;
 
     /* Make sure ports are on and reset port states */
@@ -673,10 +672,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
         /* Wait for USB clock (typically 1ms after reset) */
+        set_thread_fast_mode_on();
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
+        set_thread_fast_mode_off();
 
 #ifdef VBUSHACK
         {
@@ -952,11 +953,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif /* GLX */
             waking = 0;
 
+            set_thread_fast_mode_on();
             /* Run main IO loop
                 flag0: Valid token flag
                 flag1: Rx Active
                 flag2: Rx Error */
-            set_thread_fast_mode_on();
             XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
                            reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof, c_usb_testmode); 
             set_thread_fast_mode_off();

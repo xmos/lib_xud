@@ -266,7 +266,7 @@ extern in port rx_rdy;
 extern in port flag0_port;
 extern in port flag1_port;
 extern in port flag2_port;
-extern in port p_usb_clk;
+extern in buffered port:32 p_usb_clk;
 extern clock tx_usb_clk;
 extern clock rx_usb_clk;
 #define reg_write_port null
@@ -672,12 +672,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
         /* Wait for USB clock (typically 1ms after reset) */
-        set_thread_fast_mode_on();
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
-        set_thread_fast_mode_off();
 
 #ifdef VBUSHACK
         {

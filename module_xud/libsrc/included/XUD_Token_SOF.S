@@ -25,7 +25,15 @@ Pid_Sof:
     in          r11, res[r10]                    
     add         r11, r11, r8           
     setd        res[r10], r11                    
-    
+
+#if 0   
+    ldw         r11, dp[testtoggle]
+    ldw         r8, dp[p_test]
+    out         res[r8], r11
+    not         r11, r11
+    stw         r11, dp[testtoggle]
+#endif     
+
     setc        res[r10], XS1_SETC_COND_AFTER    // Re-enable thread interrupts
     setsr       0x3
 

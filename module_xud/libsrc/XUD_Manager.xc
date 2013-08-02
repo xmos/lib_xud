@@ -758,8 +758,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     timer t;
                     unsigned time, x;
                     t :> time;
+                    time += (2000 * REF_CLK_FREQ); // Give some time for VBUS to fall if unplug etc
+                    t when timerafter(time):> void;
                     while(1)
-                    {
+                    { 
+                        time += (200 * REF_CLK_FREQ); // 2ms poll
+                        t when timerafter(time):> void;
 #ifdef ARCH_S
                         read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
@@ -770,8 +774,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         {
                             break;
                         }
-                        time + 200 * REF_CLK_FREQ; // 2ms poll
-                        t when timerafter(time+REF_CLK_FREQ):> void;
+                       
                     }
                 }
  
@@ -794,6 +797,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 XUD_UIFM_PwrSigFlags();
                 //if(!wakingReset)
                 //{ 
+
                 if (one)
                 {
                     /* Set flags up for pwr signalling */ 
@@ -883,7 +887,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     }
 #else               
                     if(g_desSpeed == XUD_SPEED_HS)
-                    {
+                    { 
                         if (!XUD_DeviceAttachHS())
                         {
                             /* HS handshake fail, mark as running in FS */

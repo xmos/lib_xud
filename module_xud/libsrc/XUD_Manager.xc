@@ -356,6 +356,7 @@ extern int XUD_LLD_IoLoop(
 
 unsigned handshakeTable_IN[XUD_MAX_NUM_EP_IN];
 unsigned handshakeTable_OUT[XUD_MAX_NUM_EP_OUT];
+unsigned sentReset=0;
 
 unsigned crcmask = 0b11111111111;
 unsigned chanArray;
@@ -750,7 +751,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         while(1)
         {
             {
-               
                 /* Wait for VBUS before enabling pull-up. The USB Spec (page 150) allows 100ms
                  * between vbus valid and signalling attach */
                 if(pwrConfig == XUD_PWR_SELF)
@@ -758,8 +758,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     timer t;
                     unsigned time, x;
                     t :> time;
-                    time += (2000 * REF_CLK_FREQ); // Give some time for VBUS to fall if unplug etc
-                    t when timerafter(time):> void;
                     while(1)
                     { 
                         time += (200 * REF_CLK_FREQ); // 2ms poll
@@ -802,7 +800,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 {
                     /* Set flags up for pwr signalling */ 
                     reset = XUD_Init();
-                    //p_test <: 1;
                     one = 0;
                 }
                 else
@@ -841,8 +838,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Test if coming back from reset or suspend */
                 if(reset==1)
                 {
-                    sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
-                
+ 
+                    if(!sentReset)
+                    {
+                        sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
+                        sentReset = 1;
+                    }
 #ifdef ARCH_G
                     XUD_SetCrcTableAddr(0);
 #endif
@@ -887,8 +888,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     }
 #else               
                     if(g_desSpeed == XUD_SPEED_HS)
-                    { 
-                        if (!XUD_DeviceAttachHS())
+                    {   
+                        unsigned tmp;
+                        tmp = XUD_DeviceAttachHS(pwrConfig);
+
+                        if(tmp == -1)
+                        {
+                            XUD_UserSuspend();
+                            continue;
+                        }
+                        else if (!tmp)
                         {
                             /* HS handshake fail, mark as running in FS */
                             g_curSpeed = XUD_SPEED_FS;
@@ -909,6 +918,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                     /* Send speed to EPs */
                     SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
+                    sentReset=0;
 
                     //SetupChannelVectorsOverride(epChans0);
 

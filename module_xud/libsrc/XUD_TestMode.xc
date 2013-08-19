@@ -34,6 +34,7 @@ extern port p_usb_rxd;
 #define T_INTER_TEST_PACKET_us 2
 #define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * REF_CLK_FREQ)
 
+#ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 unsigned int test_packet[TEST_PACKET_LEN] = 
 {
     0x000000c3,
@@ -164,3 +165,4 @@ int XUD_UsbTestModeHandler()
     while(1);
     return -1;  // Unreachable
 }
+#endif

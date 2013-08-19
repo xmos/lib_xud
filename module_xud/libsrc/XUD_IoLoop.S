@@ -67,6 +67,7 @@ suspend_t_wtwrsths:
 
 
 
+#ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 //////////////////////////////////////////////////////////////////////////
 // void UsbTestModeHandler()
 // Interrupt handler for entering USB Test mode
@@ -90,6 +91,7 @@ UsbTestModeHandler_asm:
 //	in r0, res[r11]
 	retsp       0
 .cc_bottom UsbTestModeHandler_asm.func
+#endif
 
 
 .extern 		 XUD_UsbTestSE0
@@ -276,6 +278,7 @@ SetupOutTimer:
 
     stw        r10, sp[9]
 
+#ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
 	// sp[10] should be c_usb_testmode
 	ldw         r10, sp[(10 + STACK_EXTEND)]
@@ -284,6 +287,7 @@ SetupUsbTestMode:
     setc        res[r10], XS1_SETC_IE_MODE_INTERRUPT 
     setv        res[r10], r11
     eeu         res[r10]
+#endif
 
 PortsOnStack:                                   // Put ports on stack (loads therefore short insts)
     ldw        r11, dp[flag1_port]              // RxA

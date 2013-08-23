@@ -13,7 +13,7 @@
 #include "XUD_UIFM_Defines.h"
 
 
-#define SUSPEND_TIMEOUT_us   3000 // 3ms
+#define SUSPEND_TIMEOUT_us   3000 // 3ms (well, just over.. spec says 3 to 3.125ms)
 #define SUSPEND_TIMEOUT           (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
 
 .section        .cp.const4,"aMc",@progbits,4
@@ -392,7 +392,8 @@ XUD_TokenRx_Ep:
 
 CheckValidToken:
     in         r1, res[r1]
-    bf         r1, InvalidToken                       // If VALID_TOKEN not high, ignore token
+    bt         r1, InvalidToken                       // If VALID_TOKEN not high, ignore token
+                                                      // REMEMBER VALID TOKEN NOW INVERTED!
  
 BranchOnTokenPid:
 .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan

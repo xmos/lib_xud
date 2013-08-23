@@ -24,7 +24,7 @@ LIB_XCC_FLAGS_xud_l =  -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum
 LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -save-temps 
 #-DGLX_SUSPHY -DGLX_PWRDWN
 
-LIB_XCC_FLAGS_xud_u_lomem =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -fschedule -D ARCH_L -D ARCH_S -DXUD_USB_TEST_MODE_DISABLE -DXUD_MAX_NUM_EP_IN=3 -DXUD_MAX_NUM_EP_OUT=3 -save-temps 
+LIB_XCC_FLAGS_xud_u_lomem =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -fschedule -D ARCH_L -D ARCH_S -DXUD_USB_TEST_MODE_DISABLED -DXUD_MAX_NUM_EP_IN=3 -DXUD_MAX_NUM_EP_OUT=3 -save-temps 
 
 #LIB_XCC_FLAGS_xud_u_sim =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -DSIMULATION
 

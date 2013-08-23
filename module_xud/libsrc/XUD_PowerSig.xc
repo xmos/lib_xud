@@ -30,7 +30,7 @@ void XUD_UIFM_PwrSigFlags();
 #define DELAY_6ms_us      6000
 #define DELAY_6ms            (DELAY_6ms_us * REF_CLK_FREQ)
 
-extern in  port p_usb_clk;
+extern buffered in  port:32 p_usb_clk;
 extern in  port reg_read_port;
 extern in  port flag0_port;
 extern in  port flag1_port;

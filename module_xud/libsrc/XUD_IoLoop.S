@@ -113,7 +113,7 @@ XUD_UsbTestSE0_loop:
     inpw        r9, res[r0], 8                              // Read EP Number (dont care)
 
     in          r9, res[r1]
-    bf          r9, InvalidTestToken                        // If VALID_TOKEN not high, ignore token
+    bt          r9, InvalidTestToken                        // If VALID_TOKEN high, ignore token
 
     eq          r10, r11, PID_IN 
     bf          r10, XUD_UsbTestSE0_loop

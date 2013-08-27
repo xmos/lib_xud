@@ -131,14 +131,9 @@ LoadSetupBuffer:
                                                 // r7: CRC check	
                                                 // r8: Data tail size (bytes)  
     clre
-    //stw         r7, r1[r4]                      // Store last data
     eq          r1, r6, r11                     // Check for good CRC16
        
-doRXDataReturn_:
-    ldw         r11, dp[flag1_port]
-    in          r11, res[r11]
-
-DoOutHandShake:                                 // Data CRC good: Send Ack
+ClearStall:                                     // CRC OK
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint. 
     ldaw        r11, dp[handshakeTable_OUT]
     ldc         r6, PIDn_NAK
@@ -146,18 +141,19 @@ DoOutHandShake:                                 // Data CRC good: Send Ack
     ldaw        r11, dp[handshakeTable_IN]
     stw         r6, r11[r10]
 
-    
-StoreTailData:                                  // TODO: don't assume setups are 8 bytes + crc
-    ldc         r11, 0
-    stw         r11, r5[r10]                    // Clear ready       
-    ldw         r5, r3[1]                       // Load chanend
-
+SendSetupAck:
     ldc         r11, PIDn_ACK
     outpw       res[TXD], r11, 8
 
-    out         res[r5], r10    
-    outct       res[r5], 0                      // Send zero control token for SETUP. Tail ignored since always expect 8 bytes            
-    bu          NextToken 				        // Go to next wait for next token 
+StoreTailData:                                  // TODO: don't assume setups are 8 bytes + crc
+    ldc         r11, 0
+    stw         r11, r5[r10]                    // Clear ready       
+    ldw         r11, r3[1]                      // Load chanend
+
+
+    out         res[r11], r10    
+    outct       res[r11], 0                     // Send zero control token for SETUP. Tail ignored since always expect 8 bytes            
+    bu          NextTokenAfterOut 			    // Go to next wait for next token 
 
 
 SBuffFull:

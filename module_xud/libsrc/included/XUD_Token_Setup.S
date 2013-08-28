@@ -19,7 +19,8 @@ WaitForEndDataPacket:
 .skip 2
 doRXData:
     ldw         r11, sp[10]           	        // Load RxA Port ID (r1) 
-    in          r8, res[r11]                    // Doing an IN to clear any previous event data - saves us havin to reload the port ID later...
+    in          r8, res[r11]                    // Doing an IN to clear any previous event data 
+                                                // - saves us havin to reload the port ID later...
     inpw        r8, res[r0], 8                  // Input PID
 GotRxPid:
     stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
@@ -27,9 +28,9 @@ GotRxPid:
     setsr       1                               // Enable thread events
 
 NextRxWord:				                        // RXD port has event vector here
-    in 	        r8, res[r0]
-    crc32       r6, r8, r9
-    stw         r8, r1[r4]
+    in 	        r11, res[r0]
+    crc32       r6, r11, r9
+    stw         r11, r1[r4]
     add         r4, r4, 1
 .xtabranch NextRxWord, RxALow
     bu          NextRxWord

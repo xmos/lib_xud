@@ -66,8 +66,6 @@ DoOutNonIso:
     bl         doRXData
     clre
 
-    //stw        r7, r1[r4]                       // Store last data
-    
     eq         r1, r6, r11                      // Check for good CRC16
        
 doRXDataReturn_NonIso:

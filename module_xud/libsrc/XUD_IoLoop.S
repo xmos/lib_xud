@@ -341,7 +341,7 @@ SetupSuspendResetTimer:
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
  
     clre 
-    //setsr       0x2                             // Enable thread interrupts
+    setsr       0x2                             // Enable thread interrupts
     bu         Loop
 
 // Main IO Loop
@@ -362,7 +362,7 @@ NextTokenAfterInNak:
 Loop_BadPid: 
     ldc         r4, XUD_MAX_NUM_EP_OUT          // Number of OUT endpoints
 NextTokenAfterPing:
-    //setsr       1                               // Enable thread events
+    setsr       1                               // Enable thread events
 
 
 

@@ -16,7 +16,7 @@ WaitForEndDataPacket:
 // r9: crc poly
 .cc_top doRXData.func, doRXData
 .align 4
-.skip 2
+.skip 0
 doRXData:
     ldw         r11, sp[10]           	        // Load RxA Port ID (r1) 
     in          r8, res[r11]                    // Doing an IN to clear any previous event data 
@@ -25,7 +25,9 @@ doRXData:
 GotRxPid:
     stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
     eeu         res[r11] 
-    setsr       1                               // Enable thread events
+.syntax architectural
+    SETSR_lu6       1                               // Enable thread events (long to align the loop)
+.syntax default
 
 NextRxWord:				                        // RXD port has event vector here
     in 	        r11, res[r0]
@@ -133,7 +135,7 @@ LoadSetupBuffer:
                                                 // r8: Data tail size (bytes)  
     clre
     eq          r1, r6, r11                     // Check for good CRC16
-       
+    bf          r1, NextTokenAfterOut            // Check for bad crc
 ClearStall:                                     // CRC OK
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint. 
     ldaw        r11, dp[handshakeTable_OUT]

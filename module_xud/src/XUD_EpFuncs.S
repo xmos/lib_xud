@@ -162,13 +162,11 @@ XUD_SetData_Select_Return_ResetSuspend:
 .cc_top XUD_GetData_Select.func, XUD_GetData_Select
     
 XUD_GetData_Select:                             // Entry for _NoReq 
-    entsp       4
-    stw         r4, sp[1]
     testct     r3, res[r0]
     bt         r3, XUD_GetData_Select_Return_ResetSuspend
-    in         r3, res[r0]                      // Input packet "word" length  
-    int        r11, res[r0]                     // r11 is tail length (bytes)
-	shr		   r11, r11, 3
+    in         r3, res[r0]                      // Input packet "word" length 
+    int        r11, res[r0]                     // r11 is tail length
+	shr		   r11, r11, 3                      // Bits to bytes
 
 CalcdataLength_:
     shl        r3, r3, 2                        // Num received words to bytes
@@ -179,12 +177,11 @@ XUD_GetData_CheckPid_:
     shr        r11, r11, 24                     // Shift down due to inpw
     ldw        r0, r1[4]                        // Load expected PID 
 
-    xor        r4, r0, r11                      // Do the comparison
+    //xor        r4, r0, r11                      // Do the comparison
     
     //bf        r4, XUD_GetData_PidOkay_
     //ldw      r0, r1[3]
     //mov     r1, r11     
-    //bl        PrintPacket
     //ecallt     r4                               //  TODO TODO TODO TODO
     
     //bt          r11, XUD_GetData_Select_Return_BadPid
@@ -203,21 +200,17 @@ XUD_GetData_PidToggle_:
 XUD_GetData_ReturnOk_:
     sub         r0, r3, 2                        // Length correction for CRC correction (return val in r0) 
     stw         r0, r2[0]
-    ldw         r4, sp[1]
-    retsp       4
+    retsp       0
     
 XUD_GetData_Select_Return_ResetSuspend:
     mkmsk       r0, 32                           // Return -1 as length
     stw         r0, r2[0]
-    ldw         r4, sp[1]
-    retsp       4
+    retsp       0
 
 //XUD_GetData_Select_Return_BadPid:
   //  ldw         r0, cp[minus2]
    // stw         r0, r2[0]
    // retsp       0
-
-
 
 .cc_bottom XUD_GetData_Select.func
 

@@ -28,9 +28,9 @@ CheckEpTypeOut:
     bt         r11, DoOutNonIso                 // ISO endpoint 
 
 OutReady:
+    stw        r11, r5[r10]                     // Clear ready straight away - we don't to CRC checking on Iso - else we would have to wait for end of packet
     bl         doRXData
     clre
-    stw        r11, r5[r10]                     // Clear ready straight away - we don't to CRC checking on Iso - else we would have to wait for end of packet
        
 InformEP_Iso:                                   // Iso EP - no handshake 
     ldw        r11, r3[1]                       // Load EP chanend

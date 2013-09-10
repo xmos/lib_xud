@@ -16,7 +16,7 @@ WaitForEndDataPacket:
 // r9: crc poly
 .cc_top doRXData.func, doRXData
 .align 4
-.skip 2
+.skip 0
 doRXData:
     ldw         r11, sp[10]           	        // Load RxA Port ID (r1) 
     in          r8, res[r11]                    // Doing an IN to clear any previous event data 
@@ -25,7 +25,9 @@ doRXData:
 GotRxPid:
     stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
     eeu         res[r11] 
-    setsr       1                               // Enable thread events
+.syntax architectural
+    SETSR_lu6       1                           // Enable thread events. Note long inst to align loop
+.syntax default
 
 NextRxWord:				                        // RXD port has event vector here
     in 	        r11, res[r0]

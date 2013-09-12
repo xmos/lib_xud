@@ -45,6 +45,8 @@ extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
 
+extern int XUD_GetDone();
+
 void XUD_UserSuspend();
 void XUD_UserResume();
 void XUD_PhyReset_User();
@@ -393,6 +395,9 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
             XUD_Sup_outct(c[i + XUD_MAX_NUM_EP_OUT], token);
         }
     }
+
+                    if (XUD_GetDone()) 
+                       return;
     for(int i = 0; i < nOut; i++) 
     {
         if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i]) 
@@ -442,6 +447,7 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 int waking = 0;
 int wakingReset = 0;
 
+
 void XUD_ULPIReg(out port p_usb_txd);
 
 // Main XUD loop
@@ -452,6 +458,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     const int reset_time = RESET_TIME;
 #endif
 
+            set_thread_fast_mode_on();
 
     XUD_USB_Done = 0;
 
@@ -544,7 +551,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
  	configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
   	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
 #endif
-    while(!XUD_USB_Done)
+
+    while(!XUD_GetDone())
     {
 #ifdef VBUSHACK
         p_usb_rxd :> void;
@@ -838,13 +846,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Test if coming back from reset or suspend */
                 if(reset==1)
                 {
+
                     sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
                 
 #ifdef ARCH_G
                     XUD_SetCrcTableAddr(0);
 #endif
+
                     /* Check for exit */
-                    if (XUD_USB_Done) 
+                    if (XUD_GetDone()) 
                     {
                         break;
                     }
@@ -956,10 +966,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 flag0: Valid token flag
                 flag1: Rx Active
                 flag2: Rx Error */
-            set_thread_fast_mode_on();
             XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
                            reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof, c_usb_testmode); 
-            set_thread_fast_mode_off();
+            //set_thread_fast_mode_off();
 
             /* Put UIFM back to default state */
 #ifdef ARCH_L
@@ -1166,8 +1175,8 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
     // TODO --- Could do with a cleaner mechanism for this cleaning up all endpoints
     // If the global variable XUD_USB_Done is set the manager loop will exit and return us to main()
     // This is pretty nasty, required to clean up the endpoint channels so they can be free'd by the normal exit from main
-    outuint(c_ep_out[0], -1);
-    outuint(c_ep_out[0], -1);
+    //outuint(c_ep_out[0], -1);
+    //outuint(c_ep_out[0], -1);
 
 
     // Need to close, drain, and check - three stages.

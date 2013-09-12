@@ -268,7 +268,7 @@ extern in port rx_rdy;
 extern in port flag0_port;
 extern in port flag1_port;
 extern in port flag2_port;
-extern in port p_usb_clk;
+extern in buffered port:32 p_usb_clk;
 extern clock tx_usb_clk;
 extern clock rx_usb_clk;
 #define reg_write_port null
@@ -358,6 +358,7 @@ extern int XUD_LLD_IoLoop(
 
 unsigned handshakeTable_IN[XUD_MAX_NUM_EP_IN];
 unsigned handshakeTable_OUT[XUD_MAX_NUM_EP_OUT];
+unsigned sentReset=0;
 
 unsigned crcmask = 0b11111111111;
 unsigned chanArray;
@@ -457,8 +458,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifndef ARCH_S
     const int reset_time = RESET_TIME;
 #endif
-
-            set_thread_fast_mode_on();
 
     XUD_USB_Done = 0;
 
@@ -759,7 +758,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         while(1)
         {
             {
-               
                 /* Wait for VBUS before enabling pull-up. The USB Spec (page 150) allows 100ms
                  * between vbus valid and signalling attach */
                 if(pwrConfig == XUD_PWR_SELF)
@@ -768,7 +766,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     unsigned time, x;
                     t :> time;
                     while(1)
-                    {
+                    { 
+                        time += (200 * REF_CLK_FREQ); // 2ms poll
+                        t when timerafter(time):> void;
 #ifdef ARCH_S
                         read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
@@ -779,8 +779,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         {
                             break;
                         }
-                        time + 200 * REF_CLK_FREQ; // 2ms poll
-                        t when timerafter(time+REF_CLK_FREQ):> void;
+                       
                     }
                 }
  
@@ -803,11 +802,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 XUD_UIFM_PwrSigFlags();
                 //if(!wakingReset)
                 //{ 
+
                 if (one)
                 {
                     /* Set flags up for pwr signalling */ 
                     reset = XUD_Init();
-                    //p_test <: 1;
                     one = 0;
                 }
                 else
@@ -846,9 +845,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Test if coming back from reset or suspend */
                 if(reset==1)
                 {
-
-                    sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
-                
+ 
+                    if(!sentReset)
+                    {
+                        sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
+                        sentReset = 1;
+                    }
 #ifdef ARCH_G
                     XUD_SetCrcTableAddr(0);
 #endif
@@ -894,8 +896,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     }
 #else               
                     if(g_desSpeed == XUD_SPEED_HS)
-                    {
-                        if (!XUD_DeviceAttachHS())
+                    {   
+                        unsigned tmp;
+                        tmp = XUD_DeviceAttachHS(pwrConfig);
+
+                        if(tmp == -1)
+                        {
+                            XUD_UserSuspend();
+                            continue;
+                        }
+                        else if (!tmp)
                         {
                             /* HS handshake fail, mark as running in FS */
                             g_curSpeed = XUD_SPEED_FS;
@@ -916,6 +926,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                     /* Send speed to EPs */
                     SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
+                    sentReset=0;
 
                     //SetupChannelVectorsOverride(epChans0);
 
@@ -962,6 +973,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif /* GLX */
             waking = 0;
 
+            set_thread_fast_mode_on();
             /* Run main IO loop
                 flag0: Valid token flag
                 flag1: Rx Active

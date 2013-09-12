@@ -86,7 +86,7 @@ XUD_GetSetupData_CheckPid:
     ldw         r10, r0[4]                      // Load expected PID 
 
     xor         r11, r10, r11                   // Do the comparison
-    bt          r11, XUD_GetSetupData_               // Ignore packet...
+    bt          r11, XUD_GetSetupData_          // Ignore packet...
 
 //XUD_GetData_PidOkay: 
     stw         r11, r4[0]                      // Zero ready entry (NOTE R11 0 from branch above)  
@@ -162,6 +162,8 @@ XUD_SetData_Select_Return_ResetSuspend:
 .cc_top XUD_GetData_Select.func, XUD_GetData_Select
     
 XUD_GetData_Select:                             // Entry for _NoReq 
+    entsp       4
+    stw         r4, sp[1]
     testct     r3, res[r0]
     bt         r3, XUD_GetData_Select_Return_ResetSuspend
     in         r3, res[r0]                      // Input packet "word" length  
@@ -177,10 +179,17 @@ XUD_GetData_CheckPid_:
     shr        r11, r11, 24                     // Shift down due to inpw
     ldw        r0, r1[4]                        // Load expected PID 
 
-    xor        r11, r0, r11                     // Do the comparison
-    ecallt     r11                              //  TODO TODO TODO TODO
-    bt          r11, XUD_GetData_Select_Return_BadPid
-    //bt         r11, XUD_GetData_Select        // We can't just jump back to XUD_GetData_Select since 
+    xor        r4, r0, r11                      // Do the comparison
+    
+    //bf        r4, XUD_GetData_PidOkay_
+    //ldw      r0, r1[3]
+    //mov     r1, r11     
+    //bl        PrintPacket
+    //ecallt     r4                               //  TODO TODO TODO TODO
+    
+    //bt          r11, XUD_GetData_Select_Return_BadPid
+                                                // Note: We can't just jump back to XUD_GetData_Select since 
+                                                // other EP's might need service 
 
 XUD_GetData_PidOkay_: 
     ldw         r11, r1[5]                       // Load EP type
@@ -194,17 +203,19 @@ XUD_GetData_PidToggle_:
 XUD_GetData_ReturnOk_:
     sub         r0, r3, 2                        // Length correction for CRC correction (return val in r0) 
     stw         r0, r2[0]
-    retsp       0
+    ldw         r4, sp[1]
+    retsp       4
     
 XUD_GetData_Select_Return_ResetSuspend:
     mkmsk       r0, 32                           // Return -1 as length
     stw         r0, r2[0]
-    retsp       0
+    ldw         r4, sp[1]
+    retsp       4
 
-XUD_GetData_Select_Return_BadPid:
-    ldw         r0, cp[minus2]
-    stw         r0, r2[0]
-    retsp       0
+//XUD_GetData_Select_Return_BadPid:
+  //  ldw         r0, cp[minus2]
+   // stw         r0, r2[0]
+   // retsp       0
 
 
 
@@ -239,15 +250,15 @@ XUD_GetData_:
     stw        r0, r2[0]
 
 XUD_GetData_Retry:					  
-    ldw        r10, r0[2]                        // Load our chanend ID to use
+    ldw        r10, r0[2]                       // Load our chanend ID to use
                                                 // Wait for XUD response       
-    testct     r11, res[r10]                     // Test whether there is a RESET/SUSPEND exception
+    testct     r11, res[r10]                    // Test whether there is a RESET/SUSPEND exception
     bt         r11, ResetSuspend
     
-//XUD_GetData_Select:                             // Entry for _NoReq 
+//XUD_GetData_Select:                           // Entry for _NoReq 
 DataEnd:
-    in         r3, res[r10]                      // Input packet "word" length  
-    int        r11, res[r10]                     // r11 is tail length (bytes)
+    in         r3, res[r10]                     // Input packet "word" length  
+    int        r11, res[r10]                    // r11 is tail length (bytes)
 	shr		   r11, r11, 3
 CalcdataLength:
     shl        r3, r3, 2                        // Num received words to bytes
@@ -256,9 +267,9 @@ CalcdataLength:
 XUD_GetData_CheckPid: 
     ldw        r11, r0[6]                       // Load received PID from EP structure
     shr        r11, r11, 24                     // Shift down due to inpw
-    ldw        r10, r0[4]                        // Load expected PID 
+    ldw        r10, r0[4]                       // Load expected PID 
 
-    xor        r11, r10, r11                     // Do the comparison
+    xor        r11, r10, r11                    // Do the comparison
     bt         r11, XUD_GetData_                // Ignore packet...
 
 XUD_GetData_PidOkay: 
@@ -275,7 +286,7 @@ XUD_GetData_PidToggle:
  
 XUD_GetData_ReturnOk:
     sub        r0, r3, 2                        // Length correction for CRC correction (return val in r0) 
-    ldw         r10, sp[1]
+    ldw        r10, sp[1]
     retsp      16
     
 ResetSuspend:

@@ -9,7 +9,8 @@
 #include "xud.h"
 
 #ifdef ARCH_S
-#include <xa1_registers.h>
+#include <xs1_su.h>
+#include "xa1_registers.h"
 #include "glx.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
@@ -49,7 +50,7 @@ extern int resetCount;
 /* Assumptions:
  * - In full speed mode
  * - No flags sticky */
-int XUD_DeviceAttachHS()
+int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 {
     unsigned tmp;
     timer t;
@@ -281,9 +282,43 @@ int XUD_DeviceAttachHS()
 #endif
     }
 
-    //wait for SE0 end 
-    flag2_port when pinseq(0) :> tmp;
 
+    //wait for SE0 end 
+    while(1)
+    {
+        unsigned x;
+
+        /* TODO Use a timer to save some juice...*/
+        flag2_port :> tmp;
+        
+        /* SE0 gone, break out of loop */
+        if(!tmp)
+            break;
+
+        if(pwrConfig == XUD_PWR_SELF)
+        {
+#ifdef ARCH_S
+            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+            if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
+#else
+            x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
+            if(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))
+#endif
+            {
+                /* VBUS available */
+            }
+            else
+            {
+            /* VBUS GONE */
+#ifdef ARCH_S
+                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
+#else
+                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x81);
+#endif
+                return -1;
+            }
+        }
+    } 
     return complete;
 }
 

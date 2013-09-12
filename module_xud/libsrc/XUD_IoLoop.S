@@ -13,7 +13,7 @@
 #include "XUD_UIFM_Defines.h"
 
 
-#define SUSPEND_TIMEOUT_us   3000 // 3ms
+#define SUSPEND_TIMEOUT_us   3000 // 3ms (well, just over.. spec says 3 to 3.125ms)
 #define SUSPEND_TIMEOUT           (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
 
 .section        .cp.const4,"aMc",@progbits,4
@@ -67,6 +67,7 @@ suspend_t_wtwrsths:
 
 
 
+#ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 //////////////////////////////////////////////////////////////////////////
 // void UsbTestModeHandler()
 // Interrupt handler for entering USB Test mode
@@ -90,6 +91,7 @@ UsbTestModeHandler_asm:
 //	in r0, res[r11]
 	retsp       0
 .cc_bottom UsbTestModeHandler_asm.func
+#endif
 
 
 .extern 		 XUD_UsbTestSE0
@@ -111,7 +113,7 @@ XUD_UsbTestSE0_loop:
     inpw        r9, res[r0], 8                              // Read EP Number (dont care)
 
     in          r9, res[r1]
-    bf          r9, InvalidTestToken                        // If VALID_TOKEN not high, ignore token
+    bt          r9, InvalidTestToken                        // If VALID_TOKEN high, ignore token
 
     eq          r10, r11, PID_IN 
     bf          r10, XUD_UsbTestSE0_loop
@@ -276,6 +278,7 @@ SetupOutTimer:
 
     stw        r10, sp[9]
 
+#ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
 	// sp[10] should be c_usb_testmode
 	ldw         r10, sp[(10 + STACK_EXTEND)]
@@ -284,6 +287,7 @@ SetupUsbTestMode:
     setc        res[r10], XS1_SETC_IE_MODE_INTERRUPT 
     setv        res[r10], r11
     eeu         res[r10]
+#endif
 
 PortsOnStack:                                   // Put ports on stack (loads therefore short insts)
     ldw        r11, dp[flag1_port]              // RxA
@@ -388,7 +392,8 @@ XUD_TokenRx_Ep:
 
 CheckValidToken:
     in         r1, res[r1]
-    bf         r1, InvalidToken                       // If VALID_TOKEN not high, ignore token
+    bt         r1, InvalidToken                       // If VALID_TOKEN not high, ignore token
+                                                      // REMEMBER VALID TOKEN NOW INVERTED!
  
 BranchOnTokenPid:
 .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan

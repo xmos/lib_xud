@@ -28,7 +28,7 @@ XUD_IN_TxNak:
     outpw     res[TXD], r11, 8
     //syncr     res[TXD] 
 
-    //ldw         r4, sp[(STACK_EXTEND+8)]              // Number of out Endpoints
+    //ldw         r4, sp[(STACK_EXTEND+8)]            // Number of out Endpoints
     ldc         r4, XUD_MAX_NUM_EP_OUT
 
     ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
@@ -55,11 +55,11 @@ XUD_IN_TxNak:
 #endif        
 Pid_In:
 #ifdef ARCH_L        
-    inpw      r10, res[RXD], 8;                        /* Read EP Number */ 
-    shr       r10, r10, 24;                            /* Shift off junk */  
+    inpw      r10, res[RXD], 8;                 // Read EP Number  
+    shr       r10, r10, 24;                     // Shift off junk   
 
     in         r11, res[r1];  
-    bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token - PORT INVERTED! */
+    bt         r11, InvalidToken;               // If VALID_TOKEN not high, ignore token - PORT INVERTED! */
 #else
     #include "XUD_G_Crc.S"        
 #endif

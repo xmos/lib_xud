@@ -16,20 +16,23 @@ WaitForEndDataPacket:
 // r9: crc poly
 .cc_top doRXData.func, doRXData
 .align 4
-.skip 2
+.skip 0
 doRXData:
     ldw         r11, sp[10]           	        // Load RxA Port ID (r1) 
-    in          r8, res[r11]                    // Doing an IN to clear any previous event data - saves us havin to reload the port ID later...
+    in          r8, res[r11]                    // Doing an IN to clear any previous event data 
+                                                // - saves us havin to reload the port ID later...
     inpw        r8, res[r0], 8                  // Input PID
 GotRxPid:
     stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
     eeu         res[r11] 
-    setsr       1                               // Enable thread events
+.syntax architectural
+    SETSR_lu6       1                           // Enable thread events. Note long inst to align loop
+.syntax default
 
 NextRxWord:				                        // RXD port has event vector here
-    in 	        r8, res[r0]
-    crc32       r6, r8, r9
-    stw         r8, r1[r4]
+    in 	        r11, res[r0]
+    crc32       r6, r11, r9
+    stw         r11, r1[r4]
     add         r4, r4, 1
 .xtabranch NextRxWord, RxALow
     bu          NextRxWord
@@ -131,14 +134,9 @@ LoadSetupBuffer:
                                                 // r7: CRC check	
                                                 // r8: Data tail size (bytes)  
     clre
-    //stw         r7, r1[r4]                      // Store last data
     eq          r1, r6, r11                     // Check for good CRC16
        
-doRXDataReturn_:
-    ldw         r11, dp[flag1_port]
-    in          r11, res[r11]
-
-DoOutHandShake:                                 // Data CRC good: Send Ack
+ClearStall:                                     // CRC OK
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint. 
     ldaw        r11, dp[handshakeTable_OUT]
     ldc         r6, PIDn_NAK
@@ -146,18 +144,19 @@ DoOutHandShake:                                 // Data CRC good: Send Ack
     ldaw        r11, dp[handshakeTable_IN]
     stw         r6, r11[r10]
 
-    
-StoreTailData:                                  // TODO: don't assume setups are 8 bytes + crc
-    ldc         r11, 0
-    stw         r11, r5[r10]                    // Clear ready       
-    ldw         r5, r3[1]                       // Load chanend
-
+SendSetupAck:
     ldc         r11, PIDn_ACK
     outpw       res[TXD], r11, 8
 
-    out         res[r5], r10    
-    outct       res[r5], 0                      // Send zero control token for SETUP. Tail ignored since always expect 8 bytes            
-    bu          NextToken 				        // Go to next wait for next token 
+StoreTailData:                                  // TODO: don't assume setups are 8 bytes + crc
+    ldc         r11, 0
+    stw         r11, r5[r10]                    // Clear ready       
+    ldw         r11, r3[1]                      // Load chanend
+
+
+    out         res[r11], r10    
+    outct       res[r11], 0                     // Send zero control token for SETUP. Tail ignored since always expect 8 bytes            
+    bu          NextTokenAfterOut 			    // Go to next wait for next token 
 
 
 SBuffFull:

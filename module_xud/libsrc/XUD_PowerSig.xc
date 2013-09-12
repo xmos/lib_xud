@@ -30,7 +30,7 @@ void XUD_UIFM_PwrSigFlags();
 #define DELAY_6ms_us      6000
 #define DELAY_6ms            (DELAY_6ms_us * REF_CLK_FREQ)
 
-extern in  port p_usb_clk;
+extern buffered in  port:32 p_usb_clk;
 extern in  port reg_read_port;
 extern in  port flag0_port;
 extern in  port flag1_port;
@@ -346,10 +346,12 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, 0);
 
             /* Wait for usb clock */
+            set_thread_fast_mode_on();
             p_usb_clk when pinseq(1) :> int _;
             p_usb_clk when pinseq(0) :> int _;
             p_usb_clk when pinseq(1) :> int _;
             p_usb_clk when pinseq(0) :> int _; 
+            set_thread_fast_mode_off();
             if(g_curSpeed == XUD_SPEED_HS)
             {
                 /* Back to high-speed */

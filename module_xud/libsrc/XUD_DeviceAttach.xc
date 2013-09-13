@@ -166,7 +166,6 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                     addDeviceState(STATE_K_INVALID);
 #endif
                     nextState = STATE_INVALID;
-                    //printint(2);
                 } 
                 else 
                 {
@@ -191,7 +190,6 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 if (time2 - time1 > INVALID_DELAY)
                 {
                     nextState = STATE_INVALID;
-                    //printint(3);
                 } 
 
                 flag0_port :> tmp;

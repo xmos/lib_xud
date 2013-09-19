@@ -3,6 +3,7 @@
   * @author    Ross Owen, XMOS Limited
   */
 #include "usb_defs.h"
+#include "xud_defines.h"
 
 .section        .cp.const4,"aMc",@progbits,4
 .align  4
@@ -373,10 +374,6 @@ XUD_SetData_PidToggle:                          //
 
 XUD_SetData_DonePid:
     ldc         r0, 0
-    //ldw         r0, sp[1]
-    //ldw         r1, sp[2]
-    //ldw         r2, sp[3]
-    //ldw         r3, sp[4]  
 Return2:
     ldw         r4, sp[0]        
     ldw         r5, sp[5] 
@@ -467,3 +464,31 @@ XUD_ClearStallByAddr_OUT:
     retsp       0
 .cc_bottom XUD_ClearStallByAddr.func   
 
+
+.globl   XUD_ResetEpStateByAddr
+.globl   XUD_ResetEpStateByAddr.nstackwords
+.linkset XUD_ResetEpStateByAddr.nstackwords, 0
+        
+/* R0: ep number */
+.cc_top XUD_ResetEpStateByAddr.func, XUD_ClearStallByAddr
+XUD_ResetEpStateByAddr:
+    ldc         r11, 0x80
+    and         r2, r0, r1
+    bf          r2, XUD_ResetEpStateByAddr_OUT 
+    ldc         r1, USB_PIDn_DATA0
+    bu          XUD_ResetEpStateByAddr_
+XUD_ResetEpStateByAddr_OUT:
+    ldc         r1, USB_PID_DATA0
+XUD_ResetEpStateByAddr_:
+    zext        r0, 7                   // Check for IN bit set
+    bf          r2, NoOffset
+    ldaw        r0, r0[4]
+NoOffset:
+    ldc         r2, 36                  // Size of XUD_ep_info struct
+    mul         r0, r0, r2
+    ldaw        r2, dp[ep_info]
+    add         r0, r2, r0
+    stw         r1, r0[4]
+    retsp       0
+
+.cc_bottom XUD_ResetEpStateByAddr.func   

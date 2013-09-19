@@ -293,8 +293,6 @@ in port p_usb_dir = XS1_PORT_1G;
 int xud_counter = 0;
 #endif
 
-
-
 XUD_chan epChans[XUD_MAX_NUM_EP];
 XUD_chan epChans0[XUD_MAX_NUM_EP];
 
@@ -311,7 +309,7 @@ typedef struct XUD_ep_info
     unsigned int epAddress;            // 8 EP address assigned by XUD 
 } XUD_ep_info;
 
-static XUD_ep_info ep_info[XUD_MAX_NUM_EP];
+XUD_ep_info ep_info[XUD_MAX_NUM_EP];
 
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
@@ -856,14 +854,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Reset the OUT ep structures */
                     for(int i = 0; i< noEpOut; i++)
                     {
-                        ep_info[0+i].pid = PID_DATA0;
+                        ep_info[i].pid = PID_DATA0;
                     }
 
 
                     /* Reset in the ep structures */
                     for(int i = 0; i< noEpIn; i++)
                     {
-                        ep_info[noEpOut+i].pid = PIDn_DATA0;
+                        ep_info[XUD_MAX_NUM_EP_OUT+i].pid = PIDn_DATA0;
                     }
 
                     /* Set default device address */

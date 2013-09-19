@@ -22,7 +22,6 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "xud.h"                 /* External user include file */
 #include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
-#include "XUD_internal_defines.h"
 
 #include "XUD_Support.h"
 #include "XUD_UIFM_Functions.h"

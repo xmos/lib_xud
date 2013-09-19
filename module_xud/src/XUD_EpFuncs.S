@@ -468,7 +468,8 @@ XUD_ClearStallByAddr_OUT:
 .globl   XUD_ResetEpStateByAddr
 .globl   XUD_ResetEpStateByAddr.nstackwords
 .linkset XUD_ResetEpStateByAddr.nstackwords, 0
-        
+
+#if 1 
 /* R0: ep number */
 .cc_top XUD_ResetEpStateByAddr.func, XUD_ClearStallByAddr
 XUD_ResetEpStateByAddr:
@@ -482,7 +483,7 @@ XUD_ResetEpStateByAddr_OUT:
 XUD_ResetEpStateByAddr_:
     zext        r0, 7                   // Check for IN bit set
     bf          r2, NoOffset
-    ldaw        r0, r0[4]
+    ldaw        r0, r0[4]               // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
 NoOffset:
     ldc         r2, 36                  // Size of XUD_ep_info struct
     mul         r0, r0, r2
@@ -491,4 +492,6 @@ NoOffset:
     stw         r1, r0[4]
     retsp       0
 
-.cc_bottom XUD_ResetEpStateByAddr.func   
+.cc_bottom XUD_ResetEpStateByAddr.func 
+
+#endif  

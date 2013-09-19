@@ -171,7 +171,7 @@ int XUD_DoSetRequestStatus(XUD_ep ep_in)
 {
     unsigned char tmp[8];
 
-    return XUD_SetData(ep_in, tmp, 0, 0, USB_PIDn_DATA1);
+    return XUD_SetData(ep_in, tmp, 0, 0, 0);
 }
 
 void XUD_SetStall(XUD_ep ep)

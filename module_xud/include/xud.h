@@ -9,12 +9,15 @@
 #include <platform.h>
 #include <print.h>
 
+
 #define XUD_U_SERIES 1
 #define XUD_L_SERIES 2
 
 #ifdef __xud_conf_h_exists__
 #include "xud_conf.h"
 #endif
+
+#include "xud_defines.h"
 
 #if !defined(USB_TILE)
   #define USB_TILE tile[0]
@@ -144,8 +147,7 @@ int XUD_GetSetupData(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
  *  \param      buffer     The packet buffer to send data from.
  *  \param      datalength The length of the packet to send (in bytes).
  *  \param      startIndex The start index of the packet in the buffer (typically 0).
- *  \param      pidToggle  Normal usage is 0 causing XUD to toggle packet ID normally.
- *                         Anything other than 0 is used as the packet ID.
+ *  \param      pidToggle  No longer used
  *  \return                0 on non-error, -1 on bus-reset.
  */
 int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
@@ -330,36 +332,48 @@ XUD_ep XUD_InitEp(chanend c_ep);
 
 
 /**
- * \brief   Mark an IN endpoint as STALL based on its EP address.  Cleared automatically if a SETUP received on the endpoint. 
+ * \brief   Mark an endpoint as STALL based on its EP address.  Cleared automatically if a SETUP received on the endpoint. 
  *          Note: the IN bit of the endpoint address is used.
  * \param   epNum Endpoint number.
- * \warning Must be run on USB core
+ * \warning Must be run on same tile as XUD core
  */
 void XUD_SetStallByAddr(int epNum);
 
 
 /**
- * \brief   Mark an OUT endpoint as NOT STALLed based on its EP address.
+ * \brief   Mark an endpoint as NOT STALLed based on its EP address.
  *          Note: the IN bit of the endpoint address is used.
  * \param   epNum Endpoint number.
- * \warning Must be run on USB core
+ * \warning Must be run on same tile as XUD core
  */
 void XUD_ClearStallByAddr(int epNum);
 
 /**
  * \brief   Mark an endpoint as STALLed.  It is cleared automatically if a SETUP received on the endpoint. 
  * \param   ep XUD_ep type.
- * \warning Must be run on USB core
+ * \warning Must be run on same tile as XUD core
  */
 void XUD_SetStall(XUD_ep ep);
 
 
 /**
- * \brief   Mark an OUT endpoint as NOT STALLed
+ * \brief   Mark an endpoint as NOT STALLed
  * \param   ep XUD_ep type.
- * \warning Must be run on USB core
+ * \warning Must be run on same tile as XUD core
  */
 void XUD_ClearStall(XUD_ep ep);
+
+/* USB 2.0 Spec 9.1.1.5 states that configuring a device should cause all
+ * the status and configuration values associated with the endpoints in the 
+ * affected interfaces to be set to their default values.  This includes setting
+ * the data toggle of any endpoint using data toggles to the value DATA0 */
+/**
+ * \brief   Reset and Endpoints state including data PID toggle
+ *          Note: the IN bit of the endpoint address is used.
+ * \param   epNum Endpoint number (including IN bit)
+ * \warning Must be run on same tile as XUD core
+ */
+void XUD_ResetEpStateByAddr(unsigned epNum);
 
 
 
@@ -488,5 +502,8 @@ XUD_BusSpeed XUD_GetBusSpeed(chanend c);
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
 #define USB_SUSPEND_TOKEN           9        /* Control token value that signals SUSPEND */
+
+
+
 
 #endif // __xud_h__

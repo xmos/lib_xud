@@ -19,7 +19,7 @@
 #define T_UCHEND_T_UCH              (T_UCHEND_T_UCH_us * REF_CLK_FREQ)
 #define T_UCHEND_T_UCH_ULPI_us      2000     //    2ms
 #define T_UCHEND_T_UCH_ULPI         (T_UCHEND_T_UCH_us * REF_CLK_FREQ)
-#define T_FILT_us                   40       //   40us
+#define T_FILT_us                   3      //   2.5us
 #define T_FILT                      (T_FILT_us * REF_CLK_FREQ)
 
 

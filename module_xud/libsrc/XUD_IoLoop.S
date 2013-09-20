@@ -9,8 +9,8 @@
 
 #include <xs1.h>
 #include "XUD_USB_Defines.h"
-#include "XUD_internal_defines.h"
 #include "XUD_UIFM_Defines.h"
+#include "xud_defines.h"
 
 
 #define SUSPEND_TIMEOUT_us   3000 // 3ms (well, just over.. spec says 3 to 3.125ms)

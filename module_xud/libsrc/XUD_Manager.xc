@@ -971,13 +971,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             waking = 0;
 
             set_thread_fast_mode_on();
+            
             /* Run main IO loop
                 flag0: Valid token flag
                 flag1: Rx Active
                 flag2: Rx Error */
             XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
                            reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof, c_usb_testmode); 
-            //set_thread_fast_mode_off();
+           
+            set_thread_fast_mode_off();
 
             /* Put UIFM back to default state */
 #ifdef ARCH_L

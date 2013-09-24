@@ -17,7 +17,7 @@ LIBRARIES =  xud_u xud_l
 #
 # You can also set MODULE_XCC_C_FLAGS, MODULE_XCC_XC_FLAGS etc..
 
-MODULE_XCC_FLAGS = $(XCC_FLAGS) -g -O3 -Xcompiler-xc
+MODULE_XCC_FLAGS = $(XCC_FLAGS) -g -O3
 
 LIB_XCC_FLAGS_xud_l =  -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -D ARCH_L -DXUD_FULL_PIDTABLE=1 -fschedule 
 

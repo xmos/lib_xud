@@ -69,101 +69,58 @@ void XUD_PhyReset(out port p_rst, int time, unsigned rstMask)
     p_rst <: x;
 }
 
-#define STATE_START 0
-#define STATE_START_SE0 1
-#define STATE_START_J 2
-/* Initialise UIFM, setup UIFM for power-signaling and wait for host */
 int XUD_Init()
 {
-    timer SE0_timer;
-    unsigned SE0_start_time = 0;
-    unsigned state = STATE_START;
-    unsigned host_signal = 0;
-    int tmp;
-    int reset = 0;
+   timer SE0_timer;
+   unsigned SE0_start_time = 0;
 
 #ifdef DO_TOKS
-    /* Set default device address */
-    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
+   /* Set default device address */
+   XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
 #endif
 
-    /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-    //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
+   /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
+   //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
 
-    //XUD_Sup_Delay(18000);
+   //XUD_Sup_Delay(18000);
 
-    /* Wait for host */
-    while (!host_signal)
-    {
-        switch (state)
-        {
-            case STATE_START:
+   /* Wait for host */
+   while (1)
+   {
+       select
+       {
+           /* SE0 State */
+       case flag2_port when pinseq(1) :> void:
+           SE0_timer :> SE0_start_time;
+           select
+           {
+           case flag2_port when pinseq(0) :> void:
+               break;
 
-#ifdef XUD_STATE_LOGGING
-                addDeviceState(STATE_START_BEGIN);
-#endif
-                select
-                {
-                    /* SE0 State */
-                    case flag2_port when pinseq(1) :> tmp:
-                        state = STATE_START_SE0;
-                        SE0_timer :> SE0_start_time;
-                        break;
+           case SE0_timer when timerafter(SE0_start_time + T_WTRSTFS) :> int:
+               return 1;
+               break;
+           }
+           break;
 
-                    /* J State */
-                    case flag0_port when pinseq(1) :> tmp:
-                        state = STATE_START_J;
-                        SE0_timer :> SE0_start_time;
-                         break;
-                }
-                break;
+           /* J State */
+       case flag0_port when pinseq(0) :> void:             // Inverted!
+           SE0_timer :> SE0_start_time;
+           select
+           {
+           case flag0_port when pinseq(1) :> void:         // Inverted!
+               break;
 
-            case STATE_START_SE0:
-
-#ifdef XUD_STATE_LOGGING
-            addDeviceState(STATE_SE0_BEGIN);
-#endif
-
-                select
-                {
-                    case flag2_port when pinseq(0) :> tmp:
-                        state = STATE_START;
-                        break;
-
-                    case SE0_timer when timerafter(SE0_start_time + T_WTRSTFS) :> int:
-                        host_signal = 1;
-                        reset = 1;
-                        break;
-                }
-                break;
-
-          case STATE_START_J:
-#ifdef XUD_STATE_LOGGING
-            addDeviceState(STATE_J_BEGIN);
-#endif
-                select
-                {
-                    case flag0_port when pinseq(0) :> tmp:
-                        state = STATE_START;
-                        break;
-
-                    case SE0_timer when timerafter(SE0_start_time + STATE_START_TO) :> int:
-                        host_signal = 1;
-                        
-                        reset = 0;
-                        break;
-                }
-                break;
-
-        } /* switch */
-    }
-
-    /* Return 1 if reset */
-    return reset;
+           case SE0_timer when timerafter(SE0_start_time + STATE_START_TO) :> int:
+               return  0;
+               break;
+           }
+           break;
+       }
+   }
 }
 
-extern int inSus;
-extern unsigned susresettime;
+
 
 #ifdef ARCH_S
 #include <xa1_registers.h>

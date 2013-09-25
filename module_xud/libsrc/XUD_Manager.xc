@@ -44,6 +44,14 @@ extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
 
+#if (XUD_MAX_NUM_EP_IN != 16)
+#error XUD_MAX_NUM_EP_IN must be 16!
+#endif
+
+#if (XUD_MAX_NUM_EP_OUT != 16)
+#error XUD_MAX_NUM_EP_OUT must be 16!
+#endif
+
 extern int XUD_GetDone();
 
 void XUD_UserSuspend();

@@ -29,7 +29,7 @@ XUD_IN_TxNak:
     //syncr     res[TXD] 
 
     //ldw         r4, sp[(STACK_EXTEND+8)]            // Number of out Endpoints
-    ldc         r4, XUD_MAX_NUM_EP_OUT
+    //ldc         r4, XUD_MAX_NUM_EP_OUT
 
     ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
                                                       // We receive: | 0000 4-bit EP | 0000 4-bit PID |
@@ -63,7 +63,8 @@ Pid_In:
 #else
     #include "XUD_G_Crc.S"        
 #endif
-    add        r3, r4, r10                      // IN channel offset (R10: EP number, E4: Num out Eps)       
+    //add        r3, r4, r10                      // IN channel offset (R10: EP number, E4: Num out Eps)       
+    ldaw       r3, r10[4]                       // R3 = R10 + 16
     ldw        r4, r5[r3]                       // Load EP structure address
     bf         r4, InNotReady                   // If 0 then not ready...
        

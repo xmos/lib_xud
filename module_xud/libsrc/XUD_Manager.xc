@@ -1146,8 +1146,6 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
     }
 
-    
-
     /* EpTypeTable Checks.  Note, currently this is not too crucial since we only really care if the EP is ISO or not */
 
     /* Check for control on IN/OUT 0 */
@@ -1190,13 +1188,6 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
     /* Run the main XUD loop */
     XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, c_usb_testmode, pwrConfig);
-
-    // TODO --- Could do with a cleaner mechanism for this cleaning up all endpoints
-    // If the global variable XUD_USB_Done is set the manager loop will exit and return us to main()
-    // This is pretty nasty, required to clean up the endpoint channels so they can be free'd by the normal exit from main
-    //outuint(c_ep_out[0], -1);
-    //outuint(c_ep_out[0], -1);
-
 
     // Need to close, drain, and check - three stages.
     for(int i = 0; i < 3; i++) 

@@ -48,10 +48,9 @@ XUD_IN_TxNak:
 .cc_top Pid_In.func, Pid_In
 .align 128
 #ifdef ARCH_L        
-.skip 94
+.skip 92
 #else
-//.skip 90
-.skip 84
+.skip 82
 #endif        
 Pid_In:
 #ifdef ARCH_L        

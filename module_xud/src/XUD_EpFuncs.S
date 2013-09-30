@@ -192,6 +192,9 @@ XUD_GetData_CheckPid_:
                                                 // Note: We can't just jump back to XUD_GetData_Select since 
                                                 // other EP's might need service 
 
+                                                // Also note, since Iso EP's dont have a CRC check then we could have a packet < 2 bytes.
+                                                // Normally expect PID + 2 Bytes CRC atleast
+
 XUD_GetData_PidOkay_: 
     ldw         r11, r1[5]                       // Load EP type
     bf          r11, XUD_GetData_ReturnOk_       // Jump over PID toggle for ISO  
@@ -203,6 +206,15 @@ XUD_GetData_PidToggle_:
  
 XUD_GetData_ReturnOk_:
     sub         r0, r3, 2                        // Length correction for CRC correction (return val in r0) 
+
+                                                 // Check for < 0
+    //lss         r11, r0, 0
+    //bt          LessThanZero
+
+LessThanZero:
+    //ldc         r0, 0
+
+
     stw         r0, r2[0]
     ldw         r4, sp[1]
     retsp       4

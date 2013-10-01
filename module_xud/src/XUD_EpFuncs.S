@@ -159,18 +159,13 @@ XUD_GetData_CheckPid_:
     shr        r11, r11, 24                     // Shift down due to inpw
     ldw        r0, r1[4]                        // Load expected PID 
 
-    //xor        r4, r0, r11                    // Do the comparison
-    
-    //bf        r4, XUD_GetData_PidOkay_
-    //ldw      r0, r1[3]
-    //mov     r1, r11     
-    //bl        PrintPacket
-    //ecallt     r4                               //  TODO TODO TODO TODO
-    
-    //bt          r11, XUD_GetData_Select_Return_BadPid
-                                                // Note: We can't just jump back to XUD_GetData_Select since 
+                                                // TODO Check PID
+                                                // Note: We can't just jump back to XUD_GetData_Select since
                                                 // other EP's might need service 
-
+    //xor       r11, r0, r11                    // Do the comparison
+    //bf        r11, XUD_GetData_PidOkay_
+    //ecallf    r11 
+                                                
 XUD_GetData_PidOkay_: 
     ldw         r11, r1[5]                      // Load EP type
     bf          r11, XUD_GetData_ReturnOk_      // Jump over PID toggle for ISO  
@@ -182,8 +177,18 @@ XUD_GetData_PidToggle_:
  
 XUD_GetData_ReturnOk_:
     sub         r0, r3, 2                       // Length correction for CRC correction (return val in r0) 
-    stw         r0, r2[0]
+   
+    ashr        r11, r0, 32                     // Check for < 0
+    bt          r11, XUD_GetData_Select_LssZero
+    
+    stw         r0, r2[0]                       // Return length (note: passed by ref)
     retsp       0
+  
+XUD_GetData_Select_LssZero:
+    ldc         r0, 0                           // Return 0
+    stw         r0, r2[0]                       // Return length (note: passed by ref)
+    retsp       0
+   
     
 XUD_GetData_Select_Return_ResetSuspend:
     mkmsk       r0, 32                          // Return -1 as length
@@ -339,7 +344,7 @@ XUD_SetData_Reset:
 
 
 .globl XUD_ResetEndpoint
-.globl   XUD_ResetEndpoint.nstackwords
+.globl XUD_ResetEndpoint.nstackwords
 .linkset XUD_ResetEndpoint.nstackwords, 1
         
 .cc_top XUD_ResetEndpoint.func, XUD_ResetEndpoint

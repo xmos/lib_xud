@@ -239,8 +239,8 @@ XUD_GetData_CheckPid:
     bt         r11, XUD_GetData_                // Ignore packet...
 
 XUD_GetData_PidOkay: 
-    stw        r11, r2[0]                       // Zero ready entry (NOTE R11 0 from branch above)  
-                                                // TODO is there a race here? Should this happen in XUD thread? 
+    //stw        r11, r2[0]                     // Zero ready entry (Note, R11 0 from branch above)  
+                                                // Now done in the XUD core 
     
     ldw        r11, r0[5]                       // Load EP type
     bf         r11, XUD_GetData_ReturnOk        // Jump over PID toggle for ISO  
@@ -252,7 +252,7 @@ XUD_GetData_PidToggle:
  
 XUD_GetData_ReturnOk:
     sub        r0, r3, 2                        // Length correction for CRC correction (return val in r0) 
-    ldw        r10, sp[1]
+    ldw        r10, sp[1]                       // TODO should check for <0 as ISO doesn't have CRC check
     retsp      16
     
 ResetSuspend:

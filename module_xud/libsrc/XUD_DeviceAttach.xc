@@ -71,7 +71,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #ifdef ARCH_S
    /* Added a bit of a delay before chirp to match an example HS device */
    t :> start_time; 
-   t when timerafter(start_time+100000):> void;
+   t when timerafter(start_time+10000):> void;
 #endif
    // output k-chirp for required time
 

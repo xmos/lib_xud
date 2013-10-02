@@ -178,7 +178,7 @@ XUD_GetData_PidToggle_:
 XUD_GetData_ReturnOk_:
     sub         r0, r3, 2                       // Length correction for CRC correction (return val in r0) 
    
-    ashr        r11, r0, 32                     // Check for < 0
+    ashr        r11, r0, 32                     // Check for < 0. No CRC check on ISO so less than 2 bytes could be received.
     bt          r11, XUD_GetData_Select_LssZero
     
     stw         r0, r2[0]                       // Return length (note: passed by ref)

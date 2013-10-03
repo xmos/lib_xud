@@ -150,45 +150,43 @@ XUD_GetData_Select:                             // Entry for _NoReq
     int        r11, res[r0]                     // r11 is tail length (bytes)
 	shr		   r11, r11, 3
 
-CalcdataLength_:
+XUD_GetData_Select_CalcdataLength:
     shl        r3, r3, 2                        // Num received words to bytes
     add        r3, r11, r3                      // r11: Total bytes received (Note this includes 2 byte crc)
 
-XUD_GetData_CheckPid_: 
-    ldw        r11, r1[6]                       // Load received PID from EP structure
-    shr        r11, r11, 24                     // Shift down due to inpw
-    ldw        r0, r1[4]                        // Load expected PID 
 
-                                                // TODO Check PID
-                                                // Note: We can't just jump back to XUD_GetData_Select since
-                                                // other EP's might need service 
-    //xor       r11, r0, r11                    // Do the comparison
-    //bf        r11, XUD_GetData_PidOkay_
-    //ecallf    r11 
-                                                
-XUD_GetData_PidOkay_: 
     ldw         r11, r1[5]                      // Load EP type
-    bf          r11, XUD_GetData_ReturnOk_      // Jump over PID toggle for ISO  
+    bf          r11, XUD_GetData_Select_Return  // Jump over PID toggle and check for ISO  
+                                                
+                                                
+XUD_GetData_Select_CheckPid:                    // Check PID
+    ldw         r11, r1[6]                      // Load received PID from EP structure
+    shr         r11, r11, 24                    // Shift off junk
 
-XUD_GetData_PidToggle_:
+                                                // Note: We can't just jump back to XUD_GetData_Select since other EP's might need service 
+                                                
+    ldw         r0, r1[4]                       // Load expected PID 
+    xor         r11, r0, r11                    // Do the comparison
+    bt          r11, XUD_GetData_Select_BadPkt  // TODO Currently report 0 length packet received, not ideal.
+
+XUD_GetData_Select_PidToggle:
     ldc         r11, 8
     xor         r0, r0, r11
     stw         r0, r1[4]
  
-XUD_GetData_ReturnOk_:
+XUD_GetData_Select_Return:
     sub         r0, r3, 2                       // Length correction for CRC correction (return val in r0) 
    
     ashr        r11, r0, 32                     // Check for < 0. No CRC check on ISO so less than 2 bytes could be received.
-    bt          r11, XUD_GetData_Select_LssZero
+    bt          r11, XUD_GetData_Select_BadPkt
     
     stw         r0, r2[0]                       // Return length (note: passed by ref)
     retsp       0
   
-XUD_GetData_Select_LssZero:
-    ldc         r0, 0                           // Return 0
+XUD_GetData_Select_BadPkt:
+    ldc         r0, 0                           // Return 0 length
     stw         r0, r2[0]                       // Return length (note: passed by ref)
     retsp       0
-   
     
 XUD_GetData_Select_Return_ResetSuspend:
     mkmsk       r0, 32                          // Return -1 as length

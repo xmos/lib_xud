@@ -769,11 +769,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 {
                     timer t;
                     unsigned time, x;
-                    t :> time;
                     while(1)
                     { 
-                        time += (200 * REF_CLK_FREQ); // 2ms poll
-                        t when timerafter(time):> void;
 #ifdef ARCH_S
                         read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
@@ -784,10 +781,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         {
                             break;
                         }
-                       
+                        t :> time;
+                        time += (200 * REF_CLK_FREQ); // 200us poll
+                        t when timerafter(time):> void;
                     }
                 }
- 
 #ifndef SIMULATION
 #ifdef ARCH_S
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
@@ -816,15 +814,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 }
                 else
                 {
-                    XUD_Sup_Delay(30000); // 200-800us
-                    //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAGS, 0x0);
+                    XUD_Sup_Delay(20000); // T_WTRSTHS: 100-875us
 
                     /* Sample line state and check for reset (or suspend) */
-                    //flags = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-
-                    //reset = flags & 0x20;
-                    flag2_port :> reset;
-
+                    flag2_port :> reset; /* SE0 Line */
                 }
 //                }
 #endif

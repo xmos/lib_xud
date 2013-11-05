@@ -5,7 +5,7 @@
 #include "XUD_Support.h"
 
 // Sets up the ports for use with UIFM
-void XUD_UIFM_PortConfig(in port clk_port, out port reg_write_port, in port reg_read_port, in port flag0_port, in port flag1_port, in port flag2_port, out port txd_port, in port rxd_port); 
+void XUD_UIFM_PortConfig(in port clk_port, out port reg_write_port, in port reg_read_port, in port flag0_port, in port flag1_port, in port flag2_port, out port txd_port, in port rxd_port);
 
 // Enables UIFM in the passed mode
 unsigned XUD_UIFM_Enable(unsigned mode);
@@ -30,7 +30,7 @@ unsigned XUD_UIFM_RegRead_Locked(out port reg_write_port, in port reg_read_port,
 // Write specified endpoint buffer to UIFM packet buffer
 void WriteEpBuffToPktBuff(out port reg_write_port, unsigned ep, unsigned datalength);
 
-// Read data from specified endpoint buffer. 
+// Read data from specified endpoint buffer.
 // Returns DATA PID for sequence checking
 // Does CRC checking... returns 0 if CRC16 bad
 unsigned ReadPktBuffToEpBuff(out port reg_write_port, in port reg_read_port, unsigned ep, unsigned datalength);

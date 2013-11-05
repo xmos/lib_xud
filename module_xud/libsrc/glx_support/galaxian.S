@@ -15,14 +15,14 @@ write_sswitch_reg_noresp:
   // Check range of coreid
   shr r3, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r3, write_switch_reg_noresp_fail
-  
+
   // Check range of reg
   shr r3, r1, 16
   bt r3, write_switch_reg_noresp_fail
-  
+
   // Allocate channel end
   getr r3, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination
   ldc r11, XS1_RES_TYPE_CONFIG | (XS1_CT_SSCTRL << XS1_CHAN_ID_CHANNUM_SHIFT)
   bu write_switch_reg_noresp
@@ -68,7 +68,7 @@ write_switch_reg_noresp:
   outt res[r3], r1 // reg & 0xff
   out res[r3], r2
   outct res[r3], XS1_CT_END
-  
+
   freer res[r3]
   retsp 0
 write_switch_reg_noresp_fail:
@@ -91,14 +91,14 @@ write_sswitch_reg_nodeid_noresp:
   // Check range of coreid
   shr r3, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r3, write_switch_reg_nodeid_noresp_fail
-  
+
   // Check range of reg
   shr r3, r1, 16
   bt r3, write_switch_reg_nodeid_noresp_fail
-  
+
   // Allocate channel end
   getr r3, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination
   ldc r11, XS1_RES_TYPE_CONFIG | (XS1_CT_SSCTRL << XS1_CHAN_ID_CHANNUM_SHIFT)
   bu write_switch_reg_nodeid_noresp
@@ -144,7 +144,7 @@ write_switch_reg_nodeid_noresp:
   outt res[r3], r1 // reg & 0xff
   out res[r3], r2
   outct res[r3], XS1_CT_END
-  
+
   freer res[r3]
   retsp 0
 write_switch_reg_nodeid_noresp_fail:
@@ -167,14 +167,14 @@ write_sswitch_reg_skipresp:
   // Check range of coreid
   shr r3, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r3, write_switch_reg_skipresp_fail
-  
+
   // Check range of reg
   shr r3, r1, 16
   bt r3, write_switch_reg_skipresp_fail
-  
+
   // Allocate channel end
   getr r3, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination
   ldc r11, XS1_RES_TYPE_CONFIG | (XS1_CT_SSCTRL << XS1_CHAN_ID_CHANNUM_SHIFT)
   bu write_switch_reg_skipresp
@@ -211,7 +211,7 @@ write_switch_reg_skipresp:
   outt res[r3], r1 // reg & 0xff
   out res[r3], r2
   outct res[r3], XS1_CT_END
-  
+
   freer res[r3]
   retsp 0
 
@@ -235,14 +235,14 @@ write_sswitch_reg_nackresp:
   // Check range of coreid
   shr r3, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r3, write_switch_reg_nackresp_fail
-  
+
   // Check range of reg
   shr r3, r1, 16
   bt r3, write_switch_reg_nackresp_fail
-  
+
   // Allocate channel end
   getr r3, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination
   ldc r11, XS1_RES_TYPE_CONFIG | (XS1_CT_SSCTRL << XS1_CHAN_ID_CHANNUM_SHIFT)
   bu write_switch_reg_nackresp

@@ -3,9 +3,9 @@
   * @author    Ross Owen, XMOS Limited
   * @version   0v9
   */
- 
-/* TODO we can inline all this.  This was before the compliler supported asm() */ 
- 
+
+/* TODO we can inline all this.  This was before the compliler supported asm() */
+
 .extern XUD_Sup_getd
 .globl XUD_Sup_getd.nstackwords
 .globl XUD_Sup_getd.maxthreads
@@ -16,9 +16,9 @@
 .linkset XUD_Sup_getd.maxchanends, 0
 .linkset XUD_Sup_getd.maxtimers, 0
 .linkset XUD_Sup_getd.maxthreads, 0
- 
+
 .globl XUD_Sup_getd
-  
+
 .text
 
 XUD_Sup_getd:
@@ -34,7 +34,7 @@ XUD_Sup_getd:
 .global XUD_Sup_GetResourceId
 XUD_Sup_GetResourceId:
   retsp       0
-           
+
 
 
 //void XUD_Sup_outuint(XUD_chan, unsigned x)
@@ -43,7 +43,7 @@ XUD_Sup_GetResourceId:
 .linkset XUD_Sup_outuint.nstackwords, 0
 .globl   XUD_Sup_outuint
 .text
-//unsigned XUD_Sup_inuint(XUD_chan c) 
+//unsigned XUD_Sup_inuint(XUD_chan c)
 XUD_Sup_outuint:
   out	  res[r0], r1
   retsp   0
@@ -75,9 +75,9 @@ XUD_Sup_stop_streaming_master:
 .linkset XUD_Sup_inuint.nstackwords, 0
 .globl   XUD_Sup_inuint
 .text
-//unsigned XUD_Sup_inuint(XUD_chan c) 
+//unsigned XUD_Sup_inuint(XUD_chan c)
 XUD_Sup_inuint:
-  in	  r0, res[r0] 
+  in	  r0, res[r0]
   retsp 0
 
 .extern  XUD_Sup_int
@@ -85,9 +85,9 @@ XUD_Sup_inuint:
 .linkset XUD_Sup_int.nstackwords, 0
 .globl   XUD_Sup_int
 .text
-//unsigned XUD_Sup_inuint(XUD_chan c) 
+//unsigned XUD_Sup_inuint(XUD_chan c)
 XUD_Sup_int:
-  int	  r0, res[r0] 
+  int	  r0, res[r0]
   retsp 0
 
 
@@ -96,18 +96,18 @@ XUD_Sup_int:
 .linkset XUD_Sup_inct.nstackwords, 0
 .globl   XUD_Sup_inct
 .text
-//unsigned XUD_Sup_inuint(XUD_chan c) 
+//unsigned XUD_Sup_inuint(XUD_chan c)
 XUD_Sup_inct:
-  inct	  r0, res[r0] 
+  inct	  r0, res[r0]
   retsp 0
-  
-  
+
+
  .extern  XUD_Sup_testct
 .globl   XUD_Sup_testct.nstackwords
 .linkset XUD_Sup_testct.nstackwords, 0
 .globl   XUD_Sup_testct
 .text
-//unsigned XUD_Sup_test(XUD_chan c) 
+//unsigned XUD_Sup_test(XUD_chan c)
 XUD_Sup_testct:
-  testct	  r0, res[r0] 
+  testct	  r0, res[r0]
   retsp 0

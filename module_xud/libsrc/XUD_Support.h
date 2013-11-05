@@ -1,5 +1,5 @@
-/** @file      XUD_Support.h 
-  * @brief     Various  support functions used in XUD 
+/** @file      XUD_Support.h
+  * @brief     Various  support functions used in XUD
   * @author    Ross Owen, XMOS Limited
  */
 

@@ -10,11 +10,11 @@
 .linkset SetupChannelVectorsOverride.maxthreads, 0
 
 .globl SetupChannelVectorsOverride
-.text 
+.text
 .cc_top SetupChannelVectorsOverride.func, SetupChannelVectorsOverride
 
-// This function can be redefined by the client        
+// This function can be redefined by the client
 SetupChannelVectorsOverride:
         retsp 0
-        
+
 .cc_bottom SetupChannelVectorsOverride.func

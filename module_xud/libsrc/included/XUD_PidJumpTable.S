@@ -25,7 +25,7 @@ PidJumpTable:
 .word Pid_Stall           // 14   0x0e
 .word Pid_Datam           // 15   0x0f
 #if defined(XUD_DEBUG_VERSION) || defined(XUD_FULL_PIDTABLE)
-.word Pid_Bad 
+.word Pid_Bad
 .word Pid_Bad
 .word Pid_Bad
 .word Pid_Bad
@@ -58,7 +58,7 @@ PidJumpTable:
 .word Pid_Bad
 .word Pid_Bad
 .word Pid_Bad
-.word Pid_Bad       
+.word Pid_Bad
 .word Pid_Bad
 .word Pid_Bad
 .word Pid_Bad

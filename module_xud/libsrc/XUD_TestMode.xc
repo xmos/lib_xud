@@ -35,7 +35,7 @@ extern port p_usb_rxd;
 #define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * REF_CLK_FREQ)
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
-unsigned int test_packet[TEST_PACKET_LEN] = 
+unsigned int test_packet[TEST_PACKET_LEN] =
 {
     0x000000c3,
     0x00000000,
@@ -55,7 +55,7 @@ unsigned int test_packet[TEST_PACKET_LEN] =
 
 
 
-int XUD_TestMode_TestJ () 
+int XUD_TestMode_TestJ ()
 {
 #ifdef ARCH_L
 
@@ -63,35 +63,35 @@ int XUD_TestMode_TestJ ()
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x4);
 #endif
-  
+
     // TestMode remains in J state until exit action is taken (which
     // for a device is power cycle)
-    while(1) 
+    while(1)
     {
         p_usb_txd <: 1;
-    }   
+    }
     return 0;
 };
 
-int XUD_TestMode_TestK () 
+int XUD_TestMode_TestK ()
 {
 #ifdef ARCH_L
 
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x4);
-#endif  
-  
+#endif
+
     // TestMode remains in J state until exit action is taken (which
     // for a device is power cycle)
-    while(1) 
+    while(1)
     {
         p_usb_txd <: 0;
-    } 
+    }
     return 0;
 };
 
-int XUD_TestMode_TestPacket () 
+int XUD_TestMode_TestPacket ()
 {
     // Repetitively transmit specific test packet forever.
     // Timings must still meet minimum interpacket gap
@@ -100,10 +100,10 @@ int XUD_TestMode_TestPacket ()
     timer test_packet_timer;
 
 #pragma unsafe arrays
-    while (1) 
+    while (1)
     {
 #pragma loop unroll
-        for (i=0; i < TEST_PACKET_LEN; i++ ) 
+        for (i=0; i < TEST_PACKET_LEN; i++ )
         {
             p_usb_txd <: test_packet[i];
         };
@@ -115,11 +115,11 @@ int XUD_TestMode_TestPacket ()
 }
 
 // Runs in XUD thread with interrupt on entering testmode.
-int XUD_UsbTestModeHandler() 
+int XUD_UsbTestModeHandler()
 {
     unsigned cmd = UsbTestModeHandler_asm();
-    
-    switch(cmd) 
+
+    switch(cmd)
     {
         case WINDEX_TEST_J:
             //Function Control Reg. Suspend: 1 Opmode 10
@@ -128,13 +128,13 @@ int XUD_UsbTestModeHandler()
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif
-    
-            while(1) 
+
+            while(1)
             {
                 p_usb_txd <: 0xffffffff;
             }
             break;
-    
+
         case WINDEX_TEST_K:
             //Function Control Reg. Suspend: 1 Opmode 10
 #ifdef ARCH_S
@@ -142,23 +142,23 @@ int XUD_UsbTestModeHandler()
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif
-    
-            while(1) 
+
+            while(1)
             {
                 p_usb_txd <: 0;
             }
             break;
- 
+
         case WINDEX_TEST_SE0_NAK:
             // NAK every IN packet if the CRC is correct.
             // Drop into asm to deal with.
             XUD_UsbTestSE0();
             break;
-        
+
         case WINDEX_TEST_PACKET:
             XUD_TestMode_TestPacket();
             break;
-        
+
         default:
             break;
     }

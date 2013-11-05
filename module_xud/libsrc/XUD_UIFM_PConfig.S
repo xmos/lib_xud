@@ -1,6 +1,6 @@
 
 // XUD_UIFM_PConfig.S
-// Port configuration for UIFM 
+// Port configuration for UIFM
 // Ross Owen
 
 #include <xs1_user.h>
@@ -31,9 +31,9 @@
 .text
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// XUD_UIFM_PortConfig(in port clk_port, out port reg_write_port, in port reg_read_port, 
-//                     in port flag0_port, 
+//
+// XUD_UIFM_PortConfig(in port clk_port, out port reg_write_port, in port reg_read_port,
+//                     in port flag0_port,
 //                     in port flag1_port,
 //                     in port flag2_port,
 //                     out port txd_port, in port txd_port);
@@ -51,9 +51,9 @@ XUD_UIFM_PortConfig:
   stw       r9, sp[2]
   stw       r8, sp[3]
   stw       r7, sp[4]
-  
+
 InvertUsbClock:
-  setc      res[r0], XS1_SETC_INV_INVERT 
+  setc      res[r0], XS1_SETC_INV_INVERT
   setc      res[r0], XS1_SETC_COND_NONE
 
 ConfigClockBlock:
@@ -107,7 +107,7 @@ ConfigRegWritePort:                                 // UIFM reg write port
   setc      res[REG_WRITE], XS1_SETC_RUN_CLRBUF
 
 ConfigRegReadPort:                                  // UIFM reg read port
-  setc      res[REG_READ], XS1_SETC_SDELAY_SDELAY 
+  setc      res[REG_READ], XS1_SETC_SDELAY_SDELAY
   setclk    res[REG_READ], r10
 
   setc      res[REG_READ], XS1_SETC_BUF_BUFFERS
@@ -117,19 +117,19 @@ ConfigRegReadPort:                                  // UIFM reg read port
 
 ConfigFlagPort0:                                   	// Config UIFM flag port0
   setc      res[FLAG0], XS1_SETC_SDELAY_SDELAY
-  setclk    res[FLAG0], r10            
-  setc      res[FLAG0], XS1_SETC_RUN_CLRBUF 
+  setclk    res[FLAG0], r10
+  setc      res[FLAG0], XS1_SETC_RUN_CLRBUF
 
 ConfigFlagPort1:                                   	// Config UIFM flag port1
-  ldw       r11, sp[17]                            	// Flag port1: 5th arg 
-  setc      res[r11], XS1_SETC_SDELAY_SDELAY 
+  ldw       r11, sp[17]                            	// Flag port1: 5th arg
+  setc      res[r11], XS1_SETC_SDELAY_SDELAY
   setclk    res[r11], r10
   setc      res[r11], XS1_SETC_RUN_CLRBUF
   setc      res[r11], XS1_SETC_COND_EQ
 
 ConfigFlagPort2:                                   	// Config UIFM flag port2
-  ldw       r11, sp[18]                            	// Flag port2: 6th arg 
-  setc      res[r11], XS1_SETC_SDELAY_SDELAY 
+  ldw       r11, sp[18]                            	// Flag port2: 6th arg
+  setc      res[r11], XS1_SETC_SDELAY_SDELAY
   setclk    res[r11], r10
   setc      res[r11], XS1_SETC_RUN_CLRBUF
   setc      res[r11], XS1_SETC_COND_EQ
@@ -138,24 +138,24 @@ ConfigureTxDataPort:
   ldw       r11, sp[19]
   setc      res[r11], XS1_SETC_SDELAY_SDELAY
   setclk    res[r11], r10
-  
+
   ldc       r9, 0					// Turn port around
   out       res[r11], r9
 
   setc      res[r11], XS1_SETC_BUF_BUFFERS
   ldc       r9, 32  					// Set transfer width to 32 bits
-  settw     res[r11], r9                   
+  settw     res[r11], r9
   setc      res[r11], XS1_SETC_RDY_HANDSHAKE		// Set port to handshaken master
   setc      res[r11], XS1_SETC_MS_MASTER
 
-  setc      res[r11], XS1_SETC_RUN_CLRBUF 
+  setc      res[r11], XS1_SETC_RUN_CLRBUF
 
 ConfigureRxDataPort:
   ldw       r11, sp[20]
   setc      res[r11], XS1_SETC_SDELAY_SDELAY
 
   setc      res[r11], XS1_SETC_BUF_BUFFERS
-  ldc       r9, 32                   
+  ldc       r9, 32
   settw     res[r11], r9                 		// Set transfer width to 32 bits
   setc      res[r11], XS1_SETC_RDY_HANDSHAKE
   setc      res[r11], XS1_SETC_MS_MASTER
@@ -168,4 +168,4 @@ ConfigureRxDataPort:
   ldw       r9, sp[2]
   ldw       r8, sp[3]
   ldw       r7, sp[4]
-  retsp     16                      
+  retsp     16

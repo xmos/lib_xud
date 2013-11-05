@@ -38,7 +38,7 @@ extern int resetCount;
 
 /* Assumptions:
  * - In full speed mode
- * - No flags sticky 
+ * - No flags sticky
  * - Flag 0 port inverted
  */
 int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
@@ -53,7 +53,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    chirpCount = 0;
 
    clearbuf(p_usb_txd);
-#ifndef ARCH_S 
+#ifndef ARCH_S
    clearbuf(reg_write_port);
 #endif
    // On detecting the SE0:
@@ -70,7 +70,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
 //#ifdef ARCH_S
    /* Added a bit of a delay before chirp to match an example HS device */
-   t :> start_time; 
+   t :> start_time;
    t when timerafter(start_time+10000):> void;
 //#endif
    // output k-chirp for required time
@@ -92,13 +92,13 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #ifdef ARCH_S
            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID,
                                  XS1_UIFM_FUNC_CONTROL_REG,
-                                 (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
+                                 (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT)
                                  | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
 #else
            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
 #endif
 
-           //wait for SE0 end 
+           //wait for SE0 end
            while(1) {
                /* TODO Use a timer to save some juice...*/
                flag2_port :> tmp;
@@ -125,13 +125,13 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                    }
 #endif
                }
-           } 
+           }
            break;
        case detecting_k => flag1_port when pinseq(1):> void @ tx:          // K Chirp
            flag1_port @ tx + T_FILT :> tmp;
            if (tmp) {
                detecting_k = 0;
-           } 
+           }
            break;
        case !detecting_k => flag0_port when pinseq(0) :> void @ tx:     // J Chirp, inverted!
            flag0_port @ tx + T_FILT :> tmp;
@@ -144,7 +144,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                    // (and opmode = 0, suspendm = 1)
 #ifdef ARCH_S
                    write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID,
-                                         XS1_UIFM_FUNC_CONTROL_REG, 0b0000); 
+                                         XS1_UIFM_FUNC_CONTROL_REG, 0b0000);
 #else
                    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
 #endif
@@ -152,7 +152,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                    flag2_port when pinseq(1) :> tmp;
                    return 1;                                               // Return 1 for HS
                }
-           } 
+           }
            break;
        }
    }

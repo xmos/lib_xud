@@ -12,7 +12,7 @@
 .globl XUD_Sup_GetLock.nstackwords
 .linkset XUD_Sup_GetLock.nstackwords, 0
 .globl XUD_Sup_GetLock
-.text 
+.text
 XUD_Sup_GetLock:
   getr		r0, XS1_RES_TYPE_LOCK
   retsp 	0
@@ -24,7 +24,7 @@ XUD_Sup_GetLock:
 .globl XUD_Sup_ClaimLock.nstackwords
 .linkset XUD_Sup_ClaimLock.nstackwords, 0
 .globl XUD_Sup_ClaimLock
-.text 
+.text
 XUD_Sup_ClaimLock:
   in		r0, res[r0]
   retsp 	0
@@ -36,7 +36,7 @@ XUD_Sup_ClaimLock:
 .globl XUD_Sup_FreeLock.nstackwords
 .linkset XUD_Sup_FreeLock.nstackwords, 0
 .globl XUD_Sup_FreeLock
-.text 
+.text
 XUD_Sup_FreeLock:
   out		res[r0], r0
   retsp 	0
@@ -48,7 +48,7 @@ XUD_Sup_FreeLock:
 .globl XUD_Sup_FreerLock.nstackwords
 .linkset XUD_Sup_FreerLock.nstackwords, 0
 .globl XUD_Sup_FreerLock
-.text 
+.text
 XUD_Sup_FreerLock:
   freer		res[r0]
   retsp 	0

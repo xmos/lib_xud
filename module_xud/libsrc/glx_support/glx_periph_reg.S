@@ -94,14 +94,14 @@ read_glx_periph_reg:
   // Check range of target id
   shr r10, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r10, read_glx_periph_reg_fail
-  
+
   // Check range of peripheral id
   shr r10, r1, 3
   bt r10, read_glx_periph_reg_fail
-  
+
   // Allocate channel end
   getr r10, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination from peripheral address in r1 and r0
   // XS1_RES_TYPE_CONFIG | (r1 << XS1_CHAN_ID_CHANNUM_SHIFT)
   shl r1, r1, XS1_CHAN_ID_CHANNUM_SHIFT
@@ -127,7 +127,7 @@ read_glx_periph_reg:
   shr r6, r10, 8  // my channel-end
   ldc r7, 0x03    // load token number to transmit
   bl  glx_periph_transmit_data_token
-  
+
   // send destination register address and block size
   mov r6, r2      // send address
   ldc r7, 0x04    // load token number to transmit
@@ -147,7 +147,7 @@ read_glx_periph_reg:
   ldc r8, 0x01
   and r7, r8, r7
   bt r7, read_glx_periph_reg_fail // no response expected
-  
+
   // Receive response
   inct r0, res[r10]
   eq r1, r0, XS1_CT_NACK
@@ -163,10 +163,10 @@ read_glx_periph_read_data_loop:
   int r7, res[r10]  // load one byte
   st8 r7, r5[r8]    // store byte using array address pointer
                     // start address for data to load is r5
-  
+
   add r8, r8, 1     // increment array address pointer
   sub r4, r4, 1     // decrement number of bytes to load
-  
+
   // check if more data to be received
   bt r4, read_glx_periph_read_data_loop // if r4 is non 0 then repeat
 
@@ -190,7 +190,7 @@ read_glx_periph_reg_fail:
   eq  r8, r8, 0x06 // only matters if it is byte 6 which has been altered, as this should be the END control token
   bf  r8, read_glx_periph_reg_skip_send_pause // If it was NOT byte 6, do not send PAUSE control token
   outct res[r10], XS1_CT_PAUSE    // send PAUSE token
-  
+
 read_glx_periph_reg_skip_send_pause:
   ldc r0, 1 // indicates FAIL
   // bu read_glx_periph_return // implicit
@@ -253,14 +253,14 @@ write_glx_periph_reg:
   // Check range of target id
   shr r10, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r10, write_glx_periph_reg_fail
-  
+
   // Check range of peripheral id
   shr r10, r1, 3
   bt r10, write_glx_periph_reg_fail
-  
+
   // Allocate channel end
   getr r10, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination from peripheral address in r1 and r0
   // XS1_RES_TYPE_CONFIG | (r1 << XS1_CHAN_ID_CHANNUM_SHIFT)
   shl r1, r1, XS1_CHAN_ID_CHANNUM_SHIFT
@@ -286,7 +286,7 @@ write_glx_periph_reg:
   shr r6, r10, 8  // my channel-end
   ldc r7, 0x03    // load token number to transmit
   bl  glx_periph_transmit_data_token
-  
+
   // send destination register address and block size
   mov r6, r2      // send address
   ldc r7, 0x04    // load token number to transmit
@@ -316,11 +316,11 @@ write_glx_check_data_to_send:
   ldc r11, 0x03 // reuse r11 as a mask for 2 lsb's
 
 write_glx_periph_write_data_loop:
-  // loop counter is r4 - number of bytes to transmit 
+  // loop counter is r4 - number of bytes to transmit
   // start address for data to send is r5
-  
+
   sub r4, r4, 1 // decrement number of bytes to send
-  
+
   and r9, r8, r11                      // check if r8 is modulo 4
   bt  r9,  write_glx_periph_data_ready // if so more data needed
   shr r9, r8, 2                        // divide byte counter by 4 to create array pointer
@@ -366,7 +366,7 @@ write_glx_periph_response_fail:
   eq  r8, r8, r7   // only matters if it is the last byte which has been altered, as this should be the END control token
   bf  r8, read_glx_periph_reg_skip_send_pause // If it was NOT the last byte, do not send PAUSE control token
   outct res[r10], XS1_CT_PAUSE    // send PAUSE token
-  
+
 write_glx_periph_reg_skip_send_pause:
   ldc r0, 1 // indicates FAIL, no NACK
   bu write_glx_periph_return
@@ -513,14 +513,14 @@ read_glx_periph_word:
   // Check range of target id
   shr r10, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r10, read_glx_periph_word_fail
-  
+
   // Check range of peripheral id
   shr r10, r1, 3
   bt r10, read_glx_periph_word_fail
-  
+
   // Allocate channel end
   getr r10, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination from peripheral address in r1 and r0
   // XS1_RES_TYPE_CONFIG | (r1 << XS1_CHAN_ID_CHANNUM_SHIFT)
   shl r1, r1, XS1_CHAN_ID_CHANNUM_SHIFT
@@ -544,7 +544,7 @@ read_glx_periph_word:
 
   shr r6, r10, 8  // my channel-end
   outt res[r10], r6
-  
+
   // send destination register address and block size
   outt res[r10], r2
   ldc   r6, 0x04
@@ -561,7 +561,7 @@ read_glx_periph_word:
 
   // receive data
   in r6, res[r10]  // load one word
-  stw r6, r3[0] 
+  stw r6, r3[0]
 
   ldc r0, 0 // indicates PASS (ACK received)
   chkct res[r10], XS1_CT_END           // check for contrl token END
@@ -619,14 +619,14 @@ write_glx_periph_word:
   // Check range of target id
   shr r10, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r10, write_glx_periph_word_fail
-  
+
   // Check range of peripheral id
   shr r10, r1, 3
   bt r10, write_glx_periph_word_fail
-  
+
   // Allocate channel end
   getr r10, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination from peripheral address in r1 and r0
   // XS1_RES_TYPE_CONFIG | (r1 << XS1_CHAN_ID_CHANNUM_SHIFT)
   shl r1, r1, XS1_CHAN_ID_CHANNUM_SHIFT
@@ -648,7 +648,7 @@ write_glx_periph_word:
   outt res[r10], r6
   shr r6, r10, 8  // my channel-end
   outt res[r10], r6
-  
+
   // send destination register address and block size
   mov r6, r2      // send address
   outt res[r10], r6
@@ -720,14 +720,14 @@ write_glx_periph_word_noresp:
   // Check range of target id
   shr r10, r0, XS1_CHAN_ID_PROCESSOR_SIZE + XS1_CHAN_ID_NODE_SIZE
   bt r10, write_glx_periph_word_noresp_fail
-  
+
   // Check range of peripheral id
   shr r10, r1, 3
   bt r10, write_glx_periph_word_noresp_fail
-  
+
   // Allocate channel end
   getr r10, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination from peripheral address in r1 and r0
   // XS1_RES_TYPE_CONFIG | (r1 << XS1_CHAN_ID_CHANNUM_SHIFT)
   shl r1, r1, XS1_CHAN_ID_CHANNUM_SHIFT
@@ -749,7 +749,7 @@ write_glx_periph_word_noresp:
   outt res[r10], r6
   ldc r6, 0xff // no response
   outt res[r10], r6
-  
+
   // send destination register address and block size
   mov r6, r2      // send address
   outt res[r10], r6
@@ -817,7 +817,7 @@ read_glx_periph_request:
 
   // Allocate channel end
   getr r10, XS1_RES_TYPE_CHANEND
-  
+
   // Set destination from peripheral address in r1 and r0
   // XS1_RES_TYPE_CONFIG | (r1 << XS1_CHAN_ID_CHANNUM_SHIFT)
   shl r1, r1, XS1_CHAN_ID_CHANNUM_SHIFT
@@ -831,7 +831,7 @@ read_glx_periph_request:
   // Send control token for read access : 0x125
   ldc r6, 0x25 // load token to transmit
   outct res[r10], r6
-  
+
 
   // Send return address
   shr r6, r10, 24 // my id[15:8]
@@ -840,7 +840,7 @@ read_glx_periph_request:
   outt res[r10], r6
   shr r6, r10, 8  // my channel-end
   outt res[r10], r6
-  
+
   // send destination register address
   outt res[r10], r2
   //  and block size

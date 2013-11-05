@@ -8,21 +8,21 @@
 #include <platform.h>
 #include <print.h>
 
-#define DIN_MASK 0xffffffef 
+#define DIN_MASK 0xffffffef
 #define CLK_MASK 0xfffffff7
 #define DOUT_MASK 0x00000100
 
 extern int write_sswitch_reg_noresp(unsigned coreid, unsigned reg, unsigned data);
 
-// Function to bit bash writing to the pmu test registers through 
+// Function to bit bash writing to the pmu test registers through
 // the XS1_GLX_CFG_PMU_TEST_MODE_ADRS
 unsigned write_data_bit (unsigned glxid, unsigned curr_val, unsigned bit)
 {
   unsigned wdata;
   unsigned new_curr_val;
-  // set the data bit to be 0 and or it with the current value to only get 
+  // set the data bit to be 0 and or it with the current value to only get
   // the data bit in the register set
-  wdata = (curr_val & DIN_MASK) | bit;    
+  wdata = (curr_val & DIN_MASK) | bit;
   write_sswitch_reg(glxid,XS1_GLX_CFG_PMU_TEST_MODE_ADRS,wdata);
 
   //printstr("4c\n");
@@ -40,18 +40,18 @@ unsigned write_data_bit (unsigned glxid, unsigned curr_val, unsigned bit)
 
   //printstr("4e\n");
   new_curr_val = wdata;
-  
+
   return new_curr_val;
-  
+
 }
 
 void write_pmu_register ( unsigned glxid, unsigned pmu_add, unsigned pmu_data)
 {
-  
+
   int bc;
   unsigned bit;
   unsigned curr_val;
-  
+
   read_sswitch_reg(glxid, XS1_GLX_CFG_PMU_TEST_MODE_ADRS, curr_val);
 
   //printstr("4a\n");
@@ -79,11 +79,11 @@ void write_pmu_register ( unsigned glxid, unsigned pmu_add, unsigned pmu_data)
     curr_val = write_data_bit(glxid, curr_val,bit);
   }
 
-  
+
 
   //printstr("4b\n");
 
-  // bit 12 is always 1 for a write 
+  // bit 12 is always 1 for a write
   curr_val = write_data_bit(glxid, curr_val,(0x1<<4));
   // bits 13-15 are always 0
   for (bc=0;bc<3;bc++) {
@@ -94,24 +94,24 @@ void write_pmu_register ( unsigned glxid, unsigned pmu_add, unsigned pmu_data)
     bit = (pmu_data >> bc) & 0x00000001;
     // shift it to be the 4th bit (din)
     bit = bit << 4;
-    curr_val = write_data_bit(glxid, curr_val,bit);    
-  }  
+    curr_val = write_data_bit(glxid, curr_val,bit);
+  }
   // bits 24 - 31 are padded with 0
   for (bc=0;bc<8;bc++) {
     curr_val = write_data_bit(glxid, curr_val,(0x0<<4));
   }
-  
+
 }
 
 unsigned read_pmu_register ( unsigned glxid, unsigned pmu_add)
 {
-  
+
   int bc;
   unsigned bit;
-  unsigned tmp_rdata; 
+  unsigned tmp_rdata;
   unsigned curr_val;
   unsigned pmu_rdata;
-  
+
   pmu_rdata = 0;
   read_sswitch_reg(glxid, XS1_GLX_CFG_PMU_TEST_MODE_ADRS, curr_val);
 
@@ -137,13 +137,13 @@ unsigned read_pmu_register ( unsigned glxid, unsigned pmu_add)
     bit = bit << 4;
     curr_val = write_data_bit(glxid, curr_val,bit);
   }
-  // bit 12 is always 1 for a write 
+  // bit 12 is always 1 for a write
   curr_val = write_data_bit(glxid, curr_val,(0x0<<4));
   // bits 13-15 are always 0
   for (bc=0;bc<3;bc++) {
     curr_val = write_data_bit(glxid, curr_val,(0x0<<4));
   }
-  // bits 16 - 23 are read data, need to write 0's and then create the 8 bit read data by reading the 
+  // bits 16 - 23 are read data, need to write 0's and then create the 8 bit read data by reading the
   // register and masking the dataout bit
   for (bc=7;bc>=0;bc--) {
     bit = (0x00 >> bc) & 0x00000001;
@@ -153,9 +153,9 @@ unsigned read_pmu_register ( unsigned glxid, unsigned pmu_add)
     read_sswitch_reg(glxid, XS1_GLX_CFG_PMU_TEST_MODE_ADRS, tmp_rdata);
     tmp_rdata = (tmp_rdata & DOUT_MASK) >> 8;
     pmu_rdata = pmu_rdata | (tmp_rdata << bc);
-    
-    
-  }  
+
+
+  }
   // bits 24 - 31 are padded with 0
   for (bc=0;bc<8;bc++) {
     curr_val = write_data_bit(glxid, curr_val,(0x0<<4));
@@ -167,7 +167,7 @@ unsigned read_pmu_register ( unsigned glxid, unsigned pmu_add)
 
 void enable_reads_to_gti_pmu_register (unsigned glxid)
 {
-  
+
   unsigned pmu_add = 0x21;
   unsigned pmu_data = 0x01;
   write_pmu_register ( glxid, pmu_add, pmu_data);

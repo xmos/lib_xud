@@ -13,9 +13,9 @@ extern tileref USB_TILE_REF;
 
 void XUD_SetCrcTableAddr(unsigned addr);
 
-/** @brief  Sets the device addres in XUD 
+/** @brief  Sets the device addres in XUD
   * @param  addr the new address
-  */ 
+  */
 void XUD_SetDevAddr(unsigned addr)
 {
 #ifdef ARCH_S
@@ -37,7 +37,7 @@ void XUD_SetDevAddr(unsigned addr)
     /* Modify CRC table for current address */
     XUD_SetCrcTableAddr(addr);
 #else
-#error ARCH_L or ARCH_G MUST be defined 
+#error ARCH_L or ARCH_G MUST be defined
 #endif
 
 }

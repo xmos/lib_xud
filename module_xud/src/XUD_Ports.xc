@@ -11,7 +11,7 @@ in port flag2_port = PORT_USB_FLAG2;
   out port tx_readyout           = PORT_USB_TX_READYOUT;
   in port tx_readyin             = PORT_USB_TX_READYIN;
   in port rx_rdy                 = PORT_USB_RX_READY;
-  
+
   on USB_TILE: clock tx_usb_clk  = XS1_CLKBLK_5;
   on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_4;
 

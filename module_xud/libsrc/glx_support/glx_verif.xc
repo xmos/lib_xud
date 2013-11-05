@@ -62,7 +62,7 @@ void verif_cfg_reg_val (unsigned glxid, unsigned reg, unsigned mask, unsigned ex
 
    unsigned rdata;
 
-   read_sswitch_reg_verify(glxid, reg, rdata, (0xd000 | failval)); 
+   read_sswitch_reg_verify(glxid, reg, rdata, (0xd000 | failval));
    rdata = rdata & mask;
    //if(rdata != exp_val) { TerminateFail(0xe000 | failval); }
 
@@ -72,7 +72,7 @@ void verif_periph_reg_val (unsigned glxid, unsigned periph_addr, unsigned reg, u
 
    unsigned rdata;
 
-   read_glx_periph_word(glxid, periph_addr, reg, rdata); 
+   read_glx_periph_word(glxid, periph_addr, reg, rdata);
    rdata = rdata & mask;
    //if(rdata != exp_val) { TerminateFail(0xe000 | failval); }
 

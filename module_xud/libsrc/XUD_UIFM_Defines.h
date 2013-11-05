@@ -1,4 +1,4 @@
-/** 
+/**
   * \brief USeful defines for interfacing UIFM
   * Author Ross Owen
   **/
@@ -92,7 +92,7 @@
 #define UIFM_REG_BUFFDATA        19
 
 /* Misc config reg */
-#define UIFM_REG_MISC            55 
+#define UIFM_REG_MISC            55
 #define UIFM_MISC_SOFISTOKEN     0b10000
 
 /* OTG Flags Reg */

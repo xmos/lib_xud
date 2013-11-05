@@ -68,11 +68,11 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #endif
    XUD_Sup_Delay(50);
 
-#ifdef ARCH_S
+//#ifdef ARCH_S
    /* Added a bit of a delay before chirp to match an example HS device */
    t :> start_time; 
    t when timerafter(start_time+10000):> void;
-#endif
+//#endif
    // output k-chirp for required time
 
    for (int i = 0; i < 16000; i++) {   // 16000 words @ 480 MBit = 1.066 ms
@@ -94,6 +94,8 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                                  XS1_UIFM_FUNC_CONTROL_REG,
                                  (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
                                  | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+#else
+           XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
 #endif
 
            //wait for SE0 end 
@@ -118,7 +120,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #else
                    x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
                    if(!(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))) {
-                       XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x81);
+                       XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x9);
                        return -1;             // VBUS gone, handshake fails completely.
                    }
 #endif

@@ -79,11 +79,6 @@ int XUD_Init()
    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
 #endif
 
-   /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-   //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
-
-   //XUD_Sup_Delay(18000);
-
    /* Wait for host */
    while (1)
    {
@@ -394,7 +389,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #ifdef ARCH_S
                 write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
 #else
-                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x81);
+                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x9);
 #endif
                 return -1;
             }

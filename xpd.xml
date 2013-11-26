@@ -11,7 +11,7 @@
     <exclude_dir>tb</exclude_dir>
     <binary_only>module_xud</binary_only>
     <git_export>False</git_export>
-    <location>git://github.com/xcore/sc_xud.git</location>
+    <location>git://git/apps/sc_xud</location>
     <name>sc_xud</name>
     <maintainer>XMOS</maintainer>
     <partnumber>XM-002825-DH</partnumber>

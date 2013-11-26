@@ -1,13 +1,12 @@
-sc_xud Change Log
-=================
-XMOS Low-Level USB Driver Library
-=================================
+XMOS USB Device (XUD) Library Change Log
+========================================
 
 1.0.1
 -----
-  * Power signalling state machines simplified - saves some code size
-  * Reduced delay before transmitting k-chirp for high-speed mode
+    - CHANGE:     Power signalling state machines simplified in order to reduce memory usage.
+    - FIXED:      (Minor) Reduced delay before transmitting k-chirp for high-speed mode, this improves high-speed handshake reliability on some hosts
+    - FIXED:      (Major) Resolved a compatibility issue with Intel USB 3.0 xHCI host controllers relating to tight inter-packet timing resulting in packet loss
 
 1.0.0
 -----
-  * Initial release
+    - Initial release

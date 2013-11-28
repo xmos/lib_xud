@@ -6,7 +6,6 @@
 #ifndef _XUD_SUPPORT_H_
 #define _XUD_SUPPORT_H_ 1
 
-
 /* Typedefs for resources */
 typedef unsigned XUD_lock;
 typedef unsigned XUD_chan;
@@ -14,16 +13,44 @@ typedef unsigned XUD_chan;
 // Delay execution (Uses timer)
 void XUD_Sup_Delay(unsigned x);
 
-unsigned XUD_Sup_GetResourceId(chanend c);
+inline unsigned XUD_Sup_GetResourceId(chanend c)
+{
+    unsigned id;
+    asm ("mov %0, %1" : "=r"(id) : "r"(c));
+    return id;
+}
 
 // Channel comms - In
-unsigned XUD_Sup_inuint(XUD_chan);
-unsigned char XUD_Sup_inct(XUD_chan);
-unsigned char XUD_Sup_int(XUD_chan);
-unsigned char XUD_Sup_testct(XUD_chan);
+inline unsigned char XUD_Sup_inct(XUD_chan c)
+{
+    unsigned char x;
+    asm volatile("inct %0, res[%1]" : "=r"(x) : "r"(c));
+    return x;
+}
+
+inline unsigned char XUD_Sup_int(XUD_chan c)
+{
+    unsigned char x;
+    asm volatile("int %0, res[%1]" : "=r"(x) : "r"(c));
+    return x;
+}
+
+inline unsigned char XUD_Sup_testct(XUD_chan c)
+{
+    unsigned char x;
+    asm volatile("testct %0, res[%1]" : "=r"(x) : "r"(c));
+    return x;
+}
 
 // Channel comms - Out
-void XUD_Sup_outuint(XUD_chan, unsigned x);
-void XUD_Sup_outct(XUD_chan, unsigned char x);
+inline void XUD_Sup_outuint(XUD_chan c, unsigned x)
+{
+    asm volatile("out res[%0], %1" : /* no outputs */ : "r"(c), "r"(x));
+}
+
+inline void XUD_Sup_outct(XUD_chan c, unsigned char x)
+{
+    asm volatile("outct res[%0], %1" : /* no outputs */ : "r"(c), "r"(x));
+}
 
 #endif

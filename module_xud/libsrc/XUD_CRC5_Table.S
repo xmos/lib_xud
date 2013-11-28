@@ -4,11 +4,11 @@
   * @version   0v9
   */
 
-.section .dp.data,       "adw", @progbits
-.align    4
+.section .dp.data, "adw", @progbits
 .globl crc5Table
+.type crc5Table, @object
 .cc_top crc5Table.func, crc5Table
-
+.align 4
 crc5Table:
 .byte 0x2
 .byte 0x1d
@@ -2058,4 +2058,5 @@ crc5Table:
 .byte 0x1f
 .byte 0x17
 .byte 0x8
+.size crc5Table, .-crc5Table
 .cc_bottom crc5Table.func

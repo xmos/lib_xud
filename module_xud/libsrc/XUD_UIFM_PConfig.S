@@ -14,20 +14,6 @@
 #define SETCTRL_MODE_LONG 7
 #define SETCTRL_MODE_SHIFT 0
 
-
-.extern XUD_UIFM_PortConfig
-.globl XUD_UIFM_PortConfig.nstackwords
-.globl XUD_UIFM_PortConfig.maxthreads
-.globl XUD_UIFM_PortConfig.maxtimers
-.globl XUD_UIFM_PortConfig.maxchanends
-
-.linkset XUD_UIFM_PortConfig.nstackwords, 20
-.linkset XUD_UIFM_PortConfig.maxchanends, 0
-.linkset XUD_UIFM_PortConfig.maxtimers, 0
-.linkset XUD_UIFM_PortConfig.maxthreads, 0
-
-.globl XUD_UIFM_PortConfig
-
 .text
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +30,11 @@
 #define REG_READ r2
 #define FLAG0 r3
 
+.globl XUD_UIFM_PortConfig
+.type XUD_UIFM_PortConfig, @function
 
+.cc_top XUD_UIFM_PortConfig.function
+.align 2
 XUD_UIFM_PortConfig:
   entsp     16
   stw       r10, sp[1]
@@ -169,3 +159,13 @@ ConfigureRxDataPort:
   ldw       r8, sp[3]
   ldw       r7, sp[4]
   retsp     16
+.size XUD_UIFM_PortConfig,.-XUD_UIFM_PortConfig
+.cc_bottom XUD_UIFM_PortConfig.function
+.globl XUD_UIFM_PortConfig.nstackwords
+.globl XUD_UIFM_PortConfig.maxthreads
+.globl XUD_UIFM_PortConfig.maxtimers
+.globl XUD_UIFM_PortConfig.maxchanends
+.set XUD_UIFM_PortConfig.nstackwords, 16
+.set XUD_UIFM_PortConfig.maxchanends, 0
+.set XUD_UIFM_PortConfig.maxtimers, 0
+.set XUD_UIFM_PortConfig.maxthreads, 0

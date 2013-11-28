@@ -1,12 +1,13 @@
 #ifdef ARCH_L
 
 //  PID jump table
-.section .dp.data,       "adw", @progbits
-.align    4
+.section .dp.data, "adw", @progbits
 
 .globl PidJumpTable
+.type PidJumpTable, @object
 
-    .cc_top PidJumpTable.func, PidJumpTable
+.cc_top PidJumpTable.func, PidJumpTable
+.align 4
 PidJumpTable:
 .word Pid_Reserved        // 0   0x00
 .word Pid_Out             // 1   0x01
@@ -275,23 +276,20 @@ PidJumpTable:
 
 #endif
 
-
-
-
-
-    .cc_bottom PidJumpTable.func
+.size PidJumpTable, .-PidJumpTable
+.cc_bottom PidJumpTable.func
 
 #endif
 
 #ifdef ARCH_G
 // Generated using genpidtable.c
-.section .dp.data,       "adw", @progbits
-.align    4
+.section .dp.data, "adw", @progbits
 .globl PidJumpTable
+.type PidJumpTable, @function
 
-
-    //.cc_top PidJumpTable.func, PidJumpTableFull
-    .cc_top PidJumpTable.func, PidJumpTable
+//.cc_top PidJumpTable.func, PidJumpTableFull
+.cc_top PidJumpTable.func, PidJumpTable
+.align 4
 
 PidJumpTable:
 .word Pid_Bad    // 0   0x00
@@ -551,8 +549,8 @@ PidJumpTable:
 .word Pid_Bad    // 254   0xfe
 .word Pid_Bad    // 255   0xff
 
-
-    .cc_bottom PidJumpTable.func
-    //.cc_bottom PidJumpTableFull.func
+.size PidJumpTable, .-PidJumpTable
+.cc_bottom PidJumpTable.func
+//.cc_bottom PidJumpTableFull.func
 
 #endif

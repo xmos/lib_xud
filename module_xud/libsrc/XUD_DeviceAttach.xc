@@ -62,7 +62,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    // opmode = 0b10, termsel = 1, xcvrsel = 0b00;
 
 #ifdef ARCH_S
-   write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010);
+   write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010);
 #else
    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
 #endif
@@ -90,10 +90,10 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
        case t when timerafter(start_time + INVALID_DELAY) :> void:
            /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
 #ifdef ARCH_S
-           write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID,
-                                 XS1_UIFM_FUNC_CONTROL_REG,
-                                 (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT)
-                                 | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+           write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,
+                             XS1_UIFM_FUNC_CONTROL_REG,
+                             (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT)
+                              | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
 #else
            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
 #endif
@@ -110,11 +110,11 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                if(pwrConfig == XUD_PWR_SELF) {
                    unsigned x;
 #ifdef ARCH_S
-                   read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID,
-                                        XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+                   read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,
+                                    XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                    if(!(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))) {
-                       write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID,
-                                             XS1_UIFM_FUNC_CONTROL_REG, 4);
+                       write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,
+                                         XS1_UIFM_FUNC_CONTROL_REG, 4);
                        return -1;             // VBUS gone, handshake fails completely.
                    }
 #else
@@ -143,8 +143,8 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                    // Three pairs of KJ received... de-assert TermSelect...
                    // (and opmode = 0, suspendm = 1)
 #ifdef ARCH_S
-                   write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID,
-                                         XS1_UIFM_FUNC_CONTROL_REG, 0b0000);
+                   write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,
+                                     XS1_UIFM_FUNC_CONTROL_REG, 0b0000);
 #else
                    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
 #endif

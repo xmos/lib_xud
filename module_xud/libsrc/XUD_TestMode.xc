@@ -124,7 +124,7 @@ int XUD_UsbTestModeHandler()
         case WINDEX_TEST_J:
             //Function Control Reg. Suspend: 1 Opmode 10
 #ifdef ARCH_S
-            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
+            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif
@@ -138,7 +138,7 @@ int XUD_UsbTestModeHandler()
         case WINDEX_TEST_K:
             //Function Control Reg. Suspend: 1 Opmode 10
 #ifdef ARCH_S
-            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
+            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif

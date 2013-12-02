@@ -1,5 +1,6 @@
 #include <xs1.h>
 #include <print.h>
+#include <platform.h>
 
 #include "XUD_UIFM_Functions.h"
 #include "XUD_UIFM_Defines.h"

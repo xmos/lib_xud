@@ -402,7 +402,7 @@ BranchOnTokenPid:
 #endif
 #else
 
-    // ARCH_G code
+    // ARCH_G code                                    // Valid token logic is bad in ARCH_G
 
     ldaw        r8, dp[crc5Table_Addr]
     ldaw        r1, dp[PidJumpTable]

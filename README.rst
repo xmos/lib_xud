@@ -1,7 +1,7 @@
 XMOS USB Device (XUD) Library
 =============================
 
-:Latest release: 1.0.1beta1
+:Latest release: 1.0.1beta2
 :Maintainer: XMOS
 :Description: Low-Level USB Driver Library
 

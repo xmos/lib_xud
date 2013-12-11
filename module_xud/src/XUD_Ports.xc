@@ -15,13 +15,13 @@ in port flag2_port = PORT_USB_FLAG2;
   on USB_TILE: clock tx_usb_clk  = XS1_CLKBLK_5;
   on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_4;
 
-#elif (XUD_SERIES_SUPPORT == XUD_L_SERIES)
+#elif (XUD_SERIES_SUPPORT == XUD_L_SERIES) || (XUD_SERIES_SUPPORT == XUD_G_SERIES)
   in port p_usb_clk       = PORT_USB_CLK;
   out port reg_write_port = PORT_USB_REG_WRITE;
   in  port reg_read_port  = PORT_USB_REG_READ;
   out port p_usb_txd      = PORT_USB_TXD;
   port p_usb_rxd          = PORT_USB_RXD;
 #else
-  #error XUD_SERIES_SUPPORT not equal to XUD_U_SERIES or XUD_L_SERIES
+  #error XUD_SERIES_SUPPORT not equal to XUD_U_SERIES, XUD_G_SERIES or XUD_L_SERIES
 #endif
 

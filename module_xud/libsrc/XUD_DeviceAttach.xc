@@ -1,5 +1,4 @@
 #include <xs1.h>
-#include <print.h>
 
 #include "XUD_UIFM_Functions.h"
 #include "XUD_UIFM_Defines.h"
@@ -117,12 +116,14 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                                              XS1_UIFM_FUNC_CONTROL_REG, 4);
                        return -1;             // VBUS gone, handshake fails completely.
                    }
-#else
+#elif ARCH_L
                    x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
                    if(!(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))) {
                        XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x9);
                        return -1;             // VBUS gone, handshake fails completely.
                    }
+#else
+#warning cannot poll for vbus on ARCH_G
 #endif
                }
            }

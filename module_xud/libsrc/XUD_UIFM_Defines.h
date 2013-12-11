@@ -123,31 +123,31 @@
 // //#define UIFM_CMD_READ_SBUFFDATA  0x34
 //
 // // UIFM Register Address'
- #define UIFM_REG_ADDRESS         2
- #define UIFM_REG_CTRL            1
- #define UIFM_REG_PHYCON          3
- #define UIFM_REG_ULPICON         4
- #define UIFM_REG_STICKY          7
- #define UIFM_REG_FLAG_MASK0      8
- #define UIFM_REG_FLAG_MASK1      9
- #define UIFM_REG_FLAG_MASK2      10
- #define UIFM_REG_SOF0            11
- #define UIFM_REG_SOF1            12
- #define UIFM_REG_PID             13
- #define UIFM_REG_EP              14
- #define UIFM_REG_HANDSHAKE       15
- #define UIFM_REG_BUFFCTRL        16
- #define UIFM_REG_BUFFDATA        17
+ #define UIFM_REG_ADDRESS           2
+ #define UIFM_REG_CTRL              1
+ #define UIFM_REG_PHYCON            3
+ #define UIFM_REG_ULPICON           4
+ #define UIFM_REG_STICKY            7
+ #define UIFM_REG_FLAG_MASK0        8
+ #define UIFM_REG_FLAG_MASK1        9
+ #define UIFM_REG_FLAG_MASK2        10
+ #define UIFM_REG_SOF0              11
+ #define UIFM_REG_SOF1              12
+ #define UIFM_REG_PID               13
+ #define UIFM_REG_EP                14
+ #define UIFM_REG_HANDSHAKE         15
+ #define UIFM_REG_BUFFCTRL          16
+ #define UIFM_REG_BUFFDATA          17
 //
 // // Control Register defines
- #define UIFM_CTRL_DOTOK          0x1
- #define UIFM_CTRL_CHKTOK         0x2
- #define UIFM_CTRL_DECODE_LS      0x4
- #define UIFM_CTRL_PKTBUF         0x8
- #define UIFM_CTRL_BUFFRDY        0x10
+ #define UIFM_CTRL_DOTOK            0x1
+ #define UIFM_CTRL_CHKTOK           0x2
+ #define UIFM_CTRL_DECODE_LS        0x4
+ #define UIFM_CTRL_PKTBUF           0x8
+ #define UIFM_CTRL_BUFFRDY          0x10
 //
- #define UIFM_IN_REG_OFFSET       36
- #define UIFM_OUT_REG_OFFSET      20
+ #define UIFM_IN_REG_OFFSET         36
+ #define UIFM_OUT_REG_OFFSET        20
 //
 
 #endif

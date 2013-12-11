@@ -8,10 +8,9 @@ Pid_Sof:
     in          r11, res[r1];
     bt          r11, InvalidToken;              // If VALID_TOKEN not high, ignore token
 #else
-//    #include "XUD_G_Crc.S"
-    in          r10, res[RXD]
+#include "XUD_G_Crc.S"
+    
 #endif
-
     clrsr       0x3
     ldw         r11, sp[(STACK_EXTEND+9)]
 
@@ -44,8 +43,7 @@ Pid_Sof_NoChan:
     in         r11, res[r1];
     bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
 #else
-//    #include "XUD_G_Crc.S"
-    in         r10, res[RXD]
+#include "XUD_G_Crc.S"
 #endif
 
     clrsr       0x3

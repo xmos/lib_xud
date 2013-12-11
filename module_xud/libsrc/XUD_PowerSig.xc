@@ -376,9 +376,11 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #ifdef ARCH_S
             read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
             if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
-#else
+#elif ARCH_L
             x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
             if(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))
+#else
+            if(1)
 #endif
             {
                 // VBUS VALID

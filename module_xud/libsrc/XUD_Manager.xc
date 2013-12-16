@@ -862,7 +862,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Reset the OUT ep structures */
                     for(int i = 0; i< noEpOut; i++)
                     {
+#ifdef ARCH_G
+                        ep_info[i].pid = PIDn_DATA0;
+#else
                         ep_info[i].pid = PID_DATA0;
+#endif
                     }
 
 
@@ -1104,8 +1108,11 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
       ep_info[i].epType = epTypeTableOut[i];
 
+#ifdef ARCH_G
+      ep_info[i].pid = PIDn_DATA0;
+#else
       ep_info[i].pid = PID_DATA0;
-
+#endif
      // ep_info[i].epAddress = i;
 
     }

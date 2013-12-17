@@ -405,12 +405,11 @@ BranchOnTokenPid:
                                                 // (e.g. in utmi_out.S etc). When done branchs back to NextToken
 #endif
 #else // ARCH_G
-    //ldaw        r8, dp[crc5Table_Addr]
-    ldaw        r10, dp[PidJumpTable]
     ldc         r4, 16
 
 ReadToken:
     inpw        r11, res[RXD], 8                // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
+    ldaw        r10, dp[PidJumpTable]
     setpsc      res[RXD], r4
     shr         r11, r11, 24
 

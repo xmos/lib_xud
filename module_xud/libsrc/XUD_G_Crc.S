@@ -20,14 +20,14 @@
 
 #else
     in          r10, res[RXD]
-    ldc         r11, 30
-    lmul        r11, r10, r10, r11, r10, r10     // r11 is CRC5, r10 is EP(4):ADDR(7):CRAP(16):0(5)
+    ldaw        r1, dp[crc5Table_Addr] 
+    ldc         r8, 30
+    lmul        r11, r10, r10, r8, r10, r10     // r11 is CRC5, r10 is EP(4):ADDR(7):CRAP(16):0(5)
     shr         r10, r10, 16                     // r10 is 0(16):EP(4):ADDR(7):CRAP(5)
     shr         r10, r10, 5                      // r10 is 0(21):EP(4):ADDR(7) 
     ld8u        r8, r1[r10]                      // r8 is CRC of r10
     sub         r4, r11, r8                      // R4 set to 0 in L code with in from valid tok port
     bt          r4,  BadCrcAddr
-
 //ExtractEP:
     shr         r10, r10, 7
 

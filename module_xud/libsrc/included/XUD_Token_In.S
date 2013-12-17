@@ -42,7 +42,7 @@ XUD_IN_TxNak:
 #ifdef ARCH_L
 .skip 92
 #else
-.skip 78
+.skip 82
 #endif
 Pid_In:
 #ifdef ARCH_L

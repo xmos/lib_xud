@@ -354,10 +354,14 @@ NextToken:
 
 NextTokenAfterOut:
     ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
+#ifndef ARCH_G
     ldw         r1, sp[STACK_FLAG0_PORT]
+#else
+    //ldaw        r1, dp[crc5Table_Addr] 
+#endif
 NextTokenAfterInNak:
 Loop_BadPid:
-    //ldc         r4, XUD_MAX_NUM_EP_OUT          // Number of OUT endpoints
+    //ldc         r4, XUD_MAX_NUM_EP_OUT        // Number of OUT endpoints
 NextTokenAfterPing:
     setsr       1                               // Enable thread events
 
@@ -365,16 +369,16 @@ NextTokenAfterPing:
 
 //------------------------------------------------------------------------------------------------
 #ifdef ARCH_L
-    //ldw         r1, sp[11]                          // Load Valid Token port
-    ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
-                                                      // Original USB Token: | CRC | EP | ADDR | PID | junk
-                                                      // Received token is address and CRC checked.
-                                                      // We receive: | 0000 4-bit EP | 0000 4-bit PID |
+    //ldw         r1, sp[11]                    // Load Valid Token port
+    ldaw        r10, dp[PidJumpTable]           // TODO Could load from sp here
+                                                // Original USB Token: | CRC | EP | ADDR | PID | junk
+                                                // Received token is address and CRC checked.
+                                                // We receive: | 0000 4-bit EP | 0000 4-bit PID |
 XUD_TokenRx_Pid:
-    inpw       r11, res[RXD], 8                       // Read 8 bit PID
-    shr        r11, r11, 24                           // Shift off junk
+    inpw       r11, res[RXD], 8                 // Read 8 bit PID
+    shr        r11, r11, 24                     // Shift off junk
 
-    ldw        r10, r10[r11]                          // Load relevant branch address
+    ldw        r10, r10[r11]                    // Load relevant branch address
 
 #if 1
 BranchOnTokenPid:
@@ -384,49 +388,46 @@ BranchOnTokenPid:
 
 #else
 XUD_TokenRx_Ep:
-    inpw      r10, res[RXD], 8                        // Read EP Number
-    shr       r10, r10, 24                            // Shift off junk
+    inpw      r10, res[RXD], 8                  // Read EP Number
+    shr       r10, r10, 24                      // Shift off junk
 
 CheckValidToken:
     in         r1, res[r1]
-    bt         r1, InvalidToken                       // If VALID_TOKEN not high, ignore token
-                                                      // REMEMBER VALID TOKEN NOW INVERTED!
+    bt         r1, InvalidToken                 // If VALID_TOKEN not high, ignore token
+                                                // REMEMBER VALID TOKEN NOW INVERTED!
 
 BranchOnTokenPid:
 .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
-    bau         r11                                   // Branch on PID to relevant token handing code
-                                                      // (e.g. in utmi_out.S etc). When done branchs back to NextToken
+    bau         r11                             // Branch on PID to relevant token handing code
+                                                // (e.g. in utmi_out.S etc). When done branchs back to NextToken
 #endif
-#else
-
-    // ARCH_G code                                    // Valid token logic is bad in ARCH_G
-
-    //ldaw        r8, dp[crc5Table_Addr]
-    ldaw        r10, dp[PidJumpTable]
-    //ldw         r6, dp[crcmask]
-    ldc         r8, 16
+#else // ARCH_G
+    ldc         r4, 16
 
 ReadToken:
-    inpw        r11, res[RXD], 8                       // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
-    setpsc      res[RXD], r8
+    inpw        r11, res[RXD], 8                // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
+    ldaw        r10, dp[PidJumpTable]
+    setpsc      res[RXD], r4
     shr         r11, r11, 24
 
 JumpOnPid:
     ldw         r11, r10[r11]
-    .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup
+.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup
     bau         r11
 
 BadCrcAddr:
-    zext       r11, 8
-    ldc        r10, PIDn_SOF
-    eq         r11, r11, r10
-    bt         r11, Pid_Sof                              // TODO we should really CRC SOFs
-    ldw        r1, sp[10]
+   // zext        r11, 8
+   // ldc         r10, PIDn_SOF
+   // eq          r11, r11, r10
+    //ecallt     r11
+    //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
+    
+    ldw         r11, sp[10]
 waitforRXALow0:
-    in        r10, res[r1]
-    bt        r10, waitforRXALow0
-    setc      res[RXD], XS1_SETC_RUN_CLRBUF
-    bu      Loop_BadPid
+    in          r10, res[r11]
+    bt          r10, waitforRXALow0
+    setc        res[RXD], XS1_SETC_RUN_CLRBUF
+    bu          Loop_BadPid
 
 #endif
 
@@ -436,7 +437,7 @@ Pid_Reserved:                                  // Should never get here
 //Pid_Out:
 Pid_Ack:
 //Pid_Ping:
-//Pid_Sof:                                           // Should never get here: (G4) hardware swallows SOF
+//Pid_Sof:                                      // Should never get here: (G4) hardware swallows SOF
 Pid_NYet:
 Pid_Nyet:
 Pid_Data2:

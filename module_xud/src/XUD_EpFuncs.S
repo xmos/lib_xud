@@ -174,7 +174,11 @@ XUD_GetData_Select_CheckPid:                    // Check PID
     bt          r11, XUD_GetData_Select_BadPkt  // TODO Currently report 0 length packet received, not ideal.
 
 XUD_GetData_Select_PidToggle:
+#if (XUD_SERIES_SUPPORT==3)
+    ldc         r11, 0x88
+#else
     ldc         r11, 8
+#endif    
     xor         r0, r0, r11
     stw         r0, r1[4]
 
@@ -248,7 +252,11 @@ XUD_GetData_PidOkay:
     bf         r11, XUD_GetData_ReturnOk        // Jump over PID toggle for ISO
 
 XUD_GetData_PidToggle:
+#if (XUD_SERIES_SUPPORT==3)
+    ldc        r11, 0x88
+#else
     ldc        r11, 8
+#endif    
     xor        r10, r10, r11
     stw        r10, r0[4]
 
@@ -261,7 +269,7 @@ ResetSuspend:
     mkmsk      r0, 32                           // Return -1 as length
 
 Return:
-    ldw         r10, sp[1]
+    ldw        r10, sp[1]
     retsp      16
 
 .cc_bottom XUD_GetData.func
@@ -436,7 +444,11 @@ XUD_ResetEpStateByAddr:
     ldc         r1, USB_PIDn_DATA0
     bu          XUD_ResetEpStateByAddr_
 XUD_ResetEpStateByAddr_OUT:
+#if(XUD_SERIES_SUPPORT==3)
+    ldc         r1, USB_PIDn_DATA0
+#else    
     ldc         r1, USB_PID_DATA0
+#endif
 XUD_ResetEpStateByAddr_:
     zext        r0, 7                           // Check for IN bit set
     bf          r2, NoOffset

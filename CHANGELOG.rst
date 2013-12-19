@@ -3,7 +3,7 @@ XMOS USB Device (XUD) Library Change Log
 
 1.0.2
 -----
-    * ADDED:        Re-instated support for G devices (libxud_g library)
+    * ADDED:        Re-instated support for G devices (xud_g library)
 
 1.0.1
 -----

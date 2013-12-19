@@ -1,6 +1,10 @@
 XMOS USB Device (XUD) Library Change Log
 ========================================
 
+HEAD
+----
+    * ADDED:        Re-instated G library
+
 1.0.1
 -----
     * CHANGE:     Power signalling state machines simplified in order to reduce memory usage.

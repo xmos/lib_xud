@@ -37,7 +37,9 @@ InformEP_Iso:                                   // Iso EP - no handshake
     outt       res[r11], r8                     // Send tail length
 
     ldc        r6, 0x3334                       // CRC16 init (out) - Needs reseting after an out
+#ifndef ARCH_G
     ldw        r1, sp[STACK_FLAG0_PORT]
+#endif   
     //ldc        r4, XUD_MAX_NUM_EP_OUT           // This could be shaved if XUD_MAX_NUM_EP's < 12. Now use an LDAW to at 16.
 
 //------------------------------------------------------------------------------------------------
@@ -56,21 +58,18 @@ BranchOnTokenPid_:
 .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
     bau        r10
 #else
-     //ldaw        r8, dp[crc5Table_Addr]
-    ldaw        r10, dp[PidJumpTable]
-    //ldw         r6, dp[crcmask]
-    ldc         r8, 16
+    ldc         r4, 16
 
 ReadToken_:
     inpw        r11, res[RXD], 8                       // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
-    setpsc      res[RXD], r8
+    ldaw        r10, dp[PidJumpTable]
+    setpsc      res[RXD], r4
     shr         r11, r11, 24
 
 JumpOnPid_:
     ldw         r11, r10[r11]
     .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup
     bau         r11
-    bu          Loop
 #endif
 
 .align 4

@@ -3,7 +3,7 @@
 # The LIBRARY variable needs to be set to the name of the library to
 # be built
 
-LIBRARIES =  xud_u xud_l
+LIBRARIES =  xud_u xud_l xud_g
 #xud_s_sim xud_g
 
 # You can set flags specifically for your module by using the MODULE_XCC_FLAGS
@@ -21,6 +21,7 @@ MODULE_XCC_FLAGS = $(XCC_FLAGS) -g -O3
 
 LIB_XCC_FLAGS_xud_l =  -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -D ARCH_L -DXUD_FULL_PIDTABLE=1 -fschedule 
 
+
 LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -save-temps 
 #-DGLX_SUSPHY -DGLX_PWRDWN
 
@@ -28,9 +29,11 @@ LIB_XCC_FLAGS_xud_u_lomem =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-l
 
 #LIB_XCC_FLAGS_xud_u_sim =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -DSIMULATION
 
+LIB_XCC_FLAGS_xud_g =  -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DARCH_G -DXUD_FULL_PIDTABLE=1 -fschedule -march=xs1b 
+
 DEPENDENT_MODULES = module_usb_shared
 
-EXCLUDE_FILES = XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S XUD_Token_Setup.S XUD_G_Crc.S
+EXCLUDE_FILES = XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S XUD_Token_Setup.S XUD_G_Crc.S XUD_TokenJmp.S
 
 # The EXPORT_SOURCE_DIRS variable are the directories that contain
 # include files for the library and any source files that you do not

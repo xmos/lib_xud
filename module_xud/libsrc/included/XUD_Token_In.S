@@ -31,17 +31,9 @@ XUD_IN_TxNak:
     //ldw         r4, sp[(STACK_EXTEND+8)]            // Number of out Endpoints
     //ldc         r4, XUD_MAX_NUM_EP_OUT
 
-    ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
-                                                      // We receive: | 0000 4-bit EP | 0000 4-bit PID |
-    inpw       r11, res[RXD], 8                       // Read 8 bit PID
-    shr        r11, r11, 24                           // Shift off junk
+#include "XUD_TokenJmp.S"
 
-    ldw        r10, r10[r11]                          // Load relevant branch address
-
-.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
-    bau        r10
-
-    bu          NextTokenAfterInNak
+    //bu          NextTokenAfterInNak
 .cc_bottom InNotReady.func
 
 
@@ -50,7 +42,7 @@ XUD_IN_TxNak:
 #ifdef ARCH_L
 .skip 92
 #else
-.skip 82
+.skip 68
 #endif
 Pid_In:
 #ifdef ARCH_L

@@ -48,7 +48,11 @@ XUD_GetSetupData_NoReq:                         // Entry for _NoReq
                                                 // TODO..
 
 XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
+#if (XUD_SERIES_SUPPORT==3)
+    ldc         r11, USB_PIDn_DATA1
+#else
     ldc         r11, USB_PID_DATA1
+#endif   
     stw         r11, r0[4]                      // Reset OUT toggle
 
     ldc         r11, USB_PIDn_DATA1

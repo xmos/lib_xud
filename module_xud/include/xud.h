@@ -12,6 +12,7 @@
 
 #define XUD_U_SERIES 1
 #define XUD_L_SERIES 2
+#define XUD_G_SERIES 3
 
 #ifdef __xud_conf_h_exists__
 #include "xud_conf.h"
@@ -40,7 +41,7 @@
       #define XUD_SERIES_SUPPORT XUD_L_SERIES
     #endif
 
-    #if (XUD_SERIES_SUPPORT != XUD_L_SERIES)
+    #if (XUD_SERIES_SUPPORT != XUD_L_SERIES) && (XUD_SERIES_SUPPORT != XUD_G_SERIES)
       #error (XUD_SERIES_SUPPORT != XUD_L_SERIES) when PORT_USB_RX_READY not defined
     #endif
 

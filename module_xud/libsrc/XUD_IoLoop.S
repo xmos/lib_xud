@@ -336,7 +336,7 @@ SetupSuspendResetTimer:
 
     setc       res[r10], XS1_SETC_COND_AFTER
     setc       res[r10], XS1_SETC_IE_MODE_INTERRUPT
-    eeu        res[r10]                         // Enable events/interupts on resource
+    //eeu        res[r10]                         // Enable events/interupts on resource
 
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
 
@@ -401,34 +401,31 @@ BranchOnTokenPid:
 
     // ARCH_G code                                    // Valid token logic is bad in ARCH_G
 
-    ldaw        r8, dp[crc5Table_Addr]
-    ldaw        r1, dp[PidJumpTable]
-    ldw         r6, dp[crcmask]
-    ldc         r10, 16
+    //ldaw        r8, dp[crc5Table_Addr]
+    ldaw        r10, dp[PidJumpTable]
+    //ldw         r6, dp[crcmask]
+    ldc         r8, 16
 
 ReadToken:
     inpw        r11, res[RXD], 8                       // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
-    setpsc      res[RXD], r10
+    setpsc      res[RXD], r8
     shr         r11, r11, 24
 
 JumpOnPid:
-    ldw         r1, r1[r11]
+    ldw         r11, r10[r11]
     .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup
-    bau         r1
+    bau         r11
 
 BadCrcAddr:
-//    zext        r11, 8
-//    ldc        r10, PIDn_SOF
-//    eq         r11, r11, r10
-//    bt         r11, Pid_Sof                              // TODO we should really CRC SOFs
-
+    zext       r11, 8
+    ldc        r10, PIDn_SOF
+    eq         r11, r11, r10
+    bt         r11, Pid_Sof                              // TODO we should really CRC SOFs
     ldw        r1, sp[10]
 waitforRXALow0:
     in        r10, res[r1]
     bt        r10, waitforRXALow0
     setc      res[RXD], XS1_SETC_RUN_CLRBUF
-
-
     bu      Loop_BadPid
 
 #endif

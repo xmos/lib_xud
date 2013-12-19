@@ -360,7 +360,7 @@ NextTokenAfterIn:
 #ifndef ARCH_G
     ldw         r1, sp[STACK_FLAG0_PORT]
 #else
-    ldaw        r1, dp[crc5Table_Addr] 
+    //ldaw        r1, dp[crc5Table_Addr] 
 #endif
 NextTokenAfterInNak:
 Loop_BadPid:

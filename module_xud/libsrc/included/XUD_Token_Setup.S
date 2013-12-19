@@ -77,10 +77,10 @@ OutTail2:
 .align 16
 OutTail3:
     shr         r11, r11, 8
-    crc32       r6, r11, r9
-    crc8        r6, r9, r2, r9                  // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc
     stw         r11, r1[r4]                     // Store last data
+    crc32       r6, r11, r9
     ldw         r11, sp[12]
+    crc8        r6, r1, r2, r9                  // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc
     retsp       0
 
 // Four Tail Bytes

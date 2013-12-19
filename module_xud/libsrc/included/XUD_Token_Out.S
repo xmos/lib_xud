@@ -83,8 +83,7 @@ StoreTailDataOut:
 
     out        res[r11], r4                     // Output datalength (words)
     outt       res[r11], r8                     // Send tail length
-
-BadDataCrcOut:
+    
     bu        NextTokenAfterOut
 
 

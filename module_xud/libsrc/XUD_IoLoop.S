@@ -357,7 +357,7 @@ NextTokenAfterOut:
 #ifndef ARCH_G
     ldw         r1, sp[STACK_FLAG0_PORT]
 #else
-    //ldaw        r1, dp[crc5Table_Addr] 
+    //ldaw        r1, dp[crc5Table_Addr]
 #endif
 NextTokenAfterInNak:
 Loop_BadPid:
@@ -421,7 +421,7 @@ BadCrcAddr:
    // eq          r11, r11, r10
     //ecallt     r11
     //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
-    
+
     ldw         r11, sp[10]
 waitforRXALow0:
     in          r10, res[r11]

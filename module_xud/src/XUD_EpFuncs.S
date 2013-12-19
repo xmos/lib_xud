@@ -52,7 +52,7 @@ XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on
     ldc         r11, USB_PIDn_DATA1
 #else
     ldc         r11, USB_PID_DATA1
-#endif   
+#endif
     stw         r11, r0[4]                      // Reset OUT toggle
 
     ldc         r11, USB_PIDn_DATA1
@@ -178,7 +178,7 @@ XUD_GetData_Select_PidToggle:
     ldc         r11, 0x88
 #else
     ldc         r11, 8
-#endif    
+#endif
     xor         r0, r0, r11
     stw         r0, r1[4]
 
@@ -256,7 +256,7 @@ XUD_GetData_PidToggle:
     ldc        r11, 0x88
 #else
     ldc        r11, 8
-#endif    
+#endif
     xor        r10, r10, r11
     stw        r10, r0[4]
 
@@ -446,7 +446,7 @@ XUD_ResetEpStateByAddr:
 XUD_ResetEpStateByAddr_OUT:
 #if(XUD_SERIES_SUPPORT==3)
     ldc         r1, USB_PIDn_DATA0
-#else    
+#else
     ldc         r1, USB_PID_DATA0
 #endif
 XUD_ResetEpStateByAddr_:

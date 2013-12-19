@@ -336,7 +336,7 @@ SetupSuspendResetTimer:
 
     setc       res[r10], XS1_SETC_COND_AFTER
     setc       res[r10], XS1_SETC_IE_MODE_INTERRUPT
-    //eeu        res[r10]                         // Enable events/interupts on resource
+    eeu        res[r10]                         // Enable events/interupts on resource
 
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
 

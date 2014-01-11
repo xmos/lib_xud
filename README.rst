@@ -5,21 +5,10 @@ XMOS USB Device (XUD) Library
 :Maintainer: XMOS
 :Description: Low-Level USB Driver Library
 
-
 Description
 -----------
 
-XMOS USB Device (XUD) library provides the low-level interface to USB.
-
-To Do
------
-
-* More documentation
-
-Known Issues
-------------
-
-* None
+The XMOS USB Device (XUD) library provides a low-level interface to USB.
 
 Support
 -------
@@ -27,7 +16,7 @@ Support
 Please visit www.xmos.com/support
 
 Required software (dependencies)
-================================
+-------------------------------
 
   * sc_usb (git://git/apps/sc_usb)
 

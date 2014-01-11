@@ -131,7 +131,6 @@ SetupReady:
 
 LoadSetupBuffer:
     bl          doRXData			            // RXData writes available data to buffer and does crc check.
-                                                // r7: CRC check
                                                 // r8: Data tail size (bytes)
     clre
     eq          r1, r6, r11                     // Check for good CRC16

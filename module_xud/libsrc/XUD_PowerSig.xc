@@ -55,7 +55,7 @@ void XUD_PhyReset(out port p_rst, int time, unsigned rstMask)
 #ifndef ARCH_S
     p_usb_rxd <: 0;         // While in reset, drive 0 on data bus and clear port buffers
                             // Note, this is important else phy clocks in invalid data before UIFM is enabled causing
-                            // connection issues. 
+                            // connection issues.
 #endif
     clearbuf(p_usb_rxd);
 

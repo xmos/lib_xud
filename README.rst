@@ -1,9 +1,10 @@
 XMOS USB Device (XUD) Library
 =============================
 
-:Latest release: 1.0.2alpha1
+:Latest release: 1.0.3alpha0
 :Maintainer: XMOS
 :Description: Low-Level USB Driver Library
+
 
 Description
 -----------
@@ -16,7 +17,7 @@ Support
 Please visit www.xmos.com/support
 
 Required software (dependencies)
--------------------------------
+================================
 
   * sc_usb (git://git/apps/sc_usb)
 

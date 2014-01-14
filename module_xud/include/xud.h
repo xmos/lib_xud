@@ -72,6 +72,7 @@
     #define PORT_USB_REG_READ    on USB_TILE: XS1_PORT_8D
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
+    #define PORT_USB_STP_SUS     on USB_TILE: XS1_PORT_1E
   #endif
 
 #endif // PORT_USB_CLK

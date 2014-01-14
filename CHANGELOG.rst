@@ -3,10 +3,10 @@ XMOS USB Device (XUD) Library Change Log
 
 1.0.3
 -----
-    * RESOLVED:   (Minor) ULPI data-lines now driven hard low before taking the USB phy out of 
-                  reset. Previously the phy could clock in erroneous data before the XMOS ULPI 
-                  interface was initialised causing potential connection issues on initial 
-                  startup. This affects L/G series libraries only.
+    * RESOLVED:   (Minor) ULPI data-lines driven hard low and XMOS pull-up on STP line disabled
+                  before taking the USB phy out of reset. Previously the phy could clock in 
+                  erroneous data before the XMOS ULPI interface was initialised causing potential 
+                  connection issues on initial startup. This affects L/G series libraries only.
 
 1.0.2
 -----

@@ -558,6 +558,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     while(!XUD_GetDone())
     {
+#ifndef ARCH_S
+        p_usb_rxd <: 0;         // Note, this is important else phy clocks in invalid data before UIFM is enabled causing
+        clearbuf(p_usb_rxd);    // connection issues
+#endif
 #ifdef VBUSHACK
         p_usb_rxd :> void;
 #endif
@@ -679,7 +683,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         }
         else
         {
-            clearbuf(p_usb_rxd);
             XUD_PhyReset_User();
         }
 #endif
@@ -767,10 +770,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                  * between vbus valid and signalling attach */
                 if(pwrConfig == XUD_PWR_SELF)
                 {
-                    timer t;
-                    unsigned time, x;
                     while(1)
                     {
+                        unsigned x, time;
+                        timer t;
 #ifdef ARCH_S
                         read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))

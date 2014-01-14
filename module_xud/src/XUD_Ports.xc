@@ -21,6 +21,7 @@ in port flag2_port = PORT_USB_FLAG2;
   in  port reg_read_port  = PORT_USB_REG_READ;
   out port p_usb_txd      = PORT_USB_TXD;
   port p_usb_rxd          = PORT_USB_RXD;
+  in port p_usb_stp       = PORT_USB_STP_SUS;
 #else
   #error XUD_SERIES_SUPPORT not equal to XUD_U_SERIES, XUD_G_SERIES or XUD_L_SERIES
 #endif

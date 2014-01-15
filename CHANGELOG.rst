@@ -7,6 +7,11 @@ sc_xud Change Log
                   before taking the USB phy out of reset. Previously the phy could clock in
                   erroneous data before the XMOS ULPI interface was initialised causing potential
                   connection issues on initial startup. This affects L/G series libraries only.
+    * RESOLVED:   (Minor) Fixes to improve memory usage such as adding missing resource usage
+                  symbols/elimination blocks to assembly file and inlining support functions where
+                  appropriate.
+    * RESOLVED:   (Minor) Moved to using supplied tools support for communicating with the USB tile
+                  rather than custom implementation (affects U-series lib only).
 
   * Changes to dependencies:
 

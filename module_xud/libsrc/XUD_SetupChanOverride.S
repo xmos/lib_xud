@@ -1,4 +1,3 @@
-.extern SetupChannelVectorsOverride
 .globl SetupChannelVectorsOverride.nstackwords
 .globl SetupChannelVectorsOverride.maxthreads
 .globl SetupChannelVectorsOverride.maxtimers
@@ -10,11 +9,12 @@
 .linkset SetupChannelVectorsOverride.maxthreads, 0
 
 .globl SetupChannelVectorsOverride
+.type SetupChannelVectorsOverride, @function
 .text
 .cc_top SetupChannelVectorsOverride.func, SetupChannelVectorsOverride
 
 // This function can be redefined by the client
 SetupChannelVectorsOverride:
         retsp 0
-
+.size SetupChannelVectorsOverride, .-SetupChannelVectorsOverride
 .cc_bottom SetupChannelVectorsOverride.func

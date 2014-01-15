@@ -11,23 +11,12 @@
 
 #ifndef GLX
 .text
-.align    2
 
 //XUD_ULPIReg(p_usb_txd);
 .globl XUD_ULPIReg //"f{ui}(ui)"
-.globl XUD_ULPIReg.nstackwords
-.globl XUD_ULPIReg.maxthreads
-.globl XUD_ULPIReg.maxtimers
-.globl XUD_ULPIReg.maxchanends
-.globl XUD_ULPIReg.maxsync
 .type  XUD_ULPIReg, @function
-.linkset XUD_ULPIReg.locnoside, 1
-.linkset XUD_ULPIReg.locnochandec, 1
-.linkset XUD_ULPIReg.nstackwords, 16
-.cc_top XUD_ULPIReg.function,XUD_ULPIReg
+.cc_top XUD_ULPIReg.function
 .align    4
-
-
 XUD_ULPIReg:
   entsp     16
 
@@ -39,28 +28,24 @@ looper:
 
 
   retsp     16
+.size XUD_ULPIReg, .-XUD_ULPIReg
 .cc_bottom XUD_ULPIReg.function
-.linkset XUD_ULPIReg.maxchanends, 0
-.linkset XUD_ULPIReg.maxtimers, 0
-.linkset XUD_ULPIReg.maxthreads, 1
+.globl XUD_ULPIReg.nstackwords
+.globl XUD_ULPIReg.maxchanends
+.globl XUD_ULPIReg.maxtimers
+.globl XUD_ULPIReg.maxcores
+.set XUD_ULPIReg.nstackwords, 16
+.set XUD_ULPIReg.maxchanends, 0
+.set XUD_ULPIReg.maxtimers, 0
+.set XUD_ULPIReg.maxcores, 1
+.set XUD_ULPIReg.locnochandec, 1
 
 
 .text
-.align    2
 .globl XUD_UIFM_Enable, "f{ui}(ui)"
-.globl XUD_UIFM_Enable.nstackwords
-.globl XUD_UIFM_Enable.maxthreads
-.globl XUD_UIFM_Enable.maxtimers
-.globl XUD_UIFM_Enable.maxchanends
-.globl XUD_UIFM_Enable.maxsync
 .type  XUD_UIFM_Enable, @function
-.linkset XUD_UIFM_Enable.locnoside, 1
-.linkset XUD_UIFM_Enable.locnochandec, 1
-.linkset XUD_UIFM_Enable.nstackwords, 16
-.cc_top XUD_UIFM_Enable.function,XUD_UIFM_Enable
+.cc_top XUD_UIFM_Enable.function
 .align    4
-
-
 // void XUD_UIFM_Enable (unsigned mode);
 XUD_UIFM_Enable:
   entsp     16
@@ -76,23 +61,28 @@ XUD_UIFM_Enable:
 
   ldw       r10, sp[1]
   retsp     16
+.size XUD_UIFM_Enable, .-XUD_UIFM_Enable
 .cc_bottom XUD_UIFM_Enable.function
-.linkset XUD_UIFM_Enable.maxchanends, 0
-.linkset XUD_UIFM_Enable.maxtimers, 0
-.linkset XUD_UIFM_Enable.maxthreads, 1
+.globl XUD_UIFM_Enable.nstackwords
+.globl XUD_UIFM_Enable.maxchanends
+.globl XUD_UIFM_Enable.maxtimers
+.globl XUD_UIFM_Enable.maxcores
+.set XUD_UIFM_Enable.nstackwords, 16
+.set XUD_UIFM_Enable.maxchanends, 0
+.set XUD_UIFM_Enable.maxtimers, 0
+.set XUD_UIFM_Enable.maxcores, 1
+.set XUD_UIFM_Enable.locnochandec, 1
 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // unsigned UifmReadRead(out port reg_write_port, in port reg_read_port, unsigned regNo);
-.extern XUD_UIFM_RegRead
-.globl XUD_UIFM_RegRead.nstackwords
-.linkset XUD_UIFM_RegRead.nstackwords, 0
 .globl XUD_UIFM_RegRead
+.type XUD_UIFM_RegRead, @function
 .text
-.align 4
-.skip 0
 
+.cc_top XUD_UIFM_RegRead.function
+.align 4
 XUD_UIFM_RegRead:
 
   ldc r11, UIFM_CMD_READ         // make register ID
@@ -103,18 +93,26 @@ XUD_UIFM_RegRead:
   in r0, res[r1]
 
   retsp 0
-
+.size XUD_UIFM_RegRead, .-XUD_UIFM_RegRead
+.cc_bottom XUD_UIFM_RegRead.function
+.globl XUD_UIFM_RegRead.nstackwords
+.globl XUD_UIFM_RegRead.maxtimers
+.globl XUD_UIFM_RegRead.maxchanends
+.globl XUD_UIFM_RegRead.maxcores
+.set XUD_UIFM_RegRead.nstackwords, 0
+.set XUD_UIFM_RegRead.maxtimers, 0
+.set XUD_UIFM_RegRead.maxchanends, 0
+.set XUD_UIFM_RegRead.maxcores, 1
 
 #if 0
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // unsigned UifmReadRead_Locked(out port reg_write_port, in port reg_read_port, lock l, unsigned regNo);
-.extern XUD_UIFM_RegRead_Locked
-.globl XUD_UIFM_RegRead_Locked.nstackwords
-.linkset XUD_UIFM_RegRead_Locked.nstackwords, 0
 .globl XUD_UIFM_RegRead_Locked
+.type XUD_UIFM_RegRead_Locked, @function
 .text
+
+.cc_top XUD_UIFM_RegRead_Locked.function
 .align 4
-.skip 0
 XUD_UIFM_RegRead_Locked:
   in 	r2, res[r2]		// Claim lock
 
@@ -127,19 +125,28 @@ XUD_UIFM_RegRead_Locked:
   out   res[r2], r2		// Free lock
 
   retsp 0
+.size XUD_UIFM_RegRead_Locked, .-XUD_UIFM_RegRead_Locked
+.cc_bottom XUD_UIFM_RegRead_Locked.function
+.globl XUD_UIFM_RegRead_Locked.nstackwords
+.globl XUD_UIFM_RegRead_Locked.maxtimers
+.globl XUD_UIFM_RegRead_Locked.maxchanends
+.globl XUD_UIFM_RegRead_Locked.maxcores
+.set XUD_UIFM_RegRead_Locked.nstackwords, 0
+.set XUD_UIFM_RegRead_Locked.maxtimers, 0
+.set XUD_UIFM_RegRead_Locked.maxchanends, 0
+.set XUD_UIFM_RegRead_Locked.maxcores, 1
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // void UifmWriteRead(out port reg_write_port, unsigned regNo, unsigned val);
-.extern XUD_UIFM_RegWrite
-.globl XUD_UIFM_RegWrite.nstackwords
-.linkset XUD_UIFM_RegWrite.nstackwords, 0
 .globl XUD_UIFM_RegWrite
+.type XUD_UIFM_RegWrite, @function
 
 .text
-.align 4
 
+.cc_top XUD_UIFM_RegWrite.function
+.align 4
 XUD_UIFM_RegWrite:
   ldc       r11, UIFM_CMD_WRITE
   or        r3, r11, r1
@@ -150,18 +157,27 @@ XUD_UIFM_RegWrite:
   syncr     res[r0];
 
   retsp     0
+.size XUD_UIFM_RegWrite, .-XUD_UIFM_RegWrite
+.cc_bottom XUD_UIFM_RegWrite.function
+.globl XUD_UIFM_RegWrite.nstackwords
+.globl XUD_UIFM_RegWrite.maxtimers
+.globl XUD_UIFM_RegWrite.maxchanends
+.globl XUD_UIFM_RegWrite.maxcores
+.set XUD_UIFM_RegWrite.nstackwords, 0
+.set XUD_UIFM_RegWrite.maxtimers, 0
+.set XUD_UIFM_RegWrite.maxchanends, 0
+.set XUD_UIFM_RegWrite.maxcores, 1
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // void XUD_UIFM_RegWrite_(unsigned regNo, unsigned val);
-.extern XUD_UIFM_RegWrite_
-.globl XUD_UIFM_RegWrite_.nstackwords
-.linkset XUD_UIFM_RegWrite_.nstackwords, 0
 .globl XUD_UIFM_RegWrite_
+.type XUD_UIFM_RegWrite_, @function
 
 .text
-.align 4
 
+.cc_top XUD_UIFM_RegWrite_.function
+.align 4
 XUD_UIFM_RegWrite_:
     ldc         r11, UIFM_CMD_WRITE
     or          r3, r11, r0
@@ -173,17 +189,26 @@ XUD_UIFM_RegWrite_:
     syncr     res[r2];
 
     retsp       0
+.size XUD_UIFM_RegWrite_, .-XUD_UIFM_RegWrite_
+.cc_bottom XUD_UIFM_RegWrite_.function
+.globl XUD_UIFM_RegWrite_.nstackwords
+.globl XUD_UIFM_RegWrite_.maxtimers
+.globl XUD_UIFM_RegWrite_.maxchanends
+.globl XUD_UIFM_RegWrite_.maxcores
+.set XUD_UIFM_RegWrite_.nstackwords, 0
+.set XUD_UIFM_RegWrite_.maxtimers, 0
+.set XUD_UIFM_RegWrite_.maxchanends, 0
+.set XUD_UIFM_RegWrite_.maxcores, 1
 
 
 #if 0
 ////////////////////////////////////////////////////////////////////////////////////////
 // void UifmWriteReg_Locked(out port reg_write_port, lock l, unsigned regNo, unsigned val);
-.extern XUD_UIFM_RegWrite_Locked
-.globl XUD_UIFM_RegWrite_Locked.nstackwords
-.linkset XUD_UIFM_RegWrite_Locked.nstackwords, 0
 .globl XUD_UIFM_RegWrite_Locked
+.type XUD_UIFM_RegWrite_Locked, @function
 
 .text
+.cc_top XUD_UIFM_RegWrite_Locked.function
 .align 4
 XUD_UIFM_RegWrite_Locked:
 
@@ -198,5 +223,15 @@ XUD_UIFM_RegWrite_Locked:
   out       res[r1], r1
 
   retsp     0
+.size XUD_UIFM_RegWrite_Locked, .-XUD_UIFM_RegWrite_Locked
+.cc_bottom XUD_UIFM_RegWrite_Locked.function
+.globl XUD_UIFM_RegWrite_Locked.nstackwords
+.globl XUD_UIFM_RegWrite_Locked.maxtimers
+.globl XUD_UIFM_RegWrite_Locked.maxchanends
+.globl XUD_UIFM_RegWrite_Locked.maxcores
+.set XUD_UIFM_RegWrite_Locked.nstackwords, 0
+.set XUD_UIFM_RegWrite_Locked.maxtimers, 0
+.set XUD_UIFM_RegWrite_Locked.maxchanends, 0
+.set XUD_UIFM_RegWrite_Locked.maxcores, 1
 #endif
 #endif

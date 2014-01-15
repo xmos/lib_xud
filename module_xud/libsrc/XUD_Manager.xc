@@ -324,7 +324,7 @@ XUD_ep_info ep_info[XUD_MAX_NUM_EP];
 void XUD_UIFM_PwrSigFlags()
 {
 #ifdef ARCH_S
-    write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG, ((1<<XS1_UIFM_IFM_FLAGS_SE0)<<16)
+    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG, ((1<<XS1_UIFM_IFM_FLAGS_SE0)<<16)
         | ((1<<XS1_UIFM_IFM_FLAGS_K)<<8) | (1 << XS1_UIFM_IFM_FLAGS_J));
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK0, 0x8);  // flag0_port - J
@@ -493,7 +493,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #ifndef SIMULATION
     /* Tell GLX to allow USB suspend/wake */
-    write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 0x3 << XS1_GLX_PWR_USB_PD_EN_BASE);
+    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 0x3 << XS1_GLX_PWR_USB_PD_EN_BASE);
 #endif
 #endif
 
@@ -574,25 +574,25 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         char rdata[1];
 
 
-        read_glx_periph_reg(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_SCTH_ID, 0xff, 0, 1, rdata);
+        read_periph_8(USB_TILE_REF, XS1_GLX_PERIPH_SCTH_ID, 0xff, 1, rdata);
 
         if(rdata[0])
         {
             unsigned resumeReason;
 
             /* Check why we are waking up.. */
-            read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, resumeReason);
+            read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, resumeReason);
 
             //p_test <: 0;
             /* We're waking up.. */
             /* Reset flag */
             rdata[0] = 0;
-            write_glx_periph_reg(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_SCTH_ID, 0xff, 0, 1, rdata);
+            write_periph_8(USB_TILE_REF, XS1_GLX_PERIPH_SCTH_ID, 0xff, 1, rdata);
 
             waking = 1;
 
             /* Unsuspend phy */
-            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,
+            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,
                                     (0x1 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE));
 
             /* Resume */
@@ -602,7 +602,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 while(1)
                 {
                     unsigned  x;
-                    read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
+                    read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
                     x >>= 9;
                     x &= 0x3;
                     if(x == 0)
@@ -613,7 +613,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                 /* TODO might has suspended in FS */
                 /* Back to HS */
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
 
             //p_test <:0;
 
@@ -621,7 +621,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 while(1)
                 {
                     unsigned  x;
-                    read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
+                    read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
                     x >>= 9;
                     x &= 0x3;
                     if(x != 0)
@@ -655,7 +655,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         //write_node_config_reg(xs1_su, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
 
         /* Now reset the phy */
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,  (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,  (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
 
         /* Keep usb clock active, enter active mode */
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
@@ -666,12 +666,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifdef GLX_PWRDWN
 #ifndef SIMULATION
         /* Setup sleep timers and supplies */
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING2_ADRS,   0x00007f);
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING2_ADRS,   0x00007f);
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
 #endif
 #endif
 
@@ -757,7 +757,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #ifdef ARCH_S
 #ifndef SIMULATION
-        write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG,
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG,
             (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE));
 #endif
 #else
@@ -775,7 +775,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         unsigned x, time;
                         timer t;
 #ifdef ARCH_S
-                        read_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+                        read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
 #elif ARCH_L
                         x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
@@ -792,7 +792,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifndef SIMULATION
 #ifdef ARCH_S
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-                write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
+                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
                       (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT)
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
 #else
@@ -882,7 +882,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Set default device address */
 #ifdef ARCH_S
 #ifndef SIMULATION
-                    write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
+                    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
 #endif
 #else
                     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
@@ -944,7 +944,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifdef ARCH_L
 #ifdef ARCH_S
 #ifndef SIMULATION
-            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, (1<<XS1_UIFM_IFM_CONTROL_DOTOKENS)
+            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, (1<<XS1_UIFM_IFM_CONTROL_DOTOKENS)
                 | (1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS)
                 | (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE)
                 | (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
@@ -961,7 +961,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #ifdef ARCH_S
 #ifndef SIMULATION
-            write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG,
+            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG,
                 ((1<<XS1_UIFM_IFM_FLAGS_NEWTOKEN)
                 | ((1<<XS1_UIFM_IFM_FLAGS_RXACTIVE)<<8)
                 | ((1<<XS1_UIFM_IFM_FLAGS_RXERROR)<<16)));
@@ -992,7 +992,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             /* Put UIFM back to default state */
 #ifdef ARCH_L
 #ifdef ARCH_S
-           // write_glx_periph_word(get_tile_id(USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG,
+           // write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG,
                 //(1<<XS1_UIFM_IFM_CONTROL_DOTOKENS) |
                 //(1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS) |
              //   (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE));

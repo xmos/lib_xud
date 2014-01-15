@@ -7,13 +7,12 @@
 
 //int XUD_GetSetupData(XUD_ep e_out, XUD_ep in, unsigned buffer[]);
 //                     r0            r1         r2
-.globl   XUD_GetSetupData
-.globl   XUD_GetSetupData.nstackwords
-.linkset XUD_GetSetupData.nstackwords, 4
+.globl XUD_GetSetupData
+.type XUD_GetSetupData, @function
 .text
 
-.cc_top XUD_GetSetupData.func, XUD_GetSetupData
-
+.cc_top XUD_GetSetupData.func
+.align 2
 ResetSuspendSetup:
     mkmsk      r0, 32                           // Return -1 as length
     ldw         r10, sp[2]
@@ -96,18 +95,26 @@ XUD_GetSetupData_ReturnOk:
     ldw         r4, sp[1]
     retsp       4
 
+.size XUD_GetSetupData, .-XUD_GetSetupData
 .cc_bottom XUD_GetSetupData.func
+.globl XUD_GetSetupData.nstackwords
+.globl XUD_GetSetupData.maxchanends
+.globl XUD_GetSetupData.maxtimers
+.globl XUD_GetSetupData.maxcores
+.set XUD_GetSetupData.nstackwords, 4
+.set XUD_GetSetupData.maxchanends, 0
+.set XUD_GetSetupData.maxtimers, 0
+.set XUD_GetSetupData.maxcores, 1
 
 
-.cc_top XUD_SetData_Select.func, XUD_SetData_Select
+.cc_top XUD_SetData_Select.func
 
 
 //void XUD_SetData_Select(chan c, XUD_ep ep, unsigned &x);
 //                        r0,     r1         r2
-.globl   XUD_SetData_Select
-.globl   XUD_SetData_Select.nstackwords
-.linkset XUD_SetData_Select.nstackwords, 4
-
+.globl XUD_SetData_Select
+.type XUD_SetData_Select, @function
+.align 2
 XUD_SetData_Select:
     entsp       4
     stw         r4, sp[1]
@@ -136,17 +143,25 @@ XUD_SetData_Select_Return_ResetSuspend:
     stw         r0, r2[0]
     ldw         r4, sp[1]
     retsp       4
+.size XUD_SetData_Select, .-XUD_SetData_Select
 .cc_bottom XUD_SetData_Select.func
+.globl XUD_SetData_Select.nstackwords
+.globl XUD_SetData_Select.maxchanends
+.globl XUD_SetData_Select.maxtimers
+.globl XUD_SetData_Select.maxcores
+.set XUD_SetData_Select.nstackwords, 4
+.set XUD_SetData_Select.maxchanends, 0
+.set XUD_SetData_Select.maxtimers, 0
+.set XUD_SetData_Select.maxcores, 1
 
 
 //void XUD_GetData_Select(chan c, XUD_ep ep, unsigned &x);
 //                        r0,     r1         r2
-.globl   XUD_GetData_Select
-.globl   XUD_GetData_Select.nstackwords
-.linkset XUD_GetData_Select.nstackwords, 0
+.globl XUD_GetData_Select
+.type XUD_GetData_Select, @function
 
-.cc_top XUD_GetData_Select.func, XUD_GetData_Select
-
+.cc_top XUD_GetData_Select.func
+.align 2
 XUD_GetData_Select:                             // Entry for _NoReq
     testct     r3, res[r0]
     bt         r3, XUD_GetData_Select_Return_ResetSuspend
@@ -201,16 +216,24 @@ XUD_GetData_Select_Return_ResetSuspend:
     stw         r0, r2[0]
     retsp       0
 
+.size XUD_GetData_Select, .-XUD_GetData_Select
 .cc_bottom XUD_GetData_Select.func
-
+.globl XUD_GetData_Select.nstackwords
+.globl XUD_GetData_Select.maxchanends
+.globl XUD_GetData_Select.maxtimers
+.globl XUD_GetData_Select.maxcores
+.set XUD_GetData_Select.nstackwords, 0
+.set XUD_GetData_Select.maxchanends, 0
+.set XUD_GetData_Select.maxtimers, 0
+.set XUD_GetData_Select.maxcores, 1
 
 //int XUD_GetData(XUD_ep c, unsigned char buffer[]);
-.globl   XUD_GetData
-.globl   XUD_GetData.nstackwords
-.linkset XUD_GetData.nstackwords, 16
+.globl XUD_GetData
+.type XUD_GetData, @function
 .text
 
-.cc_top XUD_GetData.func, XUD_GetData
+.cc_top XUD_GetData.func
+.align 2
 XUD_GetData:
     entsp       16
     stw         r10, sp[1]
@@ -230,7 +253,7 @@ XUD_GetData_Retry:
 XUD_GetData_DataEnd:
     in         r3, res[r10]                     // Input packet "word" length
     int        r11, res[r10]                    // r11 is tail length (bytes)
-	shr		   r11, r11, 3
+    shr        r11, r11, 3
 
 XUD_GetDataCalcDataLength:
     shl        r3, r3, 2                        // Num received words to bytes
@@ -272,21 +295,27 @@ Return:
     ldw        r10, sp[1]
     retsp      16
 
+.size XUD_GetData, .-XUD_GetData
 .cc_bottom XUD_GetData.func
+.globl XUD_GetData.nstackwords
+.globl XUD_GetData.maxchanends
+.globl XUD_GetData.maxtimers
+.globl XUD_GetData.maxcores
+.set XUD_GetData.nstackwords, 16
+.set XUD_GetData.maxchanends, 0
+.set XUD_GetData.maxtimers, 0
+.set XUD_GetData.maxcores, 1
 
 // Note: Assumes startIndex is word aligned
 //int XUD_SetData_indexed(chanend c, unsigned buffer[], unsigned datasize, unsigned startIndex unsigned pid);
 //                        r0         r1                 r2                 r3
-.globl   XUD_SetData_NoReq
-.globl   XUD_SetData_NoReq.nstackwords
-.linkset XUD_SetData_NoReq.nstackwords, 0
 
-.globl   XUD_SetData
-.globl   XUD_SetData.nstackwords
-.linkset XUD_SetData.nstackwords, 7
+.globl XUD_SetData
+.type XUD_SetData, @function
 .text
 
-.cc_top XUD_SetData.func, XUD_SetData
+.cc_top XUD_SetData.func
+.align 2
 XUD_SetData:
     entsp       7
     stw         r5, sp[5]
@@ -350,14 +379,23 @@ XUD_SetData_Reset:
     mkmsk       r0, 32                           // Return -1
     bu          XUD_SetData_Return
 
+.size XUD_SetData, .-XUD_SetData
 .cc_bottom XUD_SetData.func
+.globl XUD_SetData.nstackwords
+.globl XUD_SetData.maxchanends
+.globl XUD_SetData.maxtimers
+.globl XUD_SetData.maxcores
+.set XUD_SetData.nstackwords, 7
+.set XUD_SetData.maxchanends, 0
+.set XUD_SetData.maxtimers, 0
+.set XUD_SetData.maxcores, 1
 
 
 .globl XUD_ResetEndpoint
-.globl XUD_ResetEndpoint.nstackwords
-.linkset XUD_ResetEndpoint.nstackwords, 1
+.type XUD_ResetEndpoint, @function
 
-.cc_top XUD_ResetEndpoint.func, XUD_ResetEndpoint
+.cc_top XUD_ResetEndpoint.func
+.align 2
 XUD_ResetEndpoint:
     entsp       1
     ldw         r0, r0[2]
@@ -367,14 +405,23 @@ XUD_ResetEndpoint:
 .L0:
     bl XUD_ResetEndpoint0
     retsp       1
+.size XUD_ResetEndpoint, .-XUD_ResetEndpoint
 .cc_bottom XUD_ResetEndpoint.func
+.globl XUD_ResetEndpoint.nstackwords
+.globl XUD_ResetEndpoint.maxchanends
+.globl XUD_ResetEndpoint.maxtimers
+.globl XUD_ResetEndpoint.maxcores
+.set XUD_ResetEndpoint.nstackwords, 1 + XUD_ResetEndpoint0.nstackwords
+.set XUD_ResetEndpoint.maxchanends, XUD_ResetEndpoint0.nstackwords
+.set XUD_ResetEndpoint.maxtimers, XUD_ResetEndpoint0.nstackwords
+.set XUD_ResetEndpoint.maxcores, XUD_ResetEndpoint0.nstackwords
 
 
-.globl   XUD_SetReady
-.globl   XUD_SetReady.nstackwords
-.linkset XUD_SetReady.nstackwords, 0
+.globl XUD_SetReady
+.type XUD_SetReady, @function
 
-.cc_top XUD_SetReady.func, XUD_SetReady
+.cc_top XUD_SetReady.func
+.align 2
 XUD_SetReady:
     ldw         r0,  r0[2]
     out         res[r0], r1
@@ -382,15 +429,24 @@ XUD_SetReady:
     ldw         r2,  r0[1]
     stw         r2, r11[0]
     retsp       0
+.size XUD_SetReady, .-XUD_SetReady
 .cc_bottom XUD_SetReady.func
+.globl XUD_SetReady.nstackwords
+.globl XUD_SetReady.maxchanends
+.globl XUD_SetReady.maxtimers
+.globl XUD_SetReady.maxcores
+.set XUD_SetReady.nstackwords, 0
+.set XUD_SetReady.maxchanends, 0
+.set XUD_SetReady.maxtimers, 0
+.set XUD_SetReady.maxcores, 1
 
 
-.globl   XUD_SetStallByAddr
-.globl   XUD_SetStallByAddr.nstackwords
-.linkset XUD_SetStallByAddr.nstackwords, 0
+.globl XUD_SetStallByAddr
+.type XUD_SetStallByAddr, @function
 
 /* R0: ep number */
-.cc_top XUD_SetStallByAddr.func, XUD_SetStallByAddr
+.cc_top XUD_SetStallByAddr.func
+.align 2
 XUD_SetStallByAddr:
     ldc         r2, USB_PIDn_STALL
     ldc         r11, 0x80                       // Check for IN bit
@@ -405,15 +461,24 @@ XUD_SetStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
     stw         r2, r1[r0]
     retsp       0
+.size XUD_SetStallByAddr, .-XUD_SetStallByAddr
 .cc_bottom XUD_SetStallByAddr.func
+.globl XUD_SetStallByAddr.nstackwords
+.globl XUD_SetStallByAddr.maxchanends
+.globl XUD_SetStallByAddr.maxtimers
+.globl XUD_SetStallByAddr.maxcores
+.set XUD_SetStallByAddr.nstackwords, 0
+.set XUD_SetStallByAddr.maxchanends, 0
+.set XUD_SetStallByAddr.maxtimers, 0
+.set XUD_SetStallByAddr.maxcores, 1
 
 
-.globl   XUD_ClearStallByAddr
-.globl   XUD_ClearStallByAddr.nstackwords
-.linkset XUD_ClearStallByAddr.nstackwords, 0
+.globl XUD_ClearStallByAddr
+.type XUD_ClearStallByAddr, @function
 
 /* R0: ep number */
-.cc_top XUD_ClearStallByAddr.func, XUD_ClearStallByAddr
+.cc_top XUD_ClearStallByAddr.func
+.align 2
 XUD_ClearStallByAddr:
     ldc         r2, USB_PIDn_NAK
     ldc         r11, 0x80                       // Check for IN bit
@@ -428,15 +493,23 @@ XUD_ClearStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
     stw         r2, r1[r0]
     retsp       0
+.size XUD_ClearStallByAddr, .-XUD_ClearStallByAddr
 .cc_bottom XUD_ClearStallByAddr.func
+.globl XUD_ClearStallByAddr.nstackwords
+.globl XUD_ClearStallByAddr.maxchanends
+.globl XUD_ClearStallByAddr.maxtimers
+.globl XUD_ClearStallByAddr.maxcores
+.set XUD_ClearStallByAddr.nstackwords, 0
+.set XUD_ClearStallByAddr.maxchanends, 0
+.set XUD_ClearStallByAddr.maxtimers, 0
+.set XUD_ClearStallByAddr.maxcores, 1
 
-
-.globl   XUD_ResetEpStateByAddr
-.globl   XUD_ResetEpStateByAddr.nstackwords
-.linkset XUD_ResetEpStateByAddr.nstackwords, 0
+.globl XUD_ResetEpStateByAddr
+.type XUD_ResetEpStateByAddr, @function
 
 /* R0: ep number */
-.cc_top XUD_ResetEpStateByAddr.func, XUD_ClearStallByAddr
+.cc_top XUD_ResetEpStateByAddr.func
+.align 2
 XUD_ResetEpStateByAddr:
     ldc         r11, 0x80
     and         r2, r0, r1
@@ -460,6 +533,14 @@ NoOffset:
     add         r0, r2, r0
     stw         r1, r0[4]
     retsp       0
-
+.size XUD_ResetEpStateByAddr, .-XUD_ResetEpStateByAddr
 .cc_bottom XUD_ResetEpStateByAddr.func
+.globl XUD_ResetEpStateByAddr.nstackwords
+.globl XUD_ResetEpStateByAddr.maxchanends
+.globl XUD_ResetEpStateByAddr.maxtimers
+.globl XUD_ResetEpStateByAddr.maxcores
+.set XUD_ResetEpStateByAddr.nstackwords, 0
+.set XUD_ResetEpStateByAddr.maxchanends, 0
+.set XUD_ResetEpStateByAddr.maxtimers, 0
+.set XUD_ResetEpStateByAddr.maxcores, 1
 

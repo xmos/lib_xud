@@ -17,15 +17,19 @@
 #define SUSPEND_TIMEOUT           (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
 
 .section        .cp.const4,"aMc",@progbits,4
-.align  4
+.cc_top suspendTimeout.data
+.align 4
 suspendTimeout:
 .long  SUSPEND_TIMEOUT
+.cc_bottom suspendTimeout.data
 .text
 
 .section        .cp.const4,"aMc",@progbits,4
-.align  4
+.cc_top suspend_t_wtwrsths.data
+.align 4
 suspend_t_wtwrsths:
 .long SUSPEND_T_WTWRSTHS
+.cc_bottom suspend_t_wtwrsths.data
 .text
 
 
@@ -72,7 +76,6 @@ suspend_t_wtwrsths:
 // void UsbTestModeHandler()
 // Interrupt handler for entering USB Test mode
 // ASM level for low-level interrupt handling.
-.extern UsbTestModeHandler_asm
 .globl UsbTestModeHandler_asm.nstackwords
 .linkset UsbTestModeHandler_asm.nstackwords, 0
 .globl UsbTestModeHandler_asm
@@ -94,7 +97,6 @@ UsbTestModeHandler_asm:
 #endif
 
 
-.extern 		 XUD_UsbTestSE0
 .globl XUD_UsbTestSE0.nstackwords
 .linkset XUD_UsbTestSE0.nstackwords, 0
 .globl XUD_UsbTestSE0
@@ -143,7 +145,6 @@ InvalidTestToken:
 /////////////////////////////////////////////////////////////////////////
 // void ResetIntHandler()
 // Interupt handler for reset/suspend timer
-.extern ResetIntHandler
 .globl ResetIntHandler.nstackwords
 .linkset ResetIntHandler.nstackwords, 0
 .globl ResetIntHandler
@@ -179,7 +180,6 @@ writesuspendvar:
 //    void XUD_LLD_IoLoop(in port rxd_port, in port rxa_port, out port txd_port, in port rxe_port, in port flag0_port,
 //    chanend c_out, chanend c_in, chanend c_con_io, chanend c_ctl_buf,
 //    XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[], epCount, c_sof, c_usb_testmode) ;
-.extern XUD_LLD_IoLoop
 .globl XUD_LLD_IoLoop.nstackwords
 .globl XUD_LLD_IoLoop.maxthreads
 .globl XUD_LLD_IoLoop.maxtimers

@@ -11,6 +11,6 @@ int write_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned
 int read_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned &data)
 {
     unsigned tmp[1];
-    int retval = write_periph_32(tile, peripheral, addr, 1, tmp);
+    int retval = read_periph_32(tile, peripheral, addr, 1, tmp);
     return tmp[0];
 }

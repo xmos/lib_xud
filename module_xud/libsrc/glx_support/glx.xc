@@ -12,5 +12,5 @@ int read_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned 
 {
     unsigned tmp[1];
     int retval = read_periph_32(tile, peripheral, addr, 1, tmp);
-    return tmp[0];
+    data = tmp[0];
 }

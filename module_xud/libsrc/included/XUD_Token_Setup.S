@@ -1,12 +1,14 @@
 
 .text
 
+#if 0
 WaitForEndDataPacket:
     ldw        r10, sp[10]           		    // Load RxA Port ID (r1)
     in         r11, res[r10]
     bt         r11, waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     bu         NextTokenAfterOut
+#endif
 
 // Expects
 // r5: buffer address

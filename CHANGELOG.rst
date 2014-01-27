@@ -15,7 +15,7 @@ sc_xud Change Log
 
   * Changes to dependencies:
 
-    - sc_usb: 1.0.1beta1 -> 1.0.2beta0
+    - sc_usb: 1.0.1beta1 -> 1.0.2beta1
 
       + ADDED:   USB_BMREQ_D2H_VENDOR_DEV and USB_BMREQ_D2H_VENDOR_DEV defines for vendor device requests
 

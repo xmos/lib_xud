@@ -2,9 +2,9 @@
 <xpd>
     <components></components>
     <dependency repo = "sc_usb">
-        <githash>05c0827e24ea067f36ab2d0dfba12e60c453bd16</githash>
+        <githash>c8437d2541523b27f848428fe0e8ec78b6821421</githash>
         <uri>git://git/apps/sc_usb</uri>
-        <version>1.0.2beta0</version>
+        <version>1.0.2beta1</version>
     </dependency>
     <description>Low-Level USB Driver Library</description>
     <docdir>module_xud/doc</docdir>
@@ -41,7 +41,7 @@
     <release parenthash = "146175ee9fdf474ef799dcb65af6ba43e8c0cef0" version = "1.0.3alpha4" githash = "f6d39371499102863eed67082c94287f55f30a41"></release>
     <release parenthash = "1721a6d16777d534bef7820fbc5c202ef388c83a" version = "1.0.3alpha5" githash = "42d2b6c8eb633efecf7db10c55101106459171b8"></release>
     <release parenthash = "c6ff4442c8f9e8aa63511d9e87875d276c837ce6" version = "1.0.3alpha6" githash = "63c93c75c2fd6bd86e420b7ff7726bb9a06186b9"></release>
-    <release parenthash = "63c93c75c2fd6bd86e420b7ff7726bb9a06186b9" version = "1.0.3beta0"></release>
+    <release parenthash = "63c93c75c2fd6bd86e420b7ff7726bb9a06186b9" version = "1.0.3beta0" githash = "dcd55b4bdf8f39ccab83549776841f21f6f88537"></release>
     <subpartnumber>XM-002826-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines></version_defines>

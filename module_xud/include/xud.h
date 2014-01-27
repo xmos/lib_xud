@@ -139,7 +139,7 @@ inline int XUD_GetData(XUD_ep ep_out, unsigned char buffer[]);
  *  \param      ep_in      The IN endpoint identifier.
  *  \param      buffer     The buffer to store received data into.
  *  \return     Datalength (in bytes).
- *  TODO:       Use generic GetData from this
+ *  TODO:       Use generic GetData for this
  */
 int XUD_GetSetupData(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
 

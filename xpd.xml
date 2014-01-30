@@ -8,8 +8,8 @@
     </dependency>
     <description>Low-Level USB Driver Library</description>
     <docdir>module_xud/doc</docdir>
-    <exclude_dir>app_test</exclude_dir>
-    <exclude_dir>tb</exclude_dir>
+    <exclude_dir>__app_test</exclude_dir>
+    <exclude_dir>__tb</exclude_dir>
     <binary_only>module_xud</binary_only>
     <git_export>False</git_export>
     <location>git://git/apps/sc_xud</location>
@@ -48,6 +48,7 @@
     <version_defines></version_defines>
     <xcore_repo>sc_xud.git</xcore_repo>
     <xpd_version>1.0</xpd_version>
-    <xsoftip_exclude>app_test</xsoftip_exclude>
+    <xsoftip_exclude>__app_test</xsoftip_exclude>
+    <xsoftip_exclude>__tb</xsoftip_exclude>
     <xsoftip_exclude>module_xud</xsoftip_exclude>
 </xpd>

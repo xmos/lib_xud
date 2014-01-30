@@ -3,15 +3,14 @@ Basic Usage
 
 This section outlines the basic usage of XUD. Basic use is termed to
 mean each endpoint runs in its own dedicated core.
-Multiple endpoints in a single core are possible, but currently beyond
-the scope of this document.
+Multiple endpoints in a single core are possible, please see Advanced Usage.
 
 XUD Core: ``XUD_Manager()``
------------------------------
+---------------------------
 
-This is the main XUD task that interfaces with the ULPI transceiver.
+This is the main XUD task that interfaces with the USB transceiver.
 It performs power-signalling/handshaking on the USB bus, and passes packets
-on for the various endpoints.
+to/from the various endpoints.
 
 This function should be called directly from the top-level ``par``
 statement in ``main()`` to ensure that the XUD library is ready
@@ -25,7 +24,7 @@ Endpoint Type Table
 The endpoint type table should take an array of ``XUD_EpType`` to inform XUD
 about endpoints being used.  This is mainly used to indicate the transfer-type
 of each endpoint (bulk, control, isochronous or interrupt) as well as
-whether the endpoint wishes to be informed about bus-resets (see :ref:`xud_status_reporting`).
+whether the endpoint wishes to be informed about bus-resets (see `Status Reporting`_).
 
 *Note:* endpoints can also be marked as disabled.
 
@@ -71,7 +70,7 @@ such as Packet ID toggling etc.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This function provides a similar function to ``XUD_SetBuffer`` function
-but it cuts the data up in packets of a fixed
+but it breaks the data up in packets of a fixed
 maximum size. This is especially useful for control transfers where large 
 descriptors must be sent in typically 64 byte transactions.
 
@@ -91,6 +90,27 @@ descriptors must be sent in typically 64 byte transactions.
 ~~~~~~~~~~~~~~~~~~~~
 
 .. doxygenfunction:: XUD_SetDevAddr
+
+``XUD_SetStall()``
+~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_SetStall
+
+``XUD_SetStallByAddr()``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_SetStallByAddr
+
+``XUD_ClearStall()``
+~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_ClearStall
+
+``XUD_ClearStallByAddr()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_ClearStallByAddr
+
 
 .. _xud_status_reporting:
 
@@ -119,7 +139,7 @@ bi-directional control transfers.*
 
 This is also important for high-speed devices, since it is not
 guaranteed that the host will detect the device as a high-speed device.
-The device therefore needs to know what speed it is running at.
+The device therefore needs to know what bus-speed it is currently running at.
 
 After a reset notification has been received, the endpoint must call the
 ``XUD_ResetEndpoint()`` function. This will return the current bus
@@ -130,26 +150,6 @@ speed.
 
 .. doxygenfunction:: XUD_ResetEndpoint
 
-
-``XUD_SetStallByAddr()``
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. doxygenfunction:: XUD_SetStallByAddr
-
-``XUD_SetStall()``
-~~~~~~~~~~~~~~~~~~
-
-.. doxygenfunction:: XUD_SetStall
-
-``XUD_ClearStallByAddr()``
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. doxygenfunction:: XUD_ClearStallByAddr
-
-``XUD_ClearStall()``
-~~~~~~~~~~~~~~~~~~~~
-
-.. doxygenfunction:: XUD_ClearStall
 
 SOF Channel
 -----------
@@ -196,7 +196,6 @@ summarised in the :ref:`table_test_modes`.
     | 5      | Test_Force_Enable                   |
     +--------+-------------------------------------+
 
-The use of other codes results in undefined behaviour.
+The use of other codes could result in undefined behaviour.
 
-As per the USB 2.0 specification a power cycle or reboot is required to exit the test mode.
-
+As per the USB 2.0 Specification a power cycle or reboot is required to exit the test mode.

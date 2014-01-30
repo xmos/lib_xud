@@ -7,8 +7,8 @@ sections.
 Ports/Pins
 ----------
 
-L-Series
-........
+G/L-Series
+..........
 
 The ports used for the physical connection to the external ULPI transceiver must
 be connected as shown in :ref:`table_xud_ulpi_required_pin_port`.
@@ -52,7 +52,7 @@ be connected as shown in :ref:`table_xud_ulpi_required_pin_port`.
 
 In addition some ports are used internally when the XUD library is in
 operation. For example pins X0D2-X0D9, X0D26-X0D33 and X0D37-X0D43 on
-an XS1-L8-128 device should not be used. 
+an XS1-L device should not be used. 
 
 Please refer to the device datasheet for further information on which ports
 are available.
@@ -60,7 +60,7 @@ are available.
 U-Series
 ........
 
-The U-Series of processors has an integrated USB transceiver. Some ports
+The U-Series of devices have an integrated USB transceiver. Some ports
 are used to communicate with the USB transceiver inside the U-Series packages.
 These ports/pins should not be used when USB functionality is enabled.
 The ports/pins are shown in :ref:`table_xud_u_required_pin_port`.
@@ -141,10 +141,10 @@ For example, a different tile on an L16 device is unaffected by this restriction
 Clock Blocks
 ------------
 
-L-Series
-........
+G/L-Series
+..........
 
-The XUD library uses one clock block (clock block  0) and configures this
+The XUD library uses one clock block (clock block 0) and configures this
 clock block to be clocked by the 60MHz clock from the ULPI transceiver.
 The ports it uses are in turn clocked from the clock block.
 
@@ -156,7 +156,8 @@ U-Series
 ........
 
 The XUD library uses two clock blocks (clock blocks 4 and 5). These are
-clocked from the USB clock.
+clocked from the USB clock.  Unlike the G/L devices, clock-block 0 is not 
+used or affected. 
 
 Timers
 ------

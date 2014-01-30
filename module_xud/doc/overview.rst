@@ -4,13 +4,15 @@ Overview
 ========
 
 The XUD library allows the implementation of both full-speed and
-high-speed USB 2.0 devices on both L-Series and U-Series devices.
+high-speed USB 2.0 devices on L-Series, G-series and U-Series devices.
 
-For the L-Series family the implementation requires the use of an
-external ULPI transceiver such as the SMSC USB33XX range. The U-Series
-family includes an integrated USB transceiver. Two libraries, with
-identical interfaces, are provided - one for L-Series and one for 
-U-Series devices.
+For the L and G series the implementation requires the use of an
+external ULPI transceiver such as the SMSC USB33XX range. U-Series
+devices include an integrated USB transceiver. Threes libraries, with
+identical interfaces, are provided - one each for  L, G and U-Series 
+devices.
+
+Please note, G-series is not recommended for new designs.
 
 The library performs all the low-level I/O operations required to meet
 the USB 2.0 specification. This processing goes up to and includes the

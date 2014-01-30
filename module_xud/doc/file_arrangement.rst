@@ -8,10 +8,13 @@ include/xud.h
     User defines and functions for the XUD library.
 
 lib/xs1b/libxud_l.a
-    Library for L-Series processors.
+    Library for L-Series devices.
 
 lib/xs1b/libxud_u.a
-    Library for U-Series processors.
+    Library for U-Series devices.
+
+lib/xs1b/libxud_g.a
+    Library for G-Series devices.
 
 src/XUD_EpFunctions.xc
     Functions that control the XUD library.

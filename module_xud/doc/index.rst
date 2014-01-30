@@ -17,6 +17,7 @@ the XMOS tool chain and XC language.
     File Arrangement <file_arrangement>
     Resource Usage <resource_usage>
     Basic Usage <basic_usage>
+    Advanced Usage <advanced_usage>
     Document Version History <version_history>
 
 

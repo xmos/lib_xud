@@ -205,7 +205,7 @@ int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsig
  *                          by the host. Pass ``XUD_SPEED_HS`` if high-speed is desired or ``XUD_SPEED_FS``
  *                          if not. Low speed USB is not supported by XUD.
  *    \param  c_usb_testmode See :ref:`xud_usb_test_modes`
- *    \param  pwrConfig     Specifies whether the device is bus or self-powered. When self-powered the XUD will monitor the VBUS line for host disconnections. This is required for compliance reasons.
+ *    \param  pwrConfig     Specifies whether the device is bus or self-powered. When self-powered the XUD will monitor the VBUS line for host disconnections. This is required for compliance reasons. Valid values are XUD_PWR_SELF and XUD_PWR_BUS.
  *
  */
 int XUD_Manager(chanend c_epOut[], int noEpOut,
@@ -313,7 +313,7 @@ void XUD_SetDevAddr(unsigned addr);
  * \brief  This function will complete a reset on an endpoint. Can take
  *         one or two ``XUD_ep`` as parameters (the second parameter can be set to ``null``).
  *         The return value should be inspected to find the new bus-speed.
- *         In Endpoint 0 typically two Endpoints are reset (IN and OUT).
+ *         In Endpoint 0 typically two endpoints are reset (IN and OUT).
  *         In other endpoints ``null`` can be passed as the second parameter.
  * \param  one IN or OUT endpoint identifier to perform the reset on.
  * \param  two Optional second IN or OUT endpoint structure to perform a reset on.
@@ -386,8 +386,7 @@ void XUD_ResetEpStateByAddr(unsigned epNum);
  * \brief   Marks an OUT endpoint as ready to receive data
  * \param   ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
  * \param   buffer      The buffer in which to store data received from the host.
-*                       The buffer is assumed to be word aligned.
- * \return  void
+ *                      The buffer is assumed to be word aligned.
  */
 inline void XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
 {
@@ -402,8 +401,7 @@ inline void XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
  * \brief   Marks an OUT endpoint as ready to receive data
  * \param   ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
  * \param   addr        The address of the buffer in which to store data received from the host.
-*                       The buffer is assumed to be word aligned.
- * \return  void
+ *                      The buffer is assumed to be word aligned.
  */
 inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
@@ -461,7 +459,6 @@ inline void XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  * \param   addr        The address of the buffer to transmit to the host.
  *                      The buffer is assumed be word aligned.
  * \param   len         The length of the data to transmit.
- * \return  void
  */
 inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {

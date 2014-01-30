@@ -135,8 +135,8 @@ than five cores executing at any time when using the XUD. For
 a 500MHz device no more than six cores shall execute at any one time
 when using the XUD.
 
-This restriction is only a requirement on the tile on which the XUD is running. 
-For example, a different tile on an L16 device is unaffected by this restriction.
+This restriction is only a requirement on the tile on which the ``XUD_Manager`` is running. 
+For example, the other tile on an L16 device is unaffected by this restriction.
 
 Clock Blocks
 ------------

@@ -8,7 +8,7 @@ high-speed USB 2.0 devices on L-Series, G-series and U-Series devices.
 
 For the L and G series the implementation requires the use of an
 external ULPI transceiver such as the SMSC USB33XX range. U-Series
-devices include an integrated USB transceiver. Threes libraries, with
+devices include an integrated USB transceiver. Three libraries, with
 identical interfaces, are provided - one each for  L, G and U-Series 
 devices.
 
@@ -17,7 +17,7 @@ Please note, G-series is not recommended for new designs.
 The library performs all the low-level I/O operations required to meet
 the USB 2.0 specification. This processing goes up to and includes the
 transaction level. It removes all low-level timing requirements from the
-application, allowing quick prototyping of all manner of USB devices.
+application, allowing quick development of all manner of USB devices.
 
 The XUD library runs in a single core with endpoint and application
 cores communicating with it via a combination of channel communication

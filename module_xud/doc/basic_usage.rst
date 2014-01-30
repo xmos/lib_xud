@@ -30,6 +30,19 @@ whether the endpoint wishes to be informed about bus-resets (see `Status Reporti
 
 Endpoints that are not used will ``NAK`` any traffic from the host.
 
+``PwrConfig``
+~~~~~~~~~~~~~
+
+The ``PwrConfig`` parameter to ``XUD_Manager()`` indicates if the device is bus or self-powered.
+
+Valid values for this parameter are ``XUD_PWR_SELF`` and ``XUD_PWR_BUS``.
+
+When ``XUD_PWR_SELF`` is used, ``XUD_Manager()`` monitors the VBUS input for a valid voltage and reponds appropriately. The USB Specification states that the devices pull-ups must be disabled when a valid VBUS is not present. This is important when submitting a device for compliance testing since this is explicitly tested.
+
+If the device is bus-powered ``XUD_PWR_SELF`` can be used since is assumed that the device is not powered up when VBUS is not present and therefore no voltage monitoring is required.  In this configuration the VBUS input to the device/PHY need not be present.
+
+``XUD_PWR_BUS`` can be used in order to run on a self-powered board without provision for VBUS wiring to the PHY/device, but this is not advised.
+
 Endpoint Communication with ``XUD_Manager()``
 ---------------------------------------------
 
@@ -160,7 +173,7 @@ the device receives a SOF from the host.  This can be used for timing
 information for audio devices etc.  If this functionality is not required
 ``null`` should be passed as the parameter.  Please note, if a channel-end
 is passed into ``XUD_Manager()`` there must be a responsive task ready to
-receive SOF notifications since else the ``XUD_Manager()`` task will be
+receive SOF notifications otherwise the ``XUD_Manager()`` task will be
 blocked attempting to send these messages.
 
 .. _xud_usb_test_modes:
@@ -172,7 +185,7 @@ XUD supports the required test modes for USB Compliance testing. The
 ``XUD_Manager()`` task can take a channel-end argument for controlling the
 test mode required.  ``null`` can be passed if this functionality is not required.  
 
-XUD accepts a single word for from this channel to signal which test mode
+XUD accepts a single word from this channel to signal which test mode
 to enter, these commands are based on the definitions of the Test Mode Selector
 Codes in the USB 2.0 Specification Table 11-24.  The supported test modes are
 summarised in the :ref:`table_test_modes`.

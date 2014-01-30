@@ -161,7 +161,6 @@ XUD_SetData_Select_Return_ResetSuspend:
 .type XUD_GetData_Select, @function
 
 .cc_top XUD_GetData_Select.func
-.align 2
 XUD_GetData_Select:                             // Entry for _NoReq
     testct     r3, res[r0]
     bt         r3, XUD_GetData_Select_Return_ResetSuspend

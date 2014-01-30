@@ -223,7 +223,7 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
  *         When the host sends data, the low-level driver will fill the buffer. It
  *         pauses until data is available.
  * \param  ep_out    The OUT endpoint identifier (created by ``XUD_InitEP``).
- * \param  buffer    The buffer in which to store data received from the host. 
+ * \param  buffer    The buffer in which to store data received from the host.
  *                   The buffer is assumed to be word aligned.
  * \return The number of bytes written to the buffer, for errors see `Status Reporting`_.
  **/
@@ -312,7 +312,7 @@ void XUD_SetDevAddr(unsigned addr);
 /**
  * \brief  This function will complete a reset on an endpoint. Can take
  *         one or two ``XUD_ep`` as parameters (the second parameter can be set to ``null``).
- *         The return value should be inspected to find the new bus-speed. 
+ *         The return value should be inspected to find the new bus-speed.
  *         In Endpoint 0 typically two Endpoints are reset (IN and OUT).
  *         In other endpoints ``null`` can be passed as the second parameter.
  * \param  one IN or OUT endpoint identifier to perform the reset on.
@@ -377,7 +377,7 @@ void XUD_ResetEpStateByAddr(unsigned epNum);
 
 
 
-/* 
+/*
  * Advanced functions for supporting multple Endpoints in a single core
  */
 

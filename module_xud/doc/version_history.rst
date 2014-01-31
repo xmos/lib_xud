@@ -11,7 +11,7 @@ Version history of this document.
     +------------+---------+----------------------------------------------------------+
     | Date       | Version | Comment                                                  |
     +============+=========+==========================================================+
-    | 2014-01-29 | 1.2     | Minor updates and added Advanced Usage section           |
+    | 2014-01-29 | 1.2     | Minor updates. Advanced Usage and PwrConfig sections     |
     +------------+---------+----------------------------------------------------------+
     | 2013-04-23 | 1.1     | API updates and changes to Standard Request handling     |
     +------------+---------+----------------------------------------------------------+

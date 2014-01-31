@@ -10,13 +10,6 @@
 #include "xud.h"
 #include "usb.h"
 
-#if  0
-#pragma xta command "analyse path XUD_SetData_DataRdy XUD_SetData_OutputLoop_Out"
-#pragma xta command "set required - 266 ns"
-
-#endif
-
-
 static int min(int x, int y)
 {
     if (x < y)

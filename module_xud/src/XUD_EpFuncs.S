@@ -415,31 +415,6 @@ XUD_ResetEndpoint:
 .set XUD_ResetEndpoint.maxtimers, XUD_ResetEndpoint0.nstackwords
 .set XUD_ResetEndpoint.maxcores, XUD_ResetEndpoint0.nstackwords
 
-
-.globl XUD_SetReady
-.type XUD_SetReady, @function
-
-.cc_top XUD_SetReady.func
-.align 2
-XUD_SetReady:
-    ldw         r0,  r0[2]
-    out         res[r0], r1
-    ldw         r11, r0[0]
-    ldw         r2,  r0[1]
-    stw         r2, r11[0]
-    retsp       0
-.size XUD_SetReady, .-XUD_SetReady
-.cc_bottom XUD_SetReady.func
-.globl XUD_SetReady.nstackwords
-.globl XUD_SetReady.maxchanends
-.globl XUD_SetReady.maxtimers
-.globl XUD_SetReady.maxcores
-.set XUD_SetReady.nstackwords, 0
-.set XUD_SetReady.maxchanends, 0
-.set XUD_SetReady.maxtimers, 0
-.set XUD_SetReady.maxcores, 1
-
-
 .globl XUD_SetStallByAddr
 .type XUD_SetStallByAddr, @function
 

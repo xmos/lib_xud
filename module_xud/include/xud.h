@@ -417,40 +417,15 @@ inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
  * \param   buffer      The buffer to transmit to the host.
  *                      The buffer is assumed be word aligned.
  * \param   len         The length of the data to transmit.
- * \return  void
+ * \return              0 for success, -1 for bus reset
  */
-inline void XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
+inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
 {
-    int chan_array_ptr;
-    int tmp, tmp2;
-    int wordlength;
-    int taillength;
+    unsigned addr;
 
-    /* Knock off the tail bits */
-    wordlength = len >>2;
-    wordlength <<=2;
+    asm("mov %0, %1":"=r"(addr):"r"(buffer));
 
-    taillength = zext((len << 5),7);
-
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-
-    // Get end off buffer address
-    asm ("add %0, %1, %2":"=r"(tmp):"r"(buffer),"r"(wordlength));
-
-    asm ("neg %0, %1":"=r"(tmp2):"r"(len>>2));            // Produce negative offset from end off buffer
-
-    // Store neg index
-    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));            // Store index
-
-    // Store buffer pointer
-    asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));
-
-    // Store tail len
-    asm ("stw %0, %1[7]"::"r"(taillength),"r"(ep));
-
-
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));      // Mark ready
-
+    return XUD_SetReady_InPtr(ep, addr, len);
 }
 
 /**

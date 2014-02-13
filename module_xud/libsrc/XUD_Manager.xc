@@ -305,17 +305,21 @@ int xud_counter = 0;
 XUD_chan epChans[XUD_MAX_NUM_EP];
 XUD_chan epChans0[XUD_MAX_NUM_EP];
 
+/* TODO pack this to save mem 
+ * TODO size of this hardcoded in ResetRpStateByAddr_
+ */ 
 typedef struct XUD_ep_info
 {
-    unsigned int chan_array_ptr;
-    unsigned int ep_xud_chanend;
+    unsigned int chan_array_ptr;       // 0
+    unsigned int ep_xud_chanend;       // 1
     unsigned int ep_client_chanend;    // 2
     unsigned int scratch;              // 3 used for datalength in
     unsigned int pid;                  // 4 Expected out PID
     unsigned int epType;               // 5 Data
     unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.
     unsigned int tailLength;           // 7 "tail" length for IN (bytes)
-    unsigned int epAddress;            // 8 EP address assigned by XUD
+    unsigned int epAddress;            // 8 EP address assigned by XUD (Used for marking stall etc)
+    unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
 } XUD_ep_info;
 
 XUD_ep_info ep_info[XUD_MAX_NUM_EP];
@@ -385,12 +389,18 @@ void XUD_SetCrcTableAddr(unsigned addr);
 static int one = 1;
 
 #pragma unsafe arrays
-static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int token)
+static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int token)
 {
     for(int i = 0; i < nOut; i++)
     {
         if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
         {
+            /* Set EP resetting flag. EP uses this to check if it missed a reset before setting ready */
+            ep_info[i].resetting = 1; 
+            
+            /* Clear EP ready. Note. small race since EP might set ready after XUD sets resetting to 1
+             * but this should be caught in time (EP gets CT) */          
+            epChans[i] = 0; 
             XUD_Sup_outct(c[i], token);
         }
     }
@@ -398,12 +408,17 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
     {
         if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
         {
+            ep_info[i + XUD_MAX_NUM_EP_OUT].resetting = 1;
+            epChans[i + XUD_MAX_NUM_EP_OUT] = 0;
             XUD_Sup_outct(c[i + XUD_MAX_NUM_EP_OUT], token);
         }
     }
 
-                    if (XUD_GetDone())
-                       return;
+    if (XUD_GetDone())
+        return;
+
+    /* Not longer drain channels or recive CT from EP - this is because EPS's no longer use channels to indicate ready status */
+#if 0    
     for(int i = 0; i < nOut; i++)
     {
         if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
@@ -413,6 +428,9 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
                 XUD_Sup_int(c[i]);
             }
             XUD_Sup_inct(c[i]);       // TODO chkct
+
+            /* Clear EP ready. Note, done after inct to avoid race with EP */
+            eps[i] = 0;
         }
     }
     for(int i = 0; i < nIn; i++)
@@ -426,9 +444,13 @@ static void sendCt(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeT
                 XUD_Sup_int(c[i + XUD_MAX_NUM_EP_OUT]);
             }
             tok = XUD_Sup_inct(c[i + XUD_MAX_NUM_EP_OUT]);       // TODO chkct
+            
+            /* Clear EP ready. Note, done after inct to avoid race with EP */
+            eps[i + XUD_MAX_NUM_EP_OUT] = 0;
           }
         }
     }
+#endif
 }
 
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed)
@@ -849,7 +871,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
                     if(!sentReset)
                     {
-                        sendCt(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
+                        SendResetToEps(epChans0, epChans, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
                         sentReset = 1;
                     }
 #ifdef ARCH_G
@@ -932,9 +954,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Send speed to EPs */
                     SendSpeed(epChans0, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, g_curSpeed);
                     sentReset=0;
-
-                    //SetupChannelVectorsOverride(epChans0);
-
                 }
             }
 
@@ -1080,18 +1099,20 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
     {
         handshakeTable_OUT[i] = PIDn_NAK;
         ep_info[i].epAddress = i;
+        ep_info[i].resetting = 0;
     }
 
     for(int i = 0; i < XUD_MAX_NUM_EP_IN; i++)
     {
         handshakeTable_IN[i] = PIDn_NAK;
         ep_info[XUD_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
+        ep_info[XUD_MAX_NUM_EP_OUT+i].resetting = 0;
     }
 
     /* Populate arrays of channels and status flag tabes */
     for(int i = 0; i < noEpOut; i++)
     {
-      int x;
+      unsigned x;
       epChans0[i] = XUD_Sup_GetResourceId(c_ep_out[i]);
 
       asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(i));

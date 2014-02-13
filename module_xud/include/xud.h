@@ -387,14 +387,26 @@ void XUD_ResetEpStateByAddr(unsigned epNum);
  * \param   ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
  * \param   buffer      The buffer in which to store data received from the host.
  *                      The buffer is assumed to be word aligned.
+ * \return              0 for success, -1 for bus reset
  */
-inline void XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
+inline int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
 {
     int chan_array_ptr;
+    int reset;
+
+    /* Firstly check if we have missed a USB reset - endpoint may would not want receive after a reset */
+    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
+    if(reset)
+    {
+        //asm ("stw %0, %1[9]"::"r"(0),"r"(ep));              // Clear EP reset flag
+        return -1;
+    }
+
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
     asm ("stw %0, %1[3]"::"r"(buffer),"r"(ep));            // Store buffer
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
+    return 0;
 }
 
 /**
@@ -402,30 +414,25 @@ inline void XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
  * \param   ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
  * \param   addr        The address of the buffer in which to store data received from the host.
  *                      The buffer is assumed to be word aligned.
+ * \return              0 for success, -1 for bus reset
  */
-inline void XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
+inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
     int chan_array_ptr;
+    int reset;
+
+    /* Firstly check if we have missed a USB reset - endpoint may would not want receive after a reset */
+    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
+    if(reset)
+    {
+        //asm ("stw %0, %1[9]"::"r"(0),"r"(ep));           // Clear EP reset flag
+        return -1;
+    }
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
     asm ("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
-}
 
-/**
- * \brief   Marks an IN endpoint as ready to transmit data
- * \param   ep          The IN endpoint identifier (created by ``XUD_InitEp``).
- * \param   buffer      The buffer to transmit to the host.
- *                      The buffer is assumed be word aligned.
- * \param   len         The length of the data to transmit.
- * \return              0 for success, -1 for bus reset
- */
-inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
-{
-    unsigned addr;
-
-    asm("mov %0, %1":"=r"(addr):"r"(buffer));
-
-    return XUD_SetReady_InPtr(ep, addr, len);
+    return 0;
 }
 
 /**
@@ -434,13 +441,24 @@ inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  * \param   addr        The address of the buffer to transmit to the host.
  *                      The buffer is assumed be word aligned.
  * \param   len         The length of the data to transmit.
+ * \return              0 for success, -1 for bus reset
  */
-inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
+inline int XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;
     int wordlength;
     int taillength;
+
+    int reset;
+
+    /* Firstly check if we have missed a USB reset - endpoint may not want to send out old data after a reset */
+    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
+    if(reset)
+    {
+       // asm ("stw %0, %1[9]"::"r"(0),"r"(ep));           // Clear EP reset flag
+        return -1;
+    }
 
     /* Knock off the tail bits */
     wordlength = len >>2;
@@ -466,6 +484,24 @@ inline void XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));      // Mark ready
 
+    return 0;
+}
+
+/**
+ * \brief   Marks an IN endpoint as ready to transmit data
+ * \param   ep          The IN endpoint identifier (created by ``XUD_InitEp``).
+ * \param   buffer      The buffer to transmit to the host.
+ *                      The buffer is assumed be word aligned.
+ * \param   len         The length of the data to transmit.
+ * \return              0 for success, -1 for bus reset
+ */
+inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
+{
+    unsigned addr;
+
+    asm("mov %0, %1":"=r"(addr):"r"(buffer));
+
+    return XUD_SetReady_InPtr(ep, addr, len);
 }
 
 /**

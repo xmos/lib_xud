@@ -389,38 +389,11 @@ XUD_SetData_Reset:
 .set XUD_SetData.maxtimers, 0
 .set XUD_SetData.maxcores, 1
 
-
-.globl XUD_ResetEndpoint
-.type XUD_ResetEndpoint, @function
-
-.cc_top XUD_ResetEndpoint.func
-.align 2
-XUD_ResetEndpoint:
-    entsp       1
-    ldw         r0, r0[2]
-    bf          r1, .L0
-    ldw         r1, r1[0]
-    ldw         r1, r1[2]
-.L0:
-    bl XUD_ResetEndpoint0
-    retsp       1
-.size XUD_ResetEndpoint, .-XUD_ResetEndpoint
-.cc_bottom XUD_ResetEndpoint.func
-.globl XUD_ResetEndpoint.nstackwords
-.globl XUD_ResetEndpoint.maxchanends
-.globl XUD_ResetEndpoint.maxtimers
-.globl XUD_ResetEndpoint.maxcores
-.set XUD_ResetEndpoint.nstackwords, 1 + XUD_ResetEndpoint0.nstackwords
-.set XUD_ResetEndpoint.maxchanends, XUD_ResetEndpoint0.nstackwords
-.set XUD_ResetEndpoint.maxtimers, XUD_ResetEndpoint0.nstackwords
-.set XUD_ResetEndpoint.maxcores, XUD_ResetEndpoint0.nstackwords
-
 .globl XUD_SetStallByAddr
 .type XUD_SetStallByAddr, @function
 
 /* R0: ep number */
 .cc_top XUD_SetStallByAddr.func
-.align 2
 XUD_SetStallByAddr:
     ldc         r2, USB_PIDn_STALL
     ldc         r11, 0x80                       // Check for IN bit

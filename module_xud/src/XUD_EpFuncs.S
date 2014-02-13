@@ -9,15 +9,7 @@
 //                     r0            r1         r2
 .globl XUD_GetSetupData
 .type XUD_GetSetupData, @function
-.text
-
 .cc_top XUD_GetSetupData.func
-.align 2
-ResetSuspendSetup:
-    mkmsk      r0, 32                           // Return -1 as length
-    ldw         r10, sp[2]
-    ldw         r4, sp[1]
-    retsp      4
 
 XUD_GetSetupData:
 
@@ -26,15 +18,18 @@ XUD_GetSetupData:
     stw         r10, sp[2]
 
 XUD_GetSetupData_:
-    ldw        r4, r0[0]                        // Load mem address of EP structure
-    stw        r2, r0[3]
-    stw        r0, r4[0]
-    ldw        r10, r0[2]
+    ldw        r4, r0[0]                        // Load mem address of EP in XUD ready table
 
+    ldw        r11, r0[9]                       // Check if we missed a reset 
+    bt         r11, XUD_GetSetupData_Reset
+
+    stw        r2, r0[3]                        // Store buffer in EP struct
+    stw        r0, r4[0]                        // Mark ready
+    ldw        r10, r0[2]                       // Load chanend for EP to use
 
 XUD_GetSetupData_Retry:
-    testct     r11, res[r10]                      // Test whether there is a RESET/SUSPEND exception
-    bt         r11, ResetSuspendSetup
+    testct     r11, res[r10]                    // Test whether there is a RESET
+    bt         r11, XUD_GetSetupData_Reset
 
 XUD_GetSetupData_NoReq:                         // Entry for _NoReq
     in         r3, res[r10]                     // Input packet "word" length
@@ -77,8 +72,8 @@ XUD_GetSetupData_CheckPid:
     bt          r11, XUD_GetSetupData_          // Ignore packet...
 
 XUD_GetSetupData_PidOkay:
-    stw         r11, r4[0]                      // Zero ready entry (NOTE R11 0 from branch above)
-                                                // TODO is there a race here? Should this happen in XUD thread?
+    //stw         r11, r4[0]                    // Zero ready entry (NOTE R11 0 from branch above)
+                                                // Now done in XUD core
 
     ldw         r11, r0[5]                      // Load EP type
     bf          r11, XUD_GetSetupData_ReturnOk  // Jump over PID toggle for ISO
@@ -95,6 +90,12 @@ XUD_GetSetupData_ReturnOk:
     ldw         r4, sp[1]
     retsp       4
 
+XUD_GetSetupData_Reset:
+    mkmsk      r0, 32                           // Return -1 as length
+    ldw         r10, sp[2]
+    ldw         r4, sp[1]
+    retsp      4
+
 .size XUD_GetSetupData, .-XUD_GetSetupData
 .cc_bottom XUD_GetSetupData.func
 .globl XUD_GetSetupData.nstackwords
@@ -106,148 +107,30 @@ XUD_GetSetupData_ReturnOk:
 .set XUD_GetSetupData.maxtimers, 0
 .set XUD_GetSetupData.maxcores, 1
 
-
-.cc_top XUD_SetData_Select.func
-
-
-//void XUD_SetData_Select(chan c, XUD_ep ep, unsigned &x);
-//                        r0,     r1         r2
-.globl XUD_SetData_Select
-.type XUD_SetData_Select, @function
-.align 2
-XUD_SetData_Select:
-    entsp       4
-    stw         r4, sp[1]
-
-    testct      r3, res[r0]
-    bt          r3, XUD_SetData_Select_Return_ResetSuspend
-
-    in          r3, res[r0]                     // Data sent okay
-
-XUD_SetData_LoadEpType_:
-    ldw         r11, r1[5]                      // Don't do any toggling for ISO
-    bf          r11, XUD_SetData_DonePid_
-
-XUD_SetData_PidToggle_:
-    ldw         r11, r1[4]                      // Load EP PID from structure
-    ldc         r4, 0x88
-    xor         r11, r11, r4
-    stw         r11, r1[4]                      // Store back PID
-
-XUD_SetData_DonePid_:
-    ldw         r4, sp[1]
-    retsp       4
-
-XUD_SetData_Select_Return_ResetSuspend:
-    mkmsk       r0, 32                           // Return -1 as length
-    stw         r0, r2[0]
-    ldw         r4, sp[1]
-    retsp       4
-.size XUD_SetData_Select, .-XUD_SetData_Select
-.cc_bottom XUD_SetData_Select.func
-.globl XUD_SetData_Select.nstackwords
-.globl XUD_SetData_Select.maxchanends
-.globl XUD_SetData_Select.maxtimers
-.globl XUD_SetData_Select.maxcores
-.set XUD_SetData_Select.nstackwords, 4
-.set XUD_SetData_Select.maxchanends, 0
-.set XUD_SetData_Select.maxtimers, 0
-.set XUD_SetData_Select.maxcores, 1
-
-
-//void XUD_GetData_Select(chan c, XUD_ep ep, unsigned &x);
-//                        r0,     r1         r2
-.globl XUD_GetData_Select
-.type XUD_GetData_Select, @function
-
-.cc_top XUD_GetData_Select.func
-XUD_GetData_Select:                             // Entry for _NoReq
-    testct     r3, res[r0]
-    bt         r3, XUD_GetData_Select_Return_ResetSuspend
-    in         r3, res[r0]                      // Input packet "word" length
-    int        r11, res[r0]                     // r11 is tail length (bytes)
-	shr		   r11, r11, 3
-
-XUD_GetData_Select_CalcdataLength:
-    shl        r3, r3, 2                        // Num received words to bytes
-    add        r3, r11, r3                      // r11: Total bytes received (Note this includes 2 byte crc)
-
-
-    ldw         r11, r1[5]                      // Load EP type
-    bf          r11, XUD_GetData_Select_Return  // Jump over PID toggle and check for ISO
-
-
-XUD_GetData_Select_CheckPid:                    // Check PID
-    ldw         r11, r1[6]                      // Load received PID from EP structure
-    shr         r11, r11, 24                    // Shift off junk
-
-                                                // Note: We can't just jump back to XUD_GetData_Select since other EP's might need service
-
-    ldw         r0, r1[4]                       // Load expected PID
-    xor         r11, r0, r11                    // Do the comparison
-    bt          r11, XUD_GetData_Select_BadPkt  // TODO Currently report 0 length packet received, not ideal.
-
-XUD_GetData_Select_PidToggle:
-#if (XUD_SERIES_SUPPORT==3)
-    ldc         r11, 0x88
-#else
-    ldc         r11, 8
-#endif
-    xor         r0, r0, r11
-    stw         r0, r1[4]
-
-XUD_GetData_Select_Return:
-    sub         r0, r3, 2                       // Length correction for CRC correction (return val in r0)
-
-    ashr        r11, r0, 32                     // Check for < 0. No CRC check on ISO so less than 2 bytes could be received.
-    bt          r11, XUD_GetData_Select_BadPkt
-
-    stw         r0, r2[0]                       // Return length (note: passed by ref)
-    retsp       0
-
-XUD_GetData_Select_BadPkt:
-    ldc         r0, 0                           // Return 0 length
-    stw         r0, r2[0]                       // Return length (note: passed by ref)
-    retsp       0
-
-XUD_GetData_Select_Return_ResetSuspend:
-    mkmsk       r0, 32                          // Return -1 as length
-    stw         r0, r2[0]
-    retsp       0
-
-.size XUD_GetData_Select, .-XUD_GetData_Select
-.cc_bottom XUD_GetData_Select.func
-.globl XUD_GetData_Select.nstackwords
-.globl XUD_GetData_Select.maxchanends
-.globl XUD_GetData_Select.maxtimers
-.globl XUD_GetData_Select.maxcores
-.set XUD_GetData_Select.nstackwords, 0
-.set XUD_GetData_Select.maxchanends, 0
-.set XUD_GetData_Select.maxtimers, 0
-.set XUD_GetData_Select.maxcores, 1
-
 //int XUD_GetData(XUD_ep c, unsigned char buffer[]);
+//                r0        r1
 .globl XUD_GetData
 .type XUD_GetData, @function
-.text
-
 .cc_top XUD_GetData.func
-.align 2
 XUD_GetData:
-    entsp       16
+    entsp       4
     stw         r10, sp[1]
     mov         r11, r1
 
 XUD_GetData_:
-    ldw        r2, r0[0]                        // Load mem address of EP structure
-    stw        r1, r0[3]
+    ldw        r2, r0[0]                        // Load mem address of EP in XUD ep table
+    
+    ldw        r11, r0[9]                       // Check if we missed a reset 
+    bt         r11, XUD_GetData_Reset
+    
+    stw        r1, r0[3]                        // Store buffer address in EP structure
     stw        r0, r2[0]
 
 XUD_GetData_Retry:
     ldw        r10, r0[2]                       // Load our chanend ID to use
                                                 // Wait for XUD response
     testct     r11, res[r10]                    // Test whether there is a RESET/SUSPEND exception
-    bt         r11, ResetSuspend
+    bt         r11, XUD_GetData_Reset
 
 XUD_GetData_DataEnd:
     in         r3, res[r10]                     // Input packet "word" length
@@ -267,9 +150,6 @@ XUD_GetData_CheckPid:
     bt         r11, XUD_GetData_                // Ignore packet...
 
 XUD_GetData_PidOkay:
-    //stw        r11, r2[0]                     // Zero ready entry (Note, R11 0 from branch above)
-                                                // Now done in the XUD core
-
     ldw        r11, r0[5]                       // Load EP type
     bf         r11, XUD_GetData_ReturnOk        // Jump over PID toggle for ISO
 
@@ -285,14 +165,14 @@ XUD_GetData_PidToggle:
 XUD_GetData_ReturnOk:
     sub        r0, r3, 2                        // Length correction for CRC correction (return val in r0)
     ldw        r10, sp[1]                       // TODO should check for <0 as ISO doesn't have CRC check
-    retsp      16
+    retsp      4
 
-ResetSuspend:
+XUD_GetData_Reset:
     mkmsk      r0, 32                           // Return -1 as length
 
 Return:
     ldw        r10, sp[1]
-    retsp      16
+    retsp      4
 
 .size XUD_GetData, .-XUD_GetData
 .cc_bottom XUD_GetData.func
@@ -300,21 +180,18 @@ Return:
 .globl XUD_GetData.maxchanends
 .globl XUD_GetData.maxtimers
 .globl XUD_GetData.maxcores
-.set XUD_GetData.nstackwords, 16
+.set XUD_GetData.nstackwords, 4
 .set XUD_GetData.maxchanends, 0
 .set XUD_GetData.maxtimers, 0
 .set XUD_GetData.maxcores, 1
 
-// Note: Assumes startIndex is word aligned
-//int XUD_SetData_indexed(chanend c, unsigned buffer[], unsigned datasize, unsigned startIndex unsigned pid);
-//                        r0         r1                 r2                 r3
 
+// Note: Assumes startIndex is word aligned
+// int XUD_SetData_indexed(chanend c, unsigned buffer[], unsigned datasize, unsigned startIndex unsigned pid);
+//                        r0         r1                 r2                 r3
 .globl XUD_SetData
 .type XUD_SetData, @function
-.text
-
 .cc_top XUD_SetData.func
-.align 2
 XUD_SetData:
     entsp       7
     stw         r5, sp[5]
@@ -322,6 +199,9 @@ XUD_SetData:
 
 XUD_SetDataRetry:
     stw         r4, sp[0]
+
+    ldw         r11, r0[9]                      // Check if we missed a reset 
+    bt          r11, XUD_SetData_Reset
 
 XUD_SetData_NoReq:
     add         r1, r1, r3                      // Add start index to buffer address
@@ -389,6 +269,121 @@ XUD_SetData_Reset:
 .set XUD_SetData.maxtimers, 0
 .set XUD_SetData.maxcores, 1
 
+//void XUD_GetData_Select(chan c, XUD_ep ep, unsigned &x);
+//                        r0,     r1         r2
+.globl XUD_GetData_Select
+.type XUD_GetData_Select, @function
+.cc_top XUD_GetData_Select.func
+XUD_GetData_Select:
+    testct     r3, res[r0]
+    bt         r3, XUD_GetData_Select_Return_Reset
+    in         r3, res[r0]                      // Input packet "word" length
+    int        r11, res[r0]                     // r11 is tail length (bytes)
+	shr		   r11, r11, 3
+
+XUD_GetData_Select_CalcdataLength:
+    shl        r3, r3, 2                        // Num received words to bytes
+    add        r3, r11, r3                      // r11: Total bytes received (Note this includes 2 byte crc)
+
+
+    ldw         r11, r1[5]                      // Load EP type
+    bf          r11, XUD_GetData_Select_Return  // Jump over PID toggle and check for ISO
+
+
+XUD_GetData_Select_CheckPid:                    // Check PID
+    ldw         r11, r1[6]                      // Load received PID from EP structure
+    shr         r11, r11, 24                    // Shift off junk
+
+                                                // Note: We can't just jump back to XUD_GetData_Select since other EP's might need service
+
+    ldw         r0, r1[4]                       // Load expected PID
+    xor         r11, r0, r11                    // Do the comparison
+    bt          r11, XUD_GetData_Select_BadPkt  // TODO Currently report 0 length packet received, not ideal.
+
+XUD_GetData_Select_PidToggle:
+#if (XUD_SERIES_SUPPORT==3)
+    ldc         r11, 0x88
+#else
+    ldc         r11, 8
+#endif
+    xor         r0, r0, r11
+    stw         r0, r1[4]
+
+XUD_GetData_Select_Return:
+    sub         r0, r3, 2                       // Length correction for CRC correction (return val in r0)
+
+    ashr        r11, r0, 32                     // Check for < 0. No CRC check on ISO so less than 2 bytes could be received.
+    bt          r11, XUD_GetData_Select_BadPkt
+
+    stw         r0, r2[0]                       // Return length (note: passed by ref)
+    retsp       0
+
+XUD_GetData_Select_BadPkt:
+    ldc         r0, 0                           // Return 0 length
+    stw         r0, r2[0]                       // Return length (note: passed by ref)
+    retsp       0
+
+XUD_GetData_Select_Return_Reset:
+    mkmsk       r0, 32                          // Return -1 as length
+    stw         r0, r2[0]
+    retsp       0
+
+.size XUD_GetData_Select, .-XUD_GetData_Select
+.cc_bottom XUD_GetData_Select.func
+.globl XUD_GetData_Select.nstackwords
+.globl XUD_GetData_Select.maxchanends
+.globl XUD_GetData_Select.maxtimers
+.globl XUD_GetData_Select.maxcores
+.set XUD_GetData_Select.nstackwords, 0
+.set XUD_GetData_Select.maxchanends, 0
+.set XUD_GetData_Select.maxtimers, 0
+.set XUD_GetData_Select.maxcores, 1
+
+//void XUD_SetData_Select(chan c, XUD_ep ep, unsigned &x);
+//                        r0,     r1         r2
+.globl XUD_SetData_Select
+.type XUD_SetData_Select, @function
+.cc_top XUD_SetData_Select.func
+XUD_SetData_Select:
+    testct      r3, res[r0]
+    bt          r3, XUD_SetData_Select_Reset
+    
+    in          r11, res[r0]                    // Data sent okay
+    stw         r3, r2[0]                       // Store back in passed by ref-param. 0 For success.
+
+XUD_SetData_Select_LoadEpType:
+    ldw         r11, r1[5]                      // Don't do any toggling for ISO
+    bf          r11, XUD_SetData_Select_DonePid
+
+XUD_SetData_Select_PidToggle:
+    ldw         r11, r1[4]                      // Load EP PID from structure
+    ldc         r3, 0x88
+    xor         r11, r11, r3
+    stw         r11, r1[4]                      // Store back PID
+XUD_SetData_Select_DonePid:
+    retsp       0
+
+XUD_SetData_Select_Reset:
+    mkmsk       r0, 32                          // Return -1 as length
+    stw         r0, r2[0]                       // Store back in passed by ref-param
+                                                
+                                                // Zero ready entry
+    ldw         r2, r1[0]                       // Load mem address of EP in XUD ep table
+    ldc         r0, 0
+    stw         r0, r2[0]                       // Clear ready flag
+    //stw         r0, r2[9]                       // Clear reset flag 
+    retsp       0
+.size XUD_SetData_Select, .-XUD_SetData_Select
+.cc_bottom XUD_SetData_Select.func
+.globl XUD_SetData_Select.nstackwords
+.globl XUD_SetData_Select.maxchanends
+.globl XUD_SetData_Select.maxtimers
+.globl XUD_SetData_Select.maxcores
+.set XUD_SetData_Select.nstackwords, 0
+.set XUD_SetData_Select.maxchanends, 0
+.set XUD_SetData_Select.maxtimers, 0
+.set XUD_SetData_Select.maxcores, 1
+
 .globl XUD_SetStallByAddr
 .type XUD_SetStallByAddr, @function
 
@@ -425,7 +420,6 @@ XUD_SetStallByAddr_OUT:
 
 /* R0: ep number */
 .cc_top XUD_ClearStallByAddr.func
-.align 2
 XUD_ClearStallByAddr:
     ldc         r2, USB_PIDn_NAK
     ldc         r11, 0x80                       // Check for IN bit
@@ -456,7 +450,6 @@ XUD_ClearStallByAddr_OUT:
 
 /* R0: ep number */
 .cc_top XUD_ResetEpStateByAddr.func
-.align 2
 XUD_ResetEpStateByAddr:
     ldc         r11, 0x80
     and         r2, r0, r1
@@ -474,7 +467,7 @@ XUD_ResetEpStateByAddr_:
     bf          r2, NoOffset
     ldaw        r0, r0[4]                       // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
 NoOffset:
-    ldc         r2, 36                          // Size of XUD_ep_info struct
+    ldc         r2, 40                          // Size of XUD_ep_info struct TODO. FIXME!
     mul         r0, r0, r2
     ldaw        r2, dp[ep_info]
     add         r0, r2, r0

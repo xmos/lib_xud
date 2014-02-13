@@ -1,6 +1,10 @@
 sc_xud Change Log
 =================
 
+2.0.0 (UNRELEASED)
+-----
+
+
 1.0.3
 -----
     * RESOLVED:   (Minor) ULPI data-lines driven hard low and XMOS pull-up on STP line disabled

@@ -187,18 +187,65 @@ void XUD_ClearStall(XUD_ep ep)
     XUD_ClearStallByAddr(epAddress);
 }
 
+XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
+{
+    int busStateCt;
+    int busSpeed;
 
+    unsigned c1, c2;
+    
+    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one)); // Load our chanend 
+
+    asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c1)); // busStateCt = inct(one);
+
+    /* Reset reseting flag */
+    asm volatile ("stw %0, %1[9]"::"r"(0), "r"(one));
+
+    if (!isnull(two))
+    //if(two != 0)
+    {
+        // inct(two);
+        asm volatile("ldw %0, %1[2]":"=r"(c2):"r"(two)); // Load our chanend 
+        asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c2));
+    
+        /* Reset reseting flag */
+        asm volatile ("stw %0, %1[9]"::"r"(0), "r"(two));
+    }
+
+    /* Inspect for reset, if so we expect a CT with speed */
+    if (busStateCt == USB_RESET_TOKEN)
+    {
+        //busSpeed = inuint(one);
+        asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c1));
+        
+        if (!isnull(two))
+        //if(two != 0)
+        {
+            //inuint(two);
+            asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c2));
+        }
+        return (XUD_BusSpeed) busSpeed;
+    }
+    else
+    {
+        /* Suspend cond */
+        /* TODO Currently suspend condition is never communicated */
+        return XUD_SUSPEND;
+    }
+}
+
+#if 0
 XUD_BusSpeed XUD_ResetEndpoint0(chanend one, chanend ?two)
 {
     int busStateCt;
     int busSpeed;
 
-    outct(one, XS1_CT_END);
+    //outct(one, XS1_CT_END);
     busStateCt = inct(one);
 
     if (!isnull(two))
     {
-        outct(two, XS1_CT_END);
+      //  outct(two, XS1_CT_END);
         inct(two);
     }
 
@@ -234,11 +281,11 @@ XUD_BusSpeed XUD_GetBusSpeed(chanend c)
 {
     return inuint(c);
 }
-
+#endif
 XUD_ep XUD_InitEp(chanend c)
 {
-  XUD_ep ep = inuint(c);
-  return ep;
+    XUD_ep ep = inuint(c);
+    return ep;
 }
 
 

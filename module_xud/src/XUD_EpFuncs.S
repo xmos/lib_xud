@@ -369,8 +369,8 @@ XUD_SetData_Select_Reset:
                                                 
                                                 // Zero ready entry
     ldw         r2, r1[0]                       // Load mem address of EP in XUD ep table
-    ldc         r0, 0
-    stw         r0, r2[0]                       // Clear ready flag
+    //ldc         r0, 0
+    //stw         r0, r2[0]                       // Clear ready flag
     //stw         r0, r2[9]                       // Clear reset flag 
     retsp       0
 .size XUD_SetData_Select, .-XUD_SetData_Select

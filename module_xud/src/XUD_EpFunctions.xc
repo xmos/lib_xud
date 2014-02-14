@@ -17,27 +17,14 @@ static int min(int x, int y)
     return y;
 }
 
-/** XUD_GetBuffer_()
-  * @brief        Requests data from the endpoint related to the passed channel
-  * @param c      Channel to USB I/O thread for this endpoint
-  * @param buffer Buffer for returned data
-  * @return       datalength of received data in bytes
-  **/
-int XUD_GetBuffer(XUD_ep c, unsigned char buffer[])
+XUD_Result_t XUD_GetBuffer(XUD_ep c, unsigned char buffer[], unsigned &length)
 {
-    return XUD_GetData(c, buffer);
+    return XUD_GetData(c, buffer, length);
 }
 
-/** XUD_GetSetupBuffer()
-  * @brief  Request setup data from usb buffer for a specific EP, pauses until data is available.
-  * @param  ep_out Out XUD ep
-  * @param  ep_in  In XUD ep
-  * @param  buffer Char buffer passed by ref into which data is returned
-  * @return datalength in bytes (should always 8), -1 if kill received
-  **/
-int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[])
+XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned &length)
 {
-    return XUD_GetSetupData(ep_out, ep_in, buffer);
+    return XUD_GetSetupData(ep_out, buffer, length);
 }
 
 
@@ -141,6 +128,7 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
 int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsigned length, unsigned requested)
 {
     unsigned char tmpBuffer[1024];
+    unsigned rxlength;
 
     if (XUD_SetBuffer_EpMax(ep_in, buffer, min(length, requested), 64) < 0)
     {
@@ -154,7 +142,7 @@ int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsign
     }
 
     /* Status stage - this should return -1 for reset or 0 for 0 length status stage packet */
-    return XUD_GetData(ep_out, tmpBuffer);
+    return XUD_GetData(ep_out, tmpBuffer, rxlength);
 }
 
 

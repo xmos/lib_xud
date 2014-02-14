@@ -5,8 +5,8 @@
 #include "usb_defs.h"
 #include "xud_defines.h"
 
-//int XUD_GetSetupData(XUD_ep e_out, XUD_ep in, unsigned buffer[]);
-//                     r0            r1         r2
+//int XUD_GetSetupData(XUD_ep e_out, unsigned buffer[], unsigned &length);
+//                     r0            r1                 r2
 .globl XUD_GetSetupData
 .type XUD_GetSetupData, @function
 .cc_top XUD_GetSetupData.func
@@ -23,7 +23,7 @@ XUD_GetSetupData_:
     ldw        r11, r0[9]                       // Check if we missed a reset 
     bt         r11, XUD_GetSetupData_Reset
 
-    stw        r2, r0[3]                        // Store buffer in EP struct
+    stw        r1, r0[3]                        // Store buffer in EP struct
     stw        r0, r4[0]                        // Mark ready
     ldw        r10, r0[2]                       // Load chanend for EP to use
 
@@ -32,10 +32,10 @@ XUD_GetSetupData_Retry:
     bt         r11, XUD_GetSetupData_Reset
 
 XUD_GetSetupData_NoReq:                         // Entry for _NoReq
-    in         r3, res[r10]                     // Input packet "word" length
+    in         r1, res[r10]                     // Input packet "word" length
     testct     r11, res[r10]                    // CT means we got a SETUP (not OUT).
     bf         r11, XUD_GetSetupData_GotOut
-    inct        r11, res[r10]                   // Always get 0 (expect 8 bytes data)
+    inct       r11, res[r10]                    // Always get 0 (expect 8 bytes data)
 
 //XUD_GetSetupData_CheckPid:
                                                 // We expect data0 else something gone wrong...
@@ -49,15 +49,21 @@ XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on
 #endif
     stw         r11, r0[4]                      // Reset OUT toggle
 
-    ldc         r11, USB_PIDn_DATA1
-    stw         r11, r1[4]                      // Reset IN toggle
+    ldc         r11, 640                        // Assuming MAX_NUM_EPS is 16 and struct size is 40 here!
+    add         r11, r0, r11
+
+    ldc         r10, USB_PIDn_DATA1
+    stw         r10, r11[4]                     // Reset IN toggle
 
     ldc         r0, 8                           // Return 8 byte length (TODO really could return actual length here)
+    stw         r0, r2[0]
+
+    ldc         r0, 0                           // Return no error XUD_RES_OKAY        
     ldw         r10, sp[2]
     ldw         r4, sp[1]
     retsp       4
 
-XUD_GetSetupData_GotOut:                        // Got an OUT intead not a SETUP
+XUD_GetSetupData_GotOut:                        // Got an OUT instead not a SETUP
     int         r11, res[r10]
 
     shl         r3, r3, 2                       // Num received words to bytes
@@ -72,9 +78,6 @@ XUD_GetSetupData_CheckPid:
     bt          r11, XUD_GetSetupData_          // Ignore packet...
 
 XUD_GetSetupData_PidOkay:
-    //stw         r11, r4[0]                    // Zero ready entry (NOTE R11 0 from branch above)
-                                                // Now done in XUD core
-
     ldw         r11, r0[5]                      // Load EP type
     bf          r11, XUD_GetSetupData_ReturnOk  // Jump over PID toggle for ISO
 
@@ -107,8 +110,8 @@ XUD_GetSetupData_Reset:
 .set XUD_GetSetupData.maxtimers, 0
 .set XUD_GetSetupData.maxcores, 1
 
-//int XUD_GetData(XUD_ep c, unsigned char buffer[]);
-//                r0        r1
+//int XUD_GetData(XUD_ep c, unsigned char buffer[], unsigned &length);
+//                r0        r1                      r2
 .globl XUD_GetData
 .type XUD_GetData, @function
 .cc_top XUD_GetData.func
@@ -118,13 +121,13 @@ XUD_GetData:
     mov         r11, r1
 
 XUD_GetData_:
-    ldw        r2, r0[0]                        // Load mem address of EP in XUD ep table
-    
-    ldw        r11, r0[9]                       // Check if we missed a reset 
-    bt         r11, XUD_GetData_Reset
+    ldw        r10, r0[9]                       // Check if we missed a reset 
+    bt         r10, XUD_GetData_Reset
     
     stw        r1, r0[3]                        // Store buffer address in EP structure
-    stw        r0, r2[0]
+    
+    ldw        r10, r0[0]                        // Load mem address of EP in XUD ep table
+    stw        r0, r10[0]
 
 XUD_GetData_Retry:
     ldw        r10, r0[2]                       // Load our chanend ID to use
@@ -163,7 +166,11 @@ XUD_GetData_PidToggle:
     stw        r10, r0[4]
 
 XUD_GetData_ReturnOk:
-    sub        r0, r3, 2                        // Length correction for CRC correction (return val in r0)
+    sub        r0, r3, 2                        // Length correction for CRC correction
+    stw        r0, r2[0]                        // Store in length (passed by ref)
+   
+    ldc        r0, 0                            // Return 0 for success
+    
     ldw        r10, sp[1]                       // TODO should check for <0 as ISO doesn't have CRC check
     retsp      4
 

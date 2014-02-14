@@ -8,6 +8,7 @@
 #include <xs1.h>
 #include <platform.h>
 #include <print.h>
+#include <xccompat.h>
 
 
 #define XUD_U_SERIES 1
@@ -118,43 +119,14 @@ typedef enum XUD_PwrConfig
     XUD_PWR_SELF
 } XUD_PwrConfig;
 
+typedef enum XUD_Result
+{
+    XUD_RES_RST = -1,   //TODO RM ME
+    XUD_RES_OKAY = 0,
+    XUD_RES_RST_HS, 
+    XUD_RES_RST_FS
+} XUD_Result_t;
 
-/**********************************************************************************************
- * Below are prototypes for main assembly functions for data transfer to/from USB I/O thread
- * All other Get/Set functions defined here use these.  These are implemented in XUD_EpFuncs.S
- * Wrapper functions are provided for conveniance (implemented in XUD_EpFunctions.xc).
- */
-
-/**
- *  \brief      Gets a data buffer from XUD
- *  \param      ep_out     The OUT endpoint identifier.
- *  \param      buffer     The buffer to store received data into.
- *  \return     Datalength (in bytes)
- */
-inline int XUD_GetData(XUD_ep ep_out, unsigned char buffer[]);
-
-/**
- *  \brief      Gets a setup data from XUD
- *  \param      ep_out     The OUT endpoint identifier.
- *  \param      ep_in      The IN endpoint identifier.
- *  \param      buffer     The buffer to store received data into.
- *  \return     Datalength (in bytes).
- *  TODO:       Use generic GetData for this
- */
-int XUD_GetSetupData(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
-
-/**
- *  \brief      Gives a data buffer to XUD from transmission to the host
- *  \param      ep_in      The IN endpoint identifier.
- *  \param      buffer     The packet buffer to send data from.
- *  \param      datalength The length of the packet to send (in bytes).
- *  \param      startIndex The start index of the packet in the buffer (typically 0).
- *  \param      pidToggle  No longer used
- *  \return                0 on non-error, -1 on bus-reset.
- */
-int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
-
-/***********************************************************************************************/
 
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
@@ -225,19 +197,20 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
  * \param  ep_out    The OUT endpoint identifier (created by ``XUD_InitEP``).
  * \param  buffer    The buffer in which to store data received from the host.
  *                   The buffer is assumed to be word aligned.
- * \return The number of bytes written to the buffer, for errors see `Status Reporting`_.
+ * \param  length    The number of bytes written to the buffer
+ * \return           XUD_Result_t. See `Status Reporting`_.
  **/
-int XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[]);
+XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 
 /**
  * \brief  Request setup data from usb buffer for a specific endpoint, pauses until data is available.
  * \param  ep_out   The OUT endpoint identifier (created by ``XUD_InitEP``).
- * \param  ep_in    The IN endpoint identifier (created by ``XUD_InitEP``).
  * \param  buffer   A char buffer passed by ref into which data is returned.
+ * \param  length   Length of the buffer received (expect 8 bytes)
  * \return datalength in bytes (always 8), for errors see ``Status Reporting``_.
  **/
-int XUD_GetSetupBuffer(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[]);
+XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 
 /**
@@ -374,6 +347,46 @@ void XUD_ClearStall(XUD_ep ep);
  * \warning Must be run on same tile as XUD core
  */
 void XUD_ResetEpStateByAddr(unsigned epNum);
+
+
+/**********************************************************************************************
+ * Below are prototypes for main assembly functions for data transfer to/from USB I/O thread
+ * All other Get/Set functions defined here use these.  These are implemented in XUD_EpFuncs.S
+ * Wrapper functions are provided for conveniance (implemented in XUD_EpFunctions.xc).
+ */
+
+/**
+ *  \brief      Gets a data buffer from XUD
+ *  \param      ep_out     The OUT endpoint identifier.
+ *  \param      buffer     The buffer to store received data into.
+ *  \param      length     Length of the buffer received
+ *  \return     XUD_Result_t
+ */
+XUD_Result_t XUD_GetData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
+
+/**
+ *  \brief      Gets a setup data from XUD
+ *  \param      ep_out     OUT endpoint identifier.
+ *  \param      buffer     Buffer to store received data into.
+ *  \param      length     Length of the buffer received (expect 8)
+ *  \return     XUD_Result_t
+ *  TODO:       Use generic GetData for this
+ */
+XUD_Result_t XUD_GetSetupData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
+
+/**
+ *  \brief      Gives a data buffer to XUD from transmission to the host
+ *  \param      ep_in      The IN endpoint identifier.
+ *  \param      buffer     The packet buffer to send data from.
+ *  \param      datalength The length of the packet to send (in bytes).
+ *  \param      startIndex The start index of the packet in the buffer (typically 0).
+ *  \param      pidToggle  No longer used
+ *  \return                0 on non-error, -1 on bus-reset.
+ */
+int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
+
+/***********************************************************************************************/
+
 
 
 

@@ -3,7 +3,18 @@ sc_xud Change Log
 
 2.0.0 (UNRELEASED)
 -----
-
+    * CHANGE:     All XUD functions now return XUD_Result_t. Functions that previously returned 
+                  a buffer length (e.g. XUD_GetBuffer) now require a length param (passed by 
+                  reference.
+    * CHANGE:     Endpoint ready flags are now reset on bus-reset (if XUD_STATUS_ENABLE used). This
+                  means an endpoint can avoid sending/receiving stale data after a bus-reset.
+    * CHANGE:     Reset notifications are now longer hand-shaken back to XUD_Manager in 
+                  XUD_ResetEndpoint. This reduces the possibility of an Endpoint breaking timing 
+                  of USB handshake signalling through bad code. XUD functions now check reseting flag
+                  to avoid race condition.
+    * CHANGE:     XUD_SetReady_In now implemented using XUD_SetReady_InPtr (previously was duplicated
+                  code.
+    * CHANGE:     XUD_ResetEndpoint now in XC. Previously was an ASM wrapper.
 
 1.0.3
 -----
@@ -22,7 +33,7 @@ sc_xud Change Log
     - sc_usb: 1.0.1beta1 -> 1.0.2beta1
 
       + ADDED:   USB_BMREQ_D2H_VENDOR_DEV and USB_BMREQ_D2H_VENDOR_DEV defines for vendor device requests
-
+_
 1.0.2
 -----
     * ADDED:      Re-instated support for G devices (xud_g library)

@@ -182,54 +182,6 @@ XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
     }
 }
 
-#if 0
-XUD_BusSpeed XUD_ResetEndpoint0(chanend one, chanend ?two)
-{
-    int busStateCt;
-    int busSpeed;
-
-    //outct(one, XS1_CT_END);
-    busStateCt = inct(one);
-
-    if (!isnull(two))
-    {
-      //  outct(two, XS1_CT_END);
-        inct(two);
-    }
-
-    /* Inspect for reset, if so we expect a CT with speed */
-    if (busStateCt == USB_RESET_TOKEN)
-    {
-        busSpeed = inuint(one);
-        if (!isnull(two))
-        {
-            inuint(two);
-        }
-        return (XUD_BusSpeed) busSpeed;
-    }
-    else
-    {
-        /* Suspend cond */
-        /* TODO Currently suspend condition is never communicated */
-        return XUD_SUSPEND;
-    }
-}
-
-int XUD_ResetDrain(chanend one)
-{
-    int busStateCt;
-
-    outct(one, XS1_CT_END);
-    busStateCt = inct(one);
-
-    return busStateCt;
-}
-
-XUD_BusSpeed XUD_GetBusSpeed(chanend c)
-{
-    return inuint(c);
-}
-#endif
 XUD_ep XUD_InitEp(chanend c)
 {
     XUD_ep ep = inuint(c);

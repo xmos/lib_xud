@@ -10,7 +10,7 @@
 #include "xud.h"
 #include "usb.h"
 
-static int min(int x, int y)
+static inline int min(int x, int y)
 {
     if (x < y)
         return x;
@@ -27,84 +27,41 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned 
     return XUD_GetSetupData(ep_out, buffer, length);
 }
 
-
-int XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
+XUD_Result_t XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
 {
     /* No PID reset, 0 start index */
     return XUD_SetData(c, buffer, datalength, 0, 0);
 }
 
-/**
- * Special case of set buffer for control EP's where you care if you receive a new SETUP instead of sending
- * the passed IN data.
- *
- * TODO we dont want to pass in channels here really.. get that out of the XUD_EP struct..
- */
-int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer_out[], unsigned char buffer_in[], unsigned datalength)
-{
-    int tmp;
-
-    /* Set ready on both the In and Out Eps */
-    XUD_SetReady_Out(ep_out, buffer_out);
-    XUD_SetReady_In(ep_in, buffer_in, datalength);
-
-    select
-    {
-        case XUD_GetData_Select(c_out, ep_out, tmp):
-
-                if (tmp == -1)
-                {
-                    /* If tmp - then we got a reset */
-                    return tmp;
-                }
-                else
-                {
-                    /* Got data instead of sending */
-                    return 2;
-                }
-            break;
-
-
-        case XUD_SetData_Select(c_in, ep_in, tmp):
-
-            /* We sent the data we wanted to send...
-             * Return 0 for no error */
-            return 0;
-            break;
-    }
-    return 0;
-}
-
-
-
-/* Datalength in bytes */
-int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax)
+XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax)
 {
     int i = 0;
+    XUD_Result_t result;
 
     /* Note: We could encompass this in the SetData function */
     if (datalength <= epMax)
     {
         /* Datalength is less than the maximum per transaction of the EP, so just send */
-        return XUD_SetData(ep_in, buffer, datalength, 0, 0);
+        result = XUD_SetData(ep_in, buffer, datalength, 0, 0);
+        return result;
     }
     else
     {
         /* Send first packet out and reset PID */
-        if (XUD_SetData(ep_in, buffer, epMax, 0, 0) < 0)
+        if((result = XUD_SetData(ep_in, buffer, epMax, 0, 0)) != XUD_RES_OKAY)
         {
-            return -1;
+            return result;
         }
         i+= epMax;
         datalength-=epMax;
 
         while (1)
 	    {
-
             if (datalength > epMax)
 	        {
                 /* PID Automatically toggled */
-                if (XUD_SetData(ep_in, buffer, epMax, i, 0) < 0) return -1;
+                if ((result = XUD_SetData(ep_in, buffer, epMax, i, 0)) != XUD_RES_OKAY) 
+                    return result;
 
                 datalength-=epMax;
                 i += epMax;
@@ -112,27 +69,27 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
 	        else
 	        {
                 /* PID automatically toggled */
-                if (XUD_SetData(ep_in, buffer, datalength, i, 0) < 0) return -1;
+                if ((result = XUD_SetData(ep_in, buffer, datalength, i, 0)) != XUD_RES_OKAY) 
+                    return result;
 
 	            break; //out of while loop
 	        }
 	    }
     }
 
-    return 0;
+    return XUD_RES_OKAY;
 }
 
-
-
 /* TODO Should take ep max length as a param - currently hardcoded as 64 (#11384) */
-int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsigned length, unsigned requested)
+XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsigned length, unsigned requested)
 {
     unsigned char tmpBuffer[1024];
     unsigned rxlength;
+    XUD_Result_t result;
 
-    if (XUD_SetBuffer_EpMax(ep_in, buffer, min(length, requested), 64) < 0)
+    if ((result = XUD_SetBuffer_EpMax(ep_in, buffer, min(length, requested), 64)) != XUD_RES_OKAY)
     {
-        return -1;
+        return result;
     }
 
     /* USB 2.0 8.5.3.2 */
@@ -145,13 +102,11 @@ int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsign
     return XUD_GetData(ep_out, tmpBuffer, rxlength);
 }
 
-
-/* Send 0 length status
- * Simply sends a 0 length packet */
-int XUD_DoSetRequestStatus(XUD_ep ep_in)
+XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
 {
     unsigned char tmp[8];
 
+    /* Send 0 length packet */
     return XUD_SetData(ep_in, tmp, 0, 0, 0);
 }
 
@@ -281,4 +236,44 @@ XUD_ep XUD_InitEp(chanend c)
     return ep;
 }
 
+/**
+ * Special case of set buffer for control EP's where you care if you receive a new SETUP instead of sending
+ * the passed IN data.
+ *
+ * TODO we dont want to pass in channels here really.. get that out of the XUD_EP struct..
+ */
+int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer_out[], unsigned char buffer_in[], unsigned datalength)
+{
+    int tmp;
+
+    /* Set ready on both the In and Out Eps */
+    XUD_SetReady_Out(ep_out, buffer_out);
+    XUD_SetReady_In(ep_in, buffer_in, datalength);
+
+    select
+    {
+        case XUD_GetData_Select(c_out, ep_out, tmp):
+
+                if (tmp == -1)
+                {
+                    /* If tmp - then we got a reset */
+                    return tmp;
+                }
+                else
+                {
+                    /* Got data instead of sending */
+                    return 2;
+                }
+            break;
+
+
+        case XUD_SetData_Select(c_in, ep_in, tmp):
+
+            /* We sent the data we wanted to send...
+             * Return 0 for no error */
+            return 0;
+            break;
+    }
+    return 0;
+}
 

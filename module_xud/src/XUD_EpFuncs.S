@@ -194,7 +194,7 @@ Return:
 
 
 // Note: Assumes startIndex is word aligned
-// int XUD_SetData_indexed(chanend c, unsigned buffer[], unsigned datasize, unsigned startIndex unsigned pid);
+// int XUD_SetData_indexed(XUD_ep e, unsigned buffer[], unsigned datasize, unsigned startIndex unsigned pid);
 //                        r0         r1                 r2                 r3
 .globl XUD_SetData
 .type XUD_SetData, @function

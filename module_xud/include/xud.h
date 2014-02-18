@@ -121,10 +121,9 @@ typedef enum XUD_PwrConfig
 
 typedef enum XUD_Result
 {
-    XUD_RES_RST = -1,   //TODO RM ME
+    XUD_RES_RST = -1,
     XUD_RES_OKAY = 0,
-    XUD_RES_RST_HS, 
-    XUD_RES_RST_FS
+    XUD_RES_ERR, 
 } XUD_Result_t;
 
 
@@ -222,7 +221,7 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE
  * \param  datalength The number of bytes in the buffer.
  * \return  0 on success, for errors see `Status Reporting`_.
  */
-int XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
+XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
 
 
 /* Same as above but takes a max packet size for the endpoint, breaks up data to transfers of no
@@ -242,7 +241,7 @@ int XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
  * \param   epMax        The maximum packet size in bytes.
  * \return  0 on success, for errors see `Status Reporting`_.
  */
-int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax);
+XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax);
 
 
 /**
@@ -260,7 +259,7 @@ int XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalengt
  *
  * \return 0 on success, for errors see `Status Reporting`_
  **/
-int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested);
+XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested);
 
 
 /**
@@ -270,7 +269,7 @@ int XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsig
  *
  * \return 0 on success, for errors see `Status Reporting`_.
  **/
-int XUD_DoSetRequestStatus(XUD_ep ep_in);
+XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
 
 
 /**
@@ -383,7 +382,7 @@ XUD_Result_t XUD_GetSetupData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_P
  *  \param      pidToggle  No longer used
  *  \return                0 on non-error, -1 on bus-reset.
  */
-int XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
+XUD_Result_t XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 
 /***********************************************************************************************/
 

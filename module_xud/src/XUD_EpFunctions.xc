@@ -163,23 +163,14 @@ XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
         asm volatile ("stw %0, %1[9]"::"r"(0), "r"(two));
     }
 
-    /* Inspect for reset, if so we expect a word with speed */
-    if (busStateCt == USB_RESET_TOKEN)
-    {
-        asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c1));
+    /* Expect a word with speed */
+    asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c1));
         
-        if (!isnull(two))
-        {
-            asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c2));
-        }
-        return (XUD_BusSpeed) busSpeed;
+    if (!isnull(two))
+    {
+        asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c2));
     }
-    else
-    { 
-        /* Suspend cond */
-        /* TODO Currently suspend condition is never communicated */
-        return XUD_SUSPEND;
-    }
+    return (XUD_BusSpeed) busSpeed;
 }
 
 XUD_ep XUD_InitEp(chanend c)

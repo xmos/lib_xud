@@ -136,6 +136,16 @@ XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
     int busSpeed;
 
     unsigned c1, c2, tmp;
+ 
+    /* Input rst control token */ 
+    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));             // Load our chanend 
+    asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c1)); // busStateCt = inct(one);
+    
+    if (!isnull(two))
+    {
+        asm volatile("ldw %0, %1[2]":"=r"(c2):"r"(two)); 
+        asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c2));
+    }
   
     /* Clear ready flag (tidies small race where EP marked ready just after XUD clears ready due to reset */
     asm volatile("ldw %0, %1[0]":"=r"(tmp):"r"(one));           // Load address of ep in XUD rdy table
@@ -152,16 +162,6 @@ XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
          /* Reset reseting flag */
         asm volatile ("stw %0, %1[9]"::"r"(0), "r"(two));
     }
-   
-    /* Input rst control token */ 
-    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));             // Load our chanend 
-    asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c1)); // busStateCt = inct(one);
-    
-    if (!isnull(two))
-    {
-        asm volatile("ldw %0, %1[2]":"=r"(c2):"r"(two)); 
-        asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c2));
-    }
 
     /* Inspect for reset, if so we expect a word with speed */
     if (busStateCt == USB_RESET_TOKEN)
@@ -175,7 +175,7 @@ XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
         return (XUD_BusSpeed) busSpeed;
     }
     else
-    {
+    { 
         /* Suspend cond */
         /* TODO Currently suspend condition is never communicated */
         return XUD_SUSPEND;

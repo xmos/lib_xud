@@ -48,6 +48,11 @@ inline void XUD_Sup_outuint(XUD_chan c, unsigned x)
     asm volatile("out res[%0], %1" : /* no outputs */ : "r"(c), "r"(x));
 }
 
+inline void XUD_Sup_outuchar(XUD_chan c, unsigned char x)
+{
+    asm volatile("outt res[%0], %1" : /* no outputs */ : "r"(c), "r"(x));
+}
+
 inline void XUD_Sup_outct(XUD_chan c, unsigned char x)
 {
     asm volatile("outct res[%0], %1" : /* no outputs */ : "r"(c), "r"(x));

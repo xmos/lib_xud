@@ -276,22 +276,30 @@ XUD_SetData_Reset:
 .set XUD_SetData.maxtimers, 0
 .set XUD_SetData.maxcores, 1
 
-//void XUD_GetData_Select(chan c, XUD_ep ep, unsigned &x);
-//                        r0,     r1         r2
+//void XUD_GetData_Select(chan c, XUD_ep ep, unsigned &datalength, XUD_Result_t &result);
+//                        r0,     r1         r2                    r3
 .globl XUD_GetData_Select
 .type XUD_GetData_Select, @function
 .cc_top XUD_GetData_Select.func
 XUD_GetData_Select:
-    testct     r3, res[r0]
-    bt         r3, XUD_GetData_Select_Return_Reset
-    in         r3, res[r0]                      // Input packet "word" length
-    int        r11, res[r0]                     // r11 is tail length (bytes)
-	shr		   r11, r11, 3
+    testct     r11, res[r0]
+    bt         r11, XUD_GetData_Select_Return_Reset
+    in         r11, res[r0]                     // Input packet "word" length
+    int        r0, res[r0]                      // r0 is tail length (bytes)
+	shr		   r0, r0, 3
 
 XUD_GetData_Select_CalcdataLength:
-    shl        r3, r3, 2                        // Num received words to bytes
-    add        r3, r11, r3                      // r11: Total bytes received (Note this includes 2 byte crc)
+    shl        r11, r11, 2                      // Num received words to bytes
+    add        r0, r11, r0                      // r0: Total bytes received (Note this includes 2 byte crc)
 
+
+XUD_GetData_CheckDataLength:
+    sub         r0, r0, 2                       // Length correction for CRC correction
+    ashr        r11, r0, 32                     // Check for < 0. No CRC check on ISO so less than 2 bytes could be received.
+    bt          r11, XUD_GetData_Select_BadPkt
+    stw         r0, r2[0]                       // Return length (note: passed by ref)
+
+                                                // TODO Currently return RES_OKAY unless there is a reset. Could return an error for bad packet
 
     ldw         r11, r1[5]                      // Load EP type
     bf          r11, XUD_GetData_Select_Return  // Jump over PID toggle and check for ISO
@@ -309,30 +317,28 @@ XUD_GetData_Select_CheckPid:                    // Check PID
 
 XUD_GetData_Select_PidToggle:
 #if (XUD_SERIES_SUPPORT==3)
-    ldc         r11, 0x88
+    ldc         r2, 0x88
 #else
-    ldc         r11, 8
+    ldc         r2, 8
 #endif
-    xor         r0, r0, r11
+    xor         r0, r0, r2
     stw         r0, r1[4]
 
 XUD_GetData_Select_Return:
-    sub         r0, r3, 2                       // Length correction for CRC correction (return val in r0)
-
-    ashr        r11, r0, 32                     // Check for < 0. No CRC check on ISO so less than 2 bytes could be received.
-    bt          r11, XUD_GetData_Select_BadPkt
-
-    stw         r0, r2[0]                       // Return length (note: passed by ref)
+    stw         r11, r3[0]                      // Return RES_OKAY (note: passed by ref)
     retsp       0
 
 XUD_GetData_Select_BadPkt:
     ldc         r0, 0                           // Return 0 length
     stw         r0, r2[0]                       // Return length (note: passed by ref)
+    stw         r0, r3[0]                       // Return RES_OKAY (note: passed by ref)
     retsp       0
 
 XUD_GetData_Select_Return_Reset:
-    mkmsk       r0, 32                          // Return -1 as length
-    stw         r0, r2[0]
+    mkmsk       r0, 32                          // Return RST as result
+    stw         r0, r3[0]
+    ldc         r0, 0
+    stw         r0, r2[0]                       // Just to be tidy, return 0 for length on reset
     retsp       0
 
 .size XUD_GetData_Select, .-XUD_GetData_Select
@@ -346,7 +352,7 @@ XUD_GetData_Select_Return_Reset:
 .set XUD_GetData_Select.maxtimers, 0
 .set XUD_GetData_Select.maxcores, 1
 
-//void XUD_SetData_Select(chan c, XUD_ep ep, unsigned &x);
+//void XUD_SetData_Select(chan c, XUD_ep ep, XUD_Result_t &result);
 //                        r0,     r1         r2
 .globl XUD_SetData_Select
 .type XUD_SetData_Select, @function
@@ -371,14 +377,11 @@ XUD_SetData_Select_DonePid:
     retsp       0
 
 XUD_SetData_Select_Reset:
-    mkmsk       r0, 32                          // Return -1 as length
+    mkmsk       r0, 32                          // Return -1 as result
     stw         r0, r2[0]                       // Store back in passed by ref-param
                                                 
                                                 // Zero ready entry
     ldw         r2, r1[0]                       // Load mem address of EP in XUD ep table
-    //ldc         r0, 0
-    //stw         r0, r2[0]                       // Clear ready flag
-    //stw         r0, r2[9]                       // Clear reset flag 
     retsp       0
 .size XUD_SetData_Select, .-XUD_SetData_Select
 .cc_bottom XUD_SetData_Select.func

@@ -525,20 +525,21 @@ inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  * \brief   Select handler function for receiving OUT endpoint data in a select.
  * \param   c        The chanend related to the endpoint
  * \param   ep       The OUT endpoint identifier (created by ``XUD_InitEp``).
- * \param   length   Passed by reference. The number of bytes written to the buffer, for errors see `Status Reporting`.
+ * \param   length   Passed by reference. The number of bytes written to the buffer, 
+ * \param   result   XUD_Result_t passed by reference. For errors see `Status Reporting`.
  */
 #pragma select handler
-void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(int, length));
+void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length), REFERENCE_PARAM(XUD_Result_t, result));
 
 /**
  * \brief   Select handler function for transmitting IN endpoint data in a select.
  * \param   c        The chanend related to the endpoint
  * \param   ep       The IN endpoint identifier (created by ``XUD_InitEp``).
- * \param   returnVal  Passed by reference. For errors see `Status Reporting`.
+ * \param   result   Passed by reference. For errors see `Status Reporting`.
 
  */
 #pragma select handler
-void XUD_SetData_Select(chanend c, XUD_ep ep, int &returnVal);
+void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
 #endif
 
 #define XUD_SUSPEND                 3

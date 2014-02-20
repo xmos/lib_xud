@@ -17,6 +17,9 @@ sc_xud Change Log
     * CHANGE:     XUD_ResetEndpoint now in XC. Previously was an ASM wrapper.
     * CHANGE:     Modifications to xud.h including the use of macros from xccompat.h such that it
                   can be included from .c files.
+    * CHANGE:     XUD_BusSpeed type renamed to XUD_BusSpeed_t in line with naming conventions
+    * CHANGE:     XUD_SetData_Select now takes a reference to XUD_Result_t instead an int
+    * CHANGE:     XUD_GetData_Select now takes an additional XUD_Result_t parameter by reference
 
 1.0.3
 -----

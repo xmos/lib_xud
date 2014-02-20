@@ -182,11 +182,14 @@ XUD_ep XUD_InitEp(chanend c)
  * Special case of set buffer for control EP's where you care if you receive a new SETUP instead of sending
  * the passed IN data.
  *
+ * NOTE: This function is currently in use
+ *
  * TODO we dont want to pass in channels here really.. get that out of the XUD_EP struct..
  */
 int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer_out[], unsigned char buffer_in[], unsigned datalength)
 {
-    int tmp;
+    unsigned length;
+    XUD_Result_t result;
 
     /* Set ready on both the In and Out Eps */
     XUD_SetReady_Out(ep_out, buffer_out);
@@ -194,12 +197,12 @@ int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_i
 
     select
     {
-        case XUD_GetData_Select(c_out, ep_out, tmp):
+        case XUD_GetData_Select(c_out, ep_out, length, result):
 
-                if (tmp == -1)
+                if (result == -1)
                 {
                     /* If tmp - then we got a reset */
-                    return tmp;
+                    return result;
                 }
                 else
                 {
@@ -209,7 +212,7 @@ int XUD_SetControlBuffer(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_i
             break;
 
 
-        case XUD_SetData_Select(c_in, ep_in, tmp):
+        case XUD_SetData_Select(c_in, ep_in, result):
 
             /* We sent the data we wanted to send...
              * Return 0 for no error */

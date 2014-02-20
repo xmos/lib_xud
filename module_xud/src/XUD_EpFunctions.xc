@@ -5,7 +5,6 @@
   **/
 
 #include <xs1.h>
-#include <print.h>
 
 #include "xud.h"
 #include "usb.h"
@@ -130,7 +129,7 @@ void XUD_ClearStall(XUD_ep ep)
     XUD_ClearStallByAddr(epAddress);
 }
 
-XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
+XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
 {
     int busStateCt;
     int busSpeed;
@@ -170,7 +169,7 @@ XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
     {
         asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c2));
     }
-    return (XUD_BusSpeed) busSpeed;
+    return (XUD_BusSpeed_t) busSpeed;
 }
 
 XUD_ep XUD_InitEp(chanend c)

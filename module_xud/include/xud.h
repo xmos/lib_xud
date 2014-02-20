@@ -110,7 +110,7 @@ typedef enum XUD_BusSpeed
 {
     XUD_SPEED_FS = 1,
     XUD_SPEED_HS = 2
-} XUD_BusSpeed;
+} XUD_BusSpeed_t;
 
 
 typedef enum XUD_PwrConfig

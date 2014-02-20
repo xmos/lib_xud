@@ -1081,7 +1081,7 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
                 chanend c_ep_in[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                out port ?p_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed speed, chanend ?c_usb_testmode, XUD_PwrConfig pwrConfig)
+                out port ?p_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed_t speed, chanend ?c_usb_testmode, XUD_PwrConfig pwrConfig)
 {
     /* Arrays for channels... */
     /* TODO use two arrays? */

@@ -15,6 +15,8 @@ sc_xud Change Log
     * CHANGE:     XUD_SetReady_In now implemented using XUD_SetReady_InPtr (previously was duplicated
                   code.
     * CHANGE:     XUD_ResetEndpoint now in XC. Previously was an ASM wrapper.
+    * CHANGE:     Modifications to xud.h including the use of macros from xccompat.h such that it
+                  can be included from .c files.
 
 1.0.3
 -----

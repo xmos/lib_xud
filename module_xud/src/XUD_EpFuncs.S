@@ -299,8 +299,6 @@ XUD_GetData_CheckDataLength:
     bt          r11, XUD_GetData_Select_BadPkt
     stw         r0, r2[0]                       // Return length (note: passed by ref)
 
-                                                // TODO Currently return RES_OKAY unless there is a reset. Could return an error for bad packet
-
     ldw         r11, r1[5]                      // Load EP type
     bf          r11, XUD_GetData_Select_Return  // Jump over PID toggle and check for ISO
 
@@ -313,7 +311,7 @@ XUD_GetData_Select_CheckPid:                    // Check PID
 
     ldw         r0, r1[4]                       // Load expected PID
     xor         r11, r0, r11                    // Do the comparison
-    bt          r11, XUD_GetData_Select_BadPkt  // TODO Currently report 0 length packet received, not ideal.
+    bt          r11, XUD_GetData_Select_BadPkt
 
 XUD_GetData_Select_PidToggle:
 #if (XUD_SERIES_SUPPORT==3)
@@ -329,9 +327,10 @@ XUD_GetData_Select_Return:
     retsp       0
 
 XUD_GetData_Select_BadPkt:
-    ldc         r0, 0                           // Return 0 length
+    ldc         r0, 0                           // Return 0 length to be ultra safe and tidy..
     stw         r0, r2[0]                       // Return length (note: passed by ref)
-    stw         r0, r3[0]                       // Return RES_OKAY (note: passed by ref)
+    ldc         r0, 1
+    stw         r0, r3[0]                       // Return RES_ERR (note: passed by ref)
     retsp       0
 
 XUD_GetData_Select_Return_Reset:

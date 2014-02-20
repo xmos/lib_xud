@@ -20,6 +20,8 @@ sc_xud Change Log
     * CHANGE:     XUD_BusSpeed type renamed to XUD_BusSpeed_t in line with naming conventions
     * CHANGE:     XUD_SetData_Select now takes a reference to XUD_Result_t instead an int
     * CHANGE:     XUD_GetData_Select now takes an additional XUD_Result_t parameter by reference
+    * CHANGE:     XUD_GetData_Select now returns XUD_RES_ERR instead of a 0 length on packet error
+                  (e.g. PID sequence error).
 
 1.0.3
 -----

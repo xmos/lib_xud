@@ -534,16 +534,7 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, int &length);
  */
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, int &returnVal);
-
-/**
- *  \brief      TBD
- */
-int XUD_ResetDrain(chanend one);
-
-/**
- *  \brief      TBD
- */
-XUD_BusSpeed XUD_GetBusSpeed(chanend c);
+#endif
 
 #define XUD_SUSPEND                 3
 

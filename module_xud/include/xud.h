@@ -112,7 +112,6 @@ typedef enum XUD_BusSpeed
     XUD_SPEED_HS = 2
 } XUD_BusSpeed_t;
 
-
 typedef enum XUD_PwrConfig
 {
     XUD_PWR_BUS,
@@ -127,6 +126,7 @@ typedef enum XUD_Result
 } XUD_Result_t;
 
 
+#if defined(__XC__) || defined(__DOXYGEN__)
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
@@ -181,13 +181,15 @@ typedef enum XUD_Result
  */
 int XUD_Manager(chanend c_epOut[], int noEpOut,
                 chanend c_epIn[], int noEpIn,
-                chanend ?c_sof,
+                NULLABLE_RESOURCE(chanend, c_sof),
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                out port ?p_usb_rst, clock ?clk, unsigned rstMask,
-                XUD_BusSpeed desiredSpeed,
-                chanend ?c_usb_testmode,
+                NULLABLE_RESOURCE(out port, p_usb_rst),
+                NULLABLE_RESOURCE(clock, clk), 
+                unsigned rstMask,
+                XUD_BusSpeed_t desiredSpeed,
+                NULLABLE_RESOURCE(chanend, c_usb_testmode),
                 XUD_PwrConfig pwrConfig);
-
+#endif
 
 /**
  * \brief  This function must be called by a thread that deals with an OUT endpoint.
@@ -292,7 +294,7 @@ void XUD_SetDevAddr(unsigned addr);
  * \return Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
  *         at high speed, or ``XUD_SPEED_FS`` - the device is runnig at full speed.
  */
-XUD_BusSpeed XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two);
+XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
 
 
 /**
@@ -447,6 +449,7 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     return 0;
 }
 
+#if defined(__XC__) || defined(__DOXYGEN__)
 /**
  * \brief   Marks an IN endpoint as ready to transmit data
  * \param   ep          The IN endpoint identifier (created by ``XUD_InitEp``).
@@ -498,6 +501,7 @@ inline int XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 
     return 0;
 }
+#endif
 
 /**
  * \brief   Marks an IN endpoint as ready to transmit data
@@ -516,6 +520,7 @@ inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
     return XUD_SetReady_InPtr(ep, addr, len);
 }
 
+#if defined(__XC__) || defined(__DOXYGEN__)
 /**
  * \brief   Select handler function for receiving OUT endpoint data in a select.
  * \param   c        The chanend related to the endpoint
@@ -523,7 +528,7 @@ inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  * \param   length   Passed by reference. The number of bytes written to the buffer, for errors see `Status Reporting`.
  */
 #pragma select handler
-void XUD_GetData_Select(chanend c, XUD_ep ep, int &length);
+void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(int, length));
 
 /**
  * \brief   Select handler function for transmitting IN endpoint data in a select.
@@ -541,8 +546,5 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, int &returnVal);
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
 #define USB_SUSPEND_TOKEN           9        /* Control token value that signals SUSPEND */
-
-
-
 
 #endif // __xud_h__

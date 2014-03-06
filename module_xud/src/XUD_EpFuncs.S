@@ -20,7 +20,7 @@ XUD_GetSetupData:
 XUD_GetSetupData_:
     ldw        r4, r0[0]                        // Load mem address of EP in XUD ready table
 
-    ldw        r11, r0[9]                       // Check if we missed a reset 
+    ldw        r11, r0[9]                       // Check if we missed a reset
     bt         r11, XUD_GetSetupData_Reset
 
     stw        r1, r0[3]                        // Store buffer in EP struct
@@ -58,7 +58,7 @@ XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on
     ldc         r0, 8                           // Return 8 byte length (TODO really could return actual length here)
     stw         r0, r2[0]
 
-    ldc         r0, 0                           // Return no error XUD_RES_OKAY        
+    ldc         r0, 0                           // Return no error XUD_RES_OKAY
     ldw         r10, sp[2]
     ldw         r4, sp[1]
     retsp       4
@@ -121,11 +121,11 @@ XUD_GetData:
     mov         r11, r1
 
 XUD_GetData_:
-    ldw        r10, r0[9]                       // Check if we missed a reset 
+    ldw        r10, r0[9]                       // Check if we missed a reset
     bt         r10, XUD_GetData_Reset
-    
+
     stw        r1, r0[3]                        // Store buffer address in EP structure
-    
+
     ldw        r10, r0[0]                        // Load mem address of EP in XUD ep table
     stw        r0, r10[0]
 
@@ -168,9 +168,9 @@ XUD_GetData_PidToggle:
 XUD_GetData_ReturnOk:
     sub        r0, r3, 2                        // Length correction for CRC correction
     stw        r0, r2[0]                        // Store in length (passed by ref)
-   
+
     ldc        r0, 0                            // Return 0 for success
-    
+
     ldw        r10, sp[1]                       // TODO should check for <0 as ISO doesn't have CRC check
     retsp      4
 
@@ -207,7 +207,7 @@ XUD_SetData:
 XUD_SetDataRetry:
     stw         r4, sp[0]
 
-    ldw         r11, r0[9]                      // Check if we missed a reset 
+    ldw         r11, r0[9]                      // Check if we missed a reset
     bt          r11, XUD_SetData_Reset
 
 XUD_SetData_NoReq:
@@ -359,7 +359,7 @@ XUD_GetData_Select_Return_Reset:
 XUD_SetData_Select:
     testct      r3, res[r0]
     bt          r3, XUD_SetData_Select_Reset
-    
+
     in          r11, res[r0]                    // Data sent okay
     stw         r3, r2[0]                       // Store back in passed by ref-param. 0 For success.
 
@@ -378,7 +378,7 @@ XUD_SetData_Select_DonePid:
 XUD_SetData_Select_Reset:
     mkmsk       r0, 32                          // Return -1 as result
     stw         r0, r2[0]                       // Store back in passed by ref-param
-                                                
+
                                                 // Zero ready entry
     ldw         r2, r1[0]                       // Load mem address of EP in XUD ep table
     retsp       0

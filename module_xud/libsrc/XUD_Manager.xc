@@ -305,9 +305,9 @@ int xud_counter = 0;
 XUD_chan epChans[XUD_MAX_NUM_EP];
 XUD_chan epChans0[XUD_MAX_NUM_EP];
 
-/* TODO pack this to save mem 
+/* TODO pack this to save mem
  * TODO size of this hardcoded in ResetRpStateByAddr_
- */ 
+ */
 typedef struct XUD_ep_info
 {
     unsigned int chan_array_ptr;       // 0
@@ -396,11 +396,11 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
         if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
         {
             /* Set EP resetting flag. EP uses this to check if it missed a reset before setting ready */
-            ep_info[i].resetting = 1; 
-            
+            ep_info[i].resetting = 1;
+
             /* Clear EP ready. Note. small race since EP might set ready after XUD sets resetting to 1
-             * but this should be caught in time (EP gets CT) */          
-            epChans[i] = 0; 
+             * but this should be caught in time (EP gets CT) */
+            epChans[i] = 0;
             XUD_Sup_outct(c[i], token);
         }
     }
@@ -418,7 +418,7 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
         return;
 
     /* Not longer drain channels or recive CT from EP - this is because EPS's no longer use channels to indicate ready status */
-#if 0    
+#if 0
     for(int i = 0; i < nOut; i++)
     {
         if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
@@ -444,7 +444,7 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
                 XUD_Sup_int(c[i + XUD_MAX_NUM_EP_OUT]);
             }
             tok = XUD_Sup_inct(c[i + XUD_MAX_NUM_EP_OUT]);       // TODO chkct
-            
+
             /* Clear EP ready. Note, done after inct to avoid race with EP */
             eps[i + XUD_MAX_NUM_EP_OUT] = 0;
           }

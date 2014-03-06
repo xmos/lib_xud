@@ -3,13 +3,13 @@ sc_xud Change Log
 
 2.0.0
 -----
-    * CHANGE:     All XUD functions now return XUD_Result_t. Functions that previously returned 
-                  a buffer length (e.g. XUD_GetBuffer) now require a length param (passed by 
+    * CHANGE:     All XUD functions now return XUD_Result_t. Functions that previously returned
+                  a buffer length (e.g. XUD_GetBuffer) now require a length param (passed by
                   reference.
     * CHANGE:     Endpoint ready flags are now reset on bus-reset (if XUD_STATUS_ENABLE used). This
                   means an endpoint can avoid sending/receiving stale data after a bus-reset.
-    * CHANGE:     Reset notifications are now longer hand-shaken back to XUD_Manager in 
-                  XUD_ResetEndpoint. This reduces the possibility of an Endpoint breaking timing 
+    * CHANGE:     Reset notifications are now longer hand-shaken back to XUD_Manager in
+                  XUD_ResetEndpoint. This reduces the possibility of an Endpoint breaking timing
                   of USB handshake signalling through bad code. XUD functions now check reseting flag
                   to avoid race condition.
     * CHANGE:     XUD_SetReady_In now implemented using XUD_SetReady_InPtr (previously was duplicated
@@ -22,6 +22,14 @@ sc_xud Change Log
     * CHANGE:     XUD_GetData_Select now takes an additional XUD_Result_t parameter by reference
     * CHANGE:     XUD_GetData_Select now returns XUD_RES_ERR instead of a 0 length on packet error
                   (e.g. PID sequence error).
+
+  * Changes to dependencies:
+
+    - sc_usb: 1.0.2beta1 -> 1.0.3beta0
+
+      + CHANGE:  Various descriptor structures added, particularly for Audio Class
+      + CHANGE:  Added ComposeSetupBuffer() for creating a buffer from a USB_Setup_Packet_t
+      + CHANGE:  Various function prototypes now using macros from xccompat.h such that then can be
 
 1.0.3
 -----

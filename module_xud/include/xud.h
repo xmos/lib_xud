@@ -122,7 +122,7 @@ typedef enum XUD_Result
 {
     XUD_RES_RST = -1,
     XUD_RES_OKAY = 0,
-    XUD_RES_ERR, 
+    XUD_RES_ERR,
 } XUD_Result_t;
 
 
@@ -184,7 +184,7 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
                 NULLABLE_RESOURCE(chanend, c_sof),
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 NULLABLE_RESOURCE(out port, p_usb_rst),
-                NULLABLE_RESOURCE(clock, clk), 
+                NULLABLE_RESOURCE(clock, clk),
                 unsigned rstMask,
                 XUD_BusSpeed_t desiredSpeed,
                 NULLABLE_RESOURCE(chanend, c_usb_testmode),
@@ -525,7 +525,7 @@ inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  * \brief   Select handler function for receiving OUT endpoint data in a select.
  * \param   c        The chanend related to the endpoint
  * \param   ep       The OUT endpoint identifier (created by ``XUD_InitEp``).
- * \param   length   Passed by reference. The number of bytes written to the buffer, 
+ * \param   length   Passed by reference. The number of bytes written to the buffer,
  * \param   result   XUD_Result_t passed by reference. For errors see `Status Reporting`.
  */
 #pragma select handler

@@ -59,7 +59,7 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
             if (datalength > epMax)
 	        {
                 /* PID Automatically toggled */
-                if ((result = XUD_SetData(ep_in, buffer, epMax, i, 0)) != XUD_RES_OKAY) 
+                if ((result = XUD_SetData(ep_in, buffer, epMax, i, 0)) != XUD_RES_OKAY)
                     return result;
 
                 datalength-=epMax;
@@ -68,7 +68,7 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
 	        else
 	        {
                 /* PID automatically toggled */
-                if ((result = XUD_SetData(ep_in, buffer, datalength, i, 0)) != XUD_RES_OKAY) 
+                if ((result = XUD_SetData(ep_in, buffer, datalength, i, 0)) != XUD_RES_OKAY)
                     return result;
 
 	            break; //out of while loop
@@ -135,36 +135,36 @@ XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
     int busSpeed;
 
     unsigned c1, c2, tmp;
- 
-    /* Input rst control token */ 
-    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));             // Load our chanend 
+
+    /* Input rst control token */
+    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));             // Load our chanend
     asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c1)); // busStateCt = inct(one);
-    
+
     if (!isnull(two))
     {
-        asm volatile("ldw %0, %1[2]":"=r"(c2):"r"(two)); 
+        asm volatile("ldw %0, %1[2]":"=r"(c2):"r"(two));
         asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c2));
     }
-  
+
     /* Clear ready flag (tidies small race where EP marked ready just after XUD clears ready due to reset */
     asm volatile("ldw %0, %1[0]":"=r"(tmp):"r"(one));           // Load address of ep in XUD rdy table
-    asm volatile ("stw %0, %1[0]"::"r"(0), "r"(tmp));  
-  
+    asm volatile ("stw %0, %1[0]"::"r"(0), "r"(tmp));
+
     /* Clear resetting flag */
     asm volatile ("stw %0, %1[9]"::"r"(0), "r"(one));
-    
+
     if(!isnull(two))
     {
         asm volatile("ldw %0, %1[0]":"=r"(tmp):"r"(two));       // Load address of ep in XUD rdy table
-        asm volatile ("stw %0, %1[0]"::"r"(0), "r"(tmp));  
-        
+        asm volatile ("stw %0, %1[0]"::"r"(0), "r"(tmp));
+
          /* Reset reseting flag */
         asm volatile ("stw %0, %1[9]"::"r"(0), "r"(two));
     }
 
     /* Expect a word with speed */
     asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c1));
-        
+
     if (!isnull(two))
     {
         asm volatile ("in %0, res[%1]": "=r"(busSpeed):"r"(c2));

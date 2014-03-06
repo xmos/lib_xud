@@ -1,7 +1,7 @@
 sc_xud Change Log
 =================
 
-2.0.0 (UNRELEASED)
+2.0.0
 -----
     * CHANGE:     All XUD functions now return XUD_Result_t. Functions that previously returned 
                   a buffer length (e.g. XUD_GetBuffer) now require a length param (passed by 

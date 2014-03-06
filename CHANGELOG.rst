@@ -25,11 +25,11 @@ sc_xud Change Log
 
   * Changes to dependencies:
 
-    - sc_usb: 1.0.2beta1 -> 1.0.3beta0
+    - sc_usb: 1.0.2beta1 -> 1.0.3beta1
 
-      + CHANGE:  Various descriptor structures added, particularly for Audio Class
-      + CHANGE:  Added ComposeSetupBuffer() for creating a buffer from a USB_Setup_Packet_t
-      + CHANGE:  Various function prototypes now using macros from xccompat.h such that then can be
+      + CHANGE:     Various descriptor structures added, particularly for Audio Class
+      + CHANGE:     Added ComposeSetupBuffer() for creating a buffer from a USB_Setup_Packet_t
+      + CHANGE:     Various function prototypes now using macros from xccompat.h such that then can be
 
 1.0.3
 -----

@@ -7,7 +7,7 @@
 #include <xs1.h>
 
 #include "xud.h"
-#include "usb.h"
+//#include "usb.h"
 
 static inline int min(int x, int y)
 {

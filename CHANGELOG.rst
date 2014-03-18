@@ -22,6 +22,7 @@ sc_xud Change Log
     * CHANGE:     XUD_GetData_Select now takes an additional XUD_Result_t parameter by reference
     * CHANGE:     XUD_GetData_Select now returns XUD_RES_ERR instead of a 0 length on packet error
                   (e.g. PID sequence error).
+    * CHANGE:     XUD_SetDevAddr now returns XUD_Result_t
 
   * Changes to dependencies:
 

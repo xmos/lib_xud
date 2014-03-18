@@ -265,7 +265,7 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
  * \param   addr New device address.
  * \warning Must be run on USB core
  */
-void XUD_SetDevAddr(unsigned addr);
+XUD_Result_t XUD_SetDevAddr(unsigned addr);
 
 
 /**

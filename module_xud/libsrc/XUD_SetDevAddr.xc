@@ -2,6 +2,7 @@
 #include "XUD_UIFM_Functions.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_UIFM_Defines.h"
+#include "xud.h"
 #ifdef ARCH_S
 #include <xa1_registers.h>
 #include <print.h>
@@ -16,7 +17,7 @@ void XUD_SetCrcTableAddr(unsigned addr);
 /** @brief  Sets the device addres in XUD
   * @param  addr the new address
   */
-void XUD_SetDevAddr(unsigned addr)
+XUD_Result_t XUD_SetDevAddr(unsigned addr)
 {
 #ifdef ARCH_S
     unsigned data;
@@ -40,4 +41,5 @@ void XUD_SetDevAddr(unsigned addr)
 #error ARCH_L or ARCH_G MUST be defined
 #endif
 
+    return XUD_RES_OKAY;
 }

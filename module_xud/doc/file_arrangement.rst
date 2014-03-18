@@ -17,7 +17,7 @@ lib/xs1b/libxud_g.a
     Library for G-Series devices.
 
 src/XUD_EpFunctions.xc
-    Functions that control the XUD library.
+    User functions that control the XUD library.
 
 src/XUD_EpFuncs.S
     Assembler stubs of access functions.

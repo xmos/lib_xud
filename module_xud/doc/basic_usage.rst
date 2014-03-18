@@ -136,7 +136,7 @@ endpoint in the endpoint type table.
 
 This means that endpoints are notified of USB bus resets (and
 bus-speed changes). The XUD access functions discussed previously
-(``XUD_GetData``, ``XUD_SetData``, etc.) return less than 0 if
+(``XUD_GetData``, ``XUD_SetData``, etc.) return XUD_RES_RST if
 a USB bus reset is detected.
 
 This reset notification is important if an endpoint core is expecting

@@ -9,7 +9,7 @@ high-speed USB 2.0 devices on L-Series, G-series and U-Series devices.
 For the L and G series the implementation requires the use of an
 external ULPI transceiver such as the SMSC USB33XX range. U-Series
 devices include an integrated USB transceiver. Three libraries, with
-identical interfaces, are provided - one each for  L, G and U-Series 
+identical API, are provided - one each for  L, G and U-Series 
 devices.
 
 Please note, G-series is not recommended for new designs.
@@ -23,8 +23,8 @@ The XUD library runs in a single core with endpoint and application
 cores communicating with it via a combination of channel communication
 and shared memory variables.
 
-There is one channel per IN or OUT endpoint. Endpoint 0 (the control
-endpoint) requires two channels, one for each direction. Note, that
+One channel is required per IN or OUT endpoint. Endpoint 0 (the control
+endpoint) requires two channels, one for each direction. Please note that
 throughout this document the USB nomenclature is used: an OUT endpoint
 is used to transfer data from the host to the device, an IN endpoint is
 used when the host requests data from the device.

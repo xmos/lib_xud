@@ -75,7 +75,6 @@
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
     #define PORT_USB_STP_SUS     on USB_TILE: XS1_PORT_1E
   #endif
-
 #endif // PORT_USB_CLK
 
 /**
@@ -125,32 +124,24 @@ typedef enum XUD_Result
     XUD_RES_ERR,
 } XUD_Result_t;
 
-
 #if defined(__XC__) || defined(__DOXYGEN__)
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
  *
- *    \param  c_epOut   An array of channel ends, one channel end per
+ * \param   c_epOut     An array of channel ends, one channel end per
  *                      output endpoint (USB OUT transaction); this includes
  *                      a channel to obtain requests on Endpoint 0.
- *    \param  noEpOut    The number of output endpoints, should
- *                      be at least 1 (for Endpoint 0).
- *    \param  c_epIn    An array of channel ends, one channel end
- *                      per input endpoint (USB IN transaction); this
- *                      includes a channel to respond to
- *                      requests on Endpoint 0.
- *    \param  noEpIn    The number of input endpoints, should be
- *                      at least 1 (for Endpoint 0).
- *    \param  c_sof     A channel to receive SOF tokens on. This channel
- *                      must be connected to a process that
- *                      can receive a token once every 125 ms. If
- *                      tokens are not read, the USB layer will lock up.
- *                      If no SOF tokens are required ``null``
- *                      should be used for this parameter.
+ * \param   noEpOut     The number of output endpoints, should be at least 1 (for Endpoint 0).
+ * \param   c_epIn      An array of channel ends, one channel end per input endpoint (USB IN transaction);
+ *                      this includes a channel to respond to requests on Endpoint 0.
+ * \param   noEpIn      The number of input endpoints, should be at least 1 (for Endpoint 0).
+ * \param   c_sof       A channel to receive SOF tokens on. This channel must be connected to a process that
+ *                      can receive a token once every 125 ms. If tokens are not read, the USB layer will lock up.
+ *                      If no SOF tokens are required ``null`` should be used for this parameter.
  *
- *    \param  epTypeTableOut See ``epTypeTableIn``.
- *    \param  epTypeTableIn This and ``epTypeTableOut`` are two arrays
+ * \param   epTypeTableOut See ``epTypeTableIn``.
+ * \param   epTypeTableIn  This and ``epTypeTableOut`` are two arrays
  *                            indicating the type of the endpoint.
  *                            Legal types include:
  *                           ``XUD_EPTYPE_CTL`` (Endpoint 0),
@@ -163,20 +154,22 @@ typedef enum XUD_Result
  *                            endpoints, the second array contains the
  *                            endpoint types for each of the IN
  *                            endpoints.
- *    \param  p_usb_rst The port to used to connect to an external phy reset line.
+ * \param   p_usb_rst   The port to used to connect to an external phy reset line.
  *                      Should be ``null`` for U-Series.
- *    \param  clk       The clock block to use for the p_usb_rst port -
+ * \param   clk         The clock block to use for the p_usb_rst port -
  *                      this should not be clock block 0. Should be ``null`` for U-Series.
- *    \param  rstMask   The mask to use when taking an external phy into/out of reset. The mask is
+ * \param   rstMask     The mask to use when taking an external phy into/out of reset. The mask is
  *                      ORed into the port to disable reset, and unset when
  *                      deasserting reset. Use '-1' as a default mask if this
  *                      port is not shared.
- *    \param  desiredSpeed  This parameter specifies what speed the device will attempt to run at
- *                          i.e. full-speed (ie 12Mbps) or high-speed (480Mbps) if supported
- *                          by the host. Pass ``XUD_SPEED_HS`` if high-speed is desired or ``XUD_SPEED_FS``
- *                          if not. Low speed USB is not supported by XUD.
- *    \param  c_usb_testmode See :ref:`xud_usb_test_modes`
- *    \param  pwrConfig     Specifies whether the device is bus or self-powered. When self-powered the XUD will monitor the VBUS line for host disconnections. This is required for compliance reasons. Valid values are XUD_PWR_SELF and XUD_PWR_BUS.
+ * \param   desiredSpeed This parameter specifies what speed the device will attempt to run at
+ *                      i.e. full-speed (ie 12Mbps) or high-speed (480Mbps) if supported
+ *                      by the host. Pass ``XUD_SPEED_HS`` if high-speed is desired or ``XUD_SPEED_FS``
+ *                         if not. Low speed USB is not supported by XUD.
+ * \param   c_usb_testmode See :ref:`xud_usb_test_modes`
+ * \param   pwrConfig   Specifies whether the device is bus or self-powered. When self-powered the XUD 
+ *                      will monitor the VBUS line for host disconnections. This is required for compliance reasons.
+ *                      Valid values are XUD_PWR_SELF and XUD_PWR_BUS.
  *
  */
 int XUD_Manager(chanend c_epOut[], int noEpOut,
@@ -192,24 +185,24 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
 #endif
 
 /**
- * \brief  This function must be called by a thread that deals with an OUT endpoint.
- *         When the host sends data, the low-level driver will fill the buffer. It
- *         pauses until data is available.
- * \param  ep_out    The OUT endpoint identifier (created by ``XUD_InitEP``).
- * \param  buffer    The buffer in which to store data received from the host.
- *                   The buffer is assumed to be word aligned.
- * \param  length    The number of bytes written to the buffer
- * \return           XUD_RES_OKAY on success, for errors see `Status Reporting`_.
+ * \brief   This function must be called by a thread that deals with an OUT endpoint.
+ *          When the host sends data, the low-level driver will fill the buffer. It
+ *          pauses until data is available.
+ * \param   ep_out      The OUT endpoint identifier (created by ``XUD_InitEP``).
+ * \param   buffer      The buffer in which to store data received from the host.
+ *                      The buffer is assumed to be word aligned.
+ * \param   length      The number of bytes written to the buffer
+ * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  **/
 XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 
 /**
- * \brief  Request setup data from usb buffer for a specific endpoint, pauses until data is available.
- * \param  ep_out   The OUT endpoint identifier (created by ``XUD_InitEP``).
- * \param  buffer   A char buffer passed by ref into which data is returned.
- * \param  length   Length of the buffer received (expect 8 bytes)
- * \return XUD_RES_OKAY on success, for errors see ``Status Reporting``_.
+ * \brief   Request setup data from usb buffer for a specific endpoint, pauses until data is available.
+ * \param   ep_out      The OUT endpoint identifier (created by ``XUD_InitEP``).
+ * \param   buffer      A char buffer passed by ref into which data is returned.
+ * \param   length      Length of the buffer received (expect 8 bytes)
+ * \return  XUD_RES_OKAY on success, for errors see ``Status Reporting``_.
  **/
 XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
@@ -218,29 +211,23 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE
  * \brief  This function must be called by a thread that deals with an IN endpoint.
  *         When the host asks for data, the low-level driver will transmit the buffer
  *         to the host.
- * \param  ep_in The endpoint identifier (created by ``XUD_InitEp``).
- * \param  buffer The buffer of data to transmit to the host.
- * \param  datalength The number of bytes in the buffer.
- * \return XUD_RES_OKAY on success, for errors see `Status Reporting`_.
+ * \param   ep_in       The endpoint identifier (created by ``XUD_InitEp``).
+ * \param   buffer      The buffer of data to transmit to the host.
+ * \param   datalength  The number of bytes in the buffer.
+ * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
 XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
 
-
-/* Same as above but takes a max packet size for the endpoint, breaks up data to transfers of no
- * greater than this.
- *
- * NOTE: This function reasonably assumes the max transfer size for an endpoint is word aligned
- **/
 
 /**
  * \brief   Similar to XUD_SetBuffer but breaks up data transfers into smaller packets.
  *          This function must be called by a thread that deals with an IN endpoint.
  *          When the host asks for data, the low-level driver will transmit the buffer
  *          to the host.
- * \param   ep_in        The IN endpoint identifier (created by ``XUD_InitEp``).
- * \param   buffer       The buffer of data to transmit to the host.
- * \param   datalength   The number of bytes in the buffer.
- * \param   epMax        The maximum packet size in bytes.
+ * \param   ep_in       The IN endpoint identifier (created by ``XUD_InitEp``).
+ * \param   buffer      The buffer of data to transmit to the host.
+ * \param   datalength  The number of bytes in the buffer.
+ * \param   epMax       The maximum packet size in bytes.
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
 XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax);
@@ -252,52 +239,52 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
  *         answer an IN request, and then waits for a 0 length Status OUT transaction on ``ep_out``.
  *         This function is normally called to handle Get control requests to Endpoint 0.
  *
- * \param  ep_out The endpoint identifier that handles Endpoint 0 OUT data in the XUD manager.
- * \param  ep_in The endpoint identifier that handles Endpoint 0 IN data in the XUD manager.
- * \param  buffer The data to send in response to the IN transaction. Note that this data
- *         is chopped up in fragments of at most 64 bytes.
- * \param  length Length of data to be sent.
- * \param  requested  The length that the host requested, (Typically pass the value ``wLength``).
- * \return XUD_RES_OKAY on success, for errors see `Status Reporting`_
+ * \param   ep_out      The endpoint identifier that handles Endpoint 0 OUT data in the XUD manager.
+ * \param   ep_in       The endpoint identifier that handles Endpoint 0 IN data in the XUD manager.
+ * \param   buffer      The data to send in response to the IN transaction. Note that this data
+ *                      is chopped up in fragments of at most 64 bytes.
+ * \param   length      Length of data to be sent.
+ * \param   requested   The length that the host requested, (Typically pass the value ``wLength``).
+ * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_
  **/
 XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested);
 
 
 /**
- * \brief  This function sends an empty packet back on the next IN request with
- *         PID1. It is normally used by Endpoint 0 to acknowledge success of a control transfer.
- * \param  ep_in The Endpoint 0 IN identifier to the XUD manager.
- * \return XUD_RES_OKAY on success, for errors see `Status Reporting`_.
+ * \brief   This function sends an empty packet back on the next IN request with
+ *          PID1. It is normally used by Endpoint 0 to acknowledge success of a control transfer.
+ * \param   ep_in       The Endpoint 0 IN identifier to the XUD manager.
+ * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  **/
 XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
 
 
 /**
- * \brief  Sets the device's address. This function must be called by Endpoint 0
- *         once a ``setDeviceAddress`` request is made by the host.
- * \param  addr New device address.
+ * \brief   Sets the device's address. This function must be called by Endpoint 0
+ *          once a ``setDeviceAddress`` request is made by the host.
+ * \param   addr New device address.
  * \warning Must be run on USB core
  */
 void XUD_SetDevAddr(unsigned addr);
 
 
 /**
- * \brief  This function will complete a reset on an endpoint. Can take
- *         one or two ``XUD_ep`` as parameters (the second parameter can be set to ``null``).
- *         The return value should be inspected to find the new bus-speed.
- *         In Endpoint 0 typically two endpoints are reset (IN and OUT).
- *         In other endpoints ``null`` can be passed as the second parameter.
- * \param  one IN or OUT endpoint identifier to perform the reset on.
- * \param  two Optional second IN or OUT endpoint structure to perform a reset on.
- * \return Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
- *         at high speed, or ``XUD_SPEED_FS`` - the device is runnig at full speed.
+ * \brief   This function will complete a reset on an endpoint. Can take
+ *          one or two ``XUD_ep`` as parameters (the second parameter can be set to ``null``).
+ *          The return value should be inspected to find the new bus-speed.
+ *          In Endpoint 0 typically two endpoints are reset (IN and OUT).
+ *          In other endpoints ``null`` can be passed as the second parameter.
+ * \param   one      IN or OUT endpoint identifier to perform the reset on.
+ * \param   two      Optional second IN or OUT endpoint structure to perform a reset on.
+ * \return  Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
+ *          at high speed, or ``XUD_SPEED_FS`` - the device is runnig at full speed.
  */
 XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
 
 
 /**
  * \brief      Initialises an XUD_ep
- * \param      c_ep        Endpoint channel to be connected to the XUD library.
+ * \param      c_ep     Endpoint channel to be connected to the XUD library.
  * \return     Endpoint identifier
  */
 XUD_ep XUD_InitEp(chanend c_ep);
@@ -306,7 +293,7 @@ XUD_ep XUD_InitEp(chanend c_ep);
 /**
  * \brief      Mark an endpoint as STALL based on its EP address.  Cleared automatically if a SETUP received on the endpoint.
  *             Note: the IN bit of the endpoint address is used.
- * \param      epNum       Endpoint number.
+ * \param      epNum    Endpoint number.
  * \warning    Must be run on same tile as XUD core
  */
 void XUD_SetStallByAddr(int epNum);
@@ -315,7 +302,7 @@ void XUD_SetStallByAddr(int epNum);
 /**
  * \brief      Mark an endpoint as NOT STALLed based on its EP address.
  *             Note: the IN bit of the endpoint address is used.
- * \param      epNum       Endpoint number.
+ * \param      epNum    Endpoint number.
  * \warning    Must be run on same tile as XUD core
  */
 void XUD_ClearStallByAddr(int epNum);
@@ -355,51 +342,47 @@ void XUD_ResetEpStateByAddr(unsigned epNum);
  */
 
 /**
- *  \brief     Gets a data buffer from XUD
- *  \param     ep_out      The OUT endpoint identifier.
- *  \param     buffer      The buffer to store received data into.
- *  \param     length      Length of the buffer received
- *  \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
+ * \brief      Gets a data buffer from XUD
+ * \param      ep_out      The OUT endpoint identifier.
+ * \param      buffer      The buffer to store received data into.
+ * \param      length      Length of the buffer received
+ * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 XUD_Result_t XUD_GetData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 /**
- *  \brief     Gets a setup data from XUD
- *  \param     ep_out      OUT endpoint identifier.
- *  \param     buffer      Buffer to store received data into.
- *  \param     length      Length of the buffer received (expect 8)
- *  \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
- *  TODO:      Use generic GetData for this
+ * \brief      Gets a setup data from XUD
+ * \param      ep_out      OUT endpoint identifier.
+ * \param      buffer      Buffer to store received data into.
+ * \param      length      Length of the buffer received (expect 8)
+ * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
+ * TODO:       Use generic GetData for this
  */
 XUD_Result_t XUD_GetSetupData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 /**
- *  \brief     Gives a data buffer to XUD from transmission to the host
- *  \param     ep_in       The IN endpoint identifier.
- *  \param     buffer      The packet buffer to send data from.
- *  \param     datalength  The length of the packet to send (in bytes).
- *  \param     startIndex  The start index of the packet in the buffer (typically 0).
- *  \param     pidToggle   No longer used, value ignored
- *  \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
+ * \brief     Gives a data buffer to XUD from transmission to the host
+ * \param     ep_in        The IN endpoint identifier.
+ * \param     buffer       The packet buffer to send data from.
+ * \param     datalength   The length of the packet to send (in bytes).
+ * \param     startIndex   The start index of the packet in the buffer (typically 0).
+ * \param     pidToggle    No longer used, value ignored
+ * \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 XUD_Result_t XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 
 /***********************************************************************************************/
 
-
-
-
 /*
  * Advanced functions for supporting multple Endpoints in a single core
  */
 
-
 /**
- * \brief       Marks an OUT endpoint as ready to receive data
- * \param       ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
- * \param       buffer      The buffer in which to store data received from the host.
- *                          The buffer is assumed to be word aligned.
- * \return      XUD_RES_OKAY on success, for errors see `Status Reporting`.
+ * \brief      Marks an OUT endpoint as ready to receive data
+ * \param      ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
+ * \param      buffer      The buffer in which to store data received from the host.
+ *                         The buffer is assumed to be word aligned.
+ * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 inline int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
 {
@@ -425,7 +408,7 @@ inline int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
  * \param      ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
  * \param      addr        The address of the buffer in which to store data received from the host.
  *                         The buffer is assumed to be word aligned.
- * \return      XUD_RES_OKAY on success, for errors see `Status Reporting`.
+ * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
@@ -506,7 +489,7 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
  * \param   len         The length of the data to transmit.
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
-inline XUD_Reset_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
+inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
 {
     unsigned addr;
 

@@ -167,7 +167,7 @@ typedef enum XUD_Result
  *                      by the host. Pass ``XUD_SPEED_HS`` if high-speed is desired or ``XUD_SPEED_FS``
  *                         if not. Low speed USB is not supported by XUD.
  * \param   c_usb_testmode See :ref:`xud_usb_test_modes`
- * \param   pwrConfig   Specifies whether the device is bus or self-powered. When self-powered the XUD 
+ * \param   pwrConfig   Specifies whether the device is bus or self-powered. When self-powered the XUD
  *                      will monitor the VBUS line for host disconnections. This is required for compliance reasons.
  *                      Valid values are XUD_PWR_SELF and XUD_PWR_BUS.
  *

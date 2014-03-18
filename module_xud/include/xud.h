@@ -520,10 +520,7 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
 #endif
 
-#define XUD_SUSPEND                 3
-
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
-#define USB_SUSPEND_TOKEN           9        /* Control token value that signals SUSPEND */
 
 #endif // __xud_h__

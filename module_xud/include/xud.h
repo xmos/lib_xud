@@ -79,8 +79,8 @@
 #endif // PORT_USB_CLK
 
 /**
- * \var     typedef XUD_EpTransferType
- * \brief   Typedef for endpoint data transfer types.  Note: it is important that ISO is 0
+ * \var        typedef     XUD_EpTransferType
+ * \brief      Typedef for endpoint data transfer types.  Note: it is important that ISO is 0
  */
 typedef enum XUD_EpTransferType
 {
@@ -92,14 +92,14 @@ typedef enum XUD_EpTransferType
 } XUD_EpTransferType;
 
 /**
- * \var     typedef XUD_EpType
- * \brief   Typedef for endpoint type
+ * \var        typedef XUD_EpType
+ * \brief      Typedef for endpoint type
  */
 typedef unsigned int XUD_EpType;
 
 /**
- * \var     typedef XUD_ep
- * \brief   Typedef for endpoint identifiers
+ * \var        typedef XUD_ep
+ * \brief      Typedef for endpoint identifiers
  */
 typedef unsigned int XUD_ep;
 
@@ -199,7 +199,7 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
  * \param  buffer    The buffer in which to store data received from the host.
  *                   The buffer is assumed to be word aligned.
  * \param  length    The number of bytes written to the buffer
- * \return           XUD_Result_t. See `Status Reporting`_.
+ * \return           XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  **/
 XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
@@ -209,7 +209,7 @@ XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARA
  * \param  ep_out   The OUT endpoint identifier (created by ``XUD_InitEP``).
  * \param  buffer   A char buffer passed by ref into which data is returned.
  * \param  length   Length of the buffer received (expect 8 bytes)
- * \return datalength in bytes (always 8), for errors see ``Status Reporting``_.
+ * \return XUD_RES_OKAY on success, for errors see ``Status Reporting``_.
  **/
 XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
@@ -221,7 +221,7 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE
  * \param  ep_in The endpoint identifier (created by ``XUD_InitEp``).
  * \param  buffer The buffer of data to transmit to the host.
  * \param  datalength The number of bytes in the buffer.
- * \return  0 on success, for errors see `Status Reporting`_.
+ * \return XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
 XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
 
@@ -241,7 +241,7 @@ XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datale
  * \param   buffer       The buffer of data to transmit to the host.
  * \param   datalength   The number of bytes in the buffer.
  * \param   epMax        The maximum packet size in bytes.
- * \return  0 on success, for errors see `Status Reporting`_.
+ * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
 XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax);
 
@@ -257,9 +257,8 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
  * \param  buffer The data to send in response to the IN transaction. Note that this data
  *         is chopped up in fragments of at most 64 bytes.
  * \param  length Length of data to be sent.
- * \param  requested  The length that the host requested, (Typicall pass the value ``wLength``).
- *
- * \return 0 on success, for errors see `Status Reporting`_
+ * \param  requested  The length that the host requested, (Typically pass the value ``wLength``).
+ * \return XUD_RES_OKAY on success, for errors see `Status Reporting`_
  **/
 XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested);
 
@@ -268,8 +267,7 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer
  * \brief  This function sends an empty packet back on the next IN request with
  *         PID1. It is normally used by Endpoint 0 to acknowledge success of a control transfer.
  * \param  ep_in The Endpoint 0 IN identifier to the XUD manager.
- *
- * \return 0 on success, for errors see `Status Reporting`_.
+ * \return XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  **/
 XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
 
@@ -298,27 +296,27 @@ XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, tw
 
 
 /**
- * \brief  Initialises an XUD_ep
- * \param  c_ep Endpoint channel to be connected to the XUD library.
- * \return Endpoint identifier
+ * \brief      Initialises an XUD_ep
+ * \param      c_ep        Endpoint channel to be connected to the XUD library.
+ * \return     Endpoint identifier
  */
 XUD_ep XUD_InitEp(chanend c_ep);
 
 
 /**
- * \brief   Mark an endpoint as STALL based on its EP address.  Cleared automatically if a SETUP received on the endpoint.
- *          Note: the IN bit of the endpoint address is used.
- * \param   epNum Endpoint number.
- * \warning Must be run on same tile as XUD core
+ * \brief      Mark an endpoint as STALL based on its EP address.  Cleared automatically if a SETUP received on the endpoint.
+ *             Note: the IN bit of the endpoint address is used.
+ * \param      epNum       Endpoint number.
+ * \warning    Must be run on same tile as XUD core
  */
 void XUD_SetStallByAddr(int epNum);
 
 
 /**
- * \brief   Mark an endpoint as NOT STALLed based on its EP address.
- *          Note: the IN bit of the endpoint address is used.
- * \param   epNum Endpoint number.
- * \warning Must be run on same tile as XUD core
+ * \brief      Mark an endpoint as NOT STALLed based on its EP address.
+ *             Note: the IN bit of the endpoint address is used.
+ * \param      epNum       Endpoint number.
+ * \warning    Must be run on same tile as XUD core
  */
 void XUD_ClearStallByAddr(int epNum);
 
@@ -342,10 +340,10 @@ void XUD_ClearStall(XUD_ep ep);
  * affected interfaces to be set to their default values.  This includes setting
  * the data toggle of any endpoint using data toggles to the value DATA0 */
 /**
- * \brief   Reset and Endpoints state including data PID toggle
- *          Note: the IN bit of the endpoint address is used.
- * \param   epNum Endpoint number (including IN bit)
- * \warning Must be run on same tile as XUD core
+ * \brief      Reset an Endpoints state including data PID toggle
+ *             Note: the IN bit of the endpoint address is used.
+ * \param      epNum    Endpoint number (including IN bit)
+ * \warning    Must be run on same tile as XUD core
  */
 void XUD_ResetEpStateByAddr(unsigned epNum);
 
@@ -357,32 +355,32 @@ void XUD_ResetEpStateByAddr(unsigned epNum);
  */
 
 /**
- *  \brief      Gets a data buffer from XUD
- *  \param      ep_out     The OUT endpoint identifier.
- *  \param      buffer     The buffer to store received data into.
- *  \param      length     Length of the buffer received
- *  \return     XUD_Result_t
+ *  \brief     Gets a data buffer from XUD
+ *  \param     ep_out      The OUT endpoint identifier.
+ *  \param     buffer      The buffer to store received data into.
+ *  \param     length      Length of the buffer received
+ *  \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 XUD_Result_t XUD_GetData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 /**
- *  \brief      Gets a setup data from XUD
- *  \param      ep_out     OUT endpoint identifier.
- *  \param      buffer     Buffer to store received data into.
- *  \param      length     Length of the buffer received (expect 8)
- *  \return     XUD_Result_t
- *  TODO:       Use generic GetData for this
+ *  \brief     Gets a setup data from XUD
+ *  \param     ep_out      OUT endpoint identifier.
+ *  \param     buffer      Buffer to store received data into.
+ *  \param     length      Length of the buffer received (expect 8)
+ *  \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
+ *  TODO:      Use generic GetData for this
  */
 XUD_Result_t XUD_GetSetupData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 /**
- *  \brief      Gives a data buffer to XUD from transmission to the host
- *  \param      ep_in      The IN endpoint identifier.
- *  \param      buffer     The packet buffer to send data from.
- *  \param      datalength The length of the packet to send (in bytes).
- *  \param      startIndex The start index of the packet in the buffer (typically 0).
- *  \param      pidToggle  No longer used
- *  \return                0 on non-error, -1 on bus-reset.
+ *  \brief     Gives a data buffer to XUD from transmission to the host
+ *  \param     ep_in       The IN endpoint identifier.
+ *  \param     buffer      The packet buffer to send data from.
+ *  \param     datalength  The length of the packet to send (in bytes).
+ *  \param     startIndex  The start index of the packet in the buffer (typically 0).
+ *  \param     pidToggle   No longer used, value ignored
+ *  \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 XUD_Result_t XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
 
@@ -397,11 +395,11 @@ XUD_Result_t XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned dataleng
 
 
 /**
- * \brief   Marks an OUT endpoint as ready to receive data
- * \param   ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
- * \param   buffer      The buffer in which to store data received from the host.
- *                      The buffer is assumed to be word aligned.
- * \return              0 for success, -1 for bus reset
+ * \brief       Marks an OUT endpoint as ready to receive data
+ * \param       ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
+ * \param       buffer      The buffer in which to store data received from the host.
+ *                          The buffer is assumed to be word aligned.
+ * \return      XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 inline int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
 {
@@ -412,7 +410,6 @@ inline int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
     asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
-        //asm ("stw %0, %1[9]"::"r"(0),"r"(ep));              // Clear EP reset flag
         return -1;
     }
 
@@ -424,11 +421,11 @@ inline int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
 }
 
 /**
- * \brief   Marks an OUT endpoint as ready to receive data
- * \param   ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
- * \param   addr        The address of the buffer in which to store data received from the host.
- *                      The buffer is assumed to be word aligned.
- * \return              0 for success, -1 for bus reset
+ * \brief      Marks an OUT endpoint as ready to receive data
+ * \param      ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
+ * \param      addr        The address of the buffer in which to store data received from the host.
+ *                         The buffer is assumed to be word aligned.
+ * \return      XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
@@ -439,26 +436,25 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
-        //asm ("stw %0, %1[9]"::"r"(0),"r"(ep));           // Clear EP reset flag
-        return -1;
+        return XUD_RES_RST;
     }
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
     asm ("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
-    return 0;
+    return XUD_RES_OKAY;
 }
 
 #if defined(__XC__) || defined(__DOXYGEN__)
 /**
- * \brief   Marks an IN endpoint as ready to transmit data
- * \param   ep          The IN endpoint identifier (created by ``XUD_InitEp``).
- * \param   addr        The address of the buffer to transmit to the host.
- *                      The buffer is assumed be word aligned.
- * \param   len         The length of the data to transmit.
- * \return              0 for success, -1 for bus reset
+ * \brief      Marks an IN endpoint as ready to transmit data
+ * \param      ep          The IN endpoint identifier (created by ``XUD_InitEp``).
+ * \param      addr        The address of the buffer to transmit to the host.
+ *                         The buffer is assumed be word aligned.
+ * \param      len         The length of the data to transmit.
+ * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
-inline int XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
+inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;
@@ -471,8 +467,7 @@ inline int XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
-       // asm ("stw %0, %1[9]"::"r"(0),"r"(ep));           // Clear EP reset flag
-        return -1;
+        return XUD_RES_RST;
     }
 
     /* Knock off the tail bits */
@@ -499,7 +494,7 @@ inline int XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 
     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));      // Mark ready
 
-    return 0;
+    return XUD_RES_OKAY;
 }
 #endif
 
@@ -509,9 +504,9 @@ inline int XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
  * \param   buffer      The buffer to transmit to the host.
  *                      The buffer is assumed be word aligned.
  * \param   len         The length of the data to transmit.
- * \return              0 for success, -1 for bus reset
+ * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
-inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
+inline XUD_Reset_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
 {
     unsigned addr;
 
@@ -526,7 +521,7 @@ inline int XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  * \param   c        The chanend related to the endpoint
  * \param   ep       The OUT endpoint identifier (created by ``XUD_InitEp``).
  * \param   length   Passed by reference. The number of bytes written to the buffer,
- * \param   result   XUD_Result_t passed by reference. For errors see `Status Reporting`.
+ * \param   result   XUD_Result_t passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 #pragma select handler
 void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length), REFERENCE_PARAM(XUD_Result_t, result));
@@ -535,7 +530,7 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
  * \brief   Select handler function for transmitting IN endpoint data in a select.
  * \param   c        The chanend related to the endpoint
  * \param   ep       The IN endpoint identifier (created by ``XUD_InitEp``).
- * \param   result   Passed by reference. For errors see `Status Reporting`.
+ * \param   result   Passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
 
  */
 #pragma select handler

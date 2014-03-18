@@ -18,6 +18,7 @@ the XMOS tool chain and XC language.
     Resource Usage <resource_usage>
     Basic Usage <basic_usage>
     Advanced Usage <advanced_usage>
+    Further Reading <further_reading>
     Document Version History <version_history>
 
 

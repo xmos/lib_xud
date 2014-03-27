@@ -2,6 +2,7 @@
 <xpd>
     <components></components>
     <dependency repo = "sc_usb">
+        <gitbranch>master</gitbranch>
         <githash>487bc858c7dd5757aa7869283f5ff8816dca4e9a</githash>
         <uri>git://git/apps/sc_usb</uri>
         <version>1.0.3beta3</version>
@@ -50,7 +51,8 @@
     <release parenthash = "e1f84cca3dc3d944770de1065b10a786b649ca33" version = "2.0.0beta2" githash = "acbd149b7d5f25e76886a8f97aae00752eb73903"></release>
     <release parenthash = "74524ac2948e71144786ba3e843226d27df6b906" version = "2.0.0beta3" githash = "d8a9b65a0987e35d99c619e812dbea1f21ee05f1"></release>
     <release parenthash = "d8a9b65a0987e35d99c619e812dbea1f21ee05f1" version = "2.0.0beta4" githash = "d5487b2cf0b1ead4a4fe31ff37436d04bf371876"></release>
-    <release parenthash = "d5487b2cf0b1ead4a4fe31ff37436d04bf371876" version = "2.0.0beta5"></release>
+    <release parenthash = "d5487b2cf0b1ead4a4fe31ff37436d04bf371876" version = "2.0.0beta5" githash = "94b86f3ffb4c90da2411a0bea41a26b7ea8d2fc7"></release>
+    <release parenthash = "7b24a92c7ee27ffe235de779749872a7e3678535" version = "2.0.0beta6"></release>
     <subpartnumber>XM-002826-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines></version_defines>

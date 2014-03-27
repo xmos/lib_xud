@@ -479,7 +479,6 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 
     return XUD_RES_OKAY;
 }
-#endif
 
 /**
  * \brief   Marks an IN endpoint as ready to transmit data
@@ -498,7 +497,6 @@ inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
     return XUD_SetReady_InPtr(ep, addr, len);
 }
 
-#if defined(__XC__) || defined(__DOXYGEN__)
 /**
  * \brief   Select handler function for receiving OUT endpoint data in a select.
  * \param   c        The chanend related to the endpoint

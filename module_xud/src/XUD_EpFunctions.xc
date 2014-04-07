@@ -84,15 +84,16 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[
 {
     unsigned char tmpBuffer[1024];
     unsigned rxlength;
+    unsigned sendLength = min(length, requested);
     XUD_Result_t result;
 
-    if ((result = XUD_SetBuffer_EpMax(ep_in, buffer, min(length, requested), 64)) != XUD_RES_OKAY)
-    {
+    if ((result = XUD_SetBuffer_EpMax(ep_in, buffer, sendLength, 64)) != XUD_RES_OKAY)
+    {  
         return result;
     }
 
     /* USB 2.0 8.5.3.2 */
-    if ((requested > length) && (length % 64) == 0)
+    if ((sendLength % 64) == 0)
     {
         XUD_SetBuffer(ep_in, tmpBuffer, 0);
     }

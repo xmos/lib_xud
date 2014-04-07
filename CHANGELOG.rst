@@ -1,6 +1,13 @@
 sc_xud Change Log
 =================
 
+2.0.1
+-----
+    * RESOLVED:   (Minor) XUD_GetRequest failed to send a zero-length packet at the end of a transfer
+                  when the data-length requested by the host was a multiple of 64 bytes (as required 
+                  in 8.5.3.2 of the USB 2.0 Specification). This occurred when the data-length 
+                  requested by host was less than the data-length that device would like to send.
+
 2.0.0
 -----
     * CHANGE:     All XUD functions now return XUD_Result_t. Functions that previously returned

@@ -88,7 +88,7 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[
     XUD_Result_t result;
 
     if ((result = XUD_SetBuffer_EpMax(ep_in, buffer, sendLength, 64)) != XUD_RES_OKAY)
-    {  
+    {
         return result;
     }
 

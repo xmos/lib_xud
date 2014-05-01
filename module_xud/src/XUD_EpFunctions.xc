@@ -92,10 +92,9 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[
         return result;
     }
 
-
     /* USB 2.0 8.5.3.2: Send < 0 length packet when data-length % 64 is 0
-     * Extra check such that we don't try and send 2 0-length packets */
-    if ((sendLength != 0) && (sendLength % 64) == 0)
+     * Note, we also don't want to try and send 2 zero-length packets i.e. if sendLength = 0 */
+    if ((requested > length) && ((length % 64) == 0))
     {
         XUD_SetBuffer(ep_in, tmpBuffer, 0);
     }

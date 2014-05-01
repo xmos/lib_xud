@@ -93,7 +93,7 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[
     }
 
     /* USB 2.0 8.5.3.2 */
-    if ((sendLength % 64) == 0)
+    if ((sendLength != 0) && (sendLength % 64) == 0)
     {
         XUD_SetBuffer(ep_in, tmpBuffer, 0);
     }

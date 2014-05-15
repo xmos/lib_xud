@@ -493,3 +493,30 @@ NoOffset:
 .set XUD_ResetEpStateByAddr.maxtimers, 0
 .set XUD_ResetEpStateByAddr.maxcores, 1
 
+//void XUD_SetTestMode(XUD_ep ep, unsigned testMode);
+.globl XUD_SetTestMode
+.type XUD_SetTestMode, @function
+
+.cc_top XUD_SetTestMode.func
+XUD_SetTestMode:
+    ldw         r0, r0[2]                       // Load our chanend ID to use
+    outct       res[r0], 1
+    chkct       res[r0], 1
+    out         res[r0], r1                     // Output test mode
+    outct       res[r0], 1
+    chkct       res[r0], 1
+    retsp       0
+.size XUD_SetTestMode, .-XUD_SetTestMode
+.cc_bottom XUD_SetTestMode.func
+.globl XUD_SetTestMode.nstackwords
+.globl XUD_SetTestMode.maxchanends
+.globl XUD_SetTestMode.maxtimers
+.globl XUD_SetTestMode.maxcores
+.set XUD_SetTestMode.nstackwords, 0
+.set XUD_SetTestMode.maxchanends, 0
+.set XUD_SetTestMode.maxtimers, 0
+.set XUD_SetTestMode.maxcores, 1
+
+
+
+

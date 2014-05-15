@@ -166,7 +166,6 @@ typedef enum XUD_Result
  *                      i.e. full-speed (ie 12Mbps) or high-speed (480Mbps) if supported
  *                      by the host. Pass ``XUD_SPEED_HS`` if high-speed is desired or ``XUD_SPEED_FS``
  *                         if not. Low speed USB is not supported by XUD.
- * \param   c_usb_testmode See :ref:`xud_usb_test_modes`
  * \param   pwrConfig   Specifies whether the device is bus or self-powered. When self-powered the XUD
  *                      will monitor the VBUS line for host disconnections. This is required for compliance reasons.
  *                      Valid values are XUD_PWR_SELF and XUD_PWR_BUS.
@@ -180,7 +179,6 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
                 NULLABLE_RESOURCE(clock, clk),
                 unsigned rstMask,
                 XUD_BusSpeed_t desiredSpeed,
-                NULLABLE_RESOURCE(chanend, c_usb_testmode),
                 XUD_PwrConfig pwrConfig);
 #endif
 
@@ -333,6 +331,14 @@ void XUD_ClearStall(XUD_ep ep);
  * \warning    Must be run on same tile as XUD core
  */
 void XUD_ResetEpStateByAddr(unsigned epNum);
+
+/**
+ * \brief   Enable a specific USB test mode in XUD
+ * \param   ep          XUD_ep type
+ * \param   testMode    The desired test-mode
+ * \warning Must be run on same tile as XUD core
+ */
+void XUD_SetTestMode(XUD_ep ep, unsigned testMode);
 
 
 /**********************************************************************************************

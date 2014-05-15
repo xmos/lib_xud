@@ -363,7 +363,7 @@ extern int XUD_LLD_IoLoop(
                             in port rxe_port, in port flag0_port,
                             in port ?read, out port ?write, int x,
                             XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
-                            int  epCount, chanend? c_sof, chanend ?c_usb_testmode) ;
+                            int  epCount, chanend? c_sof) ;
 
 unsigned handshakeTable_IN[XUD_MAX_NUM_EP_IN];
 unsigned handshakeTable_OUT[XUD_MAX_NUM_EP_OUT];
@@ -479,7 +479,7 @@ int wakingReset = 0;
 void XUD_ULPIReg(out port p_usb_txd);
 
 // Main XUD loop
-static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, chanend ?c_usb_testmode, XUD_PwrConfig pwrConfig)
+static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, XUD_PwrConfig pwrConfig)
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
 #ifndef ARCH_S
@@ -1004,7 +1004,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 flag1: Rx Active
                 flag2: Rx Error */
             XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
-                           reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof, c_usb_testmode);
+                           reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
 
             set_thread_fast_mode_off();
 
@@ -1081,7 +1081,7 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
                 chanend c_ep_in[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                out port ?p_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed_t speed, chanend ?c_usb_testmode, XUD_PwrConfig pwrConfig)
+                out port ?p_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed_t speed, XUD_PwrConfig pwrConfig)
 {
     /* Arrays for channels... */
     /* TODO use two arrays? */
@@ -1211,7 +1211,7 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
    #endif
 
     /* Run the main XUD loop */
-    XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, c_usb_testmode, pwrConfig);
+    XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, pwrConfig);
 
     // Need to close, drain, and check - three stages.
     for(int i = 0; i < 3; i++)

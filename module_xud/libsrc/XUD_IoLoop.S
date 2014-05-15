@@ -179,7 +179,7 @@ writesuspendvar:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //    void XUD_LLD_IoLoop(in port rxd_port, in port rxa_port, out port txd_port, in port rxe_port, in port flag0_port,
 //    chanend c_out, chanend c_in, chanend c_con_io, chanend c_ctl_buf,
-//    XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[], epCount, c_sof, c_usb_testmode) ;
+//    XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[], epCount, c_sof) ;
 .globl XUD_LLD_IoLoop.nstackwords
 .globl XUD_LLD_IoLoop.maxthreads
 .globl XUD_LLD_IoLoop.maxtimers
@@ -281,12 +281,28 @@ SetupOutTimer:
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
 	// sp[10] should be c_usb_testmode
-	ldw         r10, sp[(10 + STACK_EXTEND)]
-    bf          r10, PortsOnStack               // Check for NULL
+	//ldw         r10, sp[(10 + STACK_EXTEND)]
+    //bf          r10, PortsOnStack               // Check for NULL
+ 
+    // Enable test mode interrupt on Endpoint 0 chanends. IN + OUT   
+    //ldw         r9, sp[(STACK_EXTEND+7)]         // EP structures array
+    ldaw         r9, dp[epChans0]
+    ldw         r10, r9[0]                     // Load channel 0
+
     ldap        r11, XUD_UsbTestModeHandler
     setc        res[r10], XS1_SETC_IE_MODE_INTERRUPT
     setv        res[r10], r11
     eeu         res[r10]
+
+    ldc         r10, 16
+    ldw         r10, r9[r10]                     // Load channel for EP 0 in
+
+    setc        res[r10], XS1_SETC_IE_MODE_INTERRUPT
+    setv        res[r10], r11
+    eeu         res[r10]
+
+
+
 #endif
 
 PortsOnStack:                                   // Put ports on stack (loads therefore short insts)

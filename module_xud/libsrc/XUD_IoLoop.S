@@ -280,7 +280,7 @@ SetupOutTimer:
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
-    // Enable test mode interrupt on Endpoint 0 chanends. IN + OUT   
+    // Enable test mode interrupt on Endpoint 0 chanends. IN + OUT
     ldaw         r9, dp[epChans0]
     ldw         r10, r9[0]                         // Load channel 0
 

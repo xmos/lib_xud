@@ -181,14 +181,12 @@ blocked attempting to send these messages.
 USB Test Modes
 --------------
 
-XUD supports the required test modes for USB Compliance testing. The
-``XUD_Manager()`` task can take a channel-end argument for controlling the
-test mode required.  ``null`` can be passed if this functionality is not required.  
+XUD supports the required test modes for USB Compliance testing. 
 
-XUD accepts a single word from this channel to signal which test mode
-to enter, these commands are based on the definitions of the Test Mode Selector
-Codes in the USB 2.0 Specification Table 11-24.  The supported test modes are
-summarised in the :ref:`table_test_modes`.
+XUD accepts commands from the endpoint 0 channels (in or out) to signal which test mode
+to enter via the ``XUD_SetTestMode()`` function. The commands are based on the definitions 
+of the Test Mode Selector Codes in the USB 2.0 Specification Table 11-24.  The supported test modes are
+summarised in :ref:`table_test_modes`.
 
 .. _table_test_modes:
 
@@ -206,9 +204,13 @@ summarised in the :ref:`table_test_modes`.
     +--------+-------------------------------------+
     | 4      | Test_Packet                         |
     +--------+-------------------------------------+
-    | 5      | Test_Force_Enable                   |
-    +--------+-------------------------------------+
 
-The use of other codes could result in undefined behaviour.
+The passing other codes endpoints other than 0 to ``XUD_SetTestMode()`` could result in undefined
+behaviour.
 
 As per the USB 2.0 Specification a power cycle or reboot is required to exit the test mode.
+
+``XUD_SetTestMode()``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: XUD_SetTestMode

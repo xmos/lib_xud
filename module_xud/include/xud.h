@@ -334,7 +334,7 @@ void XUD_ResetEpStateByAddr(unsigned epNum);
 
 /**
  * \brief   Enable a specific USB test mode in XUD
- * \param   ep          XUD_ep type
+ * \param   ep          XUD_ep type (must be endpoint 0 in or out)
  * \param   testMode    The desired test-mode
  * \warning Must be run on same tile as XUD core
  */

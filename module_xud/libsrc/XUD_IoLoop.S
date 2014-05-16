@@ -280,14 +280,9 @@ SetupOutTimer:
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
-	// sp[10] should be c_usb_testmode
-	//ldw         r10, sp[(10 + STACK_EXTEND)]
-    //bf          r10, PortsOnStack               // Check for NULL
- 
     // Enable test mode interrupt on Endpoint 0 chanends. IN + OUT   
-    //ldw         r9, sp[(STACK_EXTEND+7)]         // EP structures array
     ldaw         r9, dp[epChans0]
-    ldw         r10, r9[0]                     // Load channel 0
+    ldw         r10, r9[0]                         // Load channel 0
 
     ldap        r11, XUD_UsbTestModeHandler
     setc        res[r10], XS1_SETC_IE_MODE_INTERRUPT
@@ -300,9 +295,6 @@ SetupUsbTestMode:
     setc        res[r10], XS1_SETC_IE_MODE_INTERRUPT
     setv        res[r10], r11
     eeu         res[r10]
-
-
-
 #endif
 
 PortsOnStack:                                   // Put ports on stack (loads therefore short insts)
@@ -310,15 +302,11 @@ PortsOnStack:                                   // Put ports on stack (loads the
     stw        r11, sp[10]
     ldw        r11, dp[flag0_port]              // Valid token port
     stw        r11, sp[STACK_FLAG0_PORT]
-    //ldw        r11, dp[flag2_port]              //
-    //stw        r11, sp[15]
-
-    //ldc         r11, 0x0070
     ldc        r11, 0x3ffe
-    stw         r11, sp[12]
+    stw        r11, sp[12]
 
-    ldw         r11, sp[(STACK_EXTEND+7)]
-    stw         r11, dp[chanArray]
+    ldw        r11, sp[(STACK_EXTEND+7)]
+    stw        r11, dp[chanArray]
 
 ConfigSofJump:
     ldw        r11, sp[(STACK_EXTEND+9)]

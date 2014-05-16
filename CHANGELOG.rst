@@ -1,6 +1,12 @@
 sc_xud Change Log
 =================
 
+2.1.0
+-----
+    * CHANGE:     XUD no longer takes a additional chanend parameter for enabling USB test-modes.
+                  Test-modes are now enabled via a XUD_SetTestMode() function using a chanend 
+                  relating to Endpoint 0. This change was made to reduce chanend usage only.  
+
 2.0.1
 -----
     * RESOLVED:   (Minor) Error when building module_xud in xTimeComposer due to invalid project 

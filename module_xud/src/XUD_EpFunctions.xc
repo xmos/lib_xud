@@ -1,13 +1,11 @@
 /** @file      XUD_EPFunctions.xc
   * @brief     Implementation of user API fuctions.  See xud.h for documentation.
   * @author    Ross Owen, XMOS Limited
-  * @version   0.9
   **/
 
 #include <xs1.h>
-
 #include "xud.h"
-//#include "usb.h"
+
 
 static inline int min(int x, int y)
 {

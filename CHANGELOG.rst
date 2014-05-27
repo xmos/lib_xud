@@ -1,6 +1,10 @@
 sc_xud Change Log
 =================
 
+2.1.1
+-----
+    * ADDED:      Warning emitted when number of cores is greater than 6
+
 2.1.0
 -----
     * CHANGE:     XUD no longer takes a additional chanend parameter for enabling USB test-modes.

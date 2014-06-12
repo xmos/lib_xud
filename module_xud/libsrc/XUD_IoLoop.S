@@ -187,7 +187,7 @@ writesuspendvar:
 
 .linkset XUD_LLD_IoLoop.nstackwords, STACK_EXTEND
 .linkset XUD_LLD_IoLoop.maxchanends, 0
-.linkset XUD_LLD_IoLoop.maxtimers, 3
+.linkset XUD_LLD_IoLoop.maxtimers, 2
 .linkset XUD_LLD_IoLoop.maxthreads, 0
 
 .globl XUD_LLD_IoLoop
@@ -257,7 +257,8 @@ ConfigValidToken:
     setc       res[r10], XS1_SETC_COND_NONE
     ldap       r11, TxHandshakeTimeOut                // ValidToken is used for timing timeout period when expecting an ack after tx
     setv       res[r10], r11
-
+#if 0
+    // Port counter used instead 
 TxHandShakeTimer:                                     // Used for timeout waiting for handshake after tx
     getr       r10, XS1_RES_TYPE_TIMER
     ecallf     r10
@@ -267,6 +268,7 @@ TxHandShakeTimer:                                     // Used for timeout waitin
     setc       res[r10], XS1_SETC_COND_AFTER
 
     stw        r10, sp[8]                             // Save timer resource ID to the stack
+#endif
 
 SetupOutTimer:
     getr       r10, XS1_RES_TYPE_TIMER
@@ -470,8 +472,8 @@ XUD_InvalidTok_waitforRXALow:
 
 .align 4
 Return:
-    ldw        r11, sp[8]                       # Free timers
-    freer      res[r11]
+    //ldw        r11, sp[8]                       # Free timers
+    //freer      res[r11]
     ldw        r11, sp[9]
     freer      res[r11]
     ldw        r11, sp[14]

@@ -258,7 +258,7 @@ ConfigValidToken:
     ldap       r11, TxHandshakeTimeOut                // ValidToken is used for timing timeout period when expecting an ack after tx
     setv       res[r10], r11
 #if 0
-    // Port counter used instead 
+    // Port counter used instead
 TxHandShakeTimer:                                     // Used for timeout waiting for handshake after tx
     getr       r10, XS1_RES_TYPE_TIMER
     ecallf     r10

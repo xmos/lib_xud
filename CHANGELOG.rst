@@ -1,6 +1,12 @@
 sc_xud Change Log
 =================
 
+2.2.0
+-----
+    * CHANGE:     Timer usage optimisation - usage reduced by one.
+    * CHANGE:     OTG Flags register explicitly cleared at start up - useful if previously running
+                  in host mode after a soft-reboot.     
+
 2.1.1
 -----
     * ADDED:      Warning emitted when number of cores is greater than 6

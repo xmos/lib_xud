@@ -1,5 +1,6 @@
-.cc_top Pid_Sof.func, Pid_Sof
+//.cc_top Pid_Sof.func, Pid_Sof
 // Received SOF token: Reset suspend/reset detection timer
+.align 4
 Pid_Sof:
 #ifdef ARCH_L
     inpw        r10, res[RXD], 8                // Read EP Number
@@ -29,12 +30,13 @@ Pid_Sof:
 
 	bu          Loop_BadPid
 
-.cc_bottom Pid_Sof.func
+//.cc_bottom Pid_Sof.func
 
 
-.cc_top Pid_Sof_NoChan.func, Pid_Sof_NoChan
+//.cc_top Pid_Sof_NoChan.func, Pid_Sof_NoChan
 
 // Received SOF token: Reset suspend/reset detection timer
+.align 4
 Pid_Sof_NoChan:
 #ifdef ARCH_L
     inpw      r10, res[RXD], 8;                        /* Read EP Number */
@@ -59,7 +61,7 @@ Pid_Sof_NoChan:
 	bu          Loop_BadPid
 
 
-.cc_bottom Pid_Sof_NoChan.func
+//.cc_bottom Pid_Sof_NoChan.func
 
 
 

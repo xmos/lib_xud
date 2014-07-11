@@ -16,7 +16,7 @@ WaitForEndDataPacket:
 // r4: zero
 // r7: crc init
 // r9: crc poly
-.cc_top doRXData.func, doRXData
+//.cc_top doRXData.func, doRXData
 .align 4
 .skip 0
 doRXData:
@@ -95,13 +95,13 @@ OutTail4:
 OutTail5:
     bu          ERR_EndIn5
 
-.cc_bottom doRXData.func
+//.cc_bottom doRXData.func
 
 
 .text
 
 
-.cc_top Pid_Setup.func, Pid_Setup
+//.cc_top Pid_Setup.func, Pid_Setup
 .align 4
 
 
@@ -175,4 +175,4 @@ BadDataCrcSetup:
     outct       res[r5], 9
     in          r11, res[r5]                    // TODO should only need CT
     bu          NextToken
-.cc_bottom Pid_Setup.func
+//.cc_bottom Pid_Setup.func

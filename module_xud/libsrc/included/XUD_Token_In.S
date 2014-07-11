@@ -5,7 +5,7 @@
 #define RXA r1
 #define TXD r2
 
-.text
+//.text
 // On entry:
 // R11: Branch address (now free)
 // R10: EP number  (used here)
@@ -19,7 +19,7 @@
 // R2 : TXD
 // R1 : Valid Token Port
 // R0 : RXD
-.cc_top InNotReady.func, InNotReady
+//.cc_top InNotReady.func, InNotReady
 .align 4
 InNotReady:
 XUD_IN_TxNak:
@@ -34,10 +34,10 @@ XUD_IN_TxNak:
 #include "XUD_TokenJmp.S"
 
     //bu          NextTokenAfterInNak
-.cc_bottom InNotReady.func
+//.cc_bottom InNotReady.func
 
 
-.cc_top Pid_In.func, Pid_In
+//.cc_top Pid_In.func, Pid_In
 .align 128
 #ifdef ARCH_L
 .skip 92
@@ -374,5 +374,5 @@ XUD_IN_TxPid_TailS3:
 XUD_IN_TxCrc_TailS3:
   outpw        res[TXD], r7, 16
   bu           DoneTail
-.cc_bottom Pid_In.func
+//.cc_bottom Pid_In.func
 

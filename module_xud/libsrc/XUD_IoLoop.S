@@ -62,11 +62,7 @@ suspend_t_wtwrsths:
 #define SP_REGREAD      (STACK_EXTEND + 10)
 #define SP_REGWRITE     (STACK_EXTEND + 11)
 
-#include "./included/XUD_Token_Out.S"
-#include "./included/XUD_Token_Ping.S"
-#include "./included/XUD_Token_In.S"
-#include "./included/XUD_Token_Setup.S"
-#include "./included/XUD_Token_SOF.S"
+
 
 
 
@@ -193,6 +189,13 @@ writesuspendvar:
 .globl XUD_LLD_IoLoop
 .cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
 .text
+
+// Note, included here so in same elimination blocks to avoid long jumps 
+#include "./included/XUD_Token_Out.S"
+#include "./included/XUD_Token_Ping.S"
+#include "./included/XUD_Token_In.S"
+#include "./included/XUD_Token_Setup.S"
+#include "./included/XUD_Token_SOF.S"
 
 .align 4
 .skip 0

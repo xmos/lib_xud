@@ -6,7 +6,7 @@
 
 .align 4
 .skip 0
-.cc_top Pid_Out.func, Pid_Out
+//.cc_top Pid_Out.func, Pid_Out
 Pid_Out:
 #ifdef ARCH_L
     inpw       r10, res[RXD], 8;                // Read EP Number */
@@ -152,4 +152,4 @@ OutDataTimeOut:
 
 
 
-.cc_bottom Pid_Out.func
+//.cc_bottom Pid_Out.func

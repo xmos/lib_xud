@@ -3,7 +3,7 @@
 
 .align 4
 .skip 0
-.cc_top Pid_Ping.func, Pid_Ping
+//.cc_top Pid_Ping.func, Pid_Ping
 Pid_Ping:
 #ifdef ARCH_L
     inpw      r10, res[RXD], 8;                 // Read EP Number
@@ -34,4 +34,4 @@ PrimaryBufferFull_PING:                         // Send NAK
   outpw        res[TXD], r11, 8
   bu           NextTokenAfterPing
 
-.cc_bottom Pid_Ping.func
+//.cc_bottom Pid_Ping.func

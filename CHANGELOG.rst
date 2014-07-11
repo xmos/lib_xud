@@ -1,6 +1,10 @@
 sc_xud Change Log
 =================
 
+2.2.1
+-----
+    * RESOLVED:   Slight optimisations (long jumps replaced with short) to aid inter-packet gaps.
+
 2.2.0
 -----
     * CHANGE:     Timer usage optimisation - usage reduced by one.

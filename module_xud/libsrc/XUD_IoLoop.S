@@ -190,7 +190,7 @@ writesuspendvar:
 .cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
 .text
 
-// Note, included here so in same elimination blocks to avoid long jumps 
+// Note, included here so in same elimination blocks to avoid long jumps
 #include "./included/XUD_Token_Out.S"
 #include "./included/XUD_Token_Ping.S"
 #include "./included/XUD_Token_In.S"

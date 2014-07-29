@@ -507,7 +507,8 @@ inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  * \brief   Select handler function for receiving OUT endpoint data in a select.
  * \param   c        The chanend related to the endpoint
  * \param   ep       The OUT endpoint identifier (created by ``XUD_InitEp``).
- * \param   length   Passed by reference. The number of bytes written to the buffer,
+ * \param   length   Passed by reference. The number of bytes written to the buffer (that was passed into 
+ *                   XUD_SetReady_Out())
  * \param   result   XUD_Result_t passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 #pragma select handler
@@ -518,7 +519,6 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
  * \param   c        The chanend related to the endpoint
  * \param   ep       The IN endpoint identifier (created by ``XUD_InitEp``).
  * \param   result   Passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
-
  */
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));

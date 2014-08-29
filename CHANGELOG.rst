@@ -5,6 +5,12 @@ sc_xud Change Log
 -----
     * CHANGE:     Header file comment clarification only
 
+  * Changes to dependencies:
+
+    - sc_usb: 1.0.3rc0 -> 1.0.4alpha0
+
+      + ADDED:      Structs for Audio Class 2.0 Mixer and Extension Units
+
 2.2.1
 -----
     * RESOLVED:   Slight optimisations (long jumps replaced with short) to aid inter-packet gaps.
@@ -13,7 +19,7 @@ sc_xud Change Log
 -----
     * CHANGE:     Timer usage optimisation - usage reduced by one.
     * CHANGE:     OTG Flags register explicitly cleared at start up - useful if previously running
-                  in host mode after a soft-reboot.     
+                  in host mode after a soft-reboot.
 
 2.1.1
 -----
@@ -22,13 +28,13 @@ sc_xud Change Log
 2.1.0
 -----
     * CHANGE:     XUD no longer takes a additional chanend parameter for enabling USB test-modes.
-                  Test-modes are now enabled via a XUD_SetTestMode() function using a chanend 
-                  relating to Endpoint 0. This change was made to reduce chanend usage only.  
+                  Test-modes are now enabled via a XUD_SetTestMode() function using a chanend
+                  relating to Endpoint 0. This change was made to reduce chanend usage only.
 
 2.0.1
 -----
-    * RESOLVED:   (Minor) Error when building module_xud in xTimeComposer due to invalid project 
-                  files. 
+    * RESOLVED:   (Minor) Error when building module_xud in xTimeComposer due to invalid project
+                  files.
 
 2.0.0
 -----

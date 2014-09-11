@@ -1,4 +1,0 @@
-This directory contains the XMOS USB Device (XUD) library. It implements the low-level
-USB protocol with an API to communicate data to and from the USB
-host. Documentation is available on the http://www.xmos.com/
-

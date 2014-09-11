@@ -463,7 +463,7 @@ XUD_ClearStallByAddr_OUT:
 /* R0: ep number */
 .cc_top XUD_ResetEpStateByAddr.func
 XUD_ResetEpStateByAddr:
-    ldc         r11, 0x80
+    ldc         r1, 0x80                        // Check for IN bit
     and         r2, r0, r1
     bf          r2, XUD_ResetEpStateByAddr_OUT
     ldc         r1, USB_PIDn_DATA0
@@ -475,7 +475,7 @@ XUD_ResetEpStateByAddr_OUT:
     ldc         r1, USB_PID_DATA0
 #endif
 XUD_ResetEpStateByAddr_:
-    zext        r0, 7                           // Check for IN bit set
+    zext        r0, 7                           // Always zext for a bit of safety...                          
     bf          r2, NoOffset
     ldaw        r0, r0[4]                       // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
 NoOffset:

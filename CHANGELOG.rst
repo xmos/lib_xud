@@ -1,6 +1,12 @@
 sc_xud Change Log
 =================
 
+(HEAD)
+------
+    * RESOLVED:   (Minor) XUD_ResetEpStateByAddr() could operate on corresponding OUT endpoint
+                  instead of the desired IN endpoint address as passed into the function (and 
+                  vice versa)
+                  
 2.2.2
 -----
     * CHANGE:     Header file comment clarification only

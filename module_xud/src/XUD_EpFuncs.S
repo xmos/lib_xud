@@ -475,7 +475,7 @@ XUD_ResetEpStateByAddr_OUT:
     ldc         r1, USB_PID_DATA0
 #endif
 XUD_ResetEpStateByAddr_:
-    zext        r0, 7                           // Always zext for a bit of safety...                          
+    zext        r0, 7                           // Always zext for a bit of safety...
     bf          r2, NoOffset
     ldaw        r0, r0[4]                       // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
 NoOffset:

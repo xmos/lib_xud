@@ -1,6 +1,10 @@
 sc_xud Change Log
 =================
 
+2.2.4
+-----
+    * RESOLVED:   (L/G series only) Potential for lock-up when waiting for USB clock on startup.
+                  (Port buffers enabled on USB clock port)
 2.2.3
 ------
     * RESOLVED:   (Minor) XUD_ResetEpStateByAddr() could operate on corresponding OUT endpoint

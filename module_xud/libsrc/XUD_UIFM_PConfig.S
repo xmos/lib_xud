@@ -34,13 +34,15 @@
 .type XUD_UIFM_PortConfig, @function
 
 .cc_top XUD_UIFM_PortConfig.function
-.align 2
 XUD_UIFM_PortConfig:
   entsp     16
   stw       r10, sp[1]
   stw       r9, sp[2]
   stw       r8, sp[3]
   stw       r7, sp[4]
+
+EnableClockBuffers:
+  setc      res[r0], XS1_SETC_BUF_BUFFERS    // Set port to buffered strobed master
 
 InvertUsbClock:
   setc      res[r0], XS1_SETC_INV_INVERT

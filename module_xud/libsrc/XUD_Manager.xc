@@ -281,7 +281,7 @@ extern clock rx_usb_clk;
 #define reg_write_port null
 #define reg_read_port null
 #else
-extern in port  p_usb_clk;
+extern in buffered port:32  p_usb_clk;
 extern out port reg_write_port;
 extern in  port reg_read_port;
 extern in  port flag0_port;

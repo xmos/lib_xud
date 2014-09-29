@@ -41,10 +41,10 @@ XUD_UIFM_PortConfig:
   stw       r8, sp[3]
   stw       r7, sp[4]
 
-EnableClockBuffers:
-  setc      res[r0], XS1_SETC_BUF_BUFFERS    // Set port to buffered strobed master
-  ldc       r11, 32  				         // Set transfer width to 32 bits
-  settw     res[r0], r11
+//EnableClockBuffers:
+  //setc      res[r0], XS1_SETC_BUF_BUFFERS    // Set port to buffered strobed master
+  //ldc       r11, 32  				         // Set transfer width to 32 bits
+  //settw     res[r0], r11
 
 InvertUsbClock:
   setc      res[r0], XS1_SETC_INV_INVERT

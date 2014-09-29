@@ -5,7 +5,7 @@
 #include "XUD_Support.h"
 
 // Sets up the ports for use with UIFM
-void XUD_UIFM_PortConfig(in port clk_port, out port reg_write_port, in port reg_read_port, in port flag0_port, in port flag1_port, in port flag2_port, out port txd_port, in port rxd_port);
+void XUD_UIFM_PortConfig(buffered in port:32 clk_port, out port reg_write_port, in port reg_read_port, in port flag0_port, in port flag1_port, in port flag2_port, out port txd_port, in port rxd_port);
 
 // Enables UIFM in the passed mode
 unsigned XUD_UIFM_Enable(unsigned mode);

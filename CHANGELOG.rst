@@ -3,8 +3,9 @@ sc_xud Change Log
 
 2.2.4
 -----
-    * RESOLVED:   Potential for lock-up when waiting for USB clock on startup. This is avoided by 
-                  enabling port buffering on the USB clock port. Affects L/G series only.
+    * RESOLVED:   (Minor) Potential for lock-up when waiting for USB clock on startup. This is is
+                  avoided by enabling port buffering on the USB clock port. Affects L/G series only.
+
 2.2.3
 ------
     * RESOLVED:   (Minor) XUD_ResetEpStateByAddr() could operate on corresponding OUT endpoint

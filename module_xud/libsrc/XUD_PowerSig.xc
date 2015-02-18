@@ -13,8 +13,15 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_UIFM_Defines.h"
 
+#ifdef ARCH_X200
+#include "xs2_su_registers.h"
+#endif
+
 #ifdef ARCH_S
 #include "xa1_registers.h"
+#endif
+
+#if defined(ARCH_S) || defined(ARCH_X200)
 #include "glx.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
@@ -36,7 +43,7 @@ extern in  port flag0_port;
 extern in  port flag1_port;
 extern in  port flag2_port;
 extern out port p_usb_txd;
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
 extern in buffered port:32 p_usb_rxd;
 #define reg_read_port null
 #define reg_write_port null
@@ -110,9 +117,9 @@ int XUD_Init()
 
 
 
-#ifdef ARCH_S
-#include <xa1_registers.h>
-#endif
+//#ifdef ARCH_S
+//#include <xa1_registers.h>
+//#endif
 /** XUD_DoSuspend
   * @brief  Function called when device is suspended. This should include any clock down code etc.
   * @return True if reset detected during resume */
@@ -366,7 +373,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
         if(pwrConfig == XUD_PWR_SELF)
         {
             unsigned x;
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
             read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
             if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
 #elif ARCH_L
@@ -381,7 +388,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             else
             {
 
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
                 write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
 #else
                 XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x9);
@@ -391,7 +398,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
         }
 
         /* Read flags reg... */
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
         read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
 #else
         tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
@@ -419,7 +426,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             /* Wait for end of resume (SE0) */
             while(1)
             {
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
                 read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
 #else
                 tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
@@ -434,7 +441,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                     /* Resume detected from suspend: switch back to HS (suspendm high) and continue...*/
                     if(g_curSpeed == XUD_SPEED_HS)
                     {
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
                         write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
 #else
                         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
@@ -443,7 +450,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 
                     while(1)
                     {
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
                         read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
 #else
                         tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);

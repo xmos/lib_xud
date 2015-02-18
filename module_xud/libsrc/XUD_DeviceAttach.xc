@@ -8,8 +8,15 @@
 #include "xud.h"
 
 #ifdef ARCH_S
-#include <xs1_su.h>
 #include "xa1_registers.h"
+#endif
+
+#ifdef ARCH_X200
+#include "xs2_su_registers.h"
+#endif
+
+#if defined(ARCH_S) || defined(ARCH_X200)
+#include <xs1_su.h>
 #include "glx.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
@@ -18,7 +25,7 @@ extern tileref USB_TILE_REF;
 extern in  port flag0_port;
 extern in  port flag1_port;
 extern in  port flag2_port;
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
 extern out buffered port:32 p_usb_txd;
 #define reg_write_port null
 #define reg_read_port null
@@ -35,6 +42,9 @@ extern out port p_usb_txd;
 
 extern int resetCount;
 
+#ifdef ARCH_X200
+#define ARCH_S 1
+#endif
 
 /* Assumptions:
  * - In full speed mode
@@ -61,7 +71,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    // DEBUG - write to ulpi reg 0x54. This is:
    // opmode = 0b10, termsel = 1, xcvrsel = 0b00;
 
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1010);
 #else
    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
@@ -77,6 +87,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
    for (int i = 0; i < 16000; i++) {   // 16000 words @ 480 MBit = 1.066 ms
        p_usb_txd <: 0;
+   
    }
 
    //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x04);
@@ -89,7 +100,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
        select {
        case t when timerafter(start_time + INVALID_DELAY) :> void:
            /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,
                              XS1_UIFM_FUNC_CONTROL_REG,
                              (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT)
@@ -109,7 +120,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
                if(pwrConfig == XUD_PWR_SELF) {
                    unsigned x;
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
                    read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,
                                     XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                    if(!(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))) {
@@ -144,7 +155,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
                    // Three pairs of KJ received... de-assert TermSelect...
                    // (and opmode = 0, suspendm = 1)
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
                    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,
                                      XS1_UIFM_FUNC_CONTROL_REG, 0b0000);
 #else

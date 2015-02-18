@@ -10,8 +10,15 @@
 #include "xud.h"
 
 #ifdef ARCH_S
-#include "glx.h"
 #include "xa1_registers.h"
+#endif
+
+#ifdef ARCH_X200
+#include "xs2_su_registers.h"
+#endif
+
+#if defined(ARCH_S) || defined(ARCH_X200)
+#include "glx.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
@@ -19,7 +26,7 @@ extern tileref USB_TILE_REF;
 extern in  port flag0_port;
 extern in  port flag1_port;
 extern in  port flag2_port;
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
 extern out buffered port:32 p_usb_txd;
 #define reg_write_port null
 #define reg_read_port null
@@ -57,7 +64,7 @@ unsigned int test_packet[TEST_PACKET_LEN] =
 
 int XUD_TestMode_TestJ ()
 {
-#ifdef ARCH_L
+#if defined(ARCH_L) || defined(ARCH_X200)
 
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
@@ -75,7 +82,7 @@ int XUD_TestMode_TestJ ()
 
 int XUD_TestMode_TestK ()
 {
-#ifdef ARCH_L
+#if defined(ARCH_L) || defined(ARCH_X200)
 
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
@@ -123,7 +130,7 @@ int XUD_UsbTestModeHandler()
     {
         case WINDEX_TEST_J:
             //Function Control Reg. Suspend: 1 Opmode 10
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
             write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
@@ -137,7 +144,7 @@ int XUD_UsbTestModeHandler()
 
         case WINDEX_TEST_K:
             //Function Control Reg. Suspend: 1 Opmode 10
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
             write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);

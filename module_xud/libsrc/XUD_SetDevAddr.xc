@@ -5,6 +5,13 @@
 #include "xud.h"
 #ifdef ARCH_S
 #include <xa1_registers.h>
+#endif
+
+#ifdef ARCH_X200
+#include "xs2_su_registers.h"
+#endif
+
+#if defined(ARCH_S) || defined(ARCH_X200)
 #include <print.h>
 #include "glx.h"
 extern unsigned get_tile_id(tileref ref);
@@ -19,15 +26,12 @@ void XUD_SetCrcTableAddr(unsigned addr);
   */
 XUD_Result_t XUD_SetDevAddr(unsigned addr)
 {
-#ifdef ARCH_S
     unsigned data;
-#endif
-
 #ifdef ARCH_L
     /* Set device address in UIFM */
-#ifdef ARCH_S
+#if defined(ARCH_S) || defined(ARCH_X200)
     write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, addr);
-    read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, data);
+    //read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, data);
 #else
     /* RegWrite_ loads write port from dp to avoid parallel usage checks */
     /* TODO this should really be locked for mutual exclusion */

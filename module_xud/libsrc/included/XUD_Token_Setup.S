@@ -117,8 +117,8 @@ Pid_Setup:
     inpw      r10, res[RXD], 8;                        /* Read EP Number */
     shr       r10, r10, 24;                            /* Shift off junk */
 
-    //in         r4, res[r1];
-    //bt         r4, InvalidToken;                       /* If VALID_TOKEN not high, ignore token - PORT INVERTED*/
+    in         r4, res[r1];
+    bt         r4, InvalidToken;                       /* If VALID_TOKEN not high, ignore token - PORT INVERTED*/
 #else
     #include "XUD_G_Crc.S"
 #endif

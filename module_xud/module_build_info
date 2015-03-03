@@ -4,7 +4,9 @@
 # be built
 
 LIBRARIES =  xud_u xud_l xud_g xud_x200
-#xud_s_sim xud_g
+
+#Default is xs1b
+LIB_ARCH_xud_x200 = xs2a
 
 # You can set flags specifically for your module by using the MODULE_XCC_FLAGS
 # variable. So the following
@@ -34,7 +36,7 @@ LIB_XCC_FLAGS_xud_u_lomem =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-l
 LIB_XCC_FLAGS_xud_g = -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DARCH_G -DXUD_FULL_PIDTABLE=1 -fschedule -march=xs1b 
 
 #xCORE-200 Lib
-LIB_XCC_FLAGS_xud_x200 = -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -DARCH_L -DARCH_X200 -save-temps -march=xs2a
+LIB_XCC_FLAGS_xud_x200 = -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -DARCH_L -DARCH_X200 -save-temps
 
 DEPENDENT_MODULES = module_usb_shared
 

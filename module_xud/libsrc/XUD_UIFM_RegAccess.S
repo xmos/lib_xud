@@ -3,7 +3,9 @@
   * @author    Ross Owen, XMOS Limited
   */
 
-#define PS_XCORE_CTRL0 0x20b
+#ifndef XS1_PS_XCORE_CTRL0 
+#define XS1_PS_XCORE_CTRL0 0x20b
+#endif
 
 #include "XUD_UIFM_Defines.h"
 #include <xs1.h>
@@ -16,7 +18,6 @@
 .align    4
 // void XUD_UIFM_Enable (unsigned mode);
 XUD_UIFM_Enable:
-
   ldc       r1, XS1_PS_XCORE_CTRL0
   set       ps[r1], r0
 

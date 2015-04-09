@@ -1,8 +1,8 @@
 sc_xud Change Log
 =================
 
-2.3
----
+2.3.0
+-----
     * ADDED:      Support for XCORE-200 (libxud_x200.a)
     * CHANGE:     Compatibilty fixes for XMOS toolset version 14 (dual-issue support etc)  
 

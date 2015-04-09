@@ -1,6 +1,11 @@
 sc_xud Change Log
 =================
 
+2.3
+---
+    * ADDED:      Support for XCORE-200 (libxud_x200.a)
+    * CHANGE:     Compatibilty fixes for XMOS toolset version 14 (dual-issue support etc)  
+
 2.2.4
 -----
     * RESOLVED:   (Minor) Potential for lock-up when waiting for USB clock on startup. This is is

@@ -23,9 +23,7 @@
 #include "xud_defines.h"
 
 #if !defined(USB_TILE)
-//#error
-// TODO TODO
-  #define USB_TILE tile[1]
+  #define USB_TILE tile[0]
 #endif
 
 #if defined(PORT_USB_CLK)

@@ -3,7 +3,7 @@
   * @author    Ross Owen, XMOS Limited
   */
 
-#ifndef XS1_PS_XCORE_CTRL0 
+#ifndef XS1_PS_XCORE_CTRL0
 #define XS1_PS_XCORE_CTRL0 0x20b
 #endif
 

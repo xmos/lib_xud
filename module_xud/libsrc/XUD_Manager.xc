@@ -313,12 +313,12 @@ in port p_usb_dir = XS1_PORT_1G;
 int xud_counter = 0;
 #endif
 
-#if 0 
+#if 0
 //ARCH_X200
-static inline int setup_usb_ports () 
+static inline int setup_usb_ports ()
 {
   //setps(XS1_PS_XCORE_CTRL0,XCORE_CTRL0_USB_ENABLE_SET(0,1));
-  
+
   // Enable port muxing for USB/IFM
   setps(XS1_PS_XCORE_CTRL0,2);
 
@@ -330,9 +330,9 @@ static inline int setup_usb_ports ()
   // Handshaken ports need USB clock
   configure_clock_src (tx_usb_clk, p_usb_clk);
   configure_clock_src (rx_usb_clk, p_usb_clk);
-  
-  //this along with the following delays forces the clock 
-  //to the ports to be effectively controlled by the 
+
+  //this along with the following delays forces the clock
+  //to the ports to be effectively controlled by the
   //previous usb clock edges
   set_port_inv(p_usb_clk);
   set_port_sample_delay(p_usb_clk);
@@ -342,8 +342,8 @@ static inline int setup_usb_ports ()
 
   //this delay controls the launch of data.
   set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY);
-  
-  //this delay th capture of the rdyIn and data. 
+
+  //this delay th capture of the rdyIn and data.
   set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
   set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
 
@@ -354,28 +354,28 @@ static inline int setup_usb_ports ()
   return 0;
 };
 
-static inline int bringup_uifm (int mode) 
+static inline int bringup_uifm (int mode)
 {
     int XCVRSEL;
     int TERMSEL;
     int OPMODE;
     unsigned rdata1=0;
-  
-    // Enable USB periph 
+
+    // Enable USB periph
    // write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, (1<<XS1_GLX_CFG_USB_CLK_EN_BASE));
 
 // Enable USB
  setps(XS1_PS_XCORE_CTRL0,XS1_XCORE_CTRL0_USB_ENABLE_SET(0,1));
-      
-   // Enable USB periph and UIFM 
-   write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, ((1<<XS1_GLX_CFG_USB_EN_BASE) | 
+
+   // Enable USB periph and UIFM
+   write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, ((1<<XS1_GLX_CFG_USB_EN_BASE) |
                                                          (1<<XS1_GLX_CFG_USB_CLK_EN_BASE) ) );
 
 
 
     //printhexln(1<<XS1_GLX_CFG_USB_CLK_EN_BASE);
     //read_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, rdata1);
-    
+
     //printhexln(rdata1);
 
     /* Take phy out of reset, keep suspend high (Note phy is in reset on startup) */
@@ -388,7 +388,7 @@ static inline int bringup_uifm (int mode)
     t when timerafter(x+100000):> int _;
 
     write_periph_word((USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, (0<<XS1_UIFM_PHY_CONTROL_FORCERESET));
-        
+
     write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, ((1<<XS1_GLX_CFG_USB_EN_BASE)| (1<<XS1_GLX_CFG_USB_CLK_EN_BASE)));
     read_periph_word(usb_tile, XS1_GLX_PERIPH_USB_ID, 0x40, rdata1);
 
@@ -397,21 +397,21 @@ static inline int bringup_uifm (int mode)
     /* Enable UIFM */
 
     /*  Wait some time for PLL to lock... */
-    while (rdata1 < 4) 
+    while (rdata1 < 4)
     {
         read_periph_word((USB_TILE_REF), 1, 0x40, rdata1);
         rdata1 = rdata1 >> 4;
-    
+
         printintln(rdata1);
-        }   
-         
+        }
+
     /* Set device address to zero */
     write_periph_word((USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
-  
+
     // turn on do-tokens, checktokens and decodelinestate
-    write_periph_word((USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, ((1<<XS1_UIFM_IFM_CONTROL_DOTOKENS) | 
-                                                                                 (1<<XS1_UIFM_IFM_CONTROL_CHECKTOKENS) | 
-                                                                                 (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE) | 
+    write_periph_word((USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, ((1<<XS1_UIFM_IFM_CONTROL_DOTOKENS) |
+                                                                                 (1<<XS1_UIFM_IFM_CONTROL_CHECKTOKENS) |
+                                                                                 (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE) |
                                                                                  (1<<XS1_UIFM_IFM_CONTROL_SOFISTOKEN)));
 
     XCVRSEL = (mode<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT);
@@ -422,11 +422,11 @@ static inline int bringup_uifm (int mode)
     write_periph_word((USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, XCVRSEL | TERMSEL | OPMODE);
 
     /* Set up flags */
-    write_periph_word((USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG,  
-            (( 1 << XS1_UIFM_IFM_FLAGS_RXERROR) << 16) 
+    write_periph_word((USB_TILE_REF), XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG,
+            (( 1 << XS1_UIFM_IFM_FLAGS_RXERROR) << 16)
             | (( 1<< XS1_UIFM_IFM_FLAGS_RXACTIVE) << 8)
-            | (1 << XS1_UIFM_IFM_FLAGS_NEWTOKEN)); 
-   
+            | (1 << XS1_UIFM_IFM_FLAGS_NEWTOKEN));
+
     return 0;
 };
 

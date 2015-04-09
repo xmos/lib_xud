@@ -43,7 +43,7 @@
                                 </outputEntries>
                             </builder>
                             <tool id = "com.xmos.cdt.xc.compiler.81766125" name="com.xmos.cdt.xc.compiler" superClass="com.xmos.cdt.xc.compiler">
-                                <option id = "com.xmos.c.compiler.option.defined.symbols.45123304" name="com.xmos.c.compiler.option.defined.symbols" superClass="com.xmos.c.compiler.option.defined.symbols" valueType="definedSymbols">
+                                <option id = "com.xmos.xc.compiler.option.defined.symbols.45123304" name="com.xmos.xc.compiler.option.defined.symbols" superClass="com.xmos.xc.compiler.option.defined.symbols" valueType="definedSymbols">
                                     <listOptionValue builtIn="false" value="__SHRT_MAX__=32767"/>
                                     <listOptionValue builtIn="false" value="__SCHAR_MAX__=127"/>
                                     <listOptionValue builtIn="false" value="__SIZE_TYPE__=unsigned"/>
@@ -161,6 +161,7 @@
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs2a}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
@@ -283,6 +284,7 @@
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs2a}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />
@@ -411,6 +413,7 @@
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs2a}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/glx_support}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc/included}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/libsrc}&quot;' />

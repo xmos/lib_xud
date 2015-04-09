@@ -87,7 +87,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
    for (int i = 0; i < 16000; i++) {   // 16000 words @ 480 MBit = 1.066 ms
        p_usb_txd <: 0;
-   
+
    }
 
    //XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, 0x04);

@@ -1,9 +1,12 @@
+// Copyright (c) 2015, XMOS Ltd, All rights reserved
 /** XUD_EpFuncs.S
   * @brief     Functions for data transfer to/from XUD
   * @author    Ross Owen, XMOS Limited
   */
 #include "usb_defs.h"
 #include "xud_defines.h"
+
+
 
 .set too_many_cores, main.maxcores > 6
 .assert 0, too_many_cores, "Warning: More than 6 cores used on a tile. Ensure this is not the case on tile running XUD."
@@ -13,10 +16,14 @@
 .globl XUD_GetSetupData
 .type XUD_GetSetupData, @function
 .cc_top XUD_GetSetupData.func
-
+.align 4
 XUD_GetSetupData:
-
-    entsp       4
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 4
+#else
+  entsp 4
+#endif
     stw         r4, sp[1]
     stw         r10, sp[2]
 
@@ -112,14 +119,160 @@ XUD_GetSetupData_Reset:
 .set XUD_GetSetupData.maxchanends, 0
 .set XUD_GetSetupData.maxtimers, 0
 .set XUD_GetSetupData.maxcores, 1
+.globl XUD_GetSetupData.locnoside
+.globl XUD_GetSetupData.locnochandec
+.globl XUD_GetSetupData.locnoglobalaccess
+.globl XUD_GetSetupData.locnointerfaceaccess
+.globl XUD_GetSetupData.locnonotificationselect
+.set XUD_GetSetupData.locnoside, 1
+.set XUD_GetSetupData.locnochandec, 1
+.set XUD_GetSetupData.locnoglobalaccess, 1
+.set XUD_GetSetupData.locnointerfaceaccess, 1
+.set XUD_GetSetupData.locnonotificationselect, 1
+
+
+//void XUD_GetSetupData_Select(chan c,XUD_ep e_out, unsigned &length, XUD_Result_t &result);
+//                              r0            r1                 r2     r3
+.globl XUD_GetSetupData_Select
+.type XUD_GetSetupData_Select, @function
+.cc_top XUD_GetSetupData_Select.func
+.align 4
+XUD_GetSetupData_Select:
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 4
+#else
+  entsp       4
+#endif
+    stw         r4, sp[1]
+    stw         r10, sp[2]
+
+XUD_GetSetupData_Select_Retry:
+    testct     r11, res[r0]                    // Test whether there is a RESET
+    bt         r11, XUD_GetSetupData_Select_Reset
+
+XUD_GetSetupData_Select_NoReq:                         // Entry for _NoReq
+    in         r4, res[r0]                     // Input packet "word" length
+    testct     r11, res[r0]                    // CT means we got a SETUP (not OUT).
+    bf         r11, XUD_GetSetupData_Select_GotOut
+    inct       r11, res[r0]                    // Always get 0 (expect 8 bytes data)
+
+//XUD_GetSetupData_Select_CheckPid:
+                                                // We expect data0 else something gone wrong...
+                                                // TODO..
+
+XUD_GetSetupData_Select_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
+#if (XUD_SERIES_SUPPORT==3)
+    ldc         r11, USB_PIDn_DATA1
+#else
+    ldc         r11, USB_PID_DATA1
+#endif
+    stw         r11, r1[4]                      // Reset OUT toggle
+
+    ldc         r11, 640                        // Assuming MAX_NUM_EPS is 16 and struct size is 40 here!
+    add         r11, r1, r11
+
+    ldc         r0, USB_PIDn_DATA1
+    stw         r0, r11[4]                     // Reset IN toggle
+
+    ldc         r0, 8                           // Return 8 byte length (TODO really could return actual length here)
+    stw         r0, r2[0]
+
+    ldc         r0, 0                           // Return no error XUD_RES_OKAY
+    stw         r0, r3[0]
+    ldw         r10, sp[2]
+    ldw         r4, sp[1]
+    retsp       4
+
+XUD_GetSetupData_Select_GotOut:                        // Got an OUT instead not a SETUP
+    int         r11, res[r0]
+
+    shl         r4, r4, 2                       // Num received words to bytes
+    add         r4, r11, r4                     // r11: Total bytes received (Note this includes 2 byte crc)
+
+XUD_GetSetupData_Select_CheckPid:
+    ldw         r11, r1[6]                      // Load received PID from EP structure
+    shr         r11, r11, 24                    // Shift down due to inpw
+    ldw         r0, r1[4]                       // Load expected PID
+
+    xor         r11, r0, r11                    // Do the comparison
+    bt          r11, XUD_GetSetupData_Select_BadPkt          // Ignore packet...
+
+XUD_GetSetupData_Select_PidOkay:
+    ldw         r11, r1[5]                      // Load EP type
+    bf          r11, XUD_GetSetupData_Select_ReturnOk  // Jump over PID toggle for ISO
+
+XUD_GetSetupData_Select_PidToggle:
+    ldc         r11, 8
+    xor         r0, r0, r11
+    stw         r0, r1[4]
+
+XUD_GetSetupData_Select_ReturnOk:
+    sub         r0, r4, 2                       // Length correction for CRC correction (return val in r2[0])
+    stw         r0, r2[0]
+    ldc         r11, 0
+    stw         r11, r3[0]
+
+    ldw         r10, sp[2]
+    ldw         r4, sp[1]
+    retsp       4
+
+
+XUD_GetSetupData_Select_BadPkt:
+    ldc         r0, 0                           // Return 0 length to be ultra safe and tidy..
+    stw         r0, r2[0]                       // Return length (note: passed by ref)
+    ldc         r0, 1
+    stw         r0, r3[0]                       // Return RES_ERR (note: passed by ref)
+    ldw         r10, sp[2]
+    ldw         r4, sp[1]
+    retsp       4
+
+
+XUD_GetSetupData_Select_Reset:
+    mkmsk      r0, 32                           // Return -1 as result
+    stw        r0, r3[0]
+    ldw        r10, sp[2]
+    ldw        r4, sp[1]
+    retsp      4
+
+.size XUD_GetSetupData_Select, .-XUD_GetSetupData_Select
+.cc_bottom XUD_GetSetupData_Select.func
+.globl XUD_GetSetupData_Select.nstackwords
+.globl XUD_GetSetupData_Select.maxchanends
+.globl XUD_GetSetupData_Select.maxtimers
+.globl XUD_GetSetupData_Select.maxcores
+.set XUD_GetSetupData_Select.nstackwords, 4
+.set XUD_GetSetupData_Select.maxchanends, 0
+.set XUD_GetSetupData_Select.maxtimers, 0
+.set XUD_GetSetupData_Select.maxcores, 1
+.globl XUD_GetSetupData_Select.locnoside
+.globl XUD_GetSetupData_Select.locnochandec
+.globl XUD_GetSetupData_Select.locnoglobalaccess
+.globl XUD_GetSetupData_Select.locnointerfaceaccess
+.globl XUD_GetSetupData_Select.locnonotificationselect
+.set XUD_GetSetupData_Select.locnoside, 1
+.set XUD_GetSetupData_Select.locnochandec, 1
+.set XUD_GetSetupData_Select.locnoglobalaccess, 1
+.set XUD_GetSetupData_Select.locnointerfaceaccess, 1
+.set XUD_GetSetupData_Select.locnonotificationselect, 1
+
+
+
+
 
 //int XUD_GetData(XUD_ep c, unsigned char buffer[], unsigned &length);
 //                r0        r1                      r2
 .globl XUD_GetData
 .type XUD_GetData, @function
 .cc_top XUD_GetData.func
+.align 4
 XUD_GetData:
-    entsp       4
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 4
+#else
+  entsp       4
+#endif
     stw         r10, sp[1]
     mov         r11, r1
 
@@ -194,6 +347,16 @@ Return:
 .set XUD_GetData.maxchanends, 0
 .set XUD_GetData.maxtimers, 0
 .set XUD_GetData.maxcores, 1
+.globl XUD_GetData.locnoside
+.globl XUD_GetData.locnochandec
+.globl XUD_GetData.locnoglobalaccess
+.globl XUD_GetData.locnointerfaceaccess
+.globl XUD_GetData.locnonotificationselect
+.set XUD_GetData.locnoside, 1
+.set XUD_GetData.locnochandec, 1
+.set XUD_GetData.locnoglobalaccess, 1
+.set XUD_GetData.locnointerfaceaccess, 1
+.set XUD_GetData.locnonotificationselect, 1
 
 
 // Note: Assumes startIndex is word aligned
@@ -202,8 +365,14 @@ Return:
 .globl XUD_SetData
 .type XUD_SetData, @function
 .cc_top XUD_SetData.func
+.align 4
 XUD_SetData:
-    entsp       7
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 8
+#else
+  entsp       8
+#endif
     stw         r5, sp[5]
     stw         r10, sp[6]
 
@@ -262,7 +431,7 @@ XUD_SetData_Return:
     ldw         r4, sp[0]
     ldw         r5, sp[5]
     ldw         r10, sp[6]
-    retsp       7
+    retsp       8
 
 XUD_SetData_Reset:
     mkmsk       r0, 32                           // Return -1
@@ -274,17 +443,32 @@ XUD_SetData_Reset:
 .globl XUD_SetData.maxchanends
 .globl XUD_SetData.maxtimers
 .globl XUD_SetData.maxcores
-.set XUD_SetData.nstackwords, 7
+.set XUD_SetData.nstackwords, 8
 .set XUD_SetData.maxchanends, 0
 .set XUD_SetData.maxtimers, 0
 .set XUD_SetData.maxcores, 1
+.globl XUD_SetData.locnoside
+.globl XUD_SetData.locnochandec
+.globl XUD_SetData.locnoglobalaccess
+.globl XUD_SetData.locnointerfaceaccess
+.globl XUD_SetData.locnonotificationselect
+.set XUD_SetData.locnoside, 1
+.set XUD_SetData.locnochandec, 1
+.set XUD_SetData.locnoglobalaccess, 1
+.set XUD_SetData.locnointerfaceaccess, 1
+.set XUD_SetData.locnonotificationselect, 1
 
 //void XUD_GetData_Select(chan c, XUD_ep ep, unsigned &datalength, XUD_Result_t &result);
 //                        r0,     r1         r2                    r3
 .globl XUD_GetData_Select
 .type XUD_GetData_Select, @function
 .cc_top XUD_GetData_Select.func
+.align 4
 XUD_GetData_Select:
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 0
+#endif
     testct     r11, res[r0]
     bt         r11, XUD_GetData_Select_Return_Reset
     in         r11, res[r0]                     // Input packet "word" length
@@ -353,13 +537,29 @@ XUD_GetData_Select_Return_Reset:
 .set XUD_GetData_Select.maxchanends, 0
 .set XUD_GetData_Select.maxtimers, 0
 .set XUD_GetData_Select.maxcores, 1
+.globl XUD_GetData_Select.locnoside
+.globl XUD_GetData_Select.locnochandec
+.globl XUD_GetData_Select.locnoglobalaccess
+.globl XUD_GetData_Select.locnointerfaceaccess
+.globl XUD_GetData_Select.locnonotificationselect
+.set XUD_GetData_Select.locnoside, 1
+.set XUD_GetData_Select.locnochandec, 1
+.set XUD_GetData_Select.locnoglobalaccess, 1
+.set XUD_GetData_Select.locnointerfaceaccess, 1
+.set XUD_GetData_Select.locnonotificationselect, 1
+
 
 //void XUD_SetData_Select(chan c, XUD_ep ep, XUD_Result_t &result);
 //                        r0,     r1         r2
 .globl XUD_SetData_Select
 .type XUD_SetData_Select, @function
 .cc_top XUD_SetData_Select.func
+.align 4
 XUD_SetData_Select:
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 0
+#endif
     testct      r3, res[r0]
     bt          r3, XUD_SetData_Select_Reset
 
@@ -395,13 +595,29 @@ XUD_SetData_Select_Reset:
 .set XUD_SetData_Select.maxchanends, 0
 .set XUD_SetData_Select.maxtimers, 0
 .set XUD_SetData_Select.maxcores, 1
+.globl XUD_SetData_Select.locnoside
+.globl XUD_SetData_Select.locnochandec
+.globl XUD_SetData_Select.locnoglobalaccess
+.globl XUD_SetData_Select.locnointerfaceaccess
+.globl XUD_SetData_Select.locnonotificationselect
+.set XUD_SetData_Select.locnoside, 1
+.set XUD_SetData_Select.locnochandec, 1
+.set XUD_SetData_Select.locnoglobalaccess, 1
+.set XUD_SetData_Select.locnointerfaceaccess, 1
+.set XUD_SetData_Select.locnonotificationselect, 1
+
 
 .globl XUD_SetStallByAddr
 .type XUD_SetStallByAddr, @function
 
 /* R0: ep number */
 .cc_top XUD_SetStallByAddr.func
+.align 4
 XUD_SetStallByAddr:
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 0
+#endif
     ldc         r2, USB_PIDn_STALL
     ldc         r11, 0x80                       // Check for IN bit
     and         r11, r11, r0
@@ -425,6 +641,16 @@ XUD_SetStallByAddr_OUT:
 .set XUD_SetStallByAddr.maxchanends, 0
 .set XUD_SetStallByAddr.maxtimers, 0
 .set XUD_SetStallByAddr.maxcores, 1
+.globl XUD_SetStallByAddr.locnoside
+.globl XUD_SetStallByAddr.locnochandec
+.globl XUD_SetStallByAddr.locnoglobalaccess
+.globl XUD_SetStallByAddr.locnointerfaceaccess
+.globl XUD_SetStallByAddr.locnonotificationselect
+.set XUD_SetStallByAddr.locnoside, 1
+.set XUD_SetStallByAddr.locnochandec, 1
+.set XUD_SetStallByAddr.locnoglobalaccess, 1
+.set XUD_SetStallByAddr.locnointerfaceaccess, 1
+.set XUD_SetStallByAddr.locnonotificationselect, 1
 
 
 .globl XUD_ClearStallByAddr
@@ -432,7 +658,12 @@ XUD_SetStallByAddr_OUT:
 
 /* R0: ep number */
 .cc_top XUD_ClearStallByAddr.func
+.align 4
 XUD_ClearStallByAddr:
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 0
+#endif
     ldc         r2, USB_PIDn_NAK
     ldc         r11, 0x80                       // Check for IN bit
     and         r11, r11, r0
@@ -456,14 +687,29 @@ XUD_ClearStallByAddr_OUT:
 .set XUD_ClearStallByAddr.maxchanends, 0
 .set XUD_ClearStallByAddr.maxtimers, 0
 .set XUD_ClearStallByAddr.maxcores, 1
+.globl XUD_ClearStallByAddr.locnoside
+.globl XUD_ClearStallByAddr.locnochandec
+.globl XUD_ClearStallByAddr.locnoglobalaccess
+.globl XUD_ClearStallByAddr.locnointerfaceaccess
+.globl XUD_ClearStallByAddr.locnonotificationselect
+.set XUD_ClearStallByAddr.locnoside, 1
+.set XUD_ClearStallByAddr.locnochandec, 1
+.set XUD_ClearStallByAddr.locnoglobalaccess, 1
+.set XUD_ClearStallByAddr.locnointerfaceaccess, 1
+.set XUD_ClearStallByAddr.locnonotificationselect, 1
 
 .globl XUD_ResetEpStateByAddr
 .type XUD_ResetEpStateByAddr, @function
 
 /* R0: ep number */
 .cc_top XUD_ResetEpStateByAddr.func
+.align 4
 XUD_ResetEpStateByAddr:
-    ldc         r1, 0x80                        // Check for IN bit
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 0
+#endif
+    ldc         r11, 0x80
     and         r2, r0, r1
     bf          r2, XUD_ResetEpStateByAddr_OUT
     ldc         r1, USB_PIDn_DATA0
@@ -475,7 +721,7 @@ XUD_ResetEpStateByAddr_OUT:
     ldc         r1, USB_PID_DATA0
 #endif
 XUD_ResetEpStateByAddr_:
-    zext        r0, 7                           // Always zext for a bit of safety...
+    zext        r0, 7                           // Check for IN bit set
     bf          r2, NoOffset
     ldaw        r0, r0[4]                       // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
 NoOffset:
@@ -495,13 +741,29 @@ NoOffset:
 .set XUD_ResetEpStateByAddr.maxchanends, 0
 .set XUD_ResetEpStateByAddr.maxtimers, 0
 .set XUD_ResetEpStateByAddr.maxcores, 1
+.globl XUD_ResetEpStateByAddr.locnoside
+.globl XUD_ResetEpStateByAddr.locnochandec
+.globl XUD_ResetEpStateByAddr.locnoglobalaccess
+.globl XUD_ResetEpStateByAddr.locnointerfaceaccess
+.globl XUD_ResetEpStateByAddr.locnonotificationselect
+.set XUD_ResetEpStateByAddr.locnoside, 1
+.set XUD_ResetEpStateByAddr.locnochandec, 1
+.set XUD_ResetEpStateByAddr.locnoglobalaccess, 1
+.set XUD_ResetEpStateByAddr.locnointerfaceaccess, 1
+.set XUD_ResetEpStateByAddr.locnonotificationselect, 1
+
 
 //void XUD_SetTestMode(XUD_ep ep, unsigned testMode);
 .globl XUD_SetTestMode
 .type XUD_SetTestMode, @function
 
 .cc_top XUD_SetTestMode.func
+.align 4
 XUD_SetTestMode:
+#if defined(__XS2A__)
+.issue_mode single
+  ENTSP_lu6 0
+#endif
     ldw         r0, r0[2]                       // Load our chanend ID to use
     outct       res[r0], 1
     chkct       res[r0], 1
@@ -519,6 +781,17 @@ XUD_SetTestMode:
 .set XUD_SetTestMode.maxchanends, 0
 .set XUD_SetTestMode.maxtimers, 0
 .set XUD_SetTestMode.maxcores, 1
+.globl XUD_SetTestMode.locnoside
+.globl XUD_SetTestMode.locnochandec
+.globl XUD_SetTestMode.locnoglobalaccess
+.globl XUD_SetTestMode.locnointerfaceaccess
+.globl XUD_SetTestMode.locnonotificationselect
+.set XUD_SetTestMode.locnoside, 1
+.set XUD_SetTestMode.locnochandec, 1
+.set XUD_SetTestMode.locnoglobalaccess, 1
+.set XUD_SetTestMode.locnointerfaceaccess, 1
+.set XUD_SetTestMode.locnonotificationselect, 1
+
 
 
 

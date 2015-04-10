@@ -709,7 +709,7 @@ XUD_ResetEpStateByAddr:
 .issue_mode single
   ENTSP_lu6 0
 #endif
-    ldc         r11, 0x80
+    ldc         r1, 0x80
     and         r2, r0, r1
     bf          r2, XUD_ResetEpStateByAddr_OUT
     ldc         r1, USB_PIDn_DATA0

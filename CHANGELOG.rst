@@ -1,6 +1,12 @@
 sc_xud Change Log
 =================
 
+2.3.1
+-----
+    * RESOLVED:   (Minor) XUD_ResetEpStateByAddr() could operate on corresponding OUT endpoint
+                  instead of the desired IN endpoint address as passed into the function (and 
+                  vice versa). Re-introduced into 2.3.0 due to manual merge with lib_usb.
+
 2.3.0
 -----
     * ADDED:      Support for XCORE-200 (libxud_x200.a)

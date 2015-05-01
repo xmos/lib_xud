@@ -29,9 +29,9 @@ int read_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned 
     DISABLE_INTERRUPTS();
 
     int retval = read_periph_32(tile, peripheral, addr, 1, tmp);
-   
+
     /* Re-enable interrupts if they were previously enabled */
-    if(prevSr) 
+    if(prevSr)
         ENABLE_INTERRUPTS();
 
     data = tmp[0];

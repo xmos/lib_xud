@@ -1,6 +1,11 @@
 sc_xud Change Log
 =================
 
+2.3.2
+-----
+    * CHANGE:     Interrupts disabled during any access to usb_tile. Allows greater reliablity
+                  if user suspend/resume functions enabled interrupts e.g. for roleswitch
+
 2.3.1
 -----
     * RESOLVED:   (Minor) XUD_ResetEpStateByAddr() could operate on corresponding OUT endpoint

@@ -22,22 +22,23 @@
 //.cc_top InNotReady.func, InNotReady
 .align 4
 InNotReady:
-XUD_IN_TxNak:
-    ldaw       r11, dp[handshakeTable_IN]             // Load handshake table
-    ldw        r11, r11[r10]                          // Load handshake PID
-    outpw     res[TXD], r11, 8
-    //syncr     res[TXD]
-
-    //ldw         r4, sp[(STACK_EXTEND+8)]            // Number of out Endpoints
-    //ldc         r4, XUD_MAX_NUM_EP_OUT
+    ldw         r11, sp[SP_EPTYPES_OUT]
+    ldw         r11, r11[r10]                       // Load EP Type
+    bt          r11, XUD_IN_TxNak               
+    ldc         r11, 0xc3                           // Create 0-length packet
+    outpw       res[TXD], r11, 24
 
 #include "XUD_TokenJmp.S"
 
-    //bu          NextTokenAfterInNak
-//.cc_bottom InNotReady.func
+XUD_IN_TxNak:                                       // Non-Iso   
+    ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
+    ldw        r11, r11[r10]                        // Load handshake PID
+    outpw     res[TXD], r11, 8
+
+#include "XUD_TokenJmp.S"
 
 
-//.cc_top Pid_In.func, Pid_In
+
 .align 128
 #ifdef ARCH_L
 .skip 92
@@ -181,12 +182,12 @@ TxLoop3:
     out         res[TXD], r6
     bt          r4, TxLoop3
 TxLoop3End:
-    ldw          r6, r8[r4]                      // Load tail
+    ldw          r6, r8[r4]                     // Load tail
     crc8         r7, r11, r6, r9
     outpw        res[TXD], r6, 24
     crc8         r7, r11, r11, r9
     crc8         r7, r11, r11, r9
-    crc32        r7, r4, r9                // r4: 0 (from bf)
+    crc32        r7, r4, r9                     // r4: 0 (from bf)
     not          r7, r7
 XUD_IN_TxCrc_Tail3:
     outpw        res[TXD], r7, 16
@@ -194,18 +195,12 @@ XUD_IN_TxCrc_Tail3:
 .scheduling default
 // Wait for handshake... or timeout
 DoneTail:
-    //syncr       res[TXD]
-    //chkct         res[r5], XS1_CT_END
-    ldw           r11, sp[SP_EPTYPES_OUT]
-    ldw           r11, r11[r10]                 // Load EP Type
-    bt            r11, SetupReceiveHandShake
+    ldw         r11, sp[SP_EPTYPES_OUT]
+    ldw         r11, r11[r10]                   // Load EP Type
+    bt          r11, SetupReceiveHandShake
 
 InISO:
-    //ldw         r11, r5[1]                      // Output a word to signal packet read
-    //out         res[r11], r11
-
-   // bu            NextToken
-    ldc r9, 0 //TODO
+    ldc         r9, 0    //TODO
     bu DoneTx
 
 InNonISO:

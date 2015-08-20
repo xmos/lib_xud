@@ -98,12 +98,15 @@ StoreTailDataOut:
 
     bu        NextTokenAfterOut
 
-
-
 // Various Error handling functions -------------------------------------------------------------------
 Err_RxErr:                                      // RxError signal high during data packet receive:
+    clre
+    ldw       r10, sp[15]                       // Read out data from RxE port
+    in        r11, res[r10]
+    eeu       res[r10]
     ldw       r10, sp[10]
     in        r11, res[r10]                     // Wait for rxa low and ignore packet (let transaction timout)
+    setsr     3                                 // Re-enable thread interrupts
     bu        NextToken
 
 Err_EndpointProblem:

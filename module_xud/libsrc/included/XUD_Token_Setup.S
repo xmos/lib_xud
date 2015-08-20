@@ -136,6 +136,7 @@ LoadSetupBuffer:
                                                 // r8: Data tail size (bytes)
     clre
     eq          r1, r6, r11                     // Check for good CRC16
+    bf         r1, NextTokenAfterOut            // Check for bad crc
 
 ClearStall:                                     // CRC OK
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint.

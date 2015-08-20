@@ -57,9 +57,15 @@
   #endif
 
   /* Ports have not been defined in the .xn file */
-  #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
-  #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
-  #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
+  #if (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1E
+    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1F
+    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
+  #else
+    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
+    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
+    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
+  #endif
 
   #if (XUD_SERIES_SUPPORT == XUD_U_SERIES)
     #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J

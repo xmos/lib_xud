@@ -45,6 +45,7 @@ suspend_t_wtwrsths:
 // 12                : ?
 // 13                : Suspend timeout
 // 14                : Suspend/Reset timer
+// 15                : RxError port (flag 2)
 
 #define STACK_PID_JUMP_TABLE (STACK_EXTEND-3)
 
@@ -215,37 +216,24 @@ SaveStackPointer:
     stw         r11, dp[SavedSp]
 
 
-    ldw           r11, cp[suspendTimeout]
-    stw           r11, sp[13]
-
-
-
-    //ldc           r11, 0
-    //stw           r11, sp[15]
-
-//SetControlChannelEvent:                       // Currently we don't need this interrupt handler in XUD_lite
-    //ldap        r11, ConChanIntHandler
-    //ldw         r10, sp[(STACK_EXTEND + 4)]
-    //setv        res[r10], r11
-    //setc        res[r10], XS1_SETC_IE_MODE_INTERRUPT
-    //eeu         res[r10]                      // Enable events/interupts on resource
-    //setsr       0x2                           // Enable thread interupts on kill channel
-
+    ldw         r11, cp[suspendTimeout]
+    stw         r11, sp[13]
 
 ConfigRxDEventVector:                         // Configure events
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
-    //ldap        r11, NextRxWord
     ldap         r11,  TxHandShakeReceived
     setv         res[RXD], r11
-    //setv        res[RXD], r11
-    //eeu         res[RXD]
 
 ConfigRxErrEventVector:
-    //setc       res[RXE], XS1_SETC_IE_MODE_EVENT
-    //ldap       r11, Err_RxErr
-    //setv       res[RXE], r11
-    //stw        RXE, sp[13]                    // Store flag port to stack
-
+    setc       res[r3], XS1_SETC_COND_EQ
+    setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
+    ldap       r11, Err_RxErr
+    setv       res[r3], r11
+    ldc        r11, 1
+    setd       res[r3], r11                 // Set event cond data to 1
+    stw        r3, sp[15]                   // Store flag port to stack
+    eeu        res[r3]
+    
 ConfigRxA:
     setc       res[RXA], XS1_SETC_COND_EQ
     setc       res[RXA], XS1_SETC_IE_MODE_EVENT

@@ -39,7 +39,7 @@ XUD_UIFM_Enable:
 .set XUD_UIFM_Enable.maxcores, 1
 .set XUD_UIFM_Enable.locnochandec, 1
 
-#ifndef ARCH_X200
+#if !defined (ARCH_S) && !defined (ARCH_X200)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // unsigned XUD_UIFM_RegRead(out port reg_write_port, in port reg_read_port, unsigned regNo);

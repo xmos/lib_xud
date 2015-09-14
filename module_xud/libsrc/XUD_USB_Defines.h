@@ -3,7 +3,8 @@
 #ifndef _XUD_USB_DEFINES_H_
 #define _XUD_USB_DEFINES_H_
 
-#define USB_TILE_REF usb_tile
+#define USB_TILE_REF       usb_tile[0]
+#define USB_TILE_REF_ARRAY usb_tile[2]
 
 // Defines relating to USB/ULPI/UTMI/Phy specs
 

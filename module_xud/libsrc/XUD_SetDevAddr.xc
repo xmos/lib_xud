@@ -15,7 +15,7 @@
 #include <print.h>
 #include "glx.h"
 extern unsigned get_tile_id(tileref ref);
-extern tileref USB_TILE_REF;
+extern tileref USB_TILE_REF_ARRAY;
 #endif
 
 

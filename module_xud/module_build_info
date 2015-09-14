@@ -3,7 +3,8 @@
 # The LIBRARY variable needs to be set to the name of the library to
 # be built
 
-LIBRARIES =  xud_u xud_l xud_g xud_x200
+#LIBRARIES =  xud_u xud_l xud_g xud_x200
+LIBRARIES = xud_x200
 
 #Default is xs1b
 LIB_ARCH_xud_x200 = xs2a
@@ -25,15 +26,15 @@ LIB_XCC_FLAGS_xud_l =  -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum
 
 
 #U-series Lib
-LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -save-temps 
+#LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -save-temps 
 #-DGLX_SUSPHY -DGLX_PWRDWN
 
-LIB_XCC_FLAGS_xud_u_lomem =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -fschedule -D ARCH_L -D ARCH_S -DXUD_USB_TEST_MODE_DISABLED -DXUD_MAX_NUM_EP_IN=3 -DXUD_MAX_NUM_EP_OUT=3 -save-temps 
+#LIB_XCC_FLAGS_xud_u_lomem =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -fschedule -D ARCH_L -D ARCH_S -DXUD_USB_TEST_MODE_DISABLED -DXUD_MAX_NUM_EP_IN=3 -DXUD_MAX_NUM_EP_OUT=3 -save-temps 
 
 #LIB_XCC_FLAGS_xud_u_sim =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -DSIMULATION
 
 #G-Series Lib
-LIB_XCC_FLAGS_xud_g = -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DARCH_G -DXUD_FULL_PIDTABLE=1 -fschedule -march=xs1b 
+#LIB_XCC_FLAGS_xud_g = -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DARCH_G -DXUD_FULL_PIDTABLE=1 -fschedule -march=xs1b 
 
 #xCORE-200 Lib
 LIB_XCC_FLAGS_xud_x200 = -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -DARCH_L -DARCH_X200 -save-temps -mno-dual-issue

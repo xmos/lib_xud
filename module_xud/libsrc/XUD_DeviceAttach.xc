@@ -1,5 +1,6 @@
 #include <xs1.h>
 #include <print.h>
+#include <platform.h>
 #include "XUD_UIFM_Functions.h"
 #include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
@@ -18,7 +19,7 @@
 #include <xs1_su.h>
 #include "glx.h"
 extern unsigned get_tile_id(tileref ref);
-extern tileref USB_TILE_REF_ARRAY;
+extern tileref USB_TILE_REF;
 #endif
 
 extern in  port flag0_port;

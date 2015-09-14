@@ -47,7 +47,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "glx.h"
 #include <xs1_su.h>
 extern unsigned get_tile_id(tileref ref);
-extern tileref USB_TILE_REF_ARRAY;
+extern tileref USB_TILE_REF;
 #endif
 
 #if (XUD_MAX_NUM_EP_IN != 16)
@@ -706,7 +706,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
 
         /* Clear OTG control reg - incase we were running as host previously.. */
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
+        write_periph_32(xs1_su_periph, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 1, settings);
 #endif
         }
 #ifdef GLX_PWRDWN

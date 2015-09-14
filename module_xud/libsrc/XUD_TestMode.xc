@@ -6,6 +6,7 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_Support.h"
 #include "XUD_TestMode.h"
+///#include "usb.h"
 #include "xud.h"
 
 #ifdef ARCH_S
@@ -19,7 +20,7 @@
 #if defined(ARCH_S) || defined(ARCH_X200)
 #include "glx.h"
 extern unsigned get_tile_id(tileref ref);
-extern tileref USB_TILE_REF_ARRAY;
+extern tileref USB_TILE_REF;
 #endif
 
 extern in  port flag0_port;

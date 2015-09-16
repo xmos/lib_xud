@@ -153,14 +153,18 @@ ResetIntHandler:
 
     get     r11, ed                             // Get timer resource ID
     setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
+
     clre                                        // Clear all events
-    //setc    res[r11], XS1_SETC_IE_MODE_INTERRUPT  // Set IE mode back to events
 
     ldw     r10, dp[SavedSp]                    // Restore stack pointer
     set     sp, r10
+    
+    ldw     r11, sp[15]                         // Put RxE back to events..
+    setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
+
 
 ResetDetect:
-    ldc        r0, 0                         // Return 0 for reset
+    ldc        r0, 0                            // Return 0 for reset
     bu         writesuspendvar
 
 
@@ -224,15 +228,7 @@ ConfigRxDEventVector:                         // Configure events
     ldap         r11,  TxHandShakeReceived
     setv         res[RXD], r11
 
-ConfigRxErrEventVector:
-    setc       res[r3], XS1_SETC_COND_EQ
-    setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
-    ldap       r11, Err_RxErr
-    setv       res[r3], r11
-    ldc        r11, 1
-    setd       res[r3], r11                 // Set event cond data to 1
-    stw        r3, sp[15]                   // Store flag port to stack
-    eeu        res[r3]
+
     
 ConfigRxA:
     setc       res[RXA], XS1_SETC_COND_EQ
@@ -313,6 +309,17 @@ ConfigSofJump:
     stw        r11, r10[r9]
 #endif
 ConfigSofJump_Done:
+
+
+ConfigRxErrEventVector:
+    setc       res[r3], XS1_SETC_COND_EQ
+    setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
+    ldap       r11, Err_RxErr
+    setv       res[r3], r11
+    ldc        r11, 1
+    setd       res[r3], r11                 // Set event cond data to 1
+    stw        r3, sp[15]                   // Store flag port to stack
+    eeu        res[r3]
 
 
 

@@ -100,6 +100,7 @@ StoreTailDataOut:
 
 // Various Error handling functions -------------------------------------------------------------------
 Err_RxErr:                                      // RxError signal high during data packet receive:
+    clrsr     3
     clre
     ldw       r10, sp[15]                       // Read out data from RxE port
     in        r11, res[r10]

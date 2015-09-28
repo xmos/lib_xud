@@ -1,11 +1,6 @@
 sc_xud Change Log
 =================
 
-2.3.4
------ 
-    * RESOLVED:   Potential issue when host requests a descriptor where the size of the descriptor 
-                  is a multiple of 64
-
 2.3.2
 -----
     * CHANGE:     Interrupts disabled during any access to usb_tile. Allows greater reliablity

@@ -1,7 +1,7 @@
 sc_xud Change Log
 =================
 
-2.3.3
+2.4.0
 -----
     * RESOLVED:   Intermittent initialisation issues with xCORE-200.
     * RESOLVED:   SETUP transaction data CRC not properly checked

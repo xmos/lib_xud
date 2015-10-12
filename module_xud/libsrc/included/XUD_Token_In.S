@@ -24,13 +24,13 @@
 InNotReady:
     ldw         r11, sp[SP_EPTYPES_OUT]
     ldw         r11, r11[r10]                       // Load EP Type
-    bt          r11, XUD_IN_TxNak               
+    bt          r11, XUD_IN_TxNak
     ldc         r11, 0xc3                           // Create 0-length packet
     outpw       res[TXD], r11, 24
 
 #include "XUD_TokenJmp.S"
 
-XUD_IN_TxNak:                                       // Non-Iso   
+XUD_IN_TxNak:                                       // Non-Iso
     ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
     ldw        r11, r11[r10]                        // Load handshake PID
     outpw     res[TXD], r11, 8

@@ -158,7 +158,7 @@ ResetIntHandler:
 
     ldw     r10, dp[SavedSp]                    // Restore stack pointer
     set     sp, r10
-    
+
     ldw     r11, sp[15]                         // Put RxE back to events..
     setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
 
@@ -229,7 +229,7 @@ ConfigRxDEventVector:                         // Configure events
     setv         res[RXD], r11
 
 
-    
+
 ConfigRxA:
     setc       res[RXA], XS1_SETC_COND_EQ
     setc       res[RXA], XS1_SETC_IE_MODE_EVENT

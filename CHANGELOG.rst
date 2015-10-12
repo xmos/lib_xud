@@ -1,10 +1,18 @@
 sc_xud Change Log
 =================
 
+2.3.3
+-----
+    * RESOLVED:   Intermittent initialisation issues with xCORE-200.
+    * RESOLVED:   SETUP transaction data CRC not properly checked
+    * RESOLVED:   RxError line from phy handled 
+    * RESOLVED:   Isochronous IN endpoints now send an 0-length packet if not ready rather than
+                  an (invalid) NAK. 
+
 2.3.2
 -----
-    * CHANGE:     Interrupts disabled during any access to usb_tile. Allows greater reliablity
-                  if user suspend/resume functions enabled interrupts e.g. for roleswitch
+    * CHANGE:     Interrupts disabled during any access to usb_tile. Allows greater reliability
+                  if user suspend/resume functions enabled interrupts e.g. for role-switch
 
 2.3.1
 -----
@@ -15,7 +23,7 @@ sc_xud Change Log
 2.3.0
 -----
     * ADDED:      Support for XCORE-200 (libxud_x200.a)
-    * CHANGE:     Compatibilty fixes for XMOS toolset version 14 (dual-issue support etc)  
+    * CHANGE:     Compatibility fixes for XMOS toolset version 14 (dual-issue support etc)  
 
 2.2.4
 -----

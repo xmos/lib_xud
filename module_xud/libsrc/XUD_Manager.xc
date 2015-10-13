@@ -748,7 +748,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #endif
 
-#if defined(ARCH_L) || defined(ARCH_G)
+#if (defined(ARCH_L) && !defined(ARCH_X200)) || defined(ARCH_G)
         /* For L/G series we wait for clock from phy, then enable UIFM logic */
         XUD_UIFM_Enable(UIFM_MODE); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 #endif

@@ -8,6 +8,7 @@ sc_xud Change Log
     * RESOLVED:   RxError line from phy handled 
     * RESOLVED:   Isochronous IN endpoints now send an 0-length packet if not ready rather than
                   an (invalid) NAK. 
+    * RESOLVED:   Receive of short packets in full-speed mode sometimes prematurely ended  
 
 2.3.2
 -----

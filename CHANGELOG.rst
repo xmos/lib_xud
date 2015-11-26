@@ -120,7 +120,7 @@ sc_xud Change Log
     - sc_usb: 1.0.1beta1 -> 1.0.2beta1
 
       + ADDED:   USB_BMREQ_D2H_VENDOR_DEV and USB_BMREQ_D2H_VENDOR_DEV defines for vendor device requests
-_
+
 1.0.2
 -----
     * ADDED:      Re-instated support for G devices (xud_g library)

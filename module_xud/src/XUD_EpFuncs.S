@@ -668,15 +668,36 @@ XUD_ClearStallByAddr:
     ldc         r11, 0x80                       // Check for IN bit
     and         r11, r11, r0
     bf          r11, XUD_ClearStallByAddr_OUT
-    ldaw        r1,  dp[handshakeTable_IN]
+    ldaw        r1,  dp[handshakeTable_IN]      // Reset Handshake
     mkmsk       r11, 7
     and         r11, r11, r0
-    stw         r2, r1[r11]
-    retsp       0
+    stw         r2, r1[r11]                     
+                                                // Calc offset for data pid
+    ldaw        r0, r11[4]                      // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
+    ldc         r1, USB_PIDn_DATA0
+    bu          XUD_ClearStallByAddr_ResetDataPid
+
 XUD_ClearStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
     stw         r2, r1[r0]
+
+#if(XUD_SERIES_SUPPORT==3)
+    ldc         r1, USB_PIDn_DATA0
+#else
+    ldc         r1, USB_PID_DATA0
+#endif
+    
+XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
+
+    ldc         r2, 40                          // Size of XUD_ep_info struct TODO use sizeof() - 
+    mul         r0, r0, r2                      // Be careful with packing
+    ldaw        r2, dp[ep_info]
+    add         r0, r2, r0
+    stw         r1, r0[4]
+
     retsp       0
+
+
 .size XUD_ClearStallByAddr, .-XUD_ClearStallByAddr
 .cc_bottom XUD_ClearStallByAddr.func
 .globl XUD_ClearStallByAddr.nstackwords

@@ -8,7 +8,7 @@ sc_xud Change Log
     * RESOLVED:   RxError line from phy handled 
     * RESOLVED:   Isochronous IN endpoints now send an 0-length packet if not ready rather than
                   an (invalid) NAK. 
-    * RESOLVED:   Receive of short packets in sometimes prematurely ended  
+    * RESOLVED:   Receive of short packets sometimes prematurely ended  
     * RESOLVED:   Data PID not reset to DATA0 in ClearStallByAddr() (used on ClearFeature(HALT) 
                   request from host)  
 

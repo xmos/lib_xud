@@ -10,7 +10,7 @@ sc_xud Change Log
                   an (invalid) NAK. 
     * RESOLVED:   Receive of short packets sometimes prematurely ended  
     * RESOLVED:   Data PID not reset to DATA0 in ClearStallByAddr() (used on ClearFeature(HALT) 
-                  request from host)  
+                  request from host) (#17092) 
 
 2.3.2
 -----

@@ -2,6 +2,7 @@
 #include <print.h>
 #include <platform.h>
 #include "XUD_UIFM_Functions.h"
+#include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_TimingDefines.h"
 #include "XUD_Support.h"
@@ -41,10 +42,6 @@ extern out port p_usb_txd;
 
 extern int resetCount;
 
-//#ifdef ARCH_X200
-//#define ARCH_S 1
-//#endif
-
 /* Assumptions:
  * - In full speed mode
  * - No flags sticky
@@ -62,7 +59,6 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    chirpCount = 0;
 
    clearbuf(p_usb_txd);
-
 #ifndef ARCH_X200
 #ifndef ARCH_S
    clearbuf(reg_write_port);
@@ -101,6 +97,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    while(1) {
        select {
        case t when timerafter(start_time + INVALID_DELAY) :> void:
+
            /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
 #if defined(ARCH_S) || defined(ARCH_X200)
            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,
@@ -158,7 +155,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                    // Three pairs of KJ received... de-assert TermSelect...
                    // (and opmode = 0, suspendm = 1)
 #if defined(ARCH_S) || defined(ARCH_X200)
-                   write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM,
+                   write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,
                                      XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b0000);
 #else
                    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);

@@ -238,7 +238,7 @@ int main()
     {
         on USB_TILE: XUD_Manager(/*usbtile*/ c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                p_usb_rst, clk_usb_rst, -1, XUD_SPEED_FS, XUD_PWR_BUS);
+                                p_usb_rst, clk_usb_rst, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
         on USB_TILE: Endpoint0(/*usbtile*/ c_ep_out[0], c_ep_in[0]);
 

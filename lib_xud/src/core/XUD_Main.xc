@@ -2,7 +2,6 @@
 /** XUD_Manager.xc
   * @brief     XMOS USB Device(XUD) Layer
   * @author    Ross Owen
-  * @version   0.1
   **/
 /* Error printing functions */
 #ifdef XUD_DEBUG_VERSION
@@ -21,7 +20,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "xud.h"                 /* External user include file */
 #include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
-
+#include "XUD_USBTile_Support.h"
 #include "XUD_Support.h"
 #include "XUD_UIFM_Functions.h"
 
@@ -40,12 +39,11 @@ void XUD_Error_hex(char errString[], int i_err);
 
 #ifdef ARCH_X200
 #include "xs2_su_registers.h"
-#warning FIXME use file from tools
 #endif
 
 #if defined(ARCH_X200) || defined(ARCH_S)
-#include "glx.h"
-#include <xs1_su.h>
+#include "XUD_USBTile_Support.h"
+//#include <xs1_su.h>
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
@@ -63,11 +61,6 @@ extern int XUD_GetDone();
 void XUD_UserSuspend();
 void XUD_UserResume();
 void XUD_PhyReset_User();
-
-
-
-
-
 
 #if 0
 #pragma xta command "config threads stdcore[0] 6"
@@ -339,8 +332,8 @@ XUD_ep_info ep_info[XUD_MAX_NUM_EP];
 void XUD_UIFM_PwrSigFlags()
 {
 #if defined(ARCH_S) || defined(ARCH_X200)
-    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG, ((1<<XS1_UIFM_IFM_FLAGS_SE0)<<16)
-        | ((1<<XS1_UIFM_IFM_FLAGS_K)<<8) | (1 << XS1_UIFM_IFM_FLAGS_J));
+    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM, ((1<<XS1_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
+        | ((1<<XS1_UIFM_IFM_FLAGS_K_SHIFT)<<8) | (1 << XS1_UIFM_IFM_FLAGS_J_SHIFT));
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK0, 0x8);  // flag0_port - J
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK1, 0x10); // flag1_port - K
@@ -382,10 +375,6 @@ unsigned sentReset=0;
 
 unsigned crcmask = 0b11111111111;
 unsigned chanArray;
-
-#define STATE_START 0
-#define STATE_START_SE0 1
-#define STATE_START_J 2
 
 #define RESET_TIME_us               5 // 5us
 #define RESET_TIME                  (RESET_TIME_us * REF_CLK_FREQ)
@@ -690,23 +679,23 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #if defined (ARCH_X200)
         /* For xCORE-200 enable USB port muxing before enabling phy etc */
-        XUD_UIFM_Enable(UIFM_MODE); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
+        XUD_EnableUsbPortMux(); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 #endif
 
         /* Enable the USB clock */
-        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, ( ( 1 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
+        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_NUM, ( 1 << XS1_GLX_CFG_USB_CLK_EN_SHIFT));
 
 #ifdef ARCH_S
         /* Now reset the phy */
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,  (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
+        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_PHY_CONTROL_NUM,  (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
 #else
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,  (0<<XS1_UIFM_PHY_CONTROL_FORCERESET));
+        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_PHY_CONTROL_NUM,  0); //(0<<XS1_UIFM_PHY_CONTROL_FORCERESET));
 #endif
         /* Keep usb clock active, enter active mode */
-        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_ADRS, (1 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (1<<XS1_GLX_CFG_USB_EN_BASE)  );
+        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_NUM, (1 << XS1_GLX_CFG_USB_CLK_EN_SHIFT) | (1<<XS1_GLX_CFG_USB_EN_SHIFT)  );
 
         /* Clear OTG control reg - incase we were running as host previously.. */
-        write_periph_32(xs1_su_periph, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 1, settings);
+        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_CONTROL_NUM, 0);
 #endif
         }
 #ifdef GLX_PWRDWN
@@ -753,10 +742,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         XUD_UIFM_Enable(UIFM_MODE); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 #endif
 
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined (ARCH_X200)
+        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
+#elif defined(ARCH_S)
 #ifndef SIMULATION
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG,
-            (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE));
+        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
 #endif
 #else
         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
@@ -772,7 +762,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     {
                         unsigned x, time;
                         timer t;
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_X200)
+                        read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
+                        if(x&(1<<XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
+#elif defined(ARCH_S) 
                         read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
 #elif ARCH_L
@@ -790,9 +783,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifndef SIMULATION
 #if defined(ARCH_S) || defined(ARCH_X200)
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG,
-                      (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT)
-                    | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+                write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM,
+                      (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT)
+                    | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
 #else
                 XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
 #endif
@@ -864,9 +857,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     for(int i = 0; i< noEpOut; i++)
                     {
 #ifdef ARCH_G
-                        ep_info[i].pid = PIDn_DATA0;
+                        ep_info[i].pid = USB_PIDn_DATA0;
 #else
-                        ep_info[i].pid = PID_DATA0;
+                        ep_info[i].pid = USB_PID_DATA0;
 #endif
                     }
 
@@ -874,13 +867,13 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Reset in the ep structures */
                     for(int i = 0; i< noEpIn; i++)
                     {
-                        ep_info[XUD_MAX_NUM_EP_OUT+i].pid = PIDn_DATA0;
+                        ep_info[XUD_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
                     }
 
                     /* Set default device address */
 #if defined(ARCH_S) || defined(ARCH_X200)
 #ifndef SIMULATION
-                    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, 0);
+                    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_DEVICE_ADDRESS_NUM, 0);
 #endif
 #else
                     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
@@ -939,10 +932,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifdef ARCH_L
 #if defined(ARCH_S) || defined(ARCH_X200)
 #ifndef SIMULATION
-            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG, (1<<XS1_UIFM_IFM_CONTROL_DOTOKENS)
-                | (1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS)
-                | (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE)
-                | (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
+            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DOTOKENS_SHIFT)
+                | (1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS_SHIFT)
+                | (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT)
+                | (1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN_SHIFT));
 #endif
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_CHKTOK | UIFM_CTRL_DECODE_LS);
@@ -956,10 +949,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #if defined(ARCH_S) || defined (ARCH_X200)
 #ifndef SIMULATION
-            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FLAGS_MASK_REG,
-                ((1<<XS1_UIFM_IFM_FLAGS_NEWTOKEN)
-                | ((1<<XS1_UIFM_IFM_FLAGS_RXACTIVE)<<8)
-                | ((1<<XS1_UIFM_IFM_FLAGS_RXERROR)<<16)));
+            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM,
+                ((1<<XS1_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)
+                | ((1<<XS1_UIFM_IFM_FLAGS_RXACTIVE_SHIFT)<<8)
+                | ((1<<XS1_UIFM_IFM_FLAGS_RXERROR_SHIFT)<<16)));
 #endif
 #else
             /* Set flag0_port to NEW_TOKEN (bit 6 of ifm flags) */
@@ -1073,14 +1066,14 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
     for(int i = 0; i < XUD_MAX_NUM_EP_OUT; i++)
     {
-        handshakeTable_OUT[i] = PIDn_NAK;
+        handshakeTable_OUT[i] = USB_PIDn_NAK;
         ep_info[i].epAddress = i;
         ep_info[i].resetting = 0;
     }
 
     for(int i = 0; i < XUD_MAX_NUM_EP_IN; i++)
     {
-        handshakeTable_IN[i] = PIDn_NAK;
+        handshakeTable_IN[i] = USB_PIDn_NAK;
         ep_info[XUD_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[XUD_MAX_NUM_EP_OUT+i].resetting = 0;
     }
@@ -1109,9 +1102,9 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
       ep_info[i].epType = epTypeTableOut[i];
 
 #ifdef ARCH_G
-      ep_info[i].pid = PIDn_DATA0;
+      ep_info[i].pid = USB_PIDn_DATA0;
 #else
-      ep_info[i].pid = PID_DATA0;
+      ep_info[i].pid = USB_PID_DATA0;
 #endif
      // ep_info[i].epAddress = i;
 
@@ -1135,7 +1128,7 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
         outuint(c_ep_in[i], x);
 
-        ep_info[XUD_MAX_NUM_EP_OUT+i].pid = PIDn_DATA0;
+        ep_info[XUD_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
 
         epStatFlagTableIn[i] = epTypeTableIn[i] & XUD_STATUS_ENABLE;
         epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;

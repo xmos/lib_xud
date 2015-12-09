@@ -6,8 +6,18 @@
 #define _USB_DEVICE_H_
 
 #include <xccompat.h>
-#include "usb_std_requests.h"
+
+/* Low level XUD API for USB Device */
 #include "xud.h"
+
+/* Generic USB defines */
+#include "xud_usb_Defines.h"
+
+/* Generic USB descriptor defines */
+#include "usb_std_descriptors.h"
+
+/* Genric USB descriptor defines */
+#include "usb_std_requests.h"
 
 /**
   * \brief    This function deals with common requests This includes Standard Device Requests listed

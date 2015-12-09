@@ -1,5 +1,4 @@
-*/*build_*/*
-*/_build/*
+.build*
 */bin/*
 *~
 *.o

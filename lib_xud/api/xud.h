@@ -10,7 +10,7 @@
 #include <print.h>
 #include <xccompat.h>
 
-
+// TODO RM these.
 #define XUD_U_SERIES 1
 #define XUD_L_SERIES 2
 #define XUD_G_SERIES 3
@@ -19,8 +19,6 @@
 #ifdef __xud_conf_h_exists__
 #include "xud_conf.h"
 #endif
-
-#include "xud_defines.h"
 
 #if !defined(USB_TILE)
   #define USB_TILE tile[0]
@@ -58,22 +56,33 @@
 
   /* Ports have not been defined in the .xn file */
   #if (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
-    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1E
-    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1F
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
+    #define PORT_USB_FLAG0       XS1_PORT_1E
+    #define PORT_USB_FLAG1       XS1_PORT_1F
+    #define PORT_USB_FLAG2       XS1_PORT_1G
   #else
-    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
-    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
+    #define PORT_USB_FLAG0       XS1_PORT_1N
+    #define PORT_USB_FLAG1       XS1_PORT_1O
+    #define PORT_USB_FLAG2       XS1_PORT_1P
   #endif
 
   #if (XUD_SERIES_SUPPORT == XUD_U_SERIES)
-    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
-    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
-    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8C
-    #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K
-    #define PORT_USB_TX_READYIN  on USB_TILE: XS1_PORT_1H
-    #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1M
+    #define PORT_USB_CLK         XS1_PORT_1J
+    #define PORT_USB_TXD         XS1_PORT_8A
+    #define PORT_USB_RXD         XS1_PORT_8C
+    #define PORT_USB_TX_READYOUT XS1_PORT_1K
+    #define PORT_USB_TX_READYIN  XS1_PORT_1H
+    #define PORT_USB_RX_READY    XS1_PORT_1M
+    #define CLK_USB_RX           XS1_CLKBLK_4
+    #define CLK_USB_TX           XS1_CLKBLK_5
+  #elif (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+    #define PORT_USB_CLK         XS1_PORT_1J
+    #define PORT_USB_TXD         XS1_PORT_8A
+    #define PORT_USB_RXD         XS1_PORT_8B
+    #define PORT_USB_TX_READYOUT XS1_PORT_1K
+    #define PORT_USB_TX_READYIN  XS1_PORT_1H
+    #define PORT_USB_RX_READY    XS1_PORT_1I
+    #define CLK_USB_RX           XS1_CLKBLK_4
+    #define CLK_USB_TX           XS1_CLKBLK_5
   #else
     #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1H
     #define PORT_USB_REG_WRITE   on USB_TILE: XS1_PORT_8C
@@ -83,6 +92,33 @@
     #define PORT_USB_STP_SUS     on USB_TILE: XS1_PORT_1E
   #endif
 #endif // PORT_USB_CLK
+
+
+typedef struct xudres
+{
+#if (XUD_SERIES_SUPPORT == XUD_U_SERIES) || (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+  in buffered port:32 p_usb_clk;
+  out buffered port:32 p_usb_txd;
+  in  buffered port:32 p_usb_rxd;
+  out port tx_readyout;
+  in port tx_readyin;
+  in port rx_rdy;
+  clock tx_usb_clk;
+  clock rx_usb_clk;
+#elif (XUD_SERIES_SUPPORT == XUD_L_SERIES) || (XUD_SERIES_SUPPORT == XUD_G_SERIES)
+  in buffered port:32 p_usb_clk;
+  out port reg_write_port;
+  in  port reg_read_port;
+  out port p_usb_txd;
+  port p_usb_rxd;
+  in port p_usb_stp;
+#else
+  #error XUD_SERIES_SUPPORT not equal to XUD_U_SERIES, XUD_G_SERIES, XUD_X200_SERIES or XUD_L_SERIES
+#endif
+
+}XUD_res_t;
+
+
 
 /**
  * \var        typedef     XUD_EpTransferType
@@ -178,7 +214,8 @@ typedef enum XUD_Result
  *                      Valid values are XUD_PWR_SELF and XUD_PWR_BUS.
  *
  */
-int XUD_Manager(chanend c_epOut[], int noEpOut,
+int XUD_Manager(/*tileref * unsafe usbtileXUD_res_t &xudres, */ chanend c_epOut[], int noEpOut,
+
                 chanend c_epIn[], int noEpIn,
                 NULLABLE_RESOURCE(chanend, c_sof),
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
@@ -270,7 +307,7 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
  * \param   addr New device address.
  * \warning Must be run on USB core
  */
-XUD_Result_t XUD_SetDevAddr(unsigned addr);
+XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
 
 
 /**

@@ -1,8 +1,8 @@
 /** @file      XUD_SetCrcTableAddr.c
   * @author    Ross Owen, XMOS Limited
-  * @version   0v9
   */
 
+#ifdef ARCH_G
 
 /* Global table used to store complete valid CRC5 table */
 /* TODO Should be char */
@@ -40,3 +40,4 @@ void XUD_SetCrcTableAddr(unsigned addr)
         }
     }
 }
+#endif

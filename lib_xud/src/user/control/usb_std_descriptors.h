@@ -2,6 +2,33 @@
 #ifndef _USB_DESCRIPTORS_H_
 #define _USB_DESCRIPTORS_H_
 
+#if !defined (__ASSEMBLER__)
+/* USB Class Codes (from usb.org) */
+typedef enum
+{
+    USB_CLASS_USE_CLASS                 = 0x00,  /* Use class information in the interface descriptors */
+    USB_CLASS_AUDIO                     = 0x01,
+    USB_CLASS_COMMUNICATIONS            = 0x02,
+    USB_CLASS_HID                       = 0x03,
+    USB_CLASS_PHYSICAL                  = 0x05,
+    USB_CLASS_IMAGE                     = 0x06,
+    USB_CLASS_PRINTER                   = 0x07,
+    USB_CLASS_MASS_STORAGE              = 0x08,
+    USB_CLASS_HUB                       = 0x09,
+    USB_CLASS_CDC_DATA                  = 0x0A,
+    USB_CLASS_SMART_CARD                = 0x0B,
+    USB_CLASS_RESERVED                  = 0x0C,
+    USB_CLASS_CONTENT_SECURITY          = 0x0D,
+    USB_CLASS_VIDEO                     = 0x0E,
+    USB_CLASS_PERSONAL_HEALTHCARE       = 0x0F,
+    USB_CLASS_AUDIO_VIDEO               = 0x10,
+//...
+    USB_CLASS_MAPPED_INDEX_END          = 17,
+    USB_CLASS_VENDOR_SPECIFIC           = 0xFF
+} USB_ClassCode_t;
+
+#endif
+
 /* USB Standard Descriptor types (Section 9.4, table 9-5) */
 enum USB_DescriptorTypes_t
 {

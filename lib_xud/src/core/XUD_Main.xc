@@ -48,12 +48,12 @@ extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
 
-#if (XUD_MAX_NUM_EP_IN != 16)
-#error XUD_MAX_NUM_EP_IN must be 16!
+#if (USB_MAX_NUM_EP_IN != 16)
+#error USB_MAX_NUM_EP_IN must be 16!
 #endif
 
-#if (XUD_MAX_NUM_EP_OUT != 16)
-#error XUD_MAX_NUM_EP_OUT must be 16!
+#if (USB_MAX_NUM_EP_OUT != 16)
+#error USB_MAX_NUM_EP_OUT must be 16!
 #endif
 
 extern int XUD_GetDone();
@@ -306,8 +306,8 @@ in port p_usb_dir = XS1_PORT_1G;
 int xud_counter = 0;
 #endif
 
-XUD_chan epChans[XUD_MAX_NUM_EP];
-XUD_chan epChans0[XUD_MAX_NUM_EP];
+XUD_chan epChans[USB_MAX_NUM_EP];
+XUD_chan epChans0[USB_MAX_NUM_EP];
 
 /* TODO pack this to save mem
  * TODO size of this hardcoded in ResetRpStateByAddr_
@@ -326,7 +326,7 @@ typedef struct XUD_ep_info
     unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
 } XUD_ep_info;
 
-XUD_ep_info ep_info[XUD_MAX_NUM_EP];
+XUD_ep_info ep_info[USB_MAX_NUM_EP];
 
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
@@ -342,8 +342,8 @@ void XUD_UIFM_PwrSigFlags()
 }
 
 /* Tables storing if EP's are signed up to bus state updates */
-int epStatFlagTableIn[XUD_MAX_NUM_EP_IN];
-int epStatFlagTableOut[XUD_MAX_NUM_EP_OUT];
+int epStatFlagTableIn[USB_MAX_NUM_EP_IN];
+int epStatFlagTableOut[USB_MAX_NUM_EP_OUT];
 
 /* Used for terminating XUD loop */
 int XUD_USB_Done = 0;
@@ -369,8 +369,8 @@ extern int XUD_LLD_IoLoop(
                             XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
                             int  epCount, chanend? c_sof) ;
 
-unsigned handshakeTable_IN[XUD_MAX_NUM_EP_IN];
-unsigned handshakeTable_OUT[XUD_MAX_NUM_EP_OUT];
+unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN];
+unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];
 unsigned sentReset=0;
 
 unsigned crcmask = 0b11111111111;
@@ -408,9 +408,9 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
     {
         if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
         {
-            ep_info[i + XUD_MAX_NUM_EP_OUT].resetting = 1;
-            epChans[i + XUD_MAX_NUM_EP_OUT] = 0;
-            XUD_Sup_outct(c[i + XUD_MAX_NUM_EP_OUT], token);
+            ep_info[i + USB_MAX_NUM_EP_OUT].resetting = 1;
+            epChans[i + USB_MAX_NUM_EP_OUT] = 0;
+            XUD_Sup_outct(c[i + USB_MAX_NUM_EP_OUT], token);
         }
     }
 
@@ -439,14 +439,14 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
         {
           int tok=-1;
           while (tok != XS1_CT_END) {
-            while(!XUD_Sup_testct(c[i + XUD_MAX_NUM_EP_OUT]))
+            while(!XUD_Sup_testct(c[i + USB_MAX_NUM_EP_OUT]))
             {
-                XUD_Sup_int(c[i + XUD_MAX_NUM_EP_OUT]);
+                XUD_Sup_int(c[i + USB_MAX_NUM_EP_OUT]);
             }
-            tok = XUD_Sup_inct(c[i + XUD_MAX_NUM_EP_OUT]);       // TODO chkct
+            tok = XUD_Sup_inct(c[i + USB_MAX_NUM_EP_OUT]);       // TODO chkct
 
             /* Clear EP ready. Note, done after inct to avoid race with EP */
-            eps[i + XUD_MAX_NUM_EP_OUT] = 0;
+            eps[i + USB_MAX_NUM_EP_OUT] = 0;
           }
         }
     }
@@ -466,7 +466,7 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
     {
         if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
         {
-            XUD_Sup_outuint(c[i + XUD_MAX_NUM_EP_OUT], speed);
+            XUD_Sup_outuint(c[i + USB_MAX_NUM_EP_OUT], speed);
         }
     }
 
@@ -728,6 +728,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
 
+    //printint(1);
+
 #if !defined(ARCH_S) && !defined(ARCH_X200)
         /* Configure ports and clock blocks for use with UIFM */
         XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
@@ -742,7 +744,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         XUD_UIFM_Enable(UIFM_MODE); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 #endif
 
-#if defined (ARCH_X200)
+#if defined(ARCH_X200)
         write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
 #elif defined(ARCH_S)
 #ifndef SIMULATION
@@ -867,7 +869,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Reset in the ep structures */
                     for(int i = 0; i< noEpIn; i++)
                     {
-                        ep_info[XUD_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
+                        ep_info[USB_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
                     }
 
                     /* Set default device address */
@@ -893,7 +895,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #else
                     if(g_desSpeed == XUD_SPEED_HS)
                     {
-                        unsigned tmp;
+                        unsigned tmp = 0;
                         tmp = XUD_DeviceAttachHS(pwrConfig);
 
                         if(tmp == -1)
@@ -1059,23 +1061,23 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
 
     XUD_USB_Done = 0;
 
-    for (int i=0; i < XUD_MAX_NUM_EP;i++)
+    for (int i=0; i < USB_MAX_NUM_EP;i++)
     {
         epChans[i] = 0;
     }
 
-    for(int i = 0; i < XUD_MAX_NUM_EP_OUT; i++)
+    for(int i = 0; i < USB_MAX_NUM_EP_OUT; i++)
     {
         handshakeTable_OUT[i] = USB_PIDn_NAK;
         ep_info[i].epAddress = i;
         ep_info[i].resetting = 0;
     }
 
-    for(int i = 0; i < XUD_MAX_NUM_EP_IN; i++)
+    for(int i = 0; i < USB_MAX_NUM_EP_IN; i++)
     {
         handshakeTable_IN[i] = USB_PIDn_NAK;
-        ep_info[XUD_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
-        ep_info[XUD_MAX_NUM_EP_OUT+i].resetting = 0;
+        ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
+        ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
     }
 
     /* Populate arrays of channels and status flag tabes */
@@ -1113,29 +1115,29 @@ int XUD_Manager(chanend c_ep_out[], int noEpOut,
     for(int i = 0; i< noEpIn; i++)
     {
         int x;
-        epChans0[i+XUD_MAX_NUM_EP_OUT] = XUD_Sup_GetResourceId(c_ep_in[i]);
+        epChans0[i+USB_MAX_NUM_EP_OUT] = XUD_Sup_GetResourceId(c_ep_in[i]);
 
-        asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(XUD_MAX_NUM_EP_OUT+i));
-        ep_info[XUD_MAX_NUM_EP_OUT+i].chan_array_ptr = x;
+        asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(USB_MAX_NUM_EP_OUT+i));
+        ep_info[USB_MAX_NUM_EP_OUT+i].chan_array_ptr = x;
 
         asm("mov %0, %1":"=r"(x):"r"(c_ep_in[i]));
-        ep_info[XUD_MAX_NUM_EP_OUT+i].ep_xud_chanend = x;
+        ep_info[USB_MAX_NUM_EP_OUT+i].ep_xud_chanend = x;
 
 	    asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_in[i]));
-        ep_info[XUD_MAX_NUM_EP_OUT+i].ep_client_chanend = x;
+        ep_info[USB_MAX_NUM_EP_OUT+i].ep_client_chanend = x;
 
-	    asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((XUD_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
+	    asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
 
         outuint(c_ep_in[i], x);
 
-        ep_info[XUD_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
+        ep_info[USB_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
 
         epStatFlagTableIn[i] = epTypeTableIn[i] & XUD_STATUS_ENABLE;
         epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;
 
-        ep_info[XUD_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
+        ep_info[USB_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
 
-        //ep_info[XUD_MAX_NUM_EP_OUT+i].epAddress = 0x80; // OR in the IN bit
+        //ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = 0x80; // OR in the IN bit
 
     }
 

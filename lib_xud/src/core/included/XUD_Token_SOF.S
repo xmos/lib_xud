@@ -1,5 +1,6 @@
 //.cc_top Pid_Sof.func, Pid_Sof
 // Received SOF token: Reset suspend/reset detection timer
+
 .align 4
 Pid_Sof:
 #ifdef ARCH_L
@@ -8,6 +9,7 @@ Pid_Sof:
 
     in          r11, res[r1];
     bt          r11, InvalidToken;              // If VALID_TOKEN not high, ignore token
+
 #else
 //#include "XUD_G_Crc.S"
     in          r10, res[RXD]                   // Input Frame number
@@ -44,6 +46,8 @@ Pid_Sof_NoChan:
 
     in         r11, res[r1];
     bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
+
+//bl printintln
 #else
 //#include "XUD_G_Crc.S"
     in          r10, res[RXD]                   // Input Frame number

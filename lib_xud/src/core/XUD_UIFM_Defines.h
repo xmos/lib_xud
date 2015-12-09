@@ -5,7 +5,7 @@
 
 #ifndef _XUD_UIFM_DEFINES_H_
 #define _XUD_UIFM_DEFINES_H_ 1
-
+#if 0
 /* Flags Register */
 #ifdef ARCH_L
 #define UIFM_REG_FLAGS           6
@@ -150,6 +150,7 @@
  #define UIFM_OUT_REG_OFFSET        20
 //
 
+#endif
 #endif
 
 #endif // _XUD_UIFM_DEFINES_H_

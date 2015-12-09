@@ -12,8 +12,7 @@
 #endif
 
 #if defined(ARCH_S) || defined(ARCH_X200)
-#include <print.h>
-#include "glx.h"
+#include "XUD_USBTile_Support.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
@@ -30,8 +29,7 @@ XUD_Result_t XUD_SetDevAddr(unsigned addr)
 #ifdef ARCH_L
     /* Set device address in UIFM */
 #if defined(ARCH_S) || defined(ARCH_X200)
-    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, addr);
-    //read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_DEVICE_ADDRESS_REG, data);
+    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
 #else
     /* RegWrite_ loads write port from dp to avoid parallel usage checks */
     /* TODO this should really be locked for mutual exclusion */

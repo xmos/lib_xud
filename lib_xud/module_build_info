@@ -1,13 +1,3 @@
-# This module_build_info is for a module that builds to a library
-
-# The LIBRARY variable needs to be set to the name of the library to
-# be built
-
-LIBRARIES =  xud_u xud_l xud_g xud_x200
-
-#Default is xs1b
-LIB_ARCH_xud_x200 = xs2a
-
 # You can set flags specifically for your module by using the MODULE_XCC_FLAGS
 # variable. So the following
 #
@@ -19,35 +9,32 @@ LIB_ARCH_xud_x200 = xs2a
 #
 # You can also set MODULE_XCC_C_FLAGS, MODULE_XCC_XC_FLAGS etc..
 
-MODULE_XCC_FLAGS = $(XCC_FLAGS) -g -O3
+MODULE_XCC_FLAGS = $(XCC_FLAGS) -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select  -DXUD_FULL_PIDTABLE=1
 
-LIB_XCC_FLAGS_xud_l =  -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -D ARCH_L -DXUD_FULL_PIDTABLE=1 -fschedule 
+XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule -g0
 
-
-#U-series Lib
-LIB_XCC_FLAGS_xud_u =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -save-temps 
-#-DGLX_SUSPHY -DGLX_PWRDWN
-
-LIB_XCC_FLAGS_xud_u_lomem =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -fschedule -D ARCH_L -D ARCH_S -DXUD_USB_TEST_MODE_DISABLED -DXUD_MAX_NUM_EP_IN=3 -DXUD_MAX_NUM_EP_OUT=3 -save-temps 
-
-#LIB_XCC_FLAGS_xud_u_sim =  -Wall -O3 -D UIFM_MODE=3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -D ARCH_L -D ARCH_S -D GLX_SUSPHY -D GLX_PWRDWN -DSIMULATION
-
-#G-Series Lib
-LIB_XCC_FLAGS_xud_g = -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DARCH_G -DXUD_FULL_PIDTABLE=1 -fschedule -march=xs1b 
-
-#xCORE-200 Lib
-LIB_XCC_FLAGS_xud_x200 = -Wall -O3 -D UIFM_MODE=2 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm  -fsubword-select -DXUD_FULL_PIDTABLE=1 -fschedule -DARCH_L -DARCH_X200 -save-temps -mno-dual-issue
-
-DEPENDENT_MODULES = module_usb_shared
-
-EXCLUDE_FILES = XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S XUD_Token_Setup.S XUD_G_Crc.S XUD_TokenJmp.S
-
-# The EXPORT_SOURCE_DIRS variable are the directories that contain
-# include files for the library and any source files that you do not
-# want compiled into the library but supplied as source to the
-# application using the module.
-
-EXPORT_SOURCE_DIRS = src include
+EXCLUDE_FILES = XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S XUD_Token_Setup.S XUD_G_Crc.S XUD_TokenJmp.S XUD_PidJumpTable.S
 
 OPTIONAL_HEADERS += xud_conf.h
+
+VERSION = 3.1.0
+
+DEPENDENT_MODULES = lib_logging(>=2.0.0) lib_xassert(>=2.0.0) lib_gpio(>=1.0.0)
+
+XCC_FLAGS_endpoint0.xc = $(MODULE_XCC_FLAGS) -Os
+XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os
+XCC_FLAGS_dfu_flash.xc = $(MODULE_XCC_FLAGS) -Os
+
+XCC_FLAGS_XUD_Client.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_Manager.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_SetDevAddr.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_DeviceAttach.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_PhyResetUser.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_Support.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_IOLoopCall.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_PowerSig.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_TestMode.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_GetDone.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_SetCrcTableAddr.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
+XCC_FLAGS_XUD_User.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
 

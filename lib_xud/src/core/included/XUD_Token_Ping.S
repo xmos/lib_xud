@@ -23,7 +23,7 @@ PrimaryBufferEmpty_PING:                        // Send ACK
   nop
   nop
   nop
-  ldc          r11, PIDn_ACK
+  ldc          r11, USB_PIDn_ACK
   outpw        res[TXD], r11, 8
   bu           NextTokenAfterPing
 
@@ -32,7 +32,7 @@ PrimaryBufferFull_PING:                         // Send NAK
   nop
   nop
   nop
-  ldc          r11, PIDn_NAK
+  ldc          r11, USB_PIDn_NAK
   outpw        res[TXD], r11, 8
   bu           NextTokenAfterPing
 

@@ -11,12 +11,12 @@
 #include "xud.h"
 
 /* Generic USB defines */
-#include "xud_usb_Defines.h"
+#include "xud_usb_defines.h"
 
 /* Generic USB descriptor defines */
 #include "usb_std_descriptors.h"
 
-/* Genric USB descriptor defines */
+/* Generic USB descriptor defines */
 #include "usb_std_requests.h"
 
 /**

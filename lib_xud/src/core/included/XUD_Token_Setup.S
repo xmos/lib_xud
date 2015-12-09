@@ -141,13 +141,13 @@ LoadSetupBuffer:
 ClearStall:                                     // CRC OK
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint.
     ldaw        r11, dp[handshakeTable_OUT]
-    ldc         r6, PIDn_NAK
+    ldc         r6, USB_PIDn_NAK
     stw         r6, r11[r10]
     ldaw        r11, dp[handshakeTable_IN]
     stw         r6, r11[r10]
 
 SendSetupAck:
-    ldc         r11, PIDn_ACK
+    ldc         r11, USB_PIDn_ACK
     outpw       res[TXD], r11, 8
 
 StoreTailData:                                  // TODO: don't assume setups are 8 bytes + crc

@@ -6,7 +6,6 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_Support.h"
 #include "XUD_TestMode.h"
-///#include "usb.h"
 #include "xud.h"
 
 #ifdef ARCH_S
@@ -18,7 +17,7 @@
 #endif
 
 #if defined(ARCH_S) || defined(ARCH_X200)
-#include "glx.h"
+#include "XUD_USBTile_Support.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
@@ -128,10 +127,10 @@ int XUD_UsbTestModeHandler()
 
     switch(cmd)
     {
-        case WINDEX_TEST_J:
+        case USB_WINDEX_TEST_J:
             //Function Control Reg. Suspend: 1 Opmode 10
 #if defined(ARCH_S) || defined(ARCH_X200)
-            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
+            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif
@@ -142,10 +141,10 @@ int XUD_UsbTestModeHandler()
             }
             break;
 
-        case WINDEX_TEST_K:
+        case USB_WINDEX_TEST_K:
             //Function Control Reg. Suspend: 1 Opmode 10
 #if defined(ARCH_S) || defined(ARCH_X200)
-            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0b1000);
+            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif
@@ -156,13 +155,13 @@ int XUD_UsbTestModeHandler()
             }
             break;
 
-        case WINDEX_TEST_SE0_NAK:
+        case USB_WINDEX_TEST_SE0_NAK:
             // NAK every IN packet if the CRC is correct.
             // Drop into asm to deal with.
             XUD_UsbTestSE0();
             break;
 
-        case WINDEX_TEST_PACKET:
+        case USB_WINDEX_TEST_PACKET:
             XUD_TestMode_TestPacket();
             break;
 

@@ -11,10 +11,7 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_UIFM_Defines.h"
 #include "xud_defines.h"
-
-
-#define SUSPEND_TIMEOUT_us   3000 // 3ms (well, just over.. spec says 3 to 3.125ms)
-#define SUSPEND_TIMEOUT           (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
+#include "XUD_TimingDefines.h"
 
 .section        .cp.const4,"aMc",@progbits,4
 .cc_top suspendTimeout.data
@@ -114,7 +111,7 @@ XUD_UsbTestSE0_loop:
     in          r9, res[r1]
     bt          r9, InvalidTestToken                        // If VALID_TOKEN high, ignore token
 
-    eq          r10, r11, PID_IN
+    eq          r10, r11, USB_PID_IN
     bf          r10, XUD_UsbTestSE0_loop
 
     nop
@@ -123,7 +120,7 @@ XUD_UsbTestSE0_loop:
     nop
     nop
 
-    ldc         r11, PIDn_NAK
+    ldc         r11, USB_PIDn_NAK
 	outpw       res[r2], r11, 8
 	syncr       res[r2]
     bu          XUD_UsbTestSE0_loop

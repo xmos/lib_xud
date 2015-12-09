@@ -4,6 +4,74 @@
 #include <xccompat.h>
 #include "XUD_USB_Defines.h"
 
+/* 9.3 USB Device Requests: Table 9-2 Format of Setup Data */
+/* bmRequestType: */
+#define USB_BM_REQTYPE_DIRECTION_H2D    0           /* Host to device */
+#define USB_BM_REQTYPE_DIRECTION_D2H    1           /* Device to host */
+
+#define USB_BM_REQTYPE_TYPE_STANDARD    0x00
+#define USB_BM_REQTYPE_TYPE_CLASS       0x01
+#define USB_BM_REQTYPE_TYPE_VENDOR      0x02
+
+#define USB_BM_REQTYPE_RECIP_DEV        0x00
+#define USB_BM_REQTYPE_RECIP_INTER      0x01
+#define USB_BM_REQTYPE_RECIP_EP         0x02
+#define USB_BM_REQTYPE_RECIP_OTHER      0x03
+
+#define USB_BMREQ_H2D_STANDARD_DEV      ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_STANDARD << 5) | \
+                                         (USB_BM_REQTYPE_RECIP_DEV))
+#define USB_BMREQ_D2H_STANDARD_DEV      ((USB_BM_REQTYPE_DIRECTION_D2H << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_STANDARD << 5) | \
+                                         (USB_BM_REQTYPE_RECIP_DEV))
+#define USB_BMREQ_H2D_STANDARD_INT      ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_STANDARD << 5) | \
+                                         (USB_BM_REQTYPE_RECIP_INTER))
+#define USB_BMREQ_D2H_STANDARD_INT      ((USB_BM_REQTYPE_DIRECTION_D2H << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_STANDARD << 5) | \
+                                         (USB_BM_REQTYPE_RECIP_INTER))
+#define USB_BMREQ_H2D_STANDARD_EP       ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_STANDARD << 5) | \
+                                         (USB_BM_REQTYPE_RECIP_EP))
+#define USB_BMREQ_D2H_STANDARD_EP       ((USB_BM_REQTYPE_DIRECTION_D2H << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_STANDARD << 5) | \
+                                         (USB_BM_REQTYPE_RECIP_EP))
+
+
+#define USB_BMREQ_H2D_CLASS_INT         ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_CLASS << 5)    | \
+                                         (USB_BM_REQTYPE_RECIP_INTER))
+#define USB_BMREQ_D2H_CLASS_INT         ((USB_BM_REQTYPE_DIRECTION_D2H << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_CLASS << 5)    | \
+                                         (USB_BM_REQTYPE_RECIP_INTER))
+#define USB_BMREQ_H2D_CLASS_EP          ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_CLASS << 5)    | \
+                                         (USB_BM_REQTYPE_RECIP_EP))
+#define USB_BMREQ_D2H_CLASS_EP          ((USB_BM_REQTYPE_DIRECTION_D2H << 7) | \
+                                         (USB_BM_REQTYPE_TYPE_CLASS << 5)    | \
+                                         (USB_BM_REQTYPE_RECIP_EP))
+
+#define USB_BMREQ_H2D_VENDOR_DEV          ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                            (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
+                                            (USB_BM_REQTYPE_RECIP_DEV))
+#define USB_BMREQ_D2H_VENDOR_DEV	      ((USB_BM_REQTYPE_DIRECTION_D2H << 7) | \
+                                            (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
+                                            (USB_BM_REQTYPE_RECIP_DEV))
+
+/* Table 9-4. Standard Request Codes */
+/* bRequest */
+#define USB_GET_STATUS                  0x00
+#define USB_CLEAR_FEATURE               0x01
+#define USB_SET_FEATURE                 0x03
+#define USB_SET_ADDRESS                 0x05
+#define USB_GET_DESCRIPTOR              0x06
+#define USB_SET_DESCRIPTOR              0x07
+#define USB_GET_CONFIGURATION           0x08
+#define USB_SET_CONFIGURATION           0x09
+#define USB_GET_INTERFACE               0x0A
+#define USB_SET_INTERFACE               0x0B
+#define USB_SYNCH_FRAME                 0x0C
+
 /**
  * \var     typedef USB_BmRequestType_t
  * \brief   Defines the Recepient, Type and Direction of a USB request.

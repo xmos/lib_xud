@@ -246,9 +246,9 @@ XUD_IN_RxAck:
     edu         res[RXD]
     shr         r11, r11, 24                    // Shift off junk data to leave ACK
 #ifdef ARCH_L
-    ldc         r9, PID_ACK                     // Check for good ACK (L series strips of negated bits from PID)
+    ldc         r9, USB_PID_ACK                     // Check for good ACK (L series strips of negated bits from PID)
 #else
-    ldc         r9, PIDn_ACK
+    ldc         r9, USB_PIDn_ACK
 #endif
     xor         r9, r11, r9
     edu         res[r1]                         // Disable events on ValidToken port

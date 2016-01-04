@@ -19,7 +19,6 @@
 // R2 : TXD
 // R1 : Valid Token Port
 // R0 : RXD
-//.cc_top InNotReady.func, InNotReady
 .align 4
 InNotReady:
     ldw         r11, sp[SP_EPTYPES_OUT]
@@ -106,25 +105,18 @@ XUD_IN_TxCrc_Tail0:
 TxTail1:
     ldw         r6, r8[r4]                      // Load first data word
     add         r4, r4, 1                       // Buffer index increment
-    // in       r6, res[r5]                     // Get data word
-    // testct   r8, res[r5]
 XUD_IN_TxPid_Tail1:
     outpw    res[TXD], r11, 8                   // Out PID
     out      res[TXD], r6
     crc32         r7, r6, r9
-    //testct   r8, res[r5]
     bf            r4, TxLoop1End
 TxLoop1:
-    //in       r6, res[r5]                      // Get data word
-    //testct   r11, res[r5]
     ldw         r6, r8[r4]                      // Load last data word
     add         r4, r4, 1
     out         res[TXD], r6
     crc32       r7, r6, r9
     bt          r4, TxLoop1
 TxLoop1End:
-    //inct        r6, res[r5]                     // Input end of stream token
-    //in          r6, res[r5]                     // Input tail data
     ldw         r6, r8[r4]                      // Load last data word
     outpw       res[TXD], r6, 8
     crc8        r7, r6, r6, r9
@@ -370,5 +362,4 @@ XUD_IN_TxPid_TailS3:
 XUD_IN_TxCrc_TailS3:
   outpw        res[TXD], r7, 16
   bu           DoneTail
-//.cc_bottom Pid_In.func
 

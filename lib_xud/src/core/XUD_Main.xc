@@ -560,6 +560,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_inv(p_usb_clk);
     set_port_sample_delay(p_usb_clk);
 
+#ifndef SIMULATION
     //This delay controls the capture of rdy
     set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);
 
@@ -569,11 +570,17 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     //this delay th capture of the rdyIn and data.
     set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
+#else
+    set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY+5);
+#endif
+   
     //set_port_sample_delay(p_usb_rxd);
     //set_port_sample_delay(rx_rdy);
 
   	set_port_inv(flag0_port);
+#ifndef SIMULATION
 	set_pad_delay(flag1_port, 2);
+#endif
 
   	start_clock(tx_usb_clk);
   	start_clock(rx_usb_clk);

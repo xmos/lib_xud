@@ -124,9 +124,9 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
                      ' -functions -cycles -clock-blocks -pads -cores')
 
         # The RGMII pins are on tile[1]
-        if phy.get_name() == 'rgmii':
-                vcd_args += (' -tile tile[0] -ports -ports-detailed -instructions'
-                             ' -functions -cycles -clock-blocks -cores')
+        #if phy.get_name() == 'rgmii':
+         #       vcd_args += (' -tile tile[0] -ports -ports-detailed -instructions'
+          #                   ' -functions -cycles -clock-blocks -cores')
 
         sim_args += ['--vcd-tracing', vcd_args]
 

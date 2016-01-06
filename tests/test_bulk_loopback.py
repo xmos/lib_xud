@@ -28,7 +28,8 @@ def do_test(arch, clk, phy, seed):
         packets.append(RxHandshakePacket(timeout=9))
    
         #357 was min IPG supported on bulk loopback to not nak
-        AppendInToken(packets, ep_loopback, inter_pkt_gap=357)
+        #For move from sc_xud to lib_xud (14.1.2 tools) had to increase this to 377 
+        AppendInToken(packets, ep_loopback, inter_pkt_gap=377)
         packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid, timeout=9)) #DATA0
         packets.append(TxHandshakePacket())
 

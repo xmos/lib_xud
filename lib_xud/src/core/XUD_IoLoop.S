@@ -200,10 +200,13 @@ writesuspendvar:
 #include "./included/XUD_Token_SOF.S"
 
 .align 4
-.skip 0
 XUD_LLD_IoLoop:
-utmi_io:
-    entsp       STACK_EXTEND
+#if defined(__XS2A__)
+.issue_mode single
+    ENTSP_lu6  STACK_EXTEND
+#else
+    entsp      STACK_EXTEND
+#endif
     stw         r4, sp[1]
     stw         r5, sp[2]
     stw         r6, sp[3]

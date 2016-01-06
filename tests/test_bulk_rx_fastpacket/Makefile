@@ -20,15 +20,13 @@ APP_NAME =
 
 SHARED_CODE = ../../include
 
-COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0]
+COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -DARCH_L -DARCH_X200 -DSIMULATION
 
 XCC_FLAGS_xs2       = $(COMMON_FLAGS)
 
 # The USED_MODULES variable lists other module used by the application.
+USED_MODULES = lib_xud
 
-USED_MODULES = module_xud module_usb_shared
-
-MODULE_LIBRARIES = xud_x200_sim
 
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure

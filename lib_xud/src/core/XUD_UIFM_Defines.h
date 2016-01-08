@@ -1,11 +1,16 @@
 /**
-  * \brief USeful defines for interfacing UIFM
+  * \brief Defines for interfacing UIFM (L-series and G-series only)
   * Author Ross Owen
   **/
 
+#if defined (ARCH_L) && !defined(ARCH_X200) & !defined(ARCH_S)
+
 #ifndef _XUD_UIFM_DEFINES_H_
 #define _XUD_UIFM_DEFINES_H_ 1
-#if 0
+
+#define UIFM_MODE               2   // ULPI
+
+#if 1
 /* Flags Register */
 #ifdef ARCH_L
 #define UIFM_REG_FLAGS           6
@@ -13,14 +18,16 @@
 #define UIFM_REG_FLAGS           5
 #endif
 
-#define UIFM_FLAGS_RXE           0x1
-#define UIFM_FLAGS_RXA           0x2
-#define UIFM_FLAGS_CRCFAIL       0x4
-#define UIFM_FLAGS_FS_K          0x8
-#define UIFM_FLAGS_FS_J          0x10
-#define UIFM_FLAGS_SE0           0x20
-#define UIFM_FLAGS_NEWTOK        0x40
-#define UIFM_FLAGS_HOSTACK       0x80
+#define UIFM_FLAGS_RXE                  0x1
+#define UIFM_FLAGS_RXA                  0x2
+#define UIFM_FLAGS_CRCFAIL              0x4
+//#define UIFM_FLAGS_FS_K               0x8
+//#define UIFM_FLAGS_FS_J               0x10
+#define XS1_UIFM_IFM_FLAGS_K_MASK       0x10 /* Fullspeed J/High-speed K */
+#define XS1_UIFM_IFM_FLAGS_J_MASK       0x08 /* Fullspeed K/High-speed J */
+#define XS1_UIFM_IFM_FLAGS_SE0_MASK     0x20
+#define UIFM_FLAGS_NEWTOK               0x40
+#define XS1_IFM_FLAGS_HOSTACK           0x80
 
 
 #ifdef ARCH_L
@@ -154,3 +161,4 @@
 #endif
 
 #endif // _XUD_UIFM_DEFINES_H_
+#endif

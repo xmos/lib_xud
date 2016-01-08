@@ -3,14 +3,16 @@
   * @author    Ross Owen, XMOS Limited
   */
 
-#ifndef XS1_PS_XCORE_CTRL0
-#define XS1_PS_XCORE_CTRL0 0x20b
-#endif
+
 
 #include "XUD_UIFM_Defines.h"
 #include <xs1.h>
 
 #ifndef GLX
+#ifndef XS1_PS_XCORE_CTRL0
+#define XS1_PS_XCORE_CTRL0 0x20b
+#endif
+
 .text
 .globl XUD_UIFM_Enable, "f{ui}(ui)"
 .type  XUD_UIFM_Enable, @function

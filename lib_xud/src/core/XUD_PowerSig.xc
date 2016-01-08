@@ -10,7 +10,7 @@
 #include "XUD_Support.h"
 #include "XUD_UIFM_Functions.h"
 #include "XUD_USB_Defines.h"
-//#include "XUD_UIFM_Defines.h"
+#include "XUD_UIFM_Defines.h"
 
 #ifdef ARCH_X200
 #include "xs2_su_registers.h"

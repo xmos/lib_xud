@@ -114,29 +114,29 @@ Err_EndpointProblem:
   // TODO:Endpoint in trouble (send STALL) or disabled (ignore?)...
   bu        NextToken
 
-//Err_BadDataCrc:                         // Data packet received with bad crc: Ignore; wait for timeout (host will re-send)
+//Err_BadDataCrc:                               // Data packet received with bad crc: Ignore; wait for timeout (host will re-send)
   //bu        NextToken
 
-Err_BadPidSeq:                            // Bad pid sequencing (already ACKed good data).  Ignore data
+Err_BadPidSeq:                                  // Bad pid sequencing (already ACKed good data).  Ignore data
   bu        NextToken
 
 XUD_TokenOut_BufferFull:
   ldw       r9, dp[flag1_port]
   setc      res[r9], XS1_SETC_RUN_CLRBUF
   setc      res[r9], XS1_SETC_COND_NEQ
-XUD_TokenOut_WaitForPacketEnd:                        // Wait for end of data then send NAK
+XUD_TokenOut_WaitForPacketEnd:                  // Wait for end of data then send NAK
   in        r11, res[r9]
   setc      res[r9], XS1_SETC_COND_EQ
   in        r11, res[r9]
-                                              // TODO: Observe interpacket delay
+                                                // TODO: Observe interpacket delay
 #ifndef XUD_NAK_ISO_OUT
-  ldw       r4, sp[(STACK_EXTEND+5)]          // Load ep type table
-  ldw       r4, r4[r10]                       // load EP type
+  ldw       r4, sp[(STACK_EXTEND+5)]            // Load ep type table
+  ldw       r4, r4[r10]                         // load EP type
   bf        r4, PrimaryBufferFull_NoNak
 #endif
 
   // LOAD HANDSHAKE PID or STALL
-  ldaw       r5, dp[handshakeTable_OUT]                // Load handshake table
+  ldaw       r5, dp[handshakeTable_OUT]         // Load handshake table
   ldw        r11, r5[r10]
   //ldc       r11, 0x5a
   outpw     res[TXD], r11, 8

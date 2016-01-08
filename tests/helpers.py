@@ -16,9 +16,11 @@ def create_if_needed(folder):
 
 def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                        complete_fn=None, expect_loopback=False,
-                       dut_exit_time=350000, initial_del=35000):
-    clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-    phy = UsbPhy('tile[0]:XS1_PORT_8B',
+                       dut_exit_time=350000, initial_del=35000, arch='xs2'):
+
+    if arch=='xs2':
+        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
+        phy = UsbPhy('tile[0]:XS1_PORT_8B',
                          'tile[0]:XS1_PORT_1F', #rxa
                          'tile[0]:XS1_PORT_1I', #rxv
                          'tile[0]:XS1_PORT_1G', #rxe
@@ -31,6 +33,23 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          do_timeout=do_timeout, complete_fn=complete_fn,
                          expect_loopback=expect_loopback,
                          dut_exit_time=dut_exit_time, initial_delay=initial_del)
+  
+    if arch=='xs1':
+        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
+        phy = UsbPhy('tile[0]:XS1_PORT_8C',
+                         'tile[0]:XS1_PORT_1F', #rxa
+                         'tile[0]:XS1_PORT_1M', #rxv
+                         'tile[0]:XS1_PORT_1P', #rxe
+                         'tile[0]:XS1_PORT_1N', #vld
+                         'tile[0]:XS1_PORT_8A', #txd
+                         'tile[0]:XS1_PORT_1K', #txv
+                         'tile[0]:XS1_PORT_1H', #txrdy
+                         clk,
+                         verbose=verbose, test_ctrl=test_ctrl,
+                         do_timeout=do_timeout, complete_fn=complete_fn,
+                         expect_loopback=expect_loopback,
+                         dut_exit_time=dut_exit_time, initial_delay=initial_del)
+        
     return (clk, phy)
 
 def run_on(**kwargs):
@@ -46,11 +65,16 @@ def run_on(**kwargs):
 
 def runall_rx(test_fn):
     
-    (tx_clk_60, usb_phy) = get_usb_clk_phy(verbose=False)
+   
+    if run_on(arch='xs1'):
+        (tx_clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs1')
+        seed = args.seed if args.seed else random.randint(0, sys.maxint)
+        test_fn('xs1', tx_clk_60, usb_phy, seed)
     
-    seed = args.seed if args.seed else random.randint(0, sys.maxint)
-    test_fn('xs2', tx_clk_60, usb_phy, seed)
-
+    if run_on(arch='xs2'):
+        (tx_clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
+        seed = args.seed if args.seed else random.randint(0, sys.maxint)
+        test_fn('xs2', tx_clk_60, usb_phy, seed)
 
 
 def do_rx_test(arch, tx_clk, tx_phy, packets, test_file, seed,
@@ -63,6 +87,8 @@ def do_rx_test(arch, tx_clk, tx_phy, packets, test_file, seed,
     resources = xmostest.request_resource("xsim")
 
     binary = '{testname}/bin/{arch}/{testname}_{arch}.xe'.format(testname=testname, arch=arch)
+
+    print binary
 
     if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
         print "Running {test}: {arch} arch sending {n} packets at {clk} (seed {seed})".format(
@@ -112,7 +138,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
     if args and args.trace:
         log_folder = create_if_needed("logs")
         #if phy.get_name() == 'rgmii':
-        arch = 'xs2'
+        #arch = 'xs2'
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(
             log=log_folder, test=testname,
             clk=clk.get_name(), phy=phy.get_name(), arch=arch)

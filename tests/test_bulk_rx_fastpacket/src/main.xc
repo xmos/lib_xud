@@ -173,7 +173,7 @@ int main()
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
         TestEp_Bulk_Rx(c_ep_out[3], 3);
-        TestEp_Bulk_Tx(c_ep_in[3], 3);
+        //TestEp_Bulk_Tx(c_ep_in[3], 3);
     }
 
     return 0;

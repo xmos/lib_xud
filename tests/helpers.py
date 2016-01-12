@@ -37,7 +37,7 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
     if arch=='xs1':
         clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
         phy = UsbPhy('tile[0]:XS1_PORT_8C',
-                         'tile[0]:XS1_PORT_1F', #rxa
+                         'tile[0]:XS1_PORT_1O', #rxa
                          'tile[0]:XS1_PORT_1M', #rxv
                          'tile[0]:XS1_PORT_1P', #rxe
                          'tile[0]:XS1_PORT_1N', #vld

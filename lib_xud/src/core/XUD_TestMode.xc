@@ -9,7 +9,7 @@
 #include "xud.h"
 
 #ifdef ARCH_S
-#include "xa1_registers.h"
+#include "xs1_su_registers.h"
 #endif
 
 #ifdef ARCH_X200
@@ -129,8 +129,10 @@ int XUD_UsbTestModeHandler()
     {
         case USB_WINDEX_TEST_J:
             //Function Control Reg. Suspend: 1 Opmode 10
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_X200)
             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
+#elif defined(ARCH_S)
+            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif
@@ -143,8 +145,10 @@ int XUD_UsbTestModeHandler()
 
         case USB_WINDEX_TEST_K:
             //Function Control Reg. Suspend: 1 Opmode 10
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_X200)
             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
+#elif defined(ARCH_S)
+            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
 #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
 #endif

@@ -3,8 +3,9 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_UIFM_Defines.h"
 #include "xud.h"
+
 #ifdef ARCH_S
-#include <xa1_registers.h>
+#include <xs1_su_registers.h>
 #endif
 
 #ifdef ARCH_X200
@@ -28,8 +29,10 @@ XUD_Result_t XUD_SetDevAddr(unsigned addr)
     unsigned data;
 #ifdef ARCH_L
     /* Set device address in UIFM */
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_X200)
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
+#elif defined(ARCH_S)
+    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
 #else
     /* RegWrite_ loads write port from dp to avoid parallel usage checks */
     /* TODO this should really be locked for mutual exclusion */

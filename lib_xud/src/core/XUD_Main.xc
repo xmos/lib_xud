@@ -34,7 +34,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #endif
 
 #ifdef ARCH_S
-#include "xa1_registers.h"
+#include "xs1_su_registers.h"
 #endif
 
 #ifdef ARCH_X200
@@ -331,9 +331,12 @@ XUD_ep_info ep_info[USB_MAX_NUM_EP];
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
 {
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_X200)
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM, ((1<<XS1_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
         | ((1<<XS1_UIFM_IFM_FLAGS_K_SHIFT)<<8) | (1 << XS1_UIFM_IFM_FLAGS_J_SHIFT));
+#elif defined(ARCH_S)
+    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_MASK_NUM, ((1<<XS1_SU_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
+        | ((1<<XS1_SU_UIFM_IFM_FLAGS_K_SHIFT)<<8) | (1 << XS1_SU_UIFM_IFM_FLAGS_J_SHIFT));
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK0, 0x8);  // flag0_port - J
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK1, 0x10); // flag1_port - K
@@ -718,6 +721,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #else
+#ifndef SIMULATION
         /* Reset transceiver */
         if (!isnull(p_rst))
         {
@@ -728,14 +732,13 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             XUD_PhyReset_User();
         }
 #endif
+#endif
 
         /* Wait for USB clock (typically 1ms after reset) */
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
-
-    //printint(1);
 
 #if !defined(ARCH_S) && !defined(ARCH_X200)
         /* Configure ports and clock blocks for use with UIFM */
@@ -748,7 +751,13 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #if (defined(ARCH_L) && !defined(ARCH_X200)) || defined(ARCH_G)
         /* For L/G series we wait for clock from phy, then enable UIFM logic */
-        XUD_UIFM_Enable(UIFM_MODE); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
+        // 3 u series, else 2
+#if defined (ARCH_S)
+        XUD_UIFM_Enable(3); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
+#else
+        XUD_UIFM_Enable(2); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
+#endif
+
 #endif
 
 #if defined(ARCH_X200)
@@ -775,7 +784,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
 #elif defined(ARCH_S) 
-                        read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
+                        read_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                         if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
 #elif ARCH_L
                         x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);

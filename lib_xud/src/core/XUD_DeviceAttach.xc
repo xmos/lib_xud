@@ -1,3 +1,4 @@
+#ifndef SIMULATION
 #include <xs1.h>
 #include <print.h>
 #include <platform.h>
@@ -169,4 +170,4 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
        }
    }
 }
-
+#endif

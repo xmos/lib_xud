@@ -18,14 +18,28 @@ APP_NAME =
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to
 # xcc for the final link (mapping) stage.
 
-SHARED_CODE = ../../include
+SHARED_CODE = ../../shared_src
 
-COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -DARCH_L -DARCH_X200 -DSIMULATION
+COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -DSIMULATION -DARCH_L
 
-XCC_FLAGS_xs2       = $(COMMON_FLAGS)
+XCC_FLAGS_xs2       = $(COMMON_FLAGS) -DARCH_X200 -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
+
+XCC_FLAGS_xs1       = $(COMMON_FLAGS) -DARCH_S -DXUD_SERIES_SUPPORT=XUD_U_SERIES
+
+
+
+ifeq ($(CONFIG),$(filter $(CONFIG),xs1))
+	TARGET = test_xs1.xn
+endif
+
+ifeq ($(CONFIG),$(filter $(CONFIG),xs2))
+	TARGET = test.xn
+endif
+
+
 
 # The USED_MODULES variable lists other module used by the application.
-USED_MODULES = lib_xud
+USED_MODULES = lib_xud 
 
 
 #=============================================================================

@@ -12,4 +12,9 @@
 *.sw*
 *.zip
 *.log
+*.pyc
+*.expect
+*.so
+*/logs/*
+test_results.csv
 

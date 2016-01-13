@@ -65,16 +65,12 @@ int main()
     chan c_sync;
     chan c_sync_iso;
 
-    //p_rxDataCheck = char_array_to_xc_ptr(g_rxDataCheck);
-    //p_txDataCheck = char_array_to_xc_ptr(g_txDataCheck);
-    //p_txLength = array_to_xc_ptr(g_txLength);
-
     par
     {
 
         XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                p_usb_rst, clk, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
         TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1);
     }

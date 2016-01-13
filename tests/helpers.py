@@ -16,7 +16,7 @@ def create_if_needed(folder):
 
 def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                        complete_fn=None, expect_loopback=False,
-                       dut_exit_time=350000, initial_del=36000, arch='xs2'):
+                       dut_exit_time=350000, initial_del=40000, arch='xs2'):
 
     if arch=='xs2':
         clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)

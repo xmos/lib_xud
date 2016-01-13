@@ -16,7 +16,6 @@ WaitForEndDataPacket:
 // r4: zero
 // r7: crc init
 // r9: crc poly
-//.cc_top doRXData.func, doRXData
 .align 4
 .skip 0
 doRXData:
@@ -82,7 +81,7 @@ OutTail3:
     stw         r11, r1[r4]                     // Store last data
     crc32       r6, r11, r9
     ldw         r11, sp[12]
-    crc8        r6, r1, r2, r9                  // Massive hack - use the fact the the bottom byte of port id is 0.. saves us a ldc
+    crc8        r6, r1, r2, r9                  // Use the fact the the bottom byte of port id is 0.. saves us an ldc
     retsp       0
 
 // Four Tail Bytes
@@ -95,30 +94,20 @@ OutTail4:
 OutTail5:
     bu          ERR_EndIn5
 
-//.cc_bottom doRXData.func
-
-
-.text
-
-
-//.cc_top Pid_Setup.func, Pid_Setup
-.align 4
-
-
 
 // We received a setup token.  This is much the same as out token, apart from:
 // - Can't NAK a setup
 // - Data PID will always be DATA0
 // - Payload will always be 8 bytes
-// r10 = ep number
 
+.align 4
 Pid_Setup:
 #ifdef ARCH_L
-    inpw      r10, res[RXD], 8;                        /* Read EP Number */
-    shr       r10, r10, 24;                            /* Shift off junk */
+    inpw      r10, res[RXD], 8;                 // Read EP Number 
+    shr       r10, r10, 24;                     // Shift off junk
 
     in         r4, res[r1];
-    bt         r4, InvalidToken;                       /* If VALID_TOKEN not high, ignore token - PORT INVERTED*/
+    bt         r4, InvalidToken;                // If VALID_TOKEN not high, ignore token - PORT INVERTED 
 #else
     #include "XUD_G_Crc.S"
 #endif
@@ -128,7 +117,7 @@ Pid_Setup:
 
 
 SetupReady:
-    //ldw       r10, sp[10]                       // Load RxA Port ID (r1)
+    //ldw       r10, sp[10]                     // Load RxA Port ID (r1)
                                                 // TODO Do a timeout here?
 
 LoadSetupBuffer:
@@ -155,7 +144,6 @@ StoreTailData:                                  // TODO: don't assume setups are
     stw         r11, r5[r10]                    // Clear ready
     ldw         r11, r3[1]                      // Load chanend
 
-
     out         res[r11], r10
     outct       res[r11], 0                     // Send zero control token for SETUP. Tail ignored since always expect 8 bytes
     bu          NextTokenAfterOut 			    // Go to next wait for next token
@@ -176,4 +164,3 @@ BadDataCrcSetup:
     outct       res[r5], 9
     in          r11, res[r5]                    // TODO should only need CT
     bu          NextToken
-//.cc_bottom Pid_Setup.func

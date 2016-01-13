@@ -14,7 +14,11 @@ LoadStatTablePing:
     ldw       r11, r5[r10]                      // Load relevant EP chanend
     bf        r11, PrimaryBufferFull_PING
 
+.scheduling off
 PrimaryBufferEmpty_PING:                        // Send ACK
+    nop
+    nop
+    nop
     nop
     nop
     nop
@@ -28,7 +32,11 @@ PrimaryBufferFull_PING:                         // Send NAK
     nop
     nop
     nop
+    nop
+    nop
+    nop
     ldc          r11, USB_PIDn_NAK
     outpw        res[TXD], r11, 8
     bu           NextTokenAfterPing
+.scheduling default
 

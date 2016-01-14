@@ -28,7 +28,8 @@ def do_test(arch, clk, phy, seed):
    
         #XXwas min IPG supported on iso loopback to not nak
         #This was 420, had to increase when moved to lib_xud (14.1.2 tools)
-        AppendInToken(packets, ep_loopback, inter_pkt_gap=437)
+        # increased again from 437 when SETUP/OUT checking added
+        AppendInToken(packets, ep_loopback, inter_pkt_gap=477)
         packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid, timeout=9)) #DATA0
 
         #No toggle for Iso
@@ -40,7 +41,7 @@ def do_test(arch, clk, phy, seed):
     packets.append(TxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
     packets.append(RxHandshakePacket())
    
-    AppendInToken(packets, ep_loopback_kill, inter_pkt_gap=357)
+    AppendInToken(packets, ep_loopback_kill, inter_pkt_gap=397)
     packets.append(RxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
     packets.append(TxHandshakePacket())
 

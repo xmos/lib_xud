@@ -23,8 +23,9 @@ def do_test(arch, clk, phy, seed):
 
     for pkt_length in range(10, 20):
     
-        #min 237
-        AppendOutToken(packets, ep_loopback, inter_pkt_gap=237)
+        # min 237
+        # increased to 277 when SETUP/OUT checking added
+        AppendOutToken(packets, ep_loopback, inter_pkt_gap=277)
         packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
         packets.append(RxHandshakePacket(timeout=9))
         

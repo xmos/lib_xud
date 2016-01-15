@@ -290,8 +290,16 @@ XUD_GetData_Retry:
 
 XUD_GetData_DataEnd:
     in         r3, res[r10]                     // Input packet "word" length
+
+XUD_GetData_SetupCheck:                         // Check if we have OUT or SETUP
+    testct     r11, res[r10]
+    bt         r11, XUD_GetData_GotSetup
     int        r11, res[r10]                    // r11 is tail length (bytes)
     shr        r11, r11, 3
+    bu         XUD_GetDataCalcDataLength
+
+XUD_GetData_GotSetup:
+    inct       r11, res[r10]                    // Expect r11: 0
 
 XUD_GetDataCalcDataLength:
     shl        r3, r3, 2                        // Num received words to bytes

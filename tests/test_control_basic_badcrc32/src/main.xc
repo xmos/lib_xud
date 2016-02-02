@@ -140,7 +140,7 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
     //while(1)
     {
         /* Wait for Setup data */
-        res = XUD_GetSetupBuffer(c_ep0_out, buffer, slength);
+        res = XUD_GetControlBuffer(c_ep0_out, buffer, slength);
 
         if(slength != 8)
         {

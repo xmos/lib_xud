@@ -140,7 +140,9 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
     //while(1)
     {
         /* Wait for Setup data */
-        res = XUD_GetSetupBuffer(c_ep0_out, buffer, slength);
+        res = XUD_GetControlBuffer(c_ep0_out, buffer, slength);
+
+        /* TODO Check for control */
 
         if(slength != 8)
         {
@@ -153,7 +155,7 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
             fail(FAIL_RX_DATAERROR);
         }
 
-        res = XUD_GetBuffer(c_ep0_out, buffer, slength);
+        res = XUD_GetControlBuffer(c_ep0_out, buffer, slength);
 
         if(RxDataCheck(buffer, length, epNum))
         {
@@ -164,14 +166,14 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
         /* Send 0 length back */
         SendTxPacket(c_ep0_in, 0, epNum);
 
-#if 0
-        res =  XUD_GetBuffer(c_ep0_out, buffer, length);
+#if 1
+        res =  XUD_GetControlBuffer(c_ep0_out, buffer, length);
         if(RxDataCheck(buffer, length, epNum))
         {
             fail(FAIL_RX_DATAERROR);
         }
 
-        res =  XUD_GetBuffer(c_ep0_out, buffer, length);
+        res =  XUD_GetControlBuffer(c_ep0_out, buffer, length);
         if(RxDataCheck(buffer, length, epNum))
         {
             fail(FAIL_RX_DATAERROR);
@@ -182,7 +184,7 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
         SendTxPacket(c_ep0_in, 0, epNum);
 
          /* Wait for Setup data */
-        res = XUD_GetSetupBuffer(c_ep0_out, buffer, slength);
+        res = XUD_GetControlBuffer(c_ep0_out, buffer, slength);
 
         if(slength != 8)
         {
@@ -200,7 +202,7 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
         SendTxPacket(c_ep0_in, length, epNum);
         SendTxPacket(c_ep0_in, length, epNum);
 
-        res =  XUD_GetBuffer(c_ep0_out, buffer, length);
+        res =  XUD_GetControlBuffer(c_ep0_out, buffer, length);
         if(length != 0)
         {
             fail(FAIL_RX_DATAERROR);

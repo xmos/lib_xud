@@ -164,6 +164,7 @@ typedef enum XUD_Result
 {
     XUD_RES_RST = -1,
     XUD_RES_OKAY = 0,
+    XUD_RES_CTL,       /* Received a control trans */
     XUD_RES_ERR,
 } XUD_Result_t;
 
@@ -239,6 +240,9 @@ int XUD_Manager(/*tileref * unsafe usbtileXUD_res_t &xudres, */ chanend c_epOut[
 XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 
+XUD_Result_t XUD_GetControlBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
+
+
 /**
  * \brief   Request setup data from usb buffer for a specific endpoint, pauses until data is available.
  * \param   ep_out      The OUT endpoint identifier (created by ``XUD_InitEP``).
@@ -246,7 +250,7 @@ XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARA
  * \param   length      Length of the buffer received (expect 8 bytes)
  * \return  XUD_RES_OKAY on success, for errors see ``Status Reporting``_.
  **/
-XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
+//XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
 
 /**
@@ -259,6 +263,9 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
 XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
+
+
+XUD_Result_t XUD_SetControlBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
 
 
 /**

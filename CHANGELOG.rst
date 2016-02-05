@@ -1,9 +1,13 @@
 sc_xud Change Log
 =================
 
+2.4.1
+-----
+    * RESOLVED:   Initialisation failure on U-series devices
+
 2.4.0
 -----
-    * RESOLVED:   Intermittent initialisation issues with xCORE-200.
+    * RESOLVED:   Intermittent initialisation issues with xCORE-200
     * RESOLVED:   SETUP transaction data CRC not properly checked
     * RESOLVED:   RxError line from phy handled 
     * RESOLVED:   Isochronous IN endpoints now send an 0-length packet if not ready rather than

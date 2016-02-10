@@ -164,8 +164,8 @@ typedef enum XUD_Result
 {
     XUD_RES_RST = -1,
     XUD_RES_OKAY = 0,
-    XUD_RES_CTL,       /* Received a control trans */
-    XUD_RES_ERR,
+    XUD_RES_CTL =  1,       /* Received a control trans */
+    XUD_RES_ERR =  2,
 } XUD_Result_t;
 
 #if defined(__XC__) || defined(__DOXYGEN__)

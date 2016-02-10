@@ -125,7 +125,7 @@ LoadSetupBuffer:
                                                 // r8: Data tail size (bytes)
     clre
     eq          r1, r6, r11                     // Check for good CRC16
-    bf         r1, NextTokenAfterOut            // Check for bad crc
+    bf          r1, NextTokenAfterOut           // Check for bad crc
 
 ClearStall:                                     // CRC OK
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint.
@@ -144,7 +144,7 @@ StoreTailData:                                  // TODO: don't assume setups are
     stw         r11, r5[r10]                    // Clear ready
     ldw         r11, r3[1]                      // Load chanend
 
-    out         res[r11], r10
+    out         res[r11], r4
     outct       res[r11], 0                     // Send zero control token for SETUP. Tail ignored since always expect 8 bytes
     bu          NextTokenAfterOut 			    // Go to next wait for next token
 

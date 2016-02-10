@@ -72,18 +72,27 @@ int TestEp_Bulk_Tx(chanend c_in1, int epNum1, int die)
 
 #define FAIL_RX_DATAERROR   0
 #define FAIL_RX_LENERROR    1
+#define FAIL_RX_EXPECTED_CTL 2
+#define FAIL_RX_BAD_RETURN_CODE 3
 
 unsigned fail(int x)
 {
-    printstr("\nXCORE: ### FAIL ******");
     switch(x)
     {
         case FAIL_RX_DATAERROR:
-		    printstr("XCORE RX Data Error\n");
+		    printstr("\nXCORE: ### FAIL ### : XCORE RX Data Error\n");
             break;
 
         case FAIL_RX_LENERROR:
-		    printstr("XCORE RX Length Error\n");
+		    printstr("\nXCORE: ### FAIL ### : XCORE RX Length Error\n");
+            break;
+
+        case FAIL_RX_EXPECTED_CTL:
+            printstr("\nXCORE: ### FAIL ### : Expected a setup\n");
+            break;
+        
+        case FAIL_RX_BAD_RETURN_CODE:
+            printstr("\nXCORE: ### FAIL ### : Unexpcected return code\n");
             break;
 
     }

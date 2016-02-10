@@ -37,7 +37,7 @@ def do_test(arch, tx_clk, tx_phy, seed):
 
     packets.append(TokenPacket( 
         inter_pkt_gap=2000, 
-        pid=0x69, #OUT
+        pid=0x69, #IN
         endpoint=ep))
    
     #Expect 0-length

@@ -20,7 +20,6 @@ def do_test(arch, tx_clk, tx_phy, seed):
     packets = []
 
     AppendSetupToken(packets, ep)
-
     packets.append(TxDataPacket(rand, length=8, pid=3))
     packets.append(RxHandshakePacket(timeout=11))
 
@@ -35,14 +34,12 @@ def do_test(arch, tx_clk, tx_phy, seed):
         inter_pkt_gap=2000, 
         pid=0xe1, #OUT
         endpoint=ep))
-
     packets.append(TxDataPacket(rand, length=10, pid=0xb))
-    
     packets.append(RxHandshakePacket())
 
     packets.append(TokenPacket( 
         inter_pkt_gap=2000, 
-        pid=0x69, #OUT
+        pid=0x69, #IN
         endpoint=ep))
    
     #Expect 0-length

@@ -79,7 +79,12 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
         }
 
         /* Send 0 length back */
-        SendTxPacket(c_ep0_in, 0, epNum);
+        res = SendControlPacket(c_ep0_in, 0, epNum);
+
+        if(res != XUD_RES_OKAY)
+        {
+            fail(FAIL_RX_BAD_RETURN_CODE);
+        }
 
         exit(0);
     }
@@ -89,12 +94,6 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-    chan c_sync;
-    chan c_sync_iso;
-
-    //p_rxDataCheck = char_array_to_xc_ptr(g_rxDataCheck);
-    //p_txDataCheck = char_array_to_xc_ptr(g_txDataCheck);
-    //p_txLength = array_to_xc_ptr(g_txLength);
 
     par
     {

@@ -8,6 +8,7 @@
 .set too_many_cores, main.maxcores > 6
 .assert 0, too_many_cores, "Warning: More than 6 cores used on a tile. Ensure this is not the case on tile running XUD."
 
+#if 0
 //int XUD_GetSetupData(XUD_ep e_out, unsigned buffer[], unsigned &length);
 //                     r0            r1                 r2
 .globl XUD_GetSetupData
@@ -253,7 +254,7 @@ XUD_GetSetupData_Select_Reset:
 .set XUD_GetSetupData_Select.locnointerfaceaccess, 1
 .set XUD_GetSetupData_Select.locnonotificationselect, 1
 
-
+#endif
 
 
 
@@ -298,9 +299,6 @@ XUD_GetData_SetupCheck:                         // Check if we have OUT or SETUP
     shr        r11, r11, 3
     bu         XUD_GetDataCalcDataLength
 
-XUD_GetData_GotSetup:
-    inct       r11, res[r10]                    // Expect r11: 0
-
 XUD_GetDataCalcDataLength:
     shl        r3, r3, 2                        // Num received words to bytes
     add        r3, r11, r3                      // r11: Total bytes received (Note this includes 2 byte crc)
@@ -341,6 +339,38 @@ XUD_GetData_Reset:
 Return:
     ldw        r10, sp[1]
     retsp      4
+
+///////
+XUD_GetData_GotSetup:
+    inct       r11, res[r10]                    // Expect r11: 0
+
+//XUD_GetSetupData_CheckPid:
+                                                // We expect data0 else something gone wrong...
+                                                // TODO..
+
+XUD_GetDataSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
+#if (XUD_SERIES_SUPPORT==3)
+    ldc         r11, USB_PIDn_DATA1
+#else
+    ldc         r11, USB_PID_DATA1
+#endif
+    stw         r11, r0[4]                      // Reset OUT toggle
+
+    ldc         r11, 640                        // Assuming MAX_NUM_EPS is 16 and struct size is 40 here!
+    add         r11, r0, r11
+
+    ldc         r10, USB_PIDn_DATA1
+    stw         r10, r11[4]                     // Reset IN toggle
+
+    ldc         r0, 8                           // Return 8 byte length (TODO really could return actual length here)
+    stw         r0, r2[0]
+
+    ldc         r0, 1                           // Return got control XUD_RES_CTL
+    
+    ldw        r10, sp[1]
+    retsp       4
+
+
 
 .size XUD_GetData, .-XUD_GetData
 .cc_bottom XUD_GetData.func

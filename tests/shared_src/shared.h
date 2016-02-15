@@ -21,18 +21,32 @@ void exit(int);
 
 
 #pragma unsafe arrays
-void SendTxPacket(XUD_ep ep, int length, int epNum)
+XUD_Result_t SendTxPacket(XUD_ep ep, int length, int epNum)
 {
     unsigned char buffer[1024];
-    unsigned char x;
 
     for (int i = 0; i < length; i++)
     {
         buffer[i] = g_txDataCheck[epNum]++;
     }
 
-    XUD_SetBuffer(ep, buffer, length);
+    return XUD_SetBuffer(ep, buffer, length);
 }
+
+#pragma unsafe arrays
+XUD_Result_t SendControlPacket(XUD_ep ep, int length, int epNum)
+{
+    unsigned char buffer[1024];
+
+    for (int i = 0; i < length; i++)
+    {
+        buffer[i] = g_txDataCheck[epNum]++;
+    }
+
+    return XUD_SetControlBuffer(ep, buffer, length);
+}
+
+
 
 #pragma unsafe arrays
 int TestEp_Bulk_Tx(chanend c_in1, int epNum1, int die)
@@ -109,14 +123,16 @@ unsafe int RxDataCheck(unsigned char b[], int l, int epNum)
         //read_byte_via_xc_ptr_indexed(y, p_rxDataCheck, epNum);
         if(b[i] != g_rxDataCheck_[epNum])
         {
-            printstr("#### Mismatch on EP: ");
-            printint(epNum); 
-            printstr(". Got:");
-            printhex(b[i]);
-            printstr(" Expected:");
-            printhexln(g_rxDataCheck[epNum]);
+            printstr("#### Mismatch on EP.. \n");
+            //printint(epNum); 
+            //printstr(". Got:");
+            //printhex(b[i]);
+            //printstr(" Expected:");
+            //printhexln(g_rxDataCheck[epNum]);
             //printintln(l); // Packet length
+            printf("### Mismatch on EP: %d. Got %d, Expected %d\n", epNum, b[i], g_rxDataCheck[epNum]);
             return 1;
+    
         }
 
         g_rxDataCheck_[epNum]++;

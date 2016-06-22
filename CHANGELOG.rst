@@ -1,6 +1,14 @@
 sc_xud Change Log
 =================
 
+2.4.2
+-----
+    * CHANGE:     VBUS connection to xCORE-200 no longer required when using XUD_PWR_BUS i.e. 
+                  for bus-powered devices. This removes the need to any protection circuitry and 
+                  allows for a reduced BOM.
+                  Note, VBUS should still be present for self powered devices in order to pass USB
+                  compliance tests.
+
 2.4.1
 -----
     * RESOLVED:   Initialisation failure on U-series devices

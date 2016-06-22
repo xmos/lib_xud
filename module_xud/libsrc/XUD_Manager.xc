@@ -753,6 +753,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         XUD_UIFM_Enable(UIFM_MODE); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 #endif
 
+#if defined(ARCH_X200)
+        /* Remove requirement for VBUS in bus-powered mode */
+        if(pwrConfig == XUD_PWR_BUS)
+        {
+             write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, 0x50, 6);
+        }
+#endif
+
 #if defined(ARCH_S) || defined(ARCH_X200)
 #ifndef SIMULATION
         write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG,

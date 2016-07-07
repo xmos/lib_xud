@@ -36,6 +36,9 @@ void XUD_UIFM_PwrSigFlags();
 #define STATE_START_TO       (STATE_START_TO_us * REF_CLK_FREQ)
 #define DELAY_6ms_us      6000
 #define DELAY_6ms            (DELAY_6ms_us * REF_CLK_FREQ)
+#define T_FILTSE0          250
+
+#define SUSPEND_VBUS_POLL_TIMER_TICKS 500000
 
 extern buffered in  port:32 p_usb_clk;
 extern in  port reg_read_port;
@@ -365,106 +368,86 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 
 
 #else
+    t :> time;
 
-    /* "Normal" polling suspend for L or S series */
-    while(1)
+    // linestate is K on flag0 (inverted), J on flag1, SE0 on flag2
+    // note that if you look in device-attach function, high-speed chirps are opposite polarity
+    // that is chirp K on flag1 and chirp J on flag0 (inverted)
+    select
     {
-        /* TODO - Use a timer to save some power */
-        if(pwrConfig == XUD_PWR_SELF)
-        {
-            unsigned x;
-#if defined(ARCH_S) || defined(ARCH_X200)
-            read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
-            if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
-#elif ARCH_L
-            x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
-            if(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))
-#else
-            if(1)
-#endif
+        case (pwrConfig == XUD_PWR_SELF) => t when timerafter(time + SUSPEND_VBUS_POLL_TIMER_TICKS) :> void:
+            read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, tmp);
+            if (!(tmp & (1 << XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT)))
             {
-                // VBUS VALID
-            }
-            else
-            {
-
-#if defined(ARCH_S) || defined(ARCH_X200)
-                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
-#else
-                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x9);
-#endif
+                // VBUS not valid
+                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4 /* OpMode 01 */);
                 return -1;
             }
-        }
+            break;
 
-        /* Read flags reg... */
-#if defined(ARCH_S) || defined(ARCH_X200)
-        read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
-#else
-        tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-#endif
-        /* Look for SE0 - RESET! */
-        if(tmp & UIFM_FLAGS_SE0)
-        {
+        // SE0, that looks like a reset
+        case flag2_port when pinseq(1) :> void:
             t :> time;
             select
             {
                 case flag2_port when pinseq(0) :> void:
-                    /* SE0 gone away, keep looping */
+                    // SE0 gone away, keep looping
                     break;
 
-                case t when timerafter(time+250) :> void: /* TFILTSEO */
+                case t when timerafter(time + T_FILTSE0) :> void:
+                    // consider 2.5ms a complete reset
                     t :> time;
-                    t when timerafter(time+250000) :> void;
-
+                    t when timerafter(time + 250000) :> void;
                     return 1;
             }
-        }
-        /* Look for HS J / FS K - RESUME! */
-        if (tmp & UIFM_FLAGS_FS_K)
-        {
-            /* Wait for end of resume (SE0) */
-            while(1)
-            {
-#if defined(ARCH_S) || defined(ARCH_X200)
-                read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
-#else
-                tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-#endif
+            break;
 
-                if(tmp & UIFM_FLAGS_FS_J)
-                {
-                   break;
-                }
-                if(tmp & UIFM_FLAGS_SE0)
-                {
-                    /* Resume detected from suspend: switch back to HS (suspendm high) and continue...*/
+        // K, start of resume
+        case flag0_port when pinseq(0) :> void: // inverted port
+            // TODO debounce?
+            unsafe chanend c;
+            asm("getr %0, 2" : "=r"(c)); // XS1_RES_TYPE_CHANEND=2 (no inline assembly immediate operands in xC)
+#ifdef ARCH_X200
+            // start high-speed switch so it's completed as quickly as possible after end of resume is seen
+            unsafe {
+                write_periph_word_start((chanend)c, USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+            }
+#endif
+            select
+            {
+                // J, unexpected, return
+                case flag1_port when pinseq(1) :> void:
+#ifdef ARCH_X200
+                    // we have to complete the high-speed switch now
+                    // revert to full speed straight away - causes a blip on the bus
+                    // TODO test
+                    unsafe {
+                        write_periph_word_end((chanend)c, 0);
+                    }
+                    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, (1 << XS1_UIFM_FUNC_CONTROL_XCVRSELECT) | (1 << XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+#endif
+                    break;
+
+                // SE0, end of resume
+                case flag2_port when pinseq(1) :> void:
                     if(g_curSpeed == XUD_SPEED_HS)
                     {
-#if defined(ARCH_S) || defined(ARCH_X200)
-                        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
-#else
-                        XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
-#endif
-                    }
-
-                    while(1)
-                    {
-#if defined(ARCH_S) || defined(ARCH_X200)
-                        read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_FLAGS_REG, tmp);
-#else
-                        tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-#endif
-
-                        if(!(tmp & UIFM_FLAGS_SE0))
-                        {
-                            return 0;
+#ifdef ARCH_X200
+                        // complete the high-speed switch
+                        unsafe {
+                            write_periph_word_end((chanend)c, 0);
                         }
+#else
+                        // unoptimised full high-speed switch
+                        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+#endif
                     }
-                }
+                    break;
             }
+
+            asm("freer res[%0]" :: "r"(c));
             return 0;
-        }
+    }
 #endif
     }
 }

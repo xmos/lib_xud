@@ -156,9 +156,18 @@
 								<option id = "com.xmos.xc.compiler.option.include.paths.10319872" name="com.xmos.xc.compiler.option.include.paths" superClass="com.xmos.xc.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src/class}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/.settings}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src/class}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/.settings}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs2a}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs2a}&quot;' />
@@ -279,9 +288,18 @@
 								<option id = "com.xmos.c.compiler.option.include.paths.33352224" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src/class}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/.settings}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src/class}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/.settings}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs2a}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs2a}&quot;' />
@@ -408,9 +426,18 @@
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1/xcore-xmos-elf&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src/class}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/.settings}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src/class}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_usb_shared}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/.settings}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/include}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs1b}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib/xs2a}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/lib}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export/module_xud}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/export}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/include}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs1b}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xud/lib/xs2a}&quot;' />

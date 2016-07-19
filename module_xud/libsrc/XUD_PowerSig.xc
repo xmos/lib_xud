@@ -408,6 +408,8 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             unsafe chanend c;
             asm("getr %0, 2" : "=r"(c)); // XS1_RES_TYPE_CHANEND=2 (no inline assembly immediate operands in xC)
 #ifdef ARCH_X200
+
+            if(g_curSpeed == XUD_SPEED_HS)
             // start high-speed switch so it's completed as quickly as possible after end of resume is seen
             unsafe {
                 write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);

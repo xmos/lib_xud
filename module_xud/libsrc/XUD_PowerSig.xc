@@ -422,7 +422,8 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #ifdef ARCH_X200
                     // we have to complete the high-speed switch now
                     // revert to full speed straight away - causes a blip on the bus
-                    // TODO test
+                    // Note, switching to HS then back to FS is not ideal
+                    if(g_curSpeed == XUD_SPEED_HS)
                     unsafe {
                         write_periph_word_two_part_end((chanend)c, 0);
                     }

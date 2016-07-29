@@ -766,7 +766,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
          * TXFSLSTUNE: 4b'1001
          * TXVREFTUNE:4b'1001 -- +1.25% adjustment in HS DC voltage level
          * BIASTUNE: 1b'0
-         * COMDISTUNE:3b'011 -- -1.5% adjustment from default (disconnect threshold adjustment) 
+         * COMDISTUNE:3b'011 -- -1.5% adjustment from default (disconnect threshold adjustment)
          * SQRXTUNE:3b'010 -- +5% adjustment from default (Squelch Threshold)
          * TXRISETUNE: 1b'0
          * TXPREEMPHASISTUNE:1b'1 -- enabled (default is disabled)

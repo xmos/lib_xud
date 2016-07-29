@@ -1,6 +1,11 @@
 sc_xud Change Log
 =================
 
+2.5.0
+----- 
+    * RESOLVED:   xCORE-200 USB phy parameters tuned for optimal Tx performance resulting
+                  in much improved TX eye diagram and compliance test results
+
 2.4.2
 -----
     * CHANGE:     VBUS connection to xCORE-200 no longer required when using XUD_PWR_BUS i.e. 

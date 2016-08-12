@@ -407,43 +407,39 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             // TODO debounce?
             unsafe chanend c;
             asm("getr %0, 2" : "=r"(c)); // XS1_RES_TYPE_CHANEND=2 (no inline assembly immediate operands in xC)
-#ifdef ARCH_X200
 
-            if(g_curSpeed == XUD_SPEED_HS)
-            // start high-speed switch so it's completed as quickly as possible after end of resume is seen
-            unsafe {
-                write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+            if (g_curSpeed == XUD_SPEED_HS)
+            {
+                // start high-speed switch so it's completed as quickly as possible after end of resume is seen
+                unsafe {
+                    write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+                }
             }
-#endif
+
             select
             {
                 // J, unexpected, return
                 case flag1_port when pinseq(1) :> void:
-#ifdef ARCH_X200
                     // we have to complete the high-speed switch now
                     // revert to full speed straight away - causes a blip on the bus
                     // Note, switching to HS then back to FS is not ideal
-                    if(g_curSpeed == XUD_SPEED_HS)
-                    unsafe {
-                        write_periph_word_two_part_end((chanend)c, 0);
+                    if (g_curSpeed == XUD_SPEED_HS)
+                    {
+                        unsafe {
+                            write_periph_word_two_part_end((chanend)c, 0);
+                        }
                     }
                     write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, (1 << XS1_UIFM_FUNC_CONTROL_XCVRSELECT) | (1 << XS1_UIFM_FUNC_CONTROL_TERMSELECT));
-#endif
                     break;
 
                 // SE0, end of resume
                 case flag2_port when pinseq(1) :> void:
-                    if(g_curSpeed == XUD_SPEED_HS)
+                    if (g_curSpeed == XUD_SPEED_HS)
                     {
-#ifdef ARCH_X200
                         // complete the high-speed switch
                         unsafe {
                             write_periph_word_two_part_end((chanend)c, 0);
                         }
-#else
-                        // unoptimised full high-speed switch
-                        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
-#endif
                     }
                     break;
             }

@@ -14,7 +14,7 @@ sc_xud Change Log
                   Note, VBUS should still be present for self powered devices in order to pass USB
                   compliance tests.
     * RESOLVED:   Device might hang during resume if host follows resume signality with activity 
-                  after a time close to specified minimum of 1.33us
+                  after a time close to specified minimum of 1.33us (#11813)
 
 2.4.1
 -----

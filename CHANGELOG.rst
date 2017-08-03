@@ -1,6 +1,10 @@
 sc_xud Change Log
 =================
 
+2.6.0
+-----
+    * RESOLVED    Issue referenced as #11813 in 2.4.2 for XS1 devices
+
 2.5.0
 ----- 
     * RESOLVED:   xCORE-200 USB phy parameters tuned for optimal Tx performance resulting

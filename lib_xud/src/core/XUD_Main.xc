@@ -749,7 +749,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #endif
 
-#if (defined(ARCH_L) && !defined(ARCH_X200)) || defined(ARCH_G)
+#if (defined(ARCH_L) && !defined(ARCH_X200) && !defined(ARCH_S)) || defined(ARCH_G)
         /* For L/G series we wait for clock from phy, then enable UIFM logic */
         // 3 u series, else 2
 #if defined (ARCH_S)
@@ -757,12 +757,35 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #else
         XUD_UIFM_Enable(2); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 #endif
-
 #endif
 
+//#if defined(ARCH_X200)
+  //      write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
+//#elif defined(ARCH_S)
+//=======
 #if defined(ARCH_X200)
-        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
-#elif defined(ARCH_S)
+        /* Remove requirement for VBUS in bus-powered mode */
+        if(pwrConfig == XUD_PWR_BUS)
+        {
+             write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, 0x50, 6);
+        }
+
+#define PHYTUNEREGVAL 0x0093B264
+        /* Phy Tuning parameters */
+        /* OTG TUNE: 3b'100
+         * TXFSLSTUNE: 4b'1001
+         * TXVREFTUNE:4b'1001 -- +1.25% adjustment in HS DC voltage level
+         * BIASTUNE: 1b'0
+         * COMDISTUNE:3b'011 -- -1.5% adjustment from default (disconnect threshold adjustment)
+         * SQRXTUNE:3b'010 -- +5% adjustment from default (Squelch Threshold)
+         * TXRISETUNE: 1b'0
+         * TXPREEMPHASISTUNE:1b'1 -- enabled (default is disabled)
+         * TXHSXVTUNE: 2b'11
+         */
+        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,XS1_UIFM_USB_PHY_TUNE_REG, PHYTUNEREGVAL);
+#endif
+
+#if defined(ARCH_S) || defined(ARCH_X200)
 #ifndef SIMULATION
         write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
 #endif

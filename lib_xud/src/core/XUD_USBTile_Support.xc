@@ -6,6 +6,9 @@
 #define ENABLE_INTERRUPTS()   asm("setsr " STRINGIFY(XS1_SR_IEBLE_SET(0, 1)))
 #define DISABLE_INTERRUPTS()  asm("clrsr " STRINGIFY(XS1_SR_IEBLE_SET(0, 1)))
 
+#define CT_PERIPH_WRITE 0x24
+#define JUNK_RETURN_ADDRESS 0xFF
+
 unsigned getsr_int();
 
 int write_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned data)
@@ -34,4 +37,27 @@ int read_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned 
 
     data = tmp[0];
     return retval;
+}
+
+void write_periph_word_two_part_start(chanend tmpchan, tileref tile, unsigned peripheral,
+                                      unsigned base_address, unsigned data)
+{
+    asm("setd res[%0], %1" ::
+        "r"(tmpchan),
+        "r"((get_tile_id(tile) << 16) | (peripheral << 8) | XS1_RES_TYPE_CHANEND));
+
+    /* Preload as much as possible, everything up to last byte of data */
+    outct(tmpchan, CT_PERIPH_WRITE);
+    outuint(tmpchan, (JUNK_RETURN_ADDRESS << 8) | (base_address & 0xFF));
+    outuchar(tmpchan, sizeof(unsigned));
+    outuchar(tmpchan, data >> 24);
+    outuchar(tmpchan, data >> 16);
+    outuchar(tmpchan, data >> 8);
+}
+
+void write_periph_word_two_part_end(chanend tmpchan, unsigned data)
+{
+    /* Send last byte of data to bring the write to effect */
+    outuchar(tmpchan, data);
+    outct(tmpchan, XS1_CT_END);
 }

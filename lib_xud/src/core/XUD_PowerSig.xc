@@ -5,6 +5,7 @@
 
 #include <xs1.h>
 #include <print.h>
+#include <xs1_su.h>
 
 #include "xud.h"
 #include "XUD_Support.h"
@@ -17,11 +18,11 @@
 #endif
 
 #ifdef ARCH_S
-#include "xs1_su_registers.h"
+#include "xa1_registers.h"
 #endif
 
 #if defined(ARCH_S) || defined(ARCH_X200)
-#include "XUD_USBTile_Support.h"
+#include "glx.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
@@ -35,6 +36,9 @@ void XUD_UIFM_PwrSigFlags();
 #define STATE_START_TO       (STATE_START_TO_us * REF_CLK_FREQ)
 #define DELAY_6ms_us      6000
 #define DELAY_6ms            (DELAY_6ms_us * REF_CLK_FREQ)
+#define T_FILTSE0          250
+
+#define SUSPEND_VBUS_POLL_TIMER_TICKS 500000
 
 extern buffered in  port:32 p_usb_clk;
 extern in  port reg_read_port;
@@ -363,141 +367,87 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #endif
 
 
-#else
-    /* "Normal" polling suspend for L or S series */
-    while(1)
-    {
-        /* TODO - Use a timer to save some power */
-        if(pwrConfig == XUD_PWR_SELF)
-        {
-            unsigned x;
-#if defined(ARCH_X200)
-            read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
-            if(x&(1<<XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
-#elif defined(ARCH_S)
-            read_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
-            if(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
-#elif ARCH_L
-            x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
-            if(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))
-#else
-            if(1)
-#endif
-            {
-                // VBUS VALID
-            }
-            else
-            {
+#elif defined ARCH_S || defined ARCH_X200 /* "Normal" polling suspend for L or S series */
+    t :> time;
 
-#if defined(ARCH_X200)
-                write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 4);
-#elif defined(ARCH_S)                
-                write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4);
-#else
-                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x9);
-#endif
+    // linestate is K on flag0 (inverted), J on flag1, SE0 on flag2
+    // note that if you look in device-attach function, high-speed chirps are opposite polarity
+    // that is chirp K on flag1 and chirp J on flag0 (inverted)
+    select
+    {
+        case (pwrConfig == XUD_PWR_SELF) => t when timerafter(time + SUSPEND_VBUS_POLL_TIMER_TICKS) :> void:
+            read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, tmp);
+            if (!(tmp & (1 << XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT)))
+            {
+                // VBUS not valid
+                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4 /* OpMode 01 */);
                 return -1;
             }
-        }
+            break;
 
-        /* Read flags reg... */
-#if defined(ARCH_X200)
-        read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_IFM_FLAGS_NUM, tmp);
-#elif defined(ARCH_S)  
-        read_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_IFM_FLAGS_NUM, tmp);
-#else
-        tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-#endif
-        /* Look for SE0 - RESET! */
-#ifdef ARCH_S
-        if(tmp & XS1_SU_UIFM_IFM_FLAGS_SE0_MASK)
-#else
-        if(tmp & XS1_UIFM_IFM_FLAGS_SE0_MASK)
-#endif     
-        {
+        // SE0, that looks like a reset
+        case flag2_port when pinseq(1) :> void:
             t :> time;
             select
             {
                 case flag2_port when pinseq(0) :> void:
-                    /* SE0 gone away, keep looping */
+                    // SE0 gone away, keep looping
                     break;
 
-                case t when timerafter(time+250) :> void: /* TFILTSEO */
+                case t when timerafter(time + T_FILTSE0) :> void:
+                    // consider 2.5ms a complete reset
                     t :> time;
-                    t when timerafter(time+250000) :> void;
-
+                    t when timerafter(time + 250000) :> void;
                     return 1;
             }
-        }
-        /* Look for HS J / FS K - RESUME! */
-#ifdef ARCH_S
-        if (tmp & XS1_SU_UIFM_IFM_FLAGS_J_MASK)
-#else
-        if (tmp & XS1_UIFM_IFM_FLAGS_J_MASK)
-#endif     
-        {
-            /* Wait for end of resume (SE0) */
-            while(1)
+            break;
+
+        // K, start of resume
+        case flag0_port when pinseq(0) :> void: // inverted port
+            // TODO debounce?
+            unsafe chanend c;
+            asm("getr %0, 2" : "=r"(c)); // XS1_RES_TYPE_CHANEND=2 (no inline assembly immediate operands in xC)
+
+            if (g_curSpeed == XUD_SPEED_HS)
             {
-#if defined(ARCH_X200)
-                read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_IFM_FLAGS_NUM, tmp);
-#elif defined(ARCH_S)
-                read_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_IFM_FLAGS_NUM, tmp);
-#else
-                tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-#endif
-
-#ifdef ARCH_S
-                if(tmp & XS1_SU_UIFM_IFM_FLAGS_K_MASK) /* Fullspeed J/High-speed K */
-#else
-                if(tmp & XS1_UIFM_IFM_FLAGS_K_MASK) /* Fullspeed J/High-speed K */
-#endif
-                {
-                   break;
-                }
-#ifdef ARCH_S
-                if(tmp & XS1_SU_UIFM_IFM_FLAGS_SE0_MASK)
-#else
-                if(tmp & XS1_UIFM_IFM_FLAGS_SE0_MASK)
-#endif
-                {
-                    /* Resume detected from suspend: switch back to HS (suspendm high) and continue...*/
-                    if(g_curSpeed == XUD_SPEED_HS)
-                    {
-#if defined(ARCH_X200)
-                        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0);
-#elif defined(ARCH_S)   
-                        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0);
-#else
-                        XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
-#endif
-                    }
-
-                    while(1)
-                    {
-#if defined(ARCH_X200)
-                        read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_IFM_FLAGS_NUM, tmp);
-#elif defined(ARCH_S)
-                        read_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_IFM_FLAGS_NUM, tmp);
-#else
-                        tmp = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_REG_FLAGS);
-#endif
-
-#ifdef ARCH_S
-                        if(!(tmp & XS1_SU_UIFM_IFM_FLAGS_SE0_MASK))
-#else
-                        if(!(tmp & XS1_UIFM_IFM_FLAGS_SE0_MASK))
-#endif     
-                        {
-                            return 0;
-                        }
-                    }
+                // start high-speed switch so it's completed as quickly as possible after end of resume is seen
+                unsafe {
+                    write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
                 }
             }
+
+            select
+            {
+                // J, unexpected, return
+                case flag1_port when pinseq(1) :> void:
+                    // we have to complete the high-speed switch now
+                    // revert to full speed straight away - causes a blip on the bus
+                    // Note, switching to HS then back to FS is not ideal
+                    if (g_curSpeed == XUD_SPEED_HS)
+                    {
+                        unsafe {
+                            write_periph_word_two_part_end((chanend)c, 0);
+                        }
+                    }
+                    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, (1 << XS1_UIFM_FUNC_CONTROL_XCVRSELECT) | (1 << XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+                    break;
+
+                // SE0, end of resume
+                case flag2_port when pinseq(1) :> void:
+                    if (g_curSpeed == XUD_SPEED_HS)
+                    {
+                        // complete the high-speed switch
+                        unsafe {
+                            write_periph_word_two_part_end((chanend)c, 0);
+                        }
+                    }
+                    break;
+            }
+
+            asm("freer res[%0]" :: "r"(c));
             return 0;
-        }
-#endif
     }
+#endif
 }
 
 

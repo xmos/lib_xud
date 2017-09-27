@@ -1,9 +1,32 @@
 sc_xud Change Log
 =================
 
+2.6.0
+-----
+    * RESOLVED    Issue referenced as #11813 in 2.4.2 for XS1 devices
+
+2.5.0
+----- 
+    * RESOLVED:   xCORE-200 USB phy parameters tuned for optimal Tx performance resulting
+                  in much improved TX eye diagram and compliance test results
+
+2.4.2
+-----
+    * CHANGE:     VBUS connection to xCORE-200 no longer required when using XUD_PWR_BUS i.e. 
+                  for bus-powered devices. This removes the need to any protection circuitry and 
+                  allows for a reduced BOM.
+                  Note, VBUS should still be present for self powered devices in order to pass USB
+                  compliance tests.
+    * RESOLVED:   Device might hang during resume if host follows resume signality with activity 
+                  after a time close to specified minimum of 1.33us (#11813)
+
+2.4.1
+-----
+    * RESOLVED:   Initialisation failure on U-series devices
+
 2.4.0
 -----
-    * RESOLVED:   Intermittent initialisation issues with xCORE-200.
+    * RESOLVED:   Intermittent initialisation issues with xCORE-200
     * RESOLVED:   SETUP transaction data CRC not properly checked
     * RESOLVED:   RxError line from phy handled 
     * RESOLVED:   Isochronous IN endpoints now send an 0-length packet if not ready rather than

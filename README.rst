@@ -10,6 +10,8 @@ Description
 
 The XMOS USB Device (XUD) library provides a low-level interface to USB.
 
+lib_xud merges the old structure of sc_xud and lib_usb
+
 Support
 -------
 

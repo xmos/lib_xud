@@ -8,7 +8,7 @@
 .set too_many_cores, main.maxcores > 6
 .assert 0, too_many_cores, "Warning: More than 6 cores used on a tile. Ensure this is not the case on tile running XUD."
 
-#if 0
+#if 1
 //int XUD_GetSetupData(XUD_ep e_out, unsigned buffer[], unsigned &length);
 //                     r0            r1                 r2
 .globl XUD_GetSetupData

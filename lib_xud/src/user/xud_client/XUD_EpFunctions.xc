@@ -19,11 +19,11 @@ XUD_Result_t XUD_GetBuffer(XUD_ep c, unsigned char buffer[], unsigned &datalengt
     return XUD_GetData(c, buffer, datalength);
 }
 
-// Deprecated - Use XUD_GetControlBuffer()
-//XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned &length)
-///{
-   // return XUD_GetSetupData(ep_out, buffer, length);
-///}
+// To be deprecated - In favour of XUD_GetControlBuffer()
+XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned &length)
+{
+   return XUD_GetSetupData(ep_out, buffer, length);
+}
 
 XUD_Result_t XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
 {
@@ -31,17 +31,17 @@ XUD_Result_t XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength
     return XUD_SetData(c, buffer, datalength, 0, 0);
 }
 
-////////////New
-XUD_Result_t XUD_GetControlBuffer(XUD_ep c, unsigned char buffer[], unsigned &datalength)
-{
-    return XUD_GetData(c, buffer, datalength);
-}
+//New API (WIP)
+//XUD_Result_t XUD_GetControlBuffer(XUD_ep c, unsigned char buffer[], unsigned &datalength)
+//{
+//    return XUD_GetData(c, buffer, datalength);
+//}
 
-XUD_Result_t XUD_SetControlBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
-{
+//XUD_Result_t XUD_SetControlBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
+//{
     /* No PID reset, 0 start index */
-    return XUD_SetData(c, buffer, datalength, 0, 0);
-}
+  //  return XUD_SetData(c, buffer, datalength, 0, 0);
+//}
 
 
 /**

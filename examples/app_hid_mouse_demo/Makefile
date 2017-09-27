@@ -16,7 +16,7 @@ APP_NAME = app_hid_mouse_demo
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to 
 # xcc for the final link (mapping) stage.
 
-BUILD_FLAGS = -Wall -O3 -report -fsubword-select -DTEST_MODE_SUPPORT -Xmapper --wno226 -DARCH_L -DARCH_X200 -DREF_CLK_FREQ=100 -mno-dual-issue -DXUD_FULL_PIDTABLE=1 -fschedule -DUSB_TILE=tile[1] -g
+BUILD_FLAGS = -O3 -report -fsubword-select -DTEST_MODE_SUPPORT -Xmapper --wno226 -DARCH_L -DARCH_X200 -DREF_CLK_FREQ=100 -mno-dual-issue -DXUD_FULL_PIDTABLE=1 -fschedule -DUSB_TILE=tile[1] -g
 
 # L16 series not using ADC (it has no ADC)
 XCC_FLAGS_mic_array = $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=4

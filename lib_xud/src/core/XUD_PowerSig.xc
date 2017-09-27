@@ -22,7 +22,7 @@
 #endif
 
 #if defined(ARCH_S) || defined(ARCH_X200)
-#include "glx.h"
+#include "XUD_USBTile_Support.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
@@ -118,20 +118,13 @@ int XUD_Init()
    }
 }
 
-
-
-//#ifdef ARCH_S
-//#include <xa1_registers.h>
-//#endif
 /** XUD_DoSuspend
   * @brief  Function called when device is suspended. This should include any clock down code etc.
   * @return True if reset detected during resume */
-  unsigned counter =0;
 int XUD_Suspend(XUD_PwrConfig pwrConfig)
 {
     unsigned tmp;
     timer t;
-    unsigned x;
     unsigned time;
     unsigned before;
     unsigned devAddr;
@@ -376,11 +369,11 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
     select
     {
         case (pwrConfig == XUD_PWR_SELF) => t when timerafter(time + SUSPEND_VBUS_POLL_TIMER_TICKS) :> void:
-            read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, tmp);
+            read_periph_word(USB_TILE_REF,  XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, tmp);
             if (!(tmp & (1 << XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT)))
             {
                 // VBUS not valid
-                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4 /* OpMode 01 */);
+                write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,  XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 4 /* OpMode 01 */);
                 return -1;
             }
             break;
@@ -412,7 +405,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             {
                 // start high-speed switch so it's completed as quickly as possible after end of resume is seen
                 unsafe {
-                    write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
+                    write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,  XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0);
                 }
             }
 
@@ -429,7 +422,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                             write_periph_word_two_part_end((chanend)c, 0);
                         }
                     }
-                    write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, (1 << XS1_UIFM_FUNC_CONTROL_XCVRSELECT) | (1 << XS1_UIFM_FUNC_CONTROL_TERMSELECT));
+                    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, (1 << XS1_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT) | (1 << XS1_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
                     break;
 
                 // SE0, end of resume

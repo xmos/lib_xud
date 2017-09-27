@@ -485,7 +485,7 @@ void XUD_ULPIReg(out port p_usb_txd);
 static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, XUD_PwrConfig pwrConfig)
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
-#ifndef ARCH_S
+#if !defined(ARCH_S) && !defined(ARCH_X200)
     const int reset_time = RESET_TIME;
 #endif
 
@@ -540,7 +540,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 //#endif
 
 #define TX_RISE_DELAY 5
-#warning check this for U series (was 2)
+//TODO check this for U series (was 2)
 #define TX_FALL_DELAY 1
 #define RX_RISE_DELAY 5
 #define RX_FALL_DELAY 5
@@ -759,18 +759,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 #endif
 
-//#if defined(ARCH_X200)
-  //      write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
-//#elif defined(ARCH_S)
-//=======
 #if defined(ARCH_X200)
         /* Remove requirement for VBUS in bus-powered mode */
         if(pwrConfig == XUD_PWR_BUS)
         {
-             write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, 0x50, 6);
+             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, 0x50, 6);
         }
 
 #define PHYTUNEREGVAL 0x0093B264
+#define XS1_UIFM_USB_PHY_TUNE_REG 0x4c
         /* Phy Tuning parameters */
         /* OTG TUNE: 3b'100
          * TXFSLSTUNE: 4b'1001
@@ -782,12 +779,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
          * TXPREEMPHASISTUNE:1b'1 -- enabled (default is disabled)
          * TXHSXVTUNE: 2b'11
          */
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID,XS1_UIFM_USB_PHY_TUNE_REG, PHYTUNEREGVAL);
+        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_UIFM_USB_PHY_TUNE_REG, PHYTUNEREGVAL);
 #endif
 
 #if defined(ARCH_S) || defined(ARCH_X200)
 #ifndef SIMULATION
-        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
+        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
 #endif
 #else
         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
@@ -1054,7 +1051,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_use_off(flag1_port);
     set_port_use_off(flag2_port);
 #if defined(ARCH_S) || defined(ARCH_X200)
-    #warning TODO switch off ports
+    /* TODO switch off ports */
 #else
     set_port_use_off(reg_read_port);
     set_port_use_off(reg_write_port);
@@ -1086,7 +1083,7 @@ static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[]) {
 }
 
 
-//#pragma unsafe arrays
+#pragma unsafe arrays
 int XUD_Manager(chanend c_ep_out[], int noEpOut,
                 chanend c_ep_in[], int noEpIn,
                 chanend ?c_sof,

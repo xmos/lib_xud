@@ -8,6 +8,7 @@
 ///////////////////////////////////////////////////////
 
 #include <xs1.h>
+#include "xud.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_UIFM_Defines.h"
 #include "xud_defines.h"

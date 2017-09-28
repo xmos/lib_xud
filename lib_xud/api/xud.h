@@ -5,10 +5,6 @@
 #ifndef __xud_h__
 #define __xud_h__
 
-#include <xs1.h>
-#include <platform.h>
-#include <print.h>
-#include <xccompat.h>
 
 #ifndef XUD_U_SERIES
 #define XUD_U_SERIES 1
@@ -56,12 +52,16 @@
 #endif
 #endif
 
-
-
-
 #ifdef __xud_conf_h_exists__
 #include "xud_conf.h"
 #endif
+
+#if defined(__XC__)
+
+#include <xs1.h>
+#include <platform.h>
+#include <print.h>
+#include <xccompat.h>
 
 #if !defined(USB_TILE)
   #define USB_TILE tile[0]
@@ -621,5 +621,7 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
+
+#endif //__XC__ || __STDC__
 
 #endif // __xud_h__

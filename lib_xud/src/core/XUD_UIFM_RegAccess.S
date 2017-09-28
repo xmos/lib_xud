@@ -3,7 +3,7 @@
   * @author    Ross Owen, XMOS Limited
   */
 
-
+#include <xud.h>
 
 #include "XUD_UIFM_Defines.h"
 #include <xs1.h>

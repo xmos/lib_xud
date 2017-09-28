@@ -10,11 +10,54 @@
 #include <print.h>
 #include <xccompat.h>
 
-// TODO RM these.
+#ifndef XUD_U_SERIES
 #define XUD_U_SERIES 1
+#endif
+
+#ifndef XUD_L_SERIES
 #define XUD_L_SERIES 2
+#endif
+
+#ifndef XUD_G_SERIES
 #define XUD_G_SERIES 3
+#endif
+
+#ifndef XUD_X200_SERIES
 #define XUD_X200_SERIES 4
+#endif
+
+#if XUD_SERIES_SUPPORT==1
+#ifndef ARCH_S
+#define ARCH_S 1
+#endif
+#ifndef ARCH_L
+#define ARCH_L 1
+#endif
+#endif
+
+#if XUD_SERIES_SUPPORT==2
+#ifndef ARCH_L
+#define ARCH_L 1
+#endif
+#endif
+
+#if XUD_SERIES_SUPPORT==3
+#ifndef ARCH_G
+#define ARCH_G 1
+#endif
+#endif
+
+#if XUD_SERIES_SUPPORT==4
+#ifndef ARCH_L
+#define ARCH_L 1
+#endif
+#ifndef ARCH_X200
+#define ARCH_X200 1
+#endif
+#endif
+
+
+
 
 #ifdef __xud_conf_h_exists__
 #include "xud_conf.h"

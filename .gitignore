@@ -17,4 +17,6 @@
 *.so
 */logs/*
 test_results.csv
+**/_build/**
+**/__gen/**
 

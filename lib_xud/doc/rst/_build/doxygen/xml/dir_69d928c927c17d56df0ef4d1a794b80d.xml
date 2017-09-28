@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.8">
+  <compounddef id="dir_69d928c927c17d56df0ef4d1a794b80d" kind="dir">
+    <compoundname>_build/.doxygen/api/</compoundname>
+    <innerfile refid="usb__device_8h">usb_device.h</innerfile>
+    <innerfile refid="xud_8h">xud.h</innerfile>
+    <innerfile refid="xud__defines_8h">xud_defines.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/"/>
+  </compounddef>
+</doxygen>

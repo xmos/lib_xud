@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.8">
+  <compounddef id="structxudres" kind="struct" prot="public">
+    <compoundname>xudres</compoundname>
+    <includes refid="xud_8h" local="no">xud.h</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structxudres_1eb2ff636e2fb5acd1dffcd9883ffa762" prot="public" static="no" mutable="no">
+        <type>in buffered ___port___port___32</type>
+        <definition>in buffered ___port___port___32 xudres::p_usb_clk</definition>
+        <argsstring></argsstring>
+        <name>p_usb_clk</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="143" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="143" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structxudres_118e9f08560bc6e0526c495ee8caddfe6" prot="public" static="no" mutable="no">
+        <type>out buffered ___port___port___32</type>
+        <definition>out buffered ___port___port___32 xudres::p_usb_txd</definition>
+        <argsstring></argsstring>
+        <name>p_usb_txd</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="144" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="144" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structxudres_1fe2bc4edb71f626bccb9d17984c0b9e6" prot="public" static="no" mutable="no">
+        <type>in buffered ___port___port___32</type>
+        <definition>in buffered ___port___port___32 xudres::p_usb_rxd</definition>
+        <argsstring></argsstring>
+        <name>p_usb_rxd</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="145" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="145" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structxudres_14f21a537d756745d66f26683637a7f1e" prot="public" static="no" mutable="no">
+        <type>out port</type>
+        <definition>out port xudres::tx_readyout</definition>
+        <argsstring></argsstring>
+        <name>tx_readyout</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="146" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="146" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structxudres_17c489a8db7c806d33a859f40c413ab74" prot="public" static="no" mutable="no">
+        <type>in port</type>
+        <definition>in port xudres::tx_readyin</definition>
+        <argsstring></argsstring>
+        <name>tx_readyin</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="147" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="147" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structxudres_1e8c9e22c69797d399535b355a5284635" prot="public" static="no" mutable="no">
+        <type>in port</type>
+        <definition>in port xudres::rx_rdy</definition>
+        <argsstring></argsstring>
+        <name>rx_rdy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="148" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="148" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structxudres_145f041259622c14a1fb53f0977345cf6" prot="public" static="no" mutable="no">
+        <type>clock</type>
+        <definition>clock xudres::tx_usb_clk</definition>
+        <argsstring></argsstring>
+        <name>tx_usb_clk</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="149" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="149" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structxudres_10d9d226ab626a7addf45766e994e53ba" prot="public" static="no" mutable="no">
+        <type>clock</type>
+        <definition>clock xudres::rx_usb_clk</definition>
+        <argsstring></argsstring>
+        <name>rx_usb_clk</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="150" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="150" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" line="141" bodyfile="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/.doxygen/api/xud.h" bodystart="140" bodyend="162"/>
+    <listofallmembers>
+      <member refid="structxudres_1eb2ff636e2fb5acd1dffcd9883ffa762" prot="public" virt="non-virtual"><scope>xudres</scope><name>p_usb_clk</name></member>
+      <member refid="structxudres_1fe2bc4edb71f626bccb9d17984c0b9e6" prot="public" virt="non-virtual"><scope>xudres</scope><name>p_usb_rxd</name></member>
+      <member refid="structxudres_118e9f08560bc6e0526c495ee8caddfe6" prot="public" virt="non-virtual"><scope>xudres</scope><name>p_usb_txd</name></member>
+      <member refid="structxudres_1e8c9e22c69797d399535b355a5284635" prot="public" virt="non-virtual"><scope>xudres</scope><name>rx_rdy</name></member>
+      <member refid="structxudres_10d9d226ab626a7addf45766e994e53ba" prot="public" virt="non-virtual"><scope>xudres</scope><name>rx_usb_clk</name></member>
+      <member refid="structxudres_17c489a8db7c806d33a859f40c413ab74" prot="public" virt="non-virtual"><scope>xudres</scope><name>tx_readyin</name></member>
+      <member refid="structxudres_14f21a537d756745d66f26683637a7f1e" prot="public" virt="non-virtual"><scope>xudres</scope><name>tx_readyout</name></member>
+      <member refid="structxudres_145f041259622c14a1fb53f0977345cf6" prot="public" virt="non-virtual"><scope>xudres</scope><name>tx_usb_clk</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

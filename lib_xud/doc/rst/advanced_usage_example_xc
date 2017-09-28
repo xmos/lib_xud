@@ -1,0 +1,50 @@
+
+void ExampleEndpoint(chanend c_ep_out, chanend c_ep_in)
+{
+    unsigned char rxBuffer[1024];
+    unsigned char txBuffer[] = {0, 1, 2, 3, 4};
+    int length, returnVal;
+
+
+    XUD_ep ep_out = XUD_InitEp(c_ep_out);
+    XUD_ep ep_in = XUD_InitEp(c_ep_in);
+
+    /* Mark OUT endpoint as ready to receive */
+    XUD_SetReady_Out(ep_out, rxBuffer);
+    XUD_SetReady_In(ep_in, txBuffer, 5);
+
+    while(1)
+    {
+        select
+        {
+            case XUD_GetData_Select(c_ep_out, ep_out, length):
+
+                /* Packet from host recieved */
+
+                for(int i = 0; i< length; i++)
+                {
+                    /* Process packet... */
+                }
+
+                /* Mark EP as ready again */
+                XUD_SetReady_Out(ep_out, rxBuffer);
+                break;
+                
+            case XUD_SetData_Select(c_ep_in, ep_in, returnVal):
+
+                /* Packet successfully sent to host */
+        
+                /* Create new buffer */
+                for(int i = 0; i < 5; i++)
+                {
+                    txBuffer[i]++;
+                }
+
+                /* Mark EP as ready again */
+                XUD_SetReady_In(ep_in, txBuffer, 5);
+                break;
+
+        }
+    }
+}
+//:

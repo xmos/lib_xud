@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.8">
+  <compounddef id="dir_45953df8309acd3913e0568d2763a04b" kind="dir">
+    <compoundname>_build/</compoundname>
+    <innerdir refid="dir_5b68aede016945e5930e4c27af4b980b">_build/.doxygen/</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/Users/ross/sandboxes/sb_vf_lib/lib_xud/lib_xud/doc/rst/_build/"/>
+  </compounddef>
+</doxygen>

@@ -34,11 +34,11 @@ void XUD_Error_hex(char errString[], int i_err);
 #endif
 
 #ifdef ARCH_S
-#include "xs1_to_glx.h"
 #include "xs1_su_registers.h"
 #endif
 
 #ifdef ARCH_X200
+#include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
 #endif
 

@@ -75,6 +75,74 @@
       #define XUD_SERIES_SUPPORT XUD_U_SERIES
     #endif
 
+#if (XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
+      #error (XUD_SERIES_SUPPORT != XUD_U_SERIES) with PORT_USB_RX_READY defined
+    #endif
+
+  #else
+    #if !defined(XUD_SERIES_SUPPORT)
+      #define XUD_SERIES_SUPPORT XUD_L_SERIES
+    #endif
+
+#if (XUD_SERIES_SUPPORT != XUD_L_SERIES) && (XUD_SERIES_SUPPORT != XUD_G_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
+      #error (XUD_SERIES_SUPPORT != XUD_L_SERIES) when PORT_USB_RX_READY not defined
+    #endif
+
+  #endif
+
+#else // PORT_USB_CLK
+
+  #if !defined(XUD_SERIES_SUPPORT)
+    // Default to U-Series if no series is defined
+    #define XUD_SERIES_SUPPORT XUD_U_SERIES
+  #endif
+
+  /* Ports have not been defined in the .xn file */
+
+  #if (XUD_SERIES_SUPPORT == XUD_U_SERIES)
+    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
+    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
+    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8C
+    #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K
+    #define PORT_USB_TX_READYIN  on USB_TILE: XS1_PORT_1H
+    #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1M
+    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
+    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
+    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
+  #elif (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1C
+    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
+    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
+    #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K
+    #define PORT_USB_TX_READYIN  on USB_TILE: XS1_PORT_1H
+    #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1I
+    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1E
+    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1F
+    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
+  #else
+    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1H
+    #define PORT_USB_REG_WRITE   on USB_TILE: XS1_PORT_8C
+    #define PORT_USB_REG_READ    on USB_TILE: XS1_PORT_8D
+    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
+    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
+    #define PORT_USB_STP_SUS     on USB_TILE: XS1_PORT_1E
+    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
+    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
+    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
+  #endif
+#endif // PORT_USB_CLK
+
+#if 0
+
+
+#if defined(PORT_USB_CLK)
+
+  /* Ports declared in the .xn file. Automatically detect device series */
+  #if defined(PORT_USB_RX_READY)
+    #if !defined(XUD_SERIES_SUPPORT)
+      #define XUD_SERIES_SUPPORT XUD_U_SERIES
+    #endif
+
     #if (XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
       #error (XUD_SERIES_SUPPORT != XUD_U_SERIES) with PORT_USB_RX_READY defined
     #endif
@@ -136,7 +204,6 @@
   #endif
 #endif // PORT_USB_CLK
 
-
 typedef struct xudres
 {
 #if (XUD_SERIES_SUPPORT == XUD_U_SERIES) || (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
@@ -161,6 +228,7 @@ typedef struct xudres
 
 }XUD_res_t;
 
+#endif
 
 
 /**

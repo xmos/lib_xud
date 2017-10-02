@@ -5,7 +5,6 @@
 
 #include <xs1.h>
 #include <print.h>
-#include <xs1_su.h>
 
 #include "xud.h"
 #include "XUD_Support.h"

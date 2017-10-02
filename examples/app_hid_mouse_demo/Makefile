@@ -2,12 +2,6 @@
 # compiled for. It either refers to an XN file in the source directories
 # or a valid argument for the --target option when compiling.
 
-# In this case, the target depends on the build configuration.
-ifeq ($(CONFIG), X200) 
-	TARGET= XCORE-200-EXPLORER
-else
-	TARGET = SLICEKIT-U16
-endif
 
 # The APP_NAME variable determines the name of the final .xe file. It should
 # not include the .xe postfix. If left blank the name will default to 
@@ -22,16 +16,18 @@ APP_NAME = app_hid_mouse_demo
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to 
 # xcc for the final link (mapping) stage.
 
-# These flags define two build configurations - one for U-series and one for
-# # the xCORE-200 series.
+BUILD_FLAGS = -O3 -report -fsubword-select -DTEST_MODE_SUPPORT -Xmapper --wno226 -DARCH_L -DARCH_X200 -DREF_CLK_FREQ=100 -mno-dual-issue -DXUD_FULL_PIDTABLE=1 -fschedule -DUSB_TILE=tile[1] -g
 
-BUILD_FLAGS = -O3 -report -fsubword-select -DTEST_MODE_SUPPORT -Xmapper --wno226 -DREF_CLK_FREQ=100 -mno-dual-issue -DXUD_FULL_PIDTABLE=1 -fschedule -g
-
-XCC_FLAGS_U 	= $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=XUD_U_SERIES
-XCC_FLAGS_X200 	= $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
+# L16 series not using ADC (it has no ADC)
+XCC_FLAGS_mic_array = $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=4
+INCLUDE_ONLY_IN_mic_array = 
 
 # The USED_MODULES variable lists other module used by the application. 
 USED_MODULES = lib_xud lib_logging
+
+ifeq ($(CONFIG), mic_array) 
+	TARGET= mic_array_ref.xn 
+endif
 
 
 #=============================================================================

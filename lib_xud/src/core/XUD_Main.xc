@@ -693,19 +693,32 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
         /* Enable the USB clock */
+#if defined (ARCH_S)
+        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, ( 1 << XS1_SU_CFG_USB_CLK_EN_SHIFT));
+#else
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_NUM, ( 1 << XS1_GLX_CFG_USB_CLK_EN_SHIFT));
+#endif
 
 #ifdef ARCH_S
         /* Now reset the phy */
-        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_PHY_CONTROL_NUM,  (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
+        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_PHY_CONTROL_NUM,    1); //1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
 #else
         write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_PHY_CONTROL_NUM,  0); //(0<<XS1_UIFM_PHY_CONTROL_FORCERESET));
 #endif
         /* Keep usb clock active, enter active mode */
-        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_NUM, (1 << XS1_GLX_CFG_USB_CLK_EN_SHIFT) | (1<<XS1_GLX_CFG_USB_EN_SHIFT)  );
+#ifdef ARCH_S
+        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, (1 << XS1_SU_CFG_USB_CLK_EN_SHIFT) | (1<<XS1_SU_CFG_USB_EN_SHIFT) );
+#else
+        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_GLX_CFG_RST_MISC_NUM, (1 << XS1_GLX_CFG_USB_CLK_EN_SHIFT) | (1<<XS1_GLX_CFG_USB_EN_SHIFT) );
+#endif
 
         /* Clear OTG control reg - incase we were running as host previously.. */
+#ifdef ARCH_S
+        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
+#else
         write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_CONTROL_NUM, 0);
+#endif
+
 #endif
         }
 #ifdef GLX_PWRDWN
@@ -782,7 +795,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_UIFM_USB_PHY_TUNE_REG, PHYTUNEREGVAL);
 #endif
 
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_S) 
+        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_SU_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
+#elif defined(ARCH_X200)
 #ifndef SIMULATION
         write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
 #endif
@@ -819,8 +834,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     }
                 }
 #ifndef SIMULATION
-#if defined(ARCH_S) || defined(ARCH_X200)
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
+#if defined(ARCH_S) 
+                write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM,
+                      (1<<XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT)
+                    | (1<<XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
+#elif defined(ARCH_X200)
                 write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM,
                       (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT)
                     | (1<<XS1_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
@@ -909,7 +928,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     }
 
                     /* Set default device address */
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_S) 
+                    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, 0);
+#elif defined(ARCH_X200)
 #ifndef SIMULATION
                     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_DEVICE_ADDRESS_NUM, 0);
 #endif
@@ -968,7 +989,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
             NOTE: Need to do this every iteration since CHKTOK would break power signaling */
 #ifdef ARCH_L
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_S) 
+            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_SU_UIFM_IFM_CONTROL_DOTOKENS_SHIFT)
+                | (1<< XS1_SU_UIFM_IFM_CONTROL_CHECKTOKENS_SHIFT)
+                | (1<< XS1_SU_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT)
+                | (1<< XS1_SU_UIFM_IFM_CONTROL_SOFISTOKEN_SHIFT));
+#elif defined(ARCH_X200)
 #ifndef SIMULATION
             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_CONTROL_NUM, (1<<XS1_UIFM_IFM_CONTROL_DOTOKENS_SHIFT)
                 | (1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS_SHIFT)
@@ -985,7 +1011,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
 #endif /* ARCH_L */
 
-#if defined(ARCH_S) || defined (ARCH_X200)
+#if defined(ARCH_S) 
+            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_MASK_NUM,
+                ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)
+                | ((1<<XS1_SU_UIFM_IFM_FLAGS_RXACTIVE_SHIFT)<<8)
+                | ((1<<XS1_SU_UIFM_IFM_FLAGS_RXERROR_SHIFT)<<16)));
+#elif defined (ARCH_X200)
 #ifndef SIMULATION
             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM,
                 ((1<<XS1_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)

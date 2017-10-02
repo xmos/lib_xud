@@ -10,7 +10,7 @@
 #include "xud.h"
 
 #ifdef ARCH_S
-#include "xs1_su_registers.h"
+#include "xa1_registers.h"
 #endif
 
 #ifdef ARCH_X200
@@ -70,9 +70,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    // DEBUG - write to ulpi reg 0x54. This is:
    // opmode = 0b10, termsel = 1, xcvrsel = 0b00;
 
-#if defined(ARCH_S) 
-   write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1010);
-#elif defined(ARCH_X200)
+#if defined(ARCH_S) || defined(ARCH_X200)
    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1010);
 #else
    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
@@ -102,12 +100,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
        case t when timerafter(start_time + INVALID_DELAY) :> void:
 
            /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-#if defined(ARCH_S)
-           write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,
-                             XS1_SU_PER_UIFM_FUNC_CONTROL_NUM,
-                             (1<<XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT)
-                              | (1<<XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
-#elif defined(ARCH_X200)
+#if defined(ARCH_S) || defined(ARCH_X200)
            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,
                              XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM,
                              (1<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT)
@@ -127,27 +120,17 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
                if(pwrConfig == XUD_PWR_SELF) {
                    unsigned x;
-#if defined(ARCH_S) 
-                  read_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
-                   if(!(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))) 
-                   {
-                       write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,
-                                         XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4);
-                       return -1;             // VBUS gone, handshake fails completely.
-                   }
-                   
-#elif defined(ARCH_X200)
-                   read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
-                   if(!(x&(1<<XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))) 
-                   {
+#if defined(ARCH_S) || defined(ARCH_X200)
+                   read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,
+                                    XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
+                   if(!(x&(1<<XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))) {
                        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,
                                          XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 4);
                        return -1;             // VBUS gone, handshake fails completely.
                    }
 #elif ARCH_L
                    x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
-                   if(!(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))) 
-                   {
+                   if(!(x&(1<<UIFM_OTG_FLAGS_SESSVLD_SHIFT))) {
                        XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x9);
                        return -1;             // VBUS gone, handshake fails completely.
                    }
@@ -172,10 +155,9 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
                    // Three pairs of KJ received... de-assert TermSelect...
                    // (and opmode = 0, suspendm = 1)
-#if defined(ARCH_S) 
-                   write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b0000);
-#elif defined(ARCH_X200)
-                   write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b0000);
+#if defined(ARCH_S) || defined(ARCH_X200)
+                   write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,
+                                     XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b0000);
 #else
                    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
 #endif

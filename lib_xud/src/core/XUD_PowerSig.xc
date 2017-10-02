@@ -14,6 +14,7 @@
 #include "XUD_UIFM_Defines.h"
 
 #ifdef ARCH_X200
+#include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
 #endif
 
@@ -369,11 +370,11 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
     select
     {
         case (pwrConfig == XUD_PWR_SELF) => t when timerafter(time + SUSPEND_VBUS_POLL_TIMER_TICKS) :> void:
-            read_periph_word(USB_TILE_REF,  XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, tmp);
+            read_periph_word(USB_TILE_REF,  XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, tmp);
             if (!(tmp & (1 << XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT)))
             {
                 // VBUS not valid
-                write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,  XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 4 /* OpMode 01 */);
+                write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,  XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4 /* OpMode 01 */);
                 return -1;
             }
             break;
@@ -405,7 +406,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             {
                 // start high-speed switch so it's completed as quickly as possible after end of resume is seen
                 unsafe {
-                    write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM,  XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0);
+                    write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,  XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0);
                 }
             }
 
@@ -422,7 +423,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                             write_periph_word_two_part_end((chanend)c, 0);
                         }
                     }
-                    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, (1 << XS1_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT) | (1 << XS1_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
+                    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, (1 << XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT) | (1 << XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
                     break;
 
                 // SE0, end of resume

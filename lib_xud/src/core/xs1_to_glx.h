@@ -1,3 +1,6 @@
+
+/* Workaround for tools issue #17048 */
+
 #define XS1_SU_PER_UIFM_CHANEND_NUM                     XS1_GLX_PER_UIFM_CHANEND_NUM
 #define XS1_SU_PER_UIFM_CONTROL_NUM                     XS1_GLX_PER_UIFM_CONTROL_NUM
 

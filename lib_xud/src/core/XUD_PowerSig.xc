@@ -18,7 +18,7 @@
 #endif
 
 #ifdef ARCH_S
-#include "xa1_registers.h"
+#include "xs1_su_registers.h"
 #endif
 
 #if defined(ARCH_S) || defined(ARCH_X200)

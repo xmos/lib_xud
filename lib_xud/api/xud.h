@@ -110,7 +110,7 @@
     #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
     #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
   #elif (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
-    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1C
+    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
     #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K

@@ -1085,7 +1085,7 @@ static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[]) {
 
 
 #pragma unsafe arrays
-int XUD_Manager(chanend c_ep_out[], int noEpOut,
+int XUD_Main(chanend c_ep_out[], int noEpOut,
                 chanend c_ep_in[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],

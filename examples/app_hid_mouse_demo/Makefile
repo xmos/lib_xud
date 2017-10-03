@@ -25,7 +25,7 @@ APP_NAME = app_hid_mouse_demo
 # These flags define two build configurations - one for U-series and one for
 # # the xCORE-200 series.
 
-BUILD_FLAGS = -O3 -report -fsubword-select -DTEST_MODE_SUPPORT -Xmapper --wno226 -DREF_CLK_FREQ=100 -mno-dual-issue -DXUD_FULL_PIDTABLE=1 -fschedule -g -DUSB_TILE=tile[1]
+BUILD_FLAGS = -O3 -report -fsubword-select -DTEST_MODE_SUPPORT -Xmapper --wno226 -DREF_CLK_FREQ=100 -DXUD_FULL_PIDTABLE=1 -fschedule -g -DUSB_TILE=tile[1]
 
 XCC_FLAGS_U 	= $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=XUD_U_SERIES
 XCC_FLAGS_X200 	= $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=XUD_X200_SERIES

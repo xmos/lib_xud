@@ -236,7 +236,7 @@ int main()
 
     par
     {
-        on USB_TILE: XUD_Manager(/*usbtile*/ c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        on USB_TILE: XUD_Main(/*usbtile*/ c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 p_usb_rst, clk_usb_rst, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 

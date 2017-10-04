@@ -1,0 +1,518 @@
+.. include:: ../../README.rst
+
+|newpage|
+
+Overview
+--------
+
+Introduction
+............
+
+USB Communication Class is a composite USB device class that enables telecommunication devices 
+like digital telephones, ISDN terminal adapters, etc and networking devices like ADSL 
+modems, Ethernet adapters/hubs, etc to connect to a USB host machine. It specifies 
+multiple models to support different types of communication devices. Abstract 
+Control Model (ACM) is defined to support legacy modem devices and an advantage 
+of ACM is the Serial emulation feature. Serial emulation of a USB device eases the development of 
+host PC application, provides software compatibility with RS-232 based legacy devices, enables USB to RS-232 conversions and gives good abstraction over the USB for application developers.
+
+In this application note, the USB CDC implementation on xCORE-USB device is explained in detail which will help you in two ways. First, it acts as reference for you to build your own USB CDC class device, second, it gives you
+an idea of how to use this virtual serial port code in your application.
+
+The standard USB CDC class specification can be found in the USB-IF website.
+
+(http://www.usb.org/developers/docs/devclass_docs/CDC1.2_WMC1.1_012011.zip)
+
+Block diagram
+.............
+
+.. figure:: images/block_diagram.*
+   :scale: 100%
+   :align: center
+
+   Block diagram of USB CDC applications
+
+USB CDC Class application note
+------------------------------
+
+The example in this application note uses the XMOS USB device library and shows a simple program that enumerates a USB CDC Class device as virtual serial port in a host machine and provides a simple character loopback device.
+
+For this USB CDC device application example, the system comprises four tasks running on separate logical cores of an xCORE-USB multicore microcontroller. 
+
+The tasks perform the following operations.
+
+   - A task containing the USB library functionality to communicate over USB.
+
+   - A task implementing Endpoint0 responding to both standard and CDC class-specific USB requests.
+
+   - A task implementing the data endpoints and notification endpoint of the CDC ACM class. It handles tx and rx buffers and provides interface for applications.
+
+   - A task implementing the application logic to interact with user over the virtual serial port.
+
+These tasks communicate via the use of xCONNECT channels which allow data to be 
+passed between application code running on separate logical cores. In this 
+example, XC interfaces are used, which abstracts out the channel communication 
+details with function level interface.
+
+The following diagram shows the task and communication structure for this USB CDC
+class application example.
+
+.. figure:: images/task_diagram.*
+   :scale: 100%
+   :align: center
+
+   Task diagram of the USB CDC Virtual Serial Port example
+
+
+|newpage|
+
+Makefile additions for this example
+...................................
+
+To start using the USB library, you need to add **lib_usb** to your makefile::
+
+  USED_MODULES = ... lib_usb ...
+
+You can then access the USB functions in your source code via the *usb.h* header file::
+
+  #include <usb.h>
+
+Source code files
+.................
+
+The example application consists of the following files::
+  
+  main.xc
+  xud_cdc.xc
+  xud_cdc.h
+
+*xud_cdc.xc* contains the CDC ACM implementation which includes the USB descriptors, endpoints handler functions and the xC interface (APIs) for application programs.
+The *xud_cdc.h* header is included in the *main.xc* to use the APIs exposed
+by *xud_cdc.xc*. The *main.xc* implements the application logic that interacts over the USB CDC link with a host terminal application. 
+
+Declaring resource and setting up the USB components
+....................................................
+
+*main.xc* contains the application implementation for a device based on the USB CDC device class. There are some defines in it that are used to configure the XMOS USB device library. These are displayed below.
+
+.. literalinclude:: main.xc
+   :start-on: USB Endpoint Defines
+   :end-before: Application task 
+
+These defines describe the endpoints configuration for this device. This example
+has bi-directional communication with the host machine via the standard endpoint0 and three 
+other endpoints for implementing the part of our CDC class device.
+
+These defines are passed to the setup function for the USB library which is called from ``main()``.
+
+The application main() function
+...............................
+
+Below is the source code for the main function of this application, which is taken from
+the source file ``main.xc``
+
+.. literalinclude:: main.xc
+   :start-on: int main
+
+Looking at this in a more detail you can see the following:
+
+  - The par statement starts four separate tasks in parallel.
+
+  - There is a task to configure and execute the USB library: ``xud``. This library 
+    call runs in an infinite loop and handles all the underlying USB communications and provides abstraction at the endpoints level.
+
+  - There is a task to startup and run the Endpoint0 code: ``Endpoint0()``. It handles the 
+    control endpoint zero and must be run in a separate logical core inorder to promptly respond to the control requests from host.
+
+  - There is a task to handle all the other three endpoints required for the CDC class: 
+    ``CdcEnpointsHandler()``. This function handles one bulk OUT and one bulk IN 
+    endpoints for data transmissions and one interrupt IN endpoint for sending notifications 
+    to host.
+
+  - There is a task to run the application logic that interacts with user over the 
+    virtual serial port: ``app_virtual_com()``.
+
+  - The define USB_TILE describes the tile on which the individual tasks will run.
+
+  - The xCONNECT communication channels and the xC interface *cdc_data* used for inter task 
+    communication are setup at the beginning of ``main()`` and passed on to respective tasks.
+
+  - The USB defines discussed earlier are passed into the function ``xud()``.
+
+
+
+Configuring the USB Device ID
+.............................
+
+The USB ID values used for vendor ID, product ID and device version number are defined in the file ``xud_cdc.xc``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
+
+.. literalinclude:: xud_cdc.xc
+   :start-on: USB CDC device
+   :end-before: USB Sub class
+
+|newpage|
+
+USB Descriptors
+...............
+
+USB CDC class device has to support class-specific descriptors apart from the 
+standard descriptors defined in the USB specifications. These class specific 
+descriptors are customized according to the need of the USB CDC device. In the
+example application code, the descriptors implement the ACM model of the CDC 
+class and are customized to suit a virtual serial port. 
+
+The following figure shows the descriptors used in the example code.
+
+.. figure:: images/usb_descriptors.*
+   :scale: 85%
+
+   USB descriptors hierarchical structure of CDC example
+
+|newpage|
+
+USB Device Descriptor
+~~~~~~~~~~~~~~~~~~~~~
+
+``xud_cdc.xc`` is where the standard USB device descriptor is declared for the CDC class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
+
+.. literalinclude:: xud_cdc.xc
+   :start-on: USB Device Descriptor 
+   :end-on: }
+
+From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise the CDC device when it is connected to the USB bus.
+
+|newpage|
+
+USB Configuration Descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The USB configuration descriptor is used to configure the device in terms of the device class and the endpoints setup. The hierarchy of descriptors under a configuration includes interfaces descriptors, class-specific descriptors and endpoints descriptors.
+
+when a host requests a configuration descriptor, the entire configuration hierarchy including all the related descriptors are returned to the host. The following
+code shows the configuration hierarchy of the demo application.
+
+.. literalinclude:: xud_cdc.xc
+   :largelisting:
+   :start-on: USB Configuration Descriptor
+   :end-on: }
+
+The configuration descriptor tells host about the power requirements of the device and the number of interfaces it supports. 
+
+The interface descriptors describe on how the host should communicate with the device in the class level. There are two interface descriptors in a USB CDC device.
+
+The **CDC Communication interface** descriptor is for device management. You can see from the 
+code that the device uses Abstract Control Model and supports AT Command V.25ter protocol. 
+Though this example device doesn't support AT V.25ter protocol, it is mentioned to make the 
+device compatible with standard host drivers. This interface has subordinate descriptors like 
+CDC functional descriptors and a notification endpoint descriptor. The class-specific 
+functional descriptors are discussed in detail in the next section. The notification endpoint 
+is an interrupt IN endpoint and is used to report device's serial state to the host. This 
+endpoint is not used in this example application but will be employed when bridging a UART to 
+the USB Virtual COM port.
+
+The **CDC Data interface** descriptor defines the interface for data transmission and reception between host and device. This interface has two endpoints, one bulk OUT endpoint for data transmissions from host to device and one bulk IN endpoint for data transmissions from device to host. 
+
+.. literalinclude:: xud_cdc.xc
+   :lines: 146-147
+
+The above code from the endpoint descriptors shows that the maximum packet size of these endpoints to be 512 bytes (0x200) which is suited for applications requiring high data throughput.
+
+|newpage|
+
+USB CDC Functional Descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Functional descriptors describe the content of class-specific information within the Communication Class interface. The 'USB_DESCTYPE_CS_INTERFACE' define is used in the descriptor structures to identify them. There are four functional descriptors used in this CDC example. They are:
+
+  1. Header functional descriptor.
+  2. ACM functional descriptor.
+  3. Union functional descriptor.
+  4. Call management functional descriptor.
+
+Header functional descriptor mentions the version of the CDC specification the interface compiles with and it is shown below as found in the *cfgDesc[]* structure.
+
+.. literalinclude:: xud_cdc.xc
+   :lines: 98-100
+
+Note: The CDC version number (1.10) is mentioned as BCD in little endian format.
+
+ACM functional descriptor tells the class-specific commands and notifications supported by the CDC device. The application code supports a subset of commands corresponding to ACM subclass and thus the bit D1 is set to 1 in *bmCapabilities* field of the descriptor as shown below
+
+.. literalinclude:: xud_cdc.xc
+   :lines: 104-106
+
+Union functional descriptor groups the interfaces that forms a CDC functional unit. It specifies one of the interfaces as master to handle control messages of the unit. In the CDC example, the Communication Class interface acts as master and the Data Class interface acts as subordinate and together forming a single functional unit.
+
+Call management functional descriptor decides on how the device manages calls. The bit fields D0 and D1 of *bmCapabilities* are set to one in the descriptor to tell host driver that the device handles call management by itself and it could even use Data class interface for that purpose. The below code shows that configuration.
+
+.. literalinclude:: xud_cdc.xc
+   :lines: 117-120
+
+USB String Descriptors
+~~~~~~~~~~~~~~~~~~~~~~
+
+String descriptors provide human readable information for your device and you can configure them with your USB product information. The descriptors are placed in an array as shown in the below code.
+
+.. literalinclude:: xud_cdc.xc
+   :start-on: String table
+   :end-on: }
+
+The XMOS USB library will take care of encoding the strings into Unicode and structures the content into USB string descriptor format.
+
+|newpage|
+
+USB Standard and Class-Specific requests
+........................................
+
+In *xud_cdc.xc* there is a function *Endpoint0()* which handles all the USB control requests sent by host to control endpoint 0. USB control requests includes both standard USB requests and the CDC class-specific requests. 
+
+In *Endpoint0()* function, a USB request is received as a setup packet by calling *USB_GetSetupPacket()* library function. The setup packet structure is then examined to distinguish between standard and class-specific requests.
+
+The XMOS USB library provides a function *USB_StandardRequests()* to handle the standard USB requests. This function is called with setup packet and descriptors structures as shown below
+
+.. literalinclude:: xud_cdc.xc
+   :start-on: /* Returns  XUD_RES_OKAY if handled okay,
+   :end-on: }
+
+
+The CDC Communication interface uses endpoint 0 as management element and receives class-specific control requests on it. The following code shows how the class-specific requests are filtered and passed to a function *ControlInterfaceClassRequests()* for further handling.
+
+.. literalinclude:: xud_cdc.xc
+   :start-on: switch(bmRequestType)
+   :end-before: } /* if ends 
+
+
+The *ControlInterfaceClassRequests()* function handles a subset of CDC ACM requests which are defined in the *xud_cdc.xc* as follows:
+
+.. literalinclude:: xud_cdc.xc
+   :start-on: /* CDC Communications Class requests
+   :end-before: /* Definition of Descriptors
+
+
+In virtual serial port, the above commands are used to set and get serial port parameters like baud rate, parity, stop bits etc and also to emulate hardware flow control using DTR (Data Terminal Ready) and RTS (Request To Send) signals.
+
+You can use the functions *ControlInterfaceClassRequests()* and the *Endpoint0()* as reference to handle more commands of the subclass or you can even implement a different model/subclass for your USB CDC device.
+
+Data handling
+.............
+
+The two bulk data endpoints of the CDC Data interface are handled by the task *CdcEndpointsHandler()* present in *xud_cdc.xc*. As there is no subprotocol used, the bytes received through these endpoints represent the raw data sent from a host terminal software. This data is handled using a double buffer mechanism and hence increases the performance of the device.
+
+To handle asynchronous communication over two endpoints, events are used by means of select statements as shown in the following piece of code from *CdcEndpointsHandler()* task.
+
+.. literalinclude:: xud_cdc.xc
+   :start-on: select
+   :end-before: /* Case handlers for CDC functions
+
+When OUT endpoint receives data, an event is triggered and the *XUD_GetData_Select()* case is executed. Similary, when IN endpoint completes sending data to host the *XUD_SetData_Select()* case is executed. This event driven approach not only handles multiple endpoints but also provides way to include other events and build more logic into the task.
+
+Application interface
+.....................
+
+The application interface is the set of functions defined as xC interface that enables 
+application tasks to send/receive data over the USB CDC endpoints. This API funtions abstract 
+out all the buffering implementation details done at the endpoint level for data
+communications. This xC interface is declared in *xud_cdc.h* file and it is shown below.
+
+.. literalinclude:: xud_cdc.h
+   :start-on: interface usb_cdc_interface
+   :end-on: };
+
+These interface functions pass arguments and return values over xCONNECT channels and provides well defined inter-task communication. The server side of these functions are defined under select case statements in the *CdcEndpointsHandler()* task.
+
+In the example code, main.xc has the *app_virtual_com()* function which uses this interface to implement a simple loopback to interact with user.
+The following code is taken from *app_virtual_com()* function
+
+.. literalinclude:: main.xc
+   :largelisting:
+   :start-on: app_virtual_com
+   :end-before: main
+
+In the above code you can observe that the interface's functions are accessed via a variable 'cdc'. This variable is the client side of the *usb_cdc_interface*.
+
+|appendix|
+|newpage|
+
+Demo Hardware Setup
+-------------------
+
+To setup the demo hardware the following boards are required.
+
+  - xCORE-USB slicekKIT (XK-SK-U16-ST)
+
+      - xCORE-USB Core board.
+      - USB A/B sliceCARD.
+      - xTAG-2 debug adaptor
+      - Power supply
+
+.. figure:: images/usb-slicekit.*
+  :scale: 110%
+
+  XMOS xCORE-USB sliceKIT 
+
+The hardware should be configured as displayed above for this demo:
+
+  - The XTAG debug adapter should be connected to the XSYS connector and
+    the XTAG USB should be connected to the host machine.
+
+  - The USB sliceCARD should be connected to the U slot (J4 header) of the xCORE-USB Core 
+    board and the other end of USB sliceCARD should be connected to host machine using a USB 
+    cable.
+
+  - The XLINK switch on the core board should be set on ON position.
+
+  - The xCORE-USB core board should have the power cable connected.
+
+|newpage|
+
+Launching the demo application
+------------------------------
+
+Once the demo example has been built either from the command line using
+xmake or via the build mechanism of xTIMEcomposer studio we can execute
+the application on the xCORE-USB sliceKIT. 
+
+Once built there will be a *bin* directory within the project which
+contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
+.xe extension.
+
+Launching from the command line
+...............................
+
+From the command line we use the ``xrun`` tool to download code to both the
+xCORE devices. If we change into the bin directory of the project
+we can execute the code on the xCORE microcontroller as follows::
+
+> xrun app_usb_cdc_demo.xe          <-- Download and execute the xCORE code
+
+Once this command has executed the CDC device will have enumerated as virtual serial port on 
+your host machine.
+
+Launching from xTIMEcomposer Studio
+...................................
+
+From xTIMEcomposer Studio we use the run mechanism to download code to 
+xCORE device. From *Project Explorer* select the xCORE binary from the bin directory, right 
+click and then run as xCORE application will execute the code on the xCORE device.
+
+Once this command has executed, the CDC device will have enumerated as virtual serial port on 
+your host machine.
+
+Running the Virtual COM demo
+............................
+
+To run the demo, you need to have a serial terminal software in your host machine.
+
+Following sections describe in detail on how to run the demo on different OS platforms.
+
+Running on Windows
+~~~~~~~~~~~~~~~~~~
+
+  - In Microsoft Windows, when the USB CDC device enumerates for the frist time it will ask 
+    for a host driver. Use 'Install driver from specific location' option to point to the 
+    'cdc_demo.inf' supplied along with this application note. This will load the 'usbser.sys' 
+    host driver for the virtual COM device.
+
+  - Once the driver is installed, the device will be assigned with a COM port number and it 
+    will look like the following figure in "Device Manager" (Start->Control Panel->System->Hardware->Device Manager).
+
+  .. figure:: images/com_port_windows.*
+     :scale: 80%
+
+     Enumerated Virtual COM Port Device in Windows
+
+  - Use any terminal software to open the COM port with default settings. In this demo, 
+    we have used *Hercules* as the terminal software.
+
+  - Any keys pressed in the terminal will be looped back to the terminal via the xCORE device as
+    you type. Pressing enter will add a new line to the terminal output on return from the xCORE
+    application.
+
+Running on Linux
+~~~~~~~~~~~~~~~~
+
+  - Under Linux, when the USB CDC device enumerates the built-in *ACM* driver will be loaded 
+    automatically and the device will be mounted as **/dev/ttyACMx** where 'x' is a number.
+
+  - You can execute *dmesg* command in a command prompt to determine the name on which the 
+    device is mounted. 
+
+  - Use any serial terminal software to open the virtual serial port with default 
+    settings. In this demo, we have used *Putty* software and the serial port is opened as shown below.
+
+  .. figure:: images/putty_conf_linux.*
+     :scale: 50%
+
+     Opening Virtual Serial Port in Putty
+
+  - Any keys pressed in the terminal will be looped back to the terminal via the xCORE device as
+    you type. Pressing enter will add a new line to the terminal output on return from the xCORE
+    application.
+
+Running on Mac OS
+~~~~~~~~~~~~~~~~~
+
+  - In Mac OS X, the USB CDC device is supported by a default driver available in the OS and 
+    the device will appear as /dev/tty.usbmodem*. You can use *ls /dev/tty.usbmodem\** command to determine the exact name of the virtual   
+    serial device.
+
+  - Use any serial terminal software to open the virtual serial port with default 
+    settings. In this demo, we have used *CoolTerm* software and the serial port is opened as shown below.
+
+  .. figure:: images/coolterm_conf_mac.*
+     :scale: 50%
+
+     Opening Virtual Serial Device in CoolTerm
+
+  - Any keys pressed in the terminal will be looped back to the terminal via the xCORE device as
+    you type. Pressing enter will add a new line to the terminal output on return from the xCORE
+    application.
+
+|newpage|
+
+References
+----------
+  
+.. nopoints::
+
+  * XMOS Tools User Guide
+
+    http://www.xmos.com/published/xtimecomposer-user-guide
+
+  * XMOS xCORE Programming Guide
+
+    http://www.xmos.com/published/xmos-programming-guide
+  
+  * XMOS xCORE-USB Device Library
+
+    http://www.xmos.com/published/xuddg
+
+  * XMOS USB Device Design Guide 
+
+    http://www.xmos.com/published/xmos-usb-device-design-guide
+
+  * USB CDC Class Specification, USB.org: 
+
+    http://www.usb.org/developers/docs/devclass_docs/
+
+  * USB 2.0 Specification
+
+    http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
+
+|newpage|
+
+Full source code listing
+------------------------
+
+Source code for main.xc
+.......................
+
+.. literalinclude:: main.xc
+  :largelisting:
+
+Source code for xud_cdc.xc
+..........................
+
+.. literalinclude:: xud_cdc.xc
+  :largelisting:
+
+|newpage|

@@ -1,0 +1,472 @@
+.. include:: ../../README.rst
+
+|newpage|
+
+Overview
+--------
+
+Introduction
+............
+
+The USB Test and Measurement class (USBTMC) specification allows the test and measurement devices with a USB interface so that messages can be exchanged between the host and devices.
+The subclass specification communicates to the devices based on IEEE 488.1 (GPIB) and IEEE 488.2 (Standard Commands for Programmable Instruments - SCPI) standards.
+
+These types of devices enumerate as Test and Measurement class USB devices on the host. A USBTMC device must be able to support the control endpoint, Bulk-OUT and Bulk-IN endpoints. The Interrupt-IN endpoint is optional and is used by the device to send notifications to the Host. 
+
+Examples of test and measurement devices includes
+
+  - ADCs, DACs, Sensors, DAQs
+  
+  - Digital instrument cards, IEE-488 based communication devices
+  
+Each USBTMC device implements its own command set based on USBTMC subclass (IEEE488) standards. 
+Host can use any VISA compliant application to send these commands to the device and read the response from the device.
+
+
+Block diagram
+.............
+
+.. figure:: images/block_diagram.*
+   :scale: 100%
+   :align: center
+
+   Block diagram of USBTMC device application example
+
+USB Test and Measurement Class Device application note
+------------------------------------------------------
+
+The application in this note uses the XMOS USB device library and creates a USBTMC device which responds to IVI-VISA compliant host application messages.
+The device implements basic message requests for Bulk-IN and Bulk-OUT endpoints. Interrupt-IN endpoint is optional and is not used in this application. The application integrates an open source SCPI parser library and implements a minimal subset of SCPI commands to communicate with host. More SCPI commands can be easily added to this application by following the steps detailed in the ``Using SCPI library to add more SCPI commands`` appendix section.
+
+For the USBTMC device class application example, the system comprises three tasks running on separate logical cores of an xCORE-USB multicore microcontroller. 
+
+The tasks perform the following operations.
+
+   - A task containing the USB library functionality to communicate over USB
+
+   - A task implementing Endpoint0 responding to standard USB control requests
+
+   - A task implementing the USBTMC class specific message handling application code for both Bulk-IN and Bulk-OUT endpoints
+
+These tasks communicate via the use of xCONNECT channels which allow data to be passed between application code running on the separate logical cores.
+
+The following diagram shows the task and communication structure for this USBTMC application example.  
+
+.. figure:: images/task_diagram.*
+
+        Task diagram of USBTMC device
+    
+
+Makefile additions for this example
+...................................
+
+To start using the USB library, you need to add ``lib_xud`` to your makefile::
+
+	USED_MODULES = ... lib_xud ...
+
+You can then access the USB functions in your source code via the xud.h header file::
+
+	#include <usb_device.h>
+
+Declaring resource and setting up the USB components
+....................................................
+ 
+``main.xc`` contains the logical cores instantiation needed for USBTMC device. There are some defines in it that are used to configure the XMOS USB device library. These are displayed below.
+
+This set of defines describes the endpoint configuration for this device. This example has bi-directional communication with the host machine via the standard endpoint0 and endpoints for implementing the bulk-in and bulk-out endpoints.
+
+.. literalinclude:: main.xc
+   :start-on: USB Endpoint Defines
+   :end-on: Prototype
+
+These defines are passed to the setup function for the USB library which is called 
+from ``main()``.
+
+The application main() function
+...............................
+
+Below is the source code for the main function of this application, which is taken from
+the source file ``main.xc``
+
+.. literalinclude:: main.xc
+   :start-on: int main
+
+Looking at this in a more detail you can see the following:
+
+  - The par functionality describes running three separate tasks in parallel
+
+  - There is a function call to configure and execute the USB library: ``xud()``
+
+  - There is a function call to start up and run the Endpoint0 code: ``Endpoint0()``
+
+  - There is a function to deal with the USBTMC device custom bulk endpoints ``usbtmc_bulk_endpoints()``
+
+  - The define USB_TILE describes the tile on which the individual tasks will run
+
+  - In this example all tasks run on the same tile as the USB PHY although this is only a requirement of ``xud()``
+
+  - The xCONNECT communication channels used by the application are set up at the beginning of ``main()``
+
+  - The USB defines discussed earlier are passed into the function ``xud``
+
+Configuring the USB Device ID
+.............................
+
+The USB ID values used for Vendor ID (VID), Product ID (PID) and device version number are defined in the file ``endpoint0.xc``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: BCD_DEVICE
+   :end-on: PRODUCT_STR_INDEX
+
+USBTMC Class specific defines
+.............................
+
+The USBTMC class is configured in the file ``endpoint0.xc``. 
+Below there are a set of standard defines which are used to configure the 
+USB device descriptors to setup a USBTMC device running on an xCORE-USB microcontroller.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: VENDOR_SPECIFIC_CLASS
+   :end-on: VENDOR_SPECIFIC_PROTOCOL
+
+These are defined in the USB standard as required in the device description for
+TMC class devices and for configuring them as such with the USB host machine.
+   
+USB Device Descriptor
+.....................
+
+``endpoint0.xc`` is where the standard USB device descriptor is declared for a USBTMC class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus. This descriptor contains the vendor specific defines described above.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: devDesc 
+   :end-on: }
+
+From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise our USBTMC device when it is connected to the USB bus.
+
+USB Configuration Descriptor
+............................
+
+The USB configuration descriptor is used to configure the device class and the endpoint setup. For the USBTMC device provided in this example the configuration descriptor which is read by the host is as follows.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: cfgDesc
+   :end-on: }
+
+This descriptor is in the format described by the USB 2.0 standard and contains the encoding for the endpoints related to control endpoint 0 and also the descriptors that describe the 2 bulk endpoints which form our USBTMC device.
+Note that bInterfaceProtocol value is controlled by the define USBTMC_SUB_CLASS_SUPPORT and it is set to ``0`` implying that no subclass specification applies and the USBTMC interface is not required to have an Interrupt-IN endpoint for this application example.
+
+USB string descriptors
+......................
+
+The final descriptor for our USBTMC device is the string descriptor which the host machine uses to report to the user when the device is enumerated and when the user queries the device on the host system. This is setup as follows.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: String table
+   :end-on: }
+
+The last value corresponds to the iSerialNumber of the device, which should contain a value > 0 to form a valid GUID.
+
+USBTMC Endpoint0
+................
+
+The function ``Endpoint0()`` contains the code for dealing with device requests made from 
+the host to the standard endpoint0 which is present in all USB devices. 
+
+.. literalinclude:: endpoint0.xc
+   :start-on: Endpoint 0 Task
+   :end-on: } //if(result == XUD_RES_OKAY)
+
+The control interface class requests are handled using the below function. 
+
+.. literalinclude:: endpoint0.xc
+   :start-on: XUD_Result_t ControlInterfaceClassRequests
+   :end-on: return XUD_RES_ERR;
+
+This application implements ``GET_CAPABILITIES`` request and uses it to send our device capabilities to the host.
+
+
+|newpage|
+
+Handling requests to the USBTMC bulk endpoints
+..............................................
+
+The application endpoints for receiving and transmitting to the host machine are implemented in the file ``usbtmc_endpoints.xc``. This is contained within the function ``usbtmc_bulk_endpoints()`` which is shown below:
+
+.. literalinclude:: usbtmc_endpoints.xc
+   :start-on: usbtmc_bulk_endpoints(
+   :end-on: case XUD_SetData_Select
+
+From this you can see the following.
+
+  - A buffer is declared to communicate and transfer data with the host ``host_transfer_buf`` of size BUFFER_SIZE.
+  
+  - Bulk-OUT endpoint is set as ready to receive the data from the host
+  
+  - SCPI parser library is initialized using ``SCPI_initialize_parser`` wrapper api call
+  
+  - This task operates inside a ``while (1)`` loop which has a select handler to repeatedly deal with events related to bulk endpoints
+
+  - The select event handler gets the data from bulk out endpoint, decodes the USBTMC device dependent command messages using SCPI command parser
+  
+  - The function ``SCPI_parse_cmd`` parses the USBTMC device dependent command message, prepares a response message and sends the response using the bulk-in endpoint using ``XUD_SetReady_In``
+    
+  - The Bulk-OUT endpoint is set as ready once again to receive the data from the host
+  
+  - This vendor specific command requests and responses could also be handled in a similar manner
+ 
+|appendix|
+|newpage|
+
+Example Hardware Setup
+----------------------
+
+To run the example, connect the xCORE-USB sliceKIT USB-B and xTAG-2 USB-A
+connectors to separate USB connectors on your development PC. 
+
+On the xCORE-USB sliceKIT ensure that the xCONNECT LINK switch is set to ON, as per the image, 
+to allow xSCOPE to function. The use of xSCOPE is required in this application so 
+that the print messages that are generated on the device as part of the demo
+do not interfere with the real-time behavior of the USB device.
+
+.. figure:: images/usb-slicekit.*
+
+	XMOS xCORE-USB sliceKIT
+
+The hardware should be configured as displayed above for this demo:
+
+  - The XTAG debug adapter should be connected to the XSYS connector and
+    the XTAG USB cable should be connected to the host machine
+
+  - The xCORE-USB core board should have a USB cable connecting the device
+    to the host machine
+
+  - The xSCOPE switch on the board should be set to the on position
+
+  - The xCORE-USB core board should have the power cable connected
+
+|newpage|
+
+Launching the demo application
+------------------------------
+
+Once the demo example has been built either from the command line using
+xmake or via the build mechanism of xTIMEcomposer studio the application
+can be executed on the xCORE-USB sliceKIT. 
+
+Once built there will be a ``bin`` directory within the project which
+contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
+.xe extension.
+
+Launching from the command line
+...............................
+
+From the command line the ``xrun`` tool is used to download code to the
+xCORE-USB device. Changing into the bin directory of the project
+the code can be executed on the xCORE microcontroller as follows::
+
+> xrun app_usb_tmc_demo.xe          <-- Download and execute the xCORE code
+
+Once this command has executed the USBTMC device should have 
+enumerated on the host machine
+
+Launching from xTIMEcomposer Studio
+...................................
+
+From xTIMEcomposer Studio the run mechanism is used to download code to the
+xCORE device. Select the xCORE binary from the bin directory, right click 
+and then run as xCORE application will execute the code on the xCORE device.
+
+Once this command has executed the USBTMC device should have 
+enumerated on your machine
+
+Running the USBTMC demo
+.......................
+
+* Ensure the USBTMC device enumeration on a Linux (Ubuntu 12.04 LTS) host is fine::
+
+	xmos@xmos:~$ lsusb
+	Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+	Bus 001 Device 012: ID 20b1:2337 XMOS Ltd 
+
+* List the details of the device descriptor::
+
+	root@xmos-lenovo:/home/xmos# lsusb -v
+	> lsusb -v
+	Bus 001 Device 012: ID 20b1:2337 XMOS Ltd 
+	Device Descriptor:
+	  bLength                18
+	  bDescriptorType         1
+	  bcdUSB               2.00
+	  bDeviceClass            0 (Defined at Interface level)
+	  .
+	  .
+	  idVendor           0x20b1 XMOS Ltd
+	  idProduct          0x2337 
+	  bcdDevice            1.26
+	  iManufacturer           1 XMOS
+	  iProduct                2 XMOS TestMeasuement device
+	  .
+	  .
+	Interface Descriptor:
+	  .
+	  .
+	  bInterfaceClass       254 Application Specific Interface
+	  bInterfaceSubClass      3 Test and Measurement
+	  bInterfaceProtocol      0 
+	  iInterface              3 USBTMC
+	  Endpoint Descriptor:
+	  .
+	  .
+	  bEndpointAddress     0x01  EP 1 OUT
+	  bmAttributes            2
+	    Transfer Type            Bulk
+	  .
+	  .
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+            Transfer Type            Bulk
+	  .
+	  .
+
+
+|newpage|
+
+* Open a `Terminal` window (using root privileges) and communicate with the XMOS USBTMC device::
+
+	root@xmos-lenovo:/home/xmos# python
+	Python 2.7.3 (default, Aug  1 2012, 05:16:07) 
+	[GCC 4.6.3] on linux2
+	Type "help", "copyright", "credits" or "license" for more information.
+	>>> import usb.core
+	>>> import usb.util
+	>>> 
+	>>> dev = usb.core.find(idVendor=0x20b1, idProduct=0x2337)
+	>>> import usbtmc
+	>>> instr =  usbtmc.Instrument(0x20b1, 0x2337)
+	
+
+* Identify the USBTMC device using IDN query::
+	
+	>>> 
+	>>> print(instr.ask("*IDN?"))
+	XMOS, USBTMC, 1, 01-01
+
+	>>> 
+	>>> print(instr.ask("*RST"))
+	SCPI command not implemented
+	>>> 
+
+* Query the DC voltage of the device using the SCPI command as follows::
+	
+	>>> print(instr.ask("*MEASure:VOLTage:DC?"))
+	10
+
+Note: The DC voltage measurement function is stubbed inside the device code to return a sample voltage value. This logic can be replaced with instrument data such as actual ADC results.
+
+Using NI LabVIEW to communicate with XMOS USBTMC device
+-------------------------------------------------------
+
+NI LabVIEW software can communicate with USBTMC devices using VISA functions (Read, Write, Open, Close) in the same way as you would communicate with GPIB instruments. You can create a simple block diagram as below.
+
+.. figure:: images/ni_labview_block_diagram.*
+
+        NI LabVIEW block diagram to communicate to XMOS USBTMC device
+
+This example opens a VISA session, uses a SCPI command to query the ID of the device and the response is read back before closing the session. To test this block, connect your device to a host and ensure it successfully enumerates as USBTMC device as follows.
+
+.. figure:: images/win_device_list.*
+
+        XMOS device enumerated as USBTMC device on a Windows 7 host
+
+|newpage|
+
+Navigate to the NI LabVIEW front panel window of the block diagram and select XMOS USBTMC device in the VISA IO resource listing.
+
+.. figure:: images/ni-front-panel.*
+
+   NI LabVIEW front panel to select XMOS USBTMC device
+
+Click `Run` button (Right arrow). The device id of the manufacturer, which is `XMOS USBTMC device with version number` in this case is populated in the results buffer as follows.
+
+.. figure:: images/ni_labview_results.*
+
+   NI LabVIEW front panel displaying results from XMOS USBTMC device
+    
+Similarly you can alter the query from the block diagram to contain a different SCPI command (for e.g., ``*MEASure:VOLTage:DC?``), submit it to your device and record the new results.
+
+Using SCPI library to add more SCPI commands
+--------------------------------------------
+
+The application supports very minimum SCPI commands on the device. Adding more SCPI commands is a simple configuration because the device code ports an Open source SCPI library. In order to add more SCPI commands, follow the below steps.
+
+ #. Navigate to ``src\scpi_parser\custom\scpi_parser_config.c`` file
+ #. Add SCPI command to the ``scpi_commands`` structure and attach a callback function
+ #. Declare the callback function in ``src\scpi_parser\custom\scpi_cmds.h`` file
+ #. Source file ``src\scpi_parser\custom\scpi_cmds.c`` contains the definition of callback functions. These functions interface with device measurement logic in order to capture the instrument results. Define the callback function logic for the configured SCPI command in this file.
+ #. When the USBTMC host client software uses the corresponding SCPI command, this callback function is invoked and the computed result is sent back to the host as response message using the existing framework.
+ 
+
+|newpage|
+
+References
+----------
+  
+.. nopoints::
+
+  * XMOS Tools User Guide
+
+    http://www.xmos.com/published/xtimecomposer-user-guide
+
+  * XMOS xCORE Programming Guide
+
+    http://www.xmos.com/published/xmos-programming-guide
+  
+  * XMOS xCORE-USB Device Library: 
+
+    http://www.xmos.com/published/xuddg
+
+  * XMOS USB Device Design Guide: 
+
+    http://www.xmos.com/published/xmos-usb-device-design-guide
+
+  * USB 2.0 Specification
+
+    http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
+
+  * USB Test and Measurement Class Specification (USBTMC); Rev 1.0 
+
+    http://sdpha2.ucsd.edu/Lab_Equip_Manuals/USBTMC_1_00.pdf
+
+  * USB Test and Measurement Class, Subclass USB488 Specification (USBTMC-USB488); Rev 1.0 
+
+    http://sdpha2.ucsd.edu/Lab_Equip_Manuals/usbtmc_usb488_subclass_1_00.pdf
+
+  * Open Source SCPI device library
+
+    https://github.com/j123b567/scpi-parser
+
+|newpage|
+
+Full source code listing
+------------------------
+
+Source code for endpoint0.xc
+............................
+
+.. literalinclude:: endpoint0.xc
+  :largelisting:
+
+Source code for usbtmc_endpoints.xc
+...................................
+
+.. literalinclude:: usbtmc_endpoints.xc
+  :largelisting:
+
+Source code for main.xc
+.......................
+
+.. literalinclude:: main.xc
+  :largelisting:
+
+|newpage|
+

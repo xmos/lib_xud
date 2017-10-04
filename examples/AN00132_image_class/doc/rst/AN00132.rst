@@ -1,0 +1,411 @@
+.. include:: ../../README.rst
+
+|newpage|
+
+Overview
+--------
+
+Introduction
+............
+
+The Universal Serial Bus (USB) is a communications architecture that gives a PC the ability to interconnect a variety of devices via a simple four-wire cable. One such device is the digital still camera. 
+
+This application note gives a simple example for interfacing a USB still image capture device with a USB host. In the example, the USB transactions implemented for image capture are compliant to the Picture Transfer Protocol (PTP) of Photographic and Imaging Manufacturers Association (PIMA) 15470 standard [#]_. An image simulated at xCORE is transferred to the host. 
+
+The USB specification provides a standard device class for the implementation of 
+USB still image capture device [#]_.
+
+
+
+Block diagram
+.............
+
+.. figure:: images/block_diagram.*
+   :scale: 100%
+   :align: center
+
+   Block diagram of USB still image capture device application example
+
+.. [#] http://www.pima.net/standards/it10/IT10_POW.htm
+
+.. [#] http://www.usb.org/developers/docs/devclass_docs/usb_still_img10.zip
+
+
+|newpage|
+
+USB Still Image Capture Device Application Note
+-----------------------------------------------
+
+The demo in this note uses the XMOS USB Device (XUD) library and shows a simple program for interfacing a USB still image capture device. It responds to device control and image data transfer requests from the host PC.
+
+For the USB still image capture class application example, the system comprises three tasks running on separate logical cores of a xCORE-USB multicore microcontroller. The tasks perform the following operations.
+
+   - A task containing the USB library functionality to communicate over USB
+
+   - A task implementing Endpoint0 responding to standard USB control requests
+
+   - A task implementing the application code for device interface
+
+These tasks communicate via the xCONNECT channels which allow data to be passed between application codes running on separate logical cores.
+
+The following diagram shows the task and communication structure for this USB still image capture device class application example.  
+ 
+.. figure:: images/task_diagram.*
+   :scale: 50%
+   :align: center
+
+   Task diagram of USB still image capture device interface
+
+The still image capture class has an interrupt endpoint as well to report the asynchronous events occuring at the device to the host. The demo in this note however emulates the image capture device. The interrupt endpoint is therefore not implemented although it is instantiated in Endpoint0. Application developers can implement this endpoint when a real image capture device is connected.
+   
+
+Makefile additions for this example
+...................................
+
+To start using the USB library, you need to add ``lib_usb`` to your makefile::
+
+	USED_MODULES = ... lib_usb ...
+
+You can then access the USB functions in your source code via the xud.h header file::
+
+	#include <usb.h>
+
+Declaring resource and setting up the USB components
+....................................................
+ 
+``main.xc`` contains the application implementation for a USB still image capture device. 
+There are some defines in it that are used to configure the XMOS USB device library. These are displayed below.
+
+.. literalinclude:: main.xc
+   :start-on: USB endpoint
+   :end-before: USB_DATA_PKT_SIZE
+
+These defines describe the endpoint configuration for this device. This example has bi-directional communication with the host machine via the standard Endpoint0 and an endpoint for implementing the still image capture class bulk data endpoint which is also bi-directional. The endpoint type tables inform XUD what the transfer types for each endpoint in use and also if the endpoint wishes to be informed of USB bus resets.
+
+These defines are passed to the setup function for the USB library which is called 
+from ``main()``.
+
+|newpage|
+
+The application main() function
+...............................
+
+Below is the source code for the main function of this application, which is taken from the source file ``main.xc``
+
+.. literalinclude:: main.xc
+   :start-on: int main
+
+Looking at this in a more detail you can see the following:
+
+  - The par functionality describes running three separate tasks in parallel
+
+  - There is a function call to configure and execute the USB library: ``xud()``
+
+  - There is a function call to startup and run the Endpoint0 code: ``Endpoint0()``
+
+  - There is a function to deal with the bulk endpoints for command and data transfer: ``bulk_endpoint()``
+
+  - The define USB_TILE describes the tile on which the individual tasks will run
+
+  - In this example all tasks run on the same tile as the USB PHY although this is only a requirement of ``xud()``
+
+  - The xCONNECT communication channels used by the application are set up in the beginning of ``main()``
+
+  - The USB defines discussed earlier are passed to the function ``xud()``
+
+Configuring the USB Device ID
+.............................
+
+The USB ID values used for Vendor ID, Product ID and device version number are defined in the file ``endpoint0.xc``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: USB Device ID defines
+   :end-on: PRODUCT_ID   0x00C1  
+
+|newpage|
+
+USB Still Image Capture Class specific defines
+..............................................
+
+The USB Still Image Capture Class is configured in the file ``endpoint0.xc``. 
+Below there are a set of class-specific defines and requests which are used to configure the USB device descriptors to setup a USB still image capture device running on an xCORE-USB microcontroller.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: USB Still Image Capture Class defines
+   :end-on: STILL_IMAGE_GET_DEV_STATUS
+
+These are defined in the USB standard as required in the device definition for
+still image capture devices and for configuring them as such with the USB host machine.
+   
+USB Device Descriptor
+.....................
+
+``endpoint0.xc`` is where the standard USB device descriptor is declared for a still image capture device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus. 
+
+.. literalinclude:: endpoint0.xc
+   :start-on: devDesc 
+   :end-on: }
+
+From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise our still image device when it is connected to the USB bus.
+
+|newpage|
+
+USB Configuration Descriptor
+............................
+
+The USB configuration descriptor is used to configure the device  class and the endpoint setup. For the USB still image capture device provided in this example the configuration descriptor which is read by the host is as follows.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: cfgDesc
+   :end-on: }
+
+This decriptor is in the format decribed by the USB 2.0 standard. It contains the encoding for the endpoints related to control endpoint 0 and the descriptors that describe the two bulk endpoints for data in and out. It also contains the descriptors for the interrupt endpoint. The bulk endpoints are used for transferring image data and non-image data to adjust device controls. The interrupt endpoint is used to send asynchronous event data such as battery low indication or the removal of the memory card to the host from the device.
+
+USB string descriptors
+......................
+
+The final descriptor for our still image capture device is the string descriptor which the host machine uses to report to the user when the device is enumerated and when the user queries the device on the host system. This is setup as follows.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: String table
+   :end-on: }
+
+USB Still Image Capture Class requests
+......................................
+
+Inside ``endpoint0.xc`` there is some code for handling the USB image capture device class-specific requests. These are shown in the following code:
+
+.. literalinclude:: endpoint0.xc
+   :start-on: Still Image Class-Specific Requests
+   :end-before: Endpoint 0 
+
+These class-specific requests are implemented by the application as they do not form part of the standard requests which have to be accepted by all device classes via endpoint0.
+
+
+USB Still Image Capture Class Endpoint0
+.......................................
+
+The function ``Endpoint0()`` contains the code for dealing with device requests made from the host to the standard endpoint 0 which is present in all USB devices. 
+In addition to requests required for all devices, the code handles the requests specific to the still image capture device class.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: Endpoint 0 Task
+
+|newpage|
+
+Handling requests to the bulk endpoints
+.......................................
+
+The application endpoints for receiving commands and transmitting data and response to the host machine are implemented in the file ``main.xc``. This is contained within the function ``bulk_endpoint()`` which is shown below:
+
+.. literalinclude:: main.xc
+   :start-on: bulk_endpoint
+   :end-before: case PTP_OC_GetObject:
+
+.. literalinclude:: main.xc
+   :start-on: case PTP_OC_GetObject:
+   :end-before: The main
+
+From this you can see the following.
+
+  - Three buffers ``cmd_buf``, ``info_buf`` and ``data_buf`` are declared to communicate with the host for receiving commands and transferring data
+
+  - A ``while (1)`` loop which repeatedly deals with a sequence of PTP-compliant operation requests from the host, send image data and response to the device. Commands are processed and an image is autogenerated.
+
+  - In each iteration, a PTP command is processed in ``switch-case`` statements and an appropriate response is sent
+
+  - A gray or color gradient image is generated for the command ``OC_GetImage``. The image type and the starting gray or color component values are defined in the beginning of ``main.xc``
+
+  - A blocking call is made to the XMOS USB device library to receive command (using ``XUD_GetBuffer``) and send data as well the response (using ``XUD_SetBuffer``) to the host machine at every loop iteration
+
+  - This simple processing could easily be extended to access an image capture device connected to the xCORE GPIO or communicate with another parallel task
+ 
+|appendix|
+|newpage|
+
+Example Hardware Setup
+----------------------
+
+To run the example, connect the xCORE-USB sliceKIT USB-B and xTAG-2 USB-A
+connectors to separate USB connectors on your development PC. 
+
+.. figure:: images/usb-slicekit.*
+
+	XMOS xCORE-USB sliceKIT
+
+The hardware should be configured as displayed above for this demo:
+
+  - The XTAG debug adapter should be connected to the XSYS connector and
+    the XTAG USB cable should be connected to the host machine
+
+  - The xCORE-USB core board should have a USB cable connecting the device
+    to the host machine
+
+  - The xCORE-USB core board should have the power cable connected
+
+|newpage|
+
+Host Application Setup
+----------------------
+
+Test application
+................
+
+This simple host example demonstrates simple PTP transactions between
+the host processor and the XMOS device in bulk transfer mode.
+
+The application simply sends commands for receiving the image size and the type and then sends a request to get the image.
+It receives a response for each command and also the image data. The received image data is stored in a file and displayed.
+
+The application was tested on a 64-bit linux platform. The binary and 'libusb' library for this platform along with the source files of the application are provided in the ``host`` directory. For other platforms,
+please refer to the application note AN00136: USB Vendor Specific Device [#]_.
+
+
+Licensing
+.........
+
+libusb is written in C and licensed under the LGPL-2.1.
+
+
+Compilation instructions
+........................
+
+If you require to recompile the test program then the instruction to do so is below,
+
+Linux64::
+
+  g++ -o get_image ../get_image.cpp -I ../libusb/Linux64 ../libusb/Linux64/libusb-1.0.a -lpthread -lrt
+
+
+Launching the demo application
+------------------------------
+
+Once the demo example has been built either from the command line using
+xmake or via the build mechanism of xTIMEcomposer studio the applcation
+can be executed on the xCORE-USB sliceKIT. 
+
+Once built there will be a ``bin`` directory within the project which
+contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
+.xe extension.
+
+Launching from the command line
+...............................
+
+From the command line the ``xrun`` tool is used to download code to the
+xCORE-USB device. Changing into the bin directory of the project
+the code can be executed on the xCORE microcontroller as follows::
+
+> xrun app_usb_image_demo.xe          <-- Download and execute the xCORE code
+
+Once this command has executed the vendor specific USB device should have 
+enumerated on the host machine
+
+Launching from xTIMEcomposer Studio
+...................................
+
+From xTIMEcomposer Studio the run mechanism is used to download code to the
+xCORE device. Select the xCORE binary from the bin directory, right click 
+and then run as xCORE application will execute the code on the xCORE device.
+
+Once this command has executed the still image USB device should have 
+enumerated on your machine. You can check this by executing 'lsusb' from the command line. It lists the device like the one below::
+
+  Bus 001 Device 007: ID 20b1:00c1 XMOS Ltd 
+
+Running the host demo
+.....................
+
+To run the example, navigate to 'host/Linux64' and execute './get_image' from the command line.
+
+This will connect to the USB device running on the xCORE microcontroller and
+transfer data buffers back and forth.
+
+The demo prompts the user for the inputs - image size and type. The output of the demo is as below::
+
+  XMOS USB image device opened .....
+  Session opened ....
+  Image captured ....
+  Image info got ....
+  Image written to PNM and JPG files .....
+  Displaying image .....
+  Session closed ....
+  XMOS USB image device closed .....
+
+|newpage|
+
+The gradient image received by the host is first saved in PNM [#]_ format and then converted to a JPG file. The image is displayed. PNM is portable anymap format that was designed to be easily exchanged between platforms. It can be one of these: portable pixmap format (PPM), portable graymap format (PGM) and portable bitmap format (PBM). 
+Sample output gray image files ``image.pnm`` and ``image.jpg`` are in the ``host/Linux64`` directory. The generated color and gray images are shown in Figures 4 and 5.
+
+.. figure:: images/color_image.*
+
+	Color image
+
+.. figure:: images/gray_image.*
+
+	Gray image
+
+
+.. [#] https://www.xmos.com/download/public/AN00136%3A-USB-Vendor-Specific-Device%281.0.0%29.pdf
+.. [#] http://en.wikipedia.org/wiki/Netpbm_format
+
+|newpage|
+
+References
+----------
+  
+.. nopoints::
+
+  * XMOS Tools User Guide
+
+    http://www.xmos.com/published/xtimecomposer-user-guide
+
+  * XMOS xCORE Programming Guide
+
+    http://www.xmos.com/published/xmos-programming-guide
+  
+  * XMOS xCORE-USB Device Library: 
+
+    http://www.xmos.com/published/xuddg
+
+  * XMOS USB Device Design Guide: 
+
+    http://www.xmos.com/published/xmos-usb-device-design-guide
+
+  * USB 2.0 Specification
+
+    http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
+
+  * USB Still Image Capture device class specification
+
+    http://www.usb.org/developers/docs/devclass_docs/usb_still_img10.zip
+
+  * PIMA 15740 standard, Picture Transfer Protocol (PTP)
+
+    http://www.pima.net/standards/it10/IT10_POW.htm
+
+  * ``libusb`` library
+
+    http://www.libusb.org
+
+
+|newpage|
+
+Full source code listing
+------------------------
+
+Source code for endpoint0.xc
+............................
+
+.. literalinclude:: endpoint0.xc
+  :largelisting:
+
+|newpage|
+
+Source code for main.xc
+.......................
+
+.. literalinclude:: main.xc
+  :largelisting:
+
+|newpage|
+

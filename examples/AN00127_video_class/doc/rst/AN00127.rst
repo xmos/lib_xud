@@ -1,0 +1,646 @@
+.. include:: ../../README.rst
+
+|newpage|
+
+Overview
+--------
+
+Introduction
+............
+
+USB Video Class (UVC) is a standard class specification that standardizes video streaming 
+functionality on the USB. It enables devices like webcams, digital camcorders, analog video 
+converters, analog and digital television tuners etc to connect seamlessly with host machines.
+
+UVC supports streaming multiple video formats including YUV, MJPEG, MPEG-2 TS, H.264, DV etc.
+It provides structures for describing the functionalities of the video device to the host and defines USB requests to control different parameters of the device and characteristics of the video stream. It also provides flexibility for a video device to support multiple video resolutions, formats and frame rates, which highly influences the bandwidth negotiation between the device and the host.
+
+Many OS platforms have native support for UVC drivers which greatly reduces the time required for developers to create USB video devices.
+
+In this application note, the UVC implementation for xCORE-USB device is explained in detail which will help you to build your own USB video device. The demo example doesn't interface a camera sensor but you can easily extend it to add a camera.
+
+The standard USB Video Class specification can be found in the USB-IF website.
+
+(http://www.usb.org/developers/docs/devclass_docs/USB_Video_Class_1_1_090711.zip)
+
+Block diagram
+.............
+
+.. figure:: images/block_diagram.*
+   :scale: 90%
+   :align: center
+
+   Block diagram of USB video class application
+
+The 'Camera Sensor' shown in the above figure is not interfaced in the demo example but it is emulated by creating color video frames inside the device.
+
+USB Video Class application note
+--------------------------------
+
+The example in this application note uses the XMOS USB device library and shows a simple program that enumerates a USB Video Class device in a host machine and streams uncompressed video frames in YUV format with thirty frames per second to a video capture host software.
+
+For this USB Video device application example, the system comprises three tasks running on separate logical cores of an xCORE-USB multicore microcontroller.
+
+The tasks perform the following operations.
+
+   - A task containing the USB library functionality to communicate over USB.
+
+   - A task implementing Endpoint0 responding to both standard and video class-specific USB requests.
+
+   - A task implementing the application code to send video data over streaming endpoints.
+
+These tasks communicate via the use of xCONNECT channels which allow data to be passed between
+application code running on separate logical cores.
+
+The following diagram shows the task and communication structure for this USB video
+class application example.
+
+.. figure:: images/task_diagram.*
+   :scale: 100%
+   :align: center
+
+   Task diagram of the USB video device example
+
+
+|newpage|
+
+Makefile additions for this example
+...................................
+
+To start using the USB library, you need to add **lib_usb** to your makefile::
+
+  USED_MODULES = ... lib_usb ...
+
+You can then access the USB functions in your source code via the *usb.h* header file::
+
+  #include <usb.h>
+
+Source code files
+.................
+
+The example application consists of multiple source code files and the following list provides an overview of how the source code is organized.
+  
+  - ``usb_video.xc``, ``usb_video.h`` - Contains the USB video class descriptors and endpoint
+    handler tasks (functions).
+
+  - ``uvc_req.c``, ``uvc_req.h`` - Contains functions and data structures to handle 
+    class-specific USB requests.
+
+  - ``uvc_defs.h`` - This header file has defines that are used for USB descriptors,
+    class-specific requests and video details like resolution, payload size and frame rate etc.
+
+  - ``main.xc`` - Contains main() function and some USB related defines.
+
+
+Declaring resource and setting up the USB components
+....................................................
+
+*main.xc* has some defines in it that are used to configure the XMOS USB device library. These are displayed below.
+
+.. literalinclude:: main.xc
+   :start-on: USB Endpoint
+   :end-before: int main(
+
+The above set of defines describe the endpoint configurations for this device.. This example
+has bi-directional communication with the host machine via the standard endpoint0 and two other endpoints for implementing the part of our video class.
+
+All these defines are passed to the setup function for the USB library which is called from **main()**.
+
+|newpage|
+
+The application main() function
+...............................
+
+Below is the source code for the main function of this application, which is taken from
+the source file ``main.xc``
+
+.. literalinclude:: main.xc
+   :start-on: int main
+
+Looking at this in a more detail you can see the following:
+
+  - The par statement starts three separate tasks in parallel.
+
+  - There is a task to configure and execute the USB library: ``xud()``. This library 
+    call runs in an infinite loop and handles all the underlying USB communications and provides abstraction at the endpoints level.
+
+  - There is a task to startup and run the Endpoint0 code: ``Endpoint0()``. It handles the 
+    control endpoint zero and must be run in a separate logical core inorder to provide timely response to control requests from the host.
+
+  - There is a task to handle two other endpoints required for the Video class: 
+    ``VideoEndpointsHandler()``. This function handles one Isochronous IN 
+    endpoint for video streaming and one interrupt IN endpoint for sending notifications to host.
+
+  - The define USB_TILE describes the tile on which the individual tasks will run.
+
+  - In this example all tasks run on the same tile as the USB PHY although this is only a 
+    requirement of ``xud()``.
+
+  - The xCONNECT communication channels used for inter-task communication are setup at the
+    beginning of ``main()`` and passed on to respective tasks.
+
+  - The USB defines discussed earlier are passed into the function ``xud()``.
+
+
+Configuring the USB device ID
+.............................
+
+The USB ID values used for vendor ID, product ID and device version number are defined in the file ``uvc_defs.h``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
+
+.. literalinclude:: uvc_defs.h
+   :start-on: USB Video device
+   :end-before: USB Sub class
+
+Video device topology
+.....................
+
+This section provides a brief overview of the representation of video device in a topology.
+It introduces you to the terms used in the video class specification, which helps you to 
+understand the further sections of this application note.
+
+A video device is represented as an interconnection of multiple addressable entities. Each entity represents a functionality and has properties which are controlled by the USB host. The following are the different entities:
+	
+	- **Units**
+
+		- Selector Unit
+		- Processing Unit
+		- Extension Unit
+
+	- **Terminals**
+
+		* Input Terminal
+		* Output Terminal
+		* Special Terminals (extends the I/O terminal)
+
+			- Media Transport Terminal
+			- Camera Terminal
+
+These entities are interconnected by means of *Input Pins* and *Output Pins*.
+A Unit has one or more Input Pins and a single Output Pin, where each Pin represents logical data streams inside the video device. A Terminal has either a single Input Pin or a single Output Pin. An *Input Terminal(IT)* represents a starting point for data streams of the video device. An *Output Terminal(OT)* represents an ending point for data streams.
+
+The functionality of a Unit or Terminal is further described through Video Controls. A Control typically provides access to a specific video property. Video properties include brightness, contrast, sharpness, digital zoom etc. Each Control has a set of attributes that can be manipulated or that provide additional information, they are:
+	
+	- Current setting
+	- Minimum setting
+	- Maximum setting
+	- Resolution
+	- Size
+	- Default
+
+For example, the brightness of the video stream can be controlled by the USB host by changing the current setting of the Brightness Control inside a Processing unit.
+
+The following diagram shows the topology of the demo application
+
+.. figure:: images/video_device_topology.*
+   :scale: 80%
+   :align: center
+
+   Topology of the UVC example
+
+No Units are involved in the demo application example. More information on Units can be found from the USB video class specification documents.
+
+This video device topology is communicated to the host through USB descriptors which is discussed in the following section.
+
+USB Descriptors
+...............
+
+USB Video class device has to support class-specific descriptors apart from the 
+standard descriptors defined in the USB specifications. The class specific 
+descriptors are customized according to the need of the USB Video device. 
+
+The following figure shows the descriptors used in the example code.
+
+.. figure:: images/usb_descriptors.*
+   :scale: 85%
+
+   Hierarchical structure of USB descriptors of UVC example
+
+The above figure is discussed in detail in the following sections.
+
+|newpage|
+
+USB Device Descriptor
+~~~~~~~~~~~~~~~~~~~~~
+
+``usb_video.xc`` is where the standard USB device descriptor is declared for the Video class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
+
+.. literalinclude:: usb_video.xc
+   :start-on: USB Device Descriptor 
+   :end-on: }
+
+From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise the video device when it is connected to the USB bus.
+
+For Video class device, it is mandatory to set the 'bDeviceClass', 'bDeviceSubClass' and 'bDeviceProtocol' fields to 0xEF, 0x02 and 0x01 respectively.
+
+|newpage|
+
+USB Configuration Descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The USB configuration descriptor is used to configure the device in terms of the device class and the endpoints setup. The hierarchy of descriptors under a configuration includes interface association descriptor, interfaces descriptors, class-specific descriptors and endpoints descriptors.
+
+When a host requests a configuration descriptor, the entire configuration hierarchy including all the related descriptors are returned to the host. The following
+code shows the configuration hierarchy of the demo application.
+
+.. literalinclude:: usb_video.xc
+   :largelisting:
+   :start-on: USB Configuration Descriptor
+   :end-on: }
+
+The *configuration descriptor* tells host about the power requirements of the device and the number of interfaces it supports.
+
+Multiple interfaces together provides the video functionality. This group of interfaces is
+called Video Interface Collection. The Video Interface Collection is described by an
+*interface association descriptor* (IAD). In the example application, the IAD defines
+that the interface zero and one groups to form the USB Video device. These two interfaces are:
+
+	- Video Control Interface (VC Interface)
+	- Video Streaming Interface (VS Interface)
+
+Note: A video function must have one VideoControl interface and zero or more VideoStreaming interfaces.
+
+VideoControl Interface
+~~~~~~~~~~~~~~~~~~~~~~
+
+This interface controls the functional behavior of the video device. It is described by both standard and class-specific descriptors.
+
+The *Standard VC interface descriptor* identifies the interface number and class and provides 
+the number of endpoints that belongs to this interface. The default *Endpoint 0* is used by 
+this interface for control purpose through class-specific requests. Another optional endpoint 
+called *Status Interrupt Endpoint* is used to send asynchronous status notifications to the 
+host. This interrupt endpoint is described by both standard and class-specific endpoint descriptors.
+
+The *Class-Specific VC interface descriptor* describes the whole topology of the video device.
+It includes *Unit descriptors* and *Terminal descriptors*. The example application doesn't
+include any Units and hence only Terminal descriptors can be found in the
+descriptors hierarchy structure.
+
+The Class-Specific descriptors starts with a header called VC Interface Header descriptor.
+This descriptor mentions the version of UVC specification followed and the collection of
+streaming interfaces to which this VideoControl interface belongs.
+
+The *Input Terminal descriptor* provides information on the functional aspects of the input source of the video device. Following code shows the fields of this descriptor:
+
+.. literalinclude:: usb_video.xc
+   :start-on: USB_VC_INPUT_TERMINAL
+   :end-on: /* 6 bAssocTerminal
+
+In the above code, the 'bTerminalID' is an unique identifier of this terminal and 'bTerminalType' declares camera as the input type.
+
+The *Output Terminal descriptor* is shown in the following code.
+
+.. literalinclude:: usb_video.xc
+   :start-on: USB_VC_OUPUT_TERMINAL
+   :end-on: /* 8 iTerminal
+
+The above descriptor shows that the 'bSourceID' is defined as 0x01 which is the 'bTerminalID' of the input terminal. This information shows the interconnection between the entities, which the host uses to identify the topology of the video device.
+
+VideoStreaming Interface
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+VideoStreaming interfaces are used to interchange video data streams between the Host and the Video device. Each interface can have one isochronous or bulk data endpoint. Interfaces supporting isochronous video transfer must have alternate settings which enables host to change the bandwidth requirements imposed by an active isochronous pipe. It is also mandatory to provide a zero-bandwidth alternate setting as the default alternate setting(alternate setting zero) that provides the host software the option to temporarily relinquish USB bandwidth by switching to this alternate setting.
+
+In the UVC example, the zero-bandwidth alternate setting of the VideoStreaming interface is described by standard interface descriptor and class-specific VS interface descriptors.
+
+The *Standard VS interface descriptor* provides the interface number, the number of endpoints that belongs to this interface etc. In case of zero-bandwidth alternate setting the number of endpoints is set to zero.
+
+The *Class-Specific VS interface descriptors* are used to describe the supported video stream formats, video frame details, still image frame details, color profile of video data etc. The following is the list of these class-specific descriptors:
+
+	- Input Header descriptor
+	- Output Header descriptor
+	- Payload Format descriptor
+	- Video Frame descriptor
+	- Still Image frame descriptor
+	- Color Matching descriptor
+
+The *Input Header descriptor* is meant for interfaces that contain IN endpoint and *Output Header* is for interfaces that contain OUT endpoint.
+
+The following code shows the fields of Input Header descriptor:
+
+.. literalinclude:: usb_video.xc
+   :start-on: USB_VS_INPUT_HEADER,
+   :end-on: /* 8 bTerminalLink
+
+The above code shows the number of formats supported, the address of endpoint which streams video data and the output terminal ID which links to this streaming interface.
+
+The *Payload Format descriptor* describes the video format. The fields of this descriptor is shown below:
+
+.. literalinclude:: usb_video.xc
+   :start-on: USB_VS_FORMAT_UNCOMPRESSED,
+   :end-on: /* 22 bDefaultFrameIndex */
+
+The above code shows that the video stream is of uncompressed YUY2 format and uses 16-bits per pixel.
+
+The *Video Frame descriptor* mentions the frame resolution, frame rate, video buffer size etc. The following code shows the fields of this descriptor:
+
+.. literalinclude:: usb_video.xc
+   :start-on: USB_VS_FRAME_UNCOMPRESSED
+   :end-on: /* 26 dwFrameInterval
+
+The defines used in the above code are present in the *uvc_defs.h* file and they are shown below:
+
+.. literalinclude:: uvc_defs.h
+   :start-on: /* USB Video resolution */
+   :end-on: #define FRAME_INTERVAL
+
+The other alternate setting of this interface has the data streaming isochronous endpoint and it is the operational alternate setting. The class-specific descriptors are not repeated in this alternate setting.
+
+The *Standard VS Isochronous Endpoint descriptor* of the alternate setting 1 of the UVC example is shown below:
+
+.. literalinclude:: usb_video.xc
+   :start-on: /* Standard VS Isochronous Video Data
+   :end-on: /* 6 bInterval */
+
+The above code shows that the maximum packet size of the endpoint is 1024 bytes and the 'bInterval' of 0x01 requests host to poll the endpoint every microframe(125us).
+
+In general, USB video devices supports a set of video parameter combinations(including video format, frame size and frame rate) and multiple alternate settings with different maximum packet size endpoints. This enables the host to select the appropriate alternate setting that provides only the required bandwidth for a given video parameter combination.
+
+USB String Descriptors
+~~~~~~~~~~~~~~~~~~~~~~
+
+String descriptors provide human readable information for your device and you can configure them with your USB product information. The descriptors are placed in an array as shown in the below code.
+
+.. literalinclude:: usb_video.xc
+   :start-on: String table
+   :end-on: }
+
+The XMOS USB library will take care of encoding the strings into Unicode and structures the content into USB string descriptor format.
+
+|newpage|
+
+USB Standard and Class-Specific requests
+........................................
+
+In *usb_video.xc* there is a function *Endpoint0()* which handles all the USB control requests sent by host to the control endpoint 0. USB control requests includes both standard USB requests and the UVC class-specific requests. 
+
+In *Endpoint0()* function, a USB request is received as a setup packet by calling *USB_GetSetupPacket()* library function. The setup packet structure is then examined to distinguish between standard and class-specific requests.
+
+The XMOS USB library provides a function *USB_StandardRequests()* to handle the standard USB requests. This function is called with setup packet and descriptors structures as shown below
+
+.. literalinclude:: usb_video.xc
+   :start-on: /* Returns  XUD_RES_OKAY if handled okay,
+   :end-on: }
+
+The video class interfaces use endpoint 0 as the control element and receives all class-specific requests on it. The class-specific requests are used to set and get video related controls. These request are divided into:
+	  
+	  - VideoControl requests
+	  - VideoStreaming requests
+
+
+The function *UVC_InterfaceClassRequests()* present in *uvc_req.c* handles the class-specific
+requests. The defines corresponding to the class-specific request codes are present in
+*uvc_defs.h* as shown below.
+
+.. literalinclude:: uvc_defs.h
+   :start-on: /* Video Class-specific
+   :end-before: /* Video Stream related */
+
+In the UVC example, the SET and GET requests for Video Probe and Commit Controls are handled.
+The Video Probe and Commit Controls are involved in the negotiation of streaming parameters between the host and the device. The following code shows the structure of the streaming parameters that are negotiated with those Controls.
+
+.. literalinclude:: uvc_req.h
+   :start-on: /* Video Probe and Commit Controls
+   :end-before: extern UVC_ProbeCommit_Ctrl_t
+
+The demo application doesn't have multiple set of streaming parameters and therefore the GET_DEF, GET_MIN, GET_MAX and GET_CUR requests are handled similarly and return same values to the host.
+
+This source code can be easily extended to support more class-specific requests.
+
+Video data streaming
+....................
+
+Streaming video data between device and host takes place through the streaming endpoint of the VideoStreaming interface. The video is streamed by continuously transmitting the video samples at a particular rate. A video sample refers to an encoded block of video data that the format-specific decoder is able to accept and interpret in a single transmission.
+
+In the UVC example, the video data is in packed 4:2:2 YUV format (YUY2) and a video sample corresponds to a single video frame of 480x320 pixels. Each video sample is split into multiple class-defined Payload Transfers. A Payload Transfer is composed of the class-defined payload header followed by the video payload data. The payload format is as shown below:
+
+.. figure:: images/payload_format.*
+   :scale: 100%
+   :align: center
+
+   Payload format for uncompressed streams
+
+For an isochronous endpoint, each (micro)frame will contain a single payload transfer. 
+The maximum packet size of the isochronous endpoint in the example code is 1024 bytes,
+therefore excluding the payload header length 1012 bytes are available for the video
+data in a single payload transfer.
+
+The function *VideoEndpointsHandler()* present in *usb_video.xc* handles the isochronous video data endpoint. Each payload transfer is carried out by using the *XUD_SetBuffer()* API of the USB library.
+
+For demonstartion, video data is generated in the device by filling up the buffers with red, green and blue color values (YUV format) as shown in the following code.
+
+.. literalinclude:: usb_video.xc
+   :start-on: /* Fill video buffers
+   :end-on: }
+
+These buffers are used together to create a video frame. The following code from *VideoEndpointsHandler()* shows the transmission of a single frame.
+
+.. literalinclude:: usb_video.xc
+   :start-on: /* Transmits single
+   :end-before: frame = frame ^ 1;
+
+The above code shows that 'gVideoBuffer[]' holds the payload data and is sent continuously to the host till the expected number of pixels per frame is over. These payload buffers are populated with payload header as shown in the following code.
+
+.. literalinclude:: usb_video.xc
+   :start-on: /* Fill the buffers
+   :end-before: /* Just to simulate
+
+In the above code, the 'pts' is Presentation timestamp and it is obtained from a timer running in the xCORE device at 100MHz. The 'pts' and start of frame counter (count of USB SOF) are used to arrive at the Source Clock reference field.
+
+|appendix|
+|newpage|
+
+Demo Hardware Setup
+-------------------
+
+To setup the demo hardware the following boards are required.
+
+  - xCORE-USB slicekKIT (XK-SK-U16-ST)
+
+      - xCORE-USB Core board.
+      - USB A/B sliceCARD.
+      - xTAG-2 debug adaptor
+      - Power supply
+
+.. figure:: images/usb-slicekit.*
+   :scale: 110%
+   :align: center
+
+   XMOS xCORE-USB sliceKIT
+
+The hardware should be configured as displayed above for this demo:
+
+  - The XTAG debug adapter should be connected to the XSYS connector and
+    the XTAG USB should be connected to the host machine.
+
+  - The USB sliceCARD should be connected to the U slot (J4 header) of the xCORE-USB Core 
+    board and the other end of USB sliceCARD should be connected to host machine using a USB 
+    cable.
+
+  - The XLINK switch on the core board should be set to the ON position.
+
+  - The xCORE-USB core board should have the power cable connected.
+
+|newpage|
+
+Launching the demo application
+------------------------------
+
+Once the demo example has been built either from the command line using
+xmake or via the build mechanism of xTIMEcomposer studio we can execute
+the application on the xCORE-USB sliceKIT. 
+
+Once built there will be a ``bin`` directory within the project which
+contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
+.xe extension.
+
+Launching from the command line
+...............................
+
+From the command line the ``xrun`` tool is used to download code to the
+xCORE device. Changing into the bin directory of the project
+we can execute the code on the xCORE microcontroller as follows::
+
+> xrun --xscope app_usb_video.xe          <-- Download and execute the xCORE code
+
+Once this command has executed the USB video device should have 
+enumerated on your machine.
+
+Launching from xTIMEcomposer Studio
+...................................
+
+From xTIMEcomposer Studio the run mechanism is used to download code to 
+xCORE device. Select the xCORE binary from the bin directory, right click 
+and then 'Run As'-> 'xCORE application' to execute the code on the xCORE device.
+
+Once this command has executed the USB video device should have 
+enumerated on your machine.
+
+|newpage|
+
+Running the demo
+................
+
+The demo can be run on any OS that has support for USB Video class driver. Windows, Linux and Mac OS have native support for UVC driver. The following sections describe in detail on how to run the demo on those OS platforms.
+
+Running on Windows
+~~~~~~~~~~~~~~~~~~
+
+  - In Microsoft Windows, When the USB Video device enumerates the host driver will be
+    installed to get the device ready for operation. The following figure shows the dialog
+    that completes installation of driver for the *XMOS USB Video Device*.
+
+  .. figure:: images/windows_driver_install.*
+     :scale: 80%
+
+     Driver installation for the Video device
+
+  - After the driver is installed properly, you can use any video capture softwares like VLC
+    Media player, AmCap etc to open the *XMOS USB Video Device*.
+
+  - Open VLC Media player, select *Media* menu and click *Open Capture Device...*. This will 
+    open a dialog window on which you can select the Video device as shown in the following 
+    picture.
+
+  .. figure:: images/windows_vlc_select.*
+     :scale: 80%
+
+     Open Video device in VLC Media player
+
+  - Click *Play* to see the demo video streamed out of the Video device. The video is a
+    sequence of colored rows that scroll upwards. The following figure shows a snapshot of the video.
+
+  .. figure:: images/windows_vlc_demo.*
+     :scale: 80%
+
+     Video streamed from the XMOS USB Video device
+
+Running on Mac OSX
+~~~~~~~~~~~~~~~~~~
+
+  - In Mac OSX, once the USB Video device is enumerated the UVC driver will be loaded by the
+    host to get the device ready for operation. The device will have enumerated as
+    *XMOS USB Video Device*.
+
+  - Now you can open this Video device using any video capture software. *Photo Booth* is one
+    such application that comes by default with Mac. Open Photo Booth application, click on
+    'Camera' menu and then select *XMOS USB Video Device*. The application will then show
+    the video streamed out of the USB device. The video is a sequence of colored rows that
+    scroll upwards.
+
+Running on Linux
+~~~~~~~~~~~~~~~~
+
+  - Under linux, when the device enumerates the native UVC driver will be loaded and the
+    device will be mounted as */dev/videoX* where 'X' is a number.
+
+  - Now you can use any video capture software like VLC Media player, Cheese, luvcview etc
+    to open the Video device.
+
+  - Open VLC Media player, select *Media* menu and click *Open Capture Device...*. This will
+    open a dialog window on which you can select the Video device as shown in the following
+    picture.
+
+|newpage|
+
+  .. figure:: images/linux_vlc_select.*
+     :scale: 60%
+
+     Open Video device in VLC Media player
+
+  - Click *Play* to see the demo video streamed out of the *XMOS USB Video Device*.
+    The demo video looks like sequence of colored rows scrolling up.
+
+
+|newpage|
+
+References
+----------
+  
+.. nopoints::
+
+  * XMOS Tools User Guide
+
+    http://www.xmos.com/published/xtimecomposer-user-guide
+
+  * XMOS xCORE Programming Guide
+
+    http://www.xmos.com/published/xmos-programming-guide
+  
+  * XMOS xCORE-USB Device Library
+
+    http://www.xmos.com/published/xuddg
+
+  * XMOS USB Device Design Guide 
+
+    http://www.xmos.com/published/xmos-usb-device-design-guide
+
+  * USB Video Class Specification, USB.org: 
+
+    http://www.usb.org/developers/docs/devclass_docs/
+
+  * USB 2.0 Specification
+
+    http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
+
+  * YUV Video Format
+
+    http://en.wikipedia.org/wiki/YUV
+
+    http://linuxtv.org/downloads/v4l-dvb-apis/V4L2-PIX-FMT-YUYV.html
+
+|newpage|
+
+Full source code listing
+------------------------
+
+Source code for main.xc
+.......................
+
+.. literalinclude:: main.xc
+  :largelisting:
+
+Source code for usb_video.xc
+............................
+
+.. literalinclude:: usb_video.xc
+  :largelisting:

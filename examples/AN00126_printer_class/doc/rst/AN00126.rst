@@ -1,0 +1,400 @@
+.. include:: ../../README.rst
+
+|newpage|
+
+Overview
+--------
+
+Introduction
+............
+
+The Universal Serial Bus (USB) is a communications architecture that gives a PC the ability to interconnect a
+variety of devices via a simple four-wire cable. One such device is the printer. Traditionally, printers have been
+interfaced using the following technologies:
+
+  - Unidirectional parallel port
+  - Bi-directional parallel port
+  - Serial port
+  - SCSI port
+  - Ethernet/LAN
+
+There are other, more sophisticated printer interfaces, but the ones previously listed are the most popular. USB
+offers a much greater throughput capability than the serial port and is comparable in speed to the parallel port. This
+makes both parallel and serial printers good candidates for interfacing with USB.
+
+The USB specification provides as standard device class for the implementation of USB printers. 
+
+(http://www.usb.org/developers/devclass_docs/usbprint11.pdf)
+
+Block diagram
+.............
+
+.. figure:: images/block_diagram.*
+   :scale: 100%
+   :align: center
+
+   Block diagram of USB printer application example
+
+USB Printer Device Class application note
+-----------------------------------------
+
+The demo in this note uses the XMOS USB device library and shows a simple program that receives data in PCL format from the host and outputs this data to 
+the console in the form of a log.
+
+For the USB printer device class application example, the system comprises three tasks running on separate logical cores of a xCORE-USB multicore microcontroller.  
+
+The tasks perform the following operations.
+
+   - A task containing the USB library functionality to communicate over USB
+
+   - A task implementing Endpoint0 responding both standard and printer class USB requests
+
+   - A task implementing the application code for receiving printer data into the device
+
+These tasks communicate via the use of xCONNECT channels which allow data to be passed between
+application code running on separate logical cores.
+
+The following diagram shows the task and communication structure for this USB printer device
+class application example.
+
+.. figure:: images/task_diagram.*
+
+        Task diagram of USB printer application example
+    
+
+Makefile additions for this application
+.......................................
+
+To start using the USB library, you need to add ``lib_usb`` to your makefile::
+
+	USED_MODULES = ... lib_usb lib_logging
+
+You can then access the USB functions in your source code via the usb.h header file::
+
+	#include <usb.h>
+
+Declaring resource and setting up the USB components
+....................................................
+ 
+``main.xc`` contains the application implementation for a device based on the USB printer device class. There are some defines in it that are used to configure the XMOS USB device library. These are displayed below.
+
+.. literalinclude:: main.xc
+   :start-on: USB Endpoint Defines 
+   :end-before: xSCOPE
+
+These defines describe the endpoint configuration for this device. This example has bi-directional communication with the host machine via the standard endpoint0 and an endpoint for receiving the printer data from the host into our device.
+
+These defines are passed to the setup function for the USB library which is called from ``main()``.
+
+The application main() function
+...............................
+
+Below is the source code for the main function of this application, which is taken from
+the source file ``main.xc``
+
+.. literalinclude:: main.xc
+   :start-on: int main
+
+Looking at this in a more detail you can see the following:
+
+  - The par statement starts three separate tasks in parallel
+
+  - There is a task to configure and execute the USB library: ``xud()``
+
+  - There is a task to startup and run the Endpoint0 code: ``Endpoint0()``
+
+  - There is a task to deal with USB printer data requests arriving from the host ``printer_main()``
+
+  - The define USB_TILE describes the tile on which the individual tasks will run
+
+  - In this example all tasks run on the same tile as the USB PHY this isa requirement of ``xud()``
+
+  - The xCONNECT communication channels used by the application are set up at the beginning of ``main()``
+
+  - The USB defines discussed earlier are passed into the function ``xud()``
+
+Configuring the USB Device ID
+.............................
+
+The USB ID values used for vendor id, product id and device version number are defined in the file ``endpoint0.xc``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: USB Device ID
+   :end-before: USB Printer Subclass
+
+USB Printer Class specific defines
+..................................
+
+The USB Printer Class is configured in the file ``endpoint0.xc``. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB printer device running on an xCORE-USB microcontroller.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: USB Printer Subclass
+   :end-before: USB Device
+
+|newpage|
+
+USB Device Descriptor
+.....................
+
+``endpoint0.xc`` is where the standard USB device descriptor is declared for the printer device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: devDesc 
+   :end-on: }
+
+From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise the printer device when it is connected to the USB bus.
+
+|newpage|
+
+USB Configuration Descriptor
+............................
+
+The USB configuration descriptor is used to configure the device in terms of the device class and the endpoint setup. For the USB printer device the configuration descriptor which is read by the host is as follows.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: cfgDesc
+   :end-on: }
+
+From this you can see that the USB printer class defines described earlier are encoded into the configuration descriptor along with the bulk USB endpoint description for receiving printer data into the application code. This endpoint allows us to process the printer data request from the host inside the main printer application task.
+
+USB string descriptors
+......................
+
+There are two further descriptors within this file relating to the
+configuration of the USB Printer Class. These sections should also be
+modified to match the capabilities of the printer. 
+
+.. literalinclude:: endpoint0.xc
+   :start-on: String table
+   :end-on: }
+
+.. literalinclude:: endpoint0.xc
+   :start-on: IEEE1288
+   :end-on: deviceIDstring
+
+USB Printer Class requests
+..........................
+
+Inside ``endpoint0.xc`` there is some code for handling the USB printer device class specific requests. These are shown in the following code:
+
+.. literalinclude:: endpoint0.xc
+   :start-on: Printer Class
+   :end-before: Endpoint 0 
+
+These printer specific request are implemented by the application as they do not form part of the standard requests which have to be accepted by all device classes via endpoint0.
+
+USB Printer Class Endpoint0
+...........................
+
+The function ``Endpoint0()`` contains the code for dealing with device requests made from the host to the standard endpoint0 which is present in all USB devices. In addition to requests required for all devices, the code handles the requests specific to the printer device class.
+
+.. literalinclude:: endpoint0.xc
+   :start-on: result == XUD_RES_OKAY
+   :end-before: If we
+
+|newpage|
+
+Receiving printer data from the host
+....................................
+
+The application endpoint for receiving printer data from the host machine is implemented in the file ``main.xc``. This is contained within the function ``printer_main()`` which is shown below:
+
+.. literalinclude:: main.xc
+   :start-on: printer_main
+   :end-before: The main
+
+From this you can see the following.
+
+  - A buffer is declared to receive the print data which is streamed into the application from the host
+
+  - This task operates inside a ``while (1)`` loop which waits for data to arrive and then processes it
+
+  - A blocking call is made to the XMOS USB device library to receive data into the application
+
+  - The data received is output to the debug console; in a real printer this data would be processed here or passed onto another task for processing
+
+|newpage|
+|appendix|
+
+Demo Hardware Setup
+-------------------
+
+To run the demo, connect the xCORE-USB sliceKIT USB-B and xTAG-2 USB-A
+connectors to separate USB connectors on your development PC. 
+
+On the xCORE-USB sliceKIT ensure that the xCONNECT LINK switch is set to ON, as per the image, 
+to allow xSCOPE to function. The use of xSCOPE is required in this application so 
+that the print messages that are generated on the device as part of the demo
+do not interfere with the real-time behavior of the USB device.
+
+.. figure:: images/usb-slicekit.*
+
+	XMOS xCORE-USB sliceKIT
+
+The hardware should be configured as displayed above for this demo:
+
+  - The XTAG debug adapter should be connected to the XSYS connector and
+    the XTAG USB cable should be connected to the host machine
+
+  - The xCORE-USB core board should have a USB cable connecting the device
+    to the host machine
+
+  - The xSCOPE switch on the board should be set to the on position
+
+  - The xCORE-USB core board should have the power cable connected
+
+|newpage|
+
+Launching the demo device
+-------------------------
+
+Once the demo example has been built either from the command line using
+xmake or via the build mechanism of xTIMEcomposer studio the application
+can be executed on the xCORE-USB sliceKIT. 
+
+Once built there will be a ``bin`` directory within the project which
+contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
+.xe extension.
+
+Launching from the command line
+...............................
+
+From the command line the ``xrun`` tool is used to download code to both the
+xCORE devices. Changing into the bin directory of the project
+we can execute the code on the xCORE microcontroller as follows::
+
+> xrun --xscope app_printer_demo.xe          <-- Download and execute the xCORE code
+
+Once this command has executed the printer USB device should have 
+enumerated on your machine
+
+Launching from xTIMEcomposer Studio
+...................................
+
+From xTIMEcomposer Studio the run mechanism is used to download code to 
+xCORE device. Select the xCORE binary from the bin directory, right click 
+and then follow the instructions below.
+
+* Select **Run As**.
+
+* Select **Run Configurations**.
+
+* Double click on xCORE application**.
+
+* Enable xSCOPE in Target I/O options:
+
+  .. figure:: images/xtime-run-xscope.*
+
+     xTIMEcomposer xSCOPE configuration
+
+* Click **Apply** and then **Run**.
+
+Once this command has executed the printer USB device should have 
+enumerated on your machine
+
+|newpage|
+
+Running the printer demo
+------------------------
+
+Windows Host
+............
+
+
+* To add the printer to Windows Control Panel :
+
+* Open the Control Panel, select **Devices and Printers** and then **Add Printer**.
+
+* Click *The printer that I want isn’t listed*.
+
+* Select *Add a local printer or network printer with manual settings*, then click **Next**.
+
+* Select *Use an existing port* and *USB001 (Virtual printer port for USB)*, then click **Next**.
+
+* Select *Generic* and *Generic / Text Only*, then click **Next**.
+
+* Select *Use the driver that is currently installed (recommended)*, then click **Next**.
+
+* Change the name to *XMOS Generic / Text Only*, then click **Next**.
+
+* Select *Do not share this printer*, then click **Next**.
+
+* Click **Finish**.
+
+The printer will now appear in your Control Panel:
+
+.. figure:: images/printer.*
+
+        XMOS printer in control panel
+
+OSX Host
+........
+
+When connecting the printer to an Apple Mac computer it will be automatically
+detected as a Printomatic 2000 and you will be able to print directly to the device.
+
+Testing the printer
+...................
+
+To test the printer, create a text file containing the following::
+
+	Hello World !
+
+Print the file to the printer and you will see the following output in the xTIMEcomposer console window (note some of the print decode has been deleted to aid clarity)::
+
+	**** Received 512 byte print buffer ****
+	Hello World !
+
+Note that on OSX the default printer output will be in PCL format, this mean that there are extra characters printed to the console other than just the hello world text.
+
+
+|newpage|
+
+References
+----------
+  
+.. nopoints::
+
+  * XMOS Tools User Guide
+
+    http://www.xmos.com/published/xtimecomposer-user-guide
+
+  * XMOS xCORE Programming Guide
+
+    http://www.xmos.com/published/xmos-programming-guide
+  
+  * XMOS xCORE-USB Device Library: 
+
+    http://www.xmos.com/published/xuddg
+
+  * XMOS USB Device Design Guide: 
+
+    http://www.xmos.com/published/xmos-usb-device-design-guide
+
+  * USB Printer Class Specification, USB.org: 
+
+    http://www.usb.org/developers/devclass_docs/usbprint11.pdf
+
+  * USB 2.0 Specification
+
+    http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
+
+|newpage|
+
+Full source code listing
+------------------------
+
+Source code for endpoint0.xc
+............................
+
+.. literalinclude:: endpoint0.xc
+  :largelisting:
+
+Source code for main.xc
+.......................
+
+.. literalinclude:: main.xc
+   :largelisting:
+
+|newpage|
+

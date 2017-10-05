@@ -1,7 +1,7 @@
 
 #include <print.h>
 
-#include "usb_std_requests.h"
+#include "xud_std_requests.h"
 
 void USB_ParseSetupPacket(unsigned char b[], USB_SetupPacket_t &p)
 {

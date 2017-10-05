@@ -2,8 +2,8 @@
  * @brief     Defines from the Universal Serial Bus Specification Revision 2.0
  **/
 
-//#ifndef _USB_DEFS_H_
-//#define _USB_DEFS_H_
+#ifndef _USB_DEFS_H_
+#define _USB_DEFS_H_
 
 #define USB_TILE_REF usb_tile
 
@@ -67,4 +67,4 @@
 #define USB_MAX_NUM_EP_IN               (16)
 #define USB_MAX_NUM_EP                  (32)
 
-//#endif
+#endif

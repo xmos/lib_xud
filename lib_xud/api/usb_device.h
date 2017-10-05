@@ -14,10 +14,10 @@
 #include "xud_usb_defines.h"
 
 /* Generic USB descriptor defines */
-#include "usb_std_descriptors.h"
+#include "xud_std_descriptors.h"
 
 /* Generic USB descriptor defines */
-#include "usb_std_requests.h"
+#include "xud_std_requests.h"
 
 /**
   * \brief    This function deals with common requests This includes Standard Device Requests listed

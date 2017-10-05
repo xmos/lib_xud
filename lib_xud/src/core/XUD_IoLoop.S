@@ -11,7 +11,6 @@
 #include "xud.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_UIFM_Defines.h"
-#include "xud_defines.h"
 #include "XUD_TimingDefines.h"
 
 .section        .cp.const4,"aMc",@progbits,4

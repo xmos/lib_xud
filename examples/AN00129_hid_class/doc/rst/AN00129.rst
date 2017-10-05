@@ -64,9 +64,9 @@ class application example.
 Makefile additions for this example
 ...................................
 
-To start using the USB library, you need to add ``lib_usb`` to your ``Makefile``::
+To start using the USB library, you need to add ``lib_xud`` to your ``Makefile``::
 
-        USED_MODULES = ... lib_usb
+        USED_MODULES = ... lib_xud
 
 You also have to add a define to the build to say which variant of the
 USB library you want. In this case, the example is for the U-Series
@@ -76,7 +76,7 @@ USB library. So the following is in the ``Makefile``::
 
 You can then access the USB functions in your source code via the usb.h header file::
 
-        #include <usb.h>
+        #include <usb_device.h>
 
 The application main() function
 ...............................
@@ -91,7 +91,7 @@ Looking at this in a more detail you can see the following:
 
   - The par functionality describes running three separate tasks in parallel
 
-  - There is a function call to configure and execute the USB library: ``xud()``
+  - There is a function call to configure and execute the USB library: ``XUD_Main()``
 
   - There is a function call to startup and run the Endpoint0 code: ``Endpoint0()``
 
@@ -103,7 +103,7 @@ Looking at this in a more detail you can see the following:
   - The xCONNECT communication channels used by the application are
     set up at the beginning of ``main()``
 
-  - The last two arguments to ``xud()`` set the library to run in high
+  - The last two arguments to ``XUD_Main()`` set the library to run in high
     speed mode (via the ``XUD_SPEED_HS`` argument) and to be
     assume that the device self-powered via an external power supply
     (the ``XUD_PWR_SELF`` argument).

@@ -62,13 +62,13 @@ The following diagram shows the task and communication structure for this USB ma
 
 Makefile additions for this application
 ........................................
-To start using the USB library, you need to add **lib_usb** to your makefile::
+To start using the USB library, you need to add **lib_xud** to your makefile::
 
-	USED_MODULES = lib_usb
+	USED_MODULES = lib_xud
 
 You can then access the USB functions on your source code via the **usb.h** header file::
 
-	#include <usb.h>
+	#include <usb_device.h>
 
 Declaring resource and setting up the USB components
 ....................................................
@@ -92,13 +92,13 @@ Below is the source code for the main function of this application, which is tak
 Looking at this in a more detail you can see the following:
 
  - The `par` statement starts three separate tasks in parallel
- - There is a task to configure and execute the USB library: `xud()`
+ - There is a task to configure and execute the USB library: `XUD_Main()`
  - There is a task to startup and run the Endpoint0 code: `Endpoint0()`
  - There is a task to deal with USB mass storage requests arriving from the host: `massStorageClass()`
  - The define `USB_TILE` describes the tile on which the individual tasks will run
- - In this example all tasks run on the same tile as the USB PHY although this is only a requirement of xud()
+ - In this example all tasks run on the same tile as the USB PHY although this is only a requirement of XUD_Main()
  - The xCONNECT communication channels used by the application are set up at the beginning of main()
- - The USB defines discussed earlier are passed into the function xud()
+ - The USB defines discussed earlier are passed into the function XUD_Main()
 
 Configuring the USB Device ID
 .............................

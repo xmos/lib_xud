@@ -25,8 +25,8 @@ APP_NAME = app_test_and_measurement
 # These flags define two build configurations - one for U-series and one for
 # the xCORE-200 series.
 
-XCC_FLAGS_U     = -Wall -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES 
-XCC_FLAGS_X200  = -Wall -O3 -report -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
+XCC_FLAGS_U     = -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES 
+XCC_FLAGS_X200  = -O3 -report -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
 
 # The USED_MODULES variable lists other module used by the application. 
 USED_MODULES = lib_xud lib_logging

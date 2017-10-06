@@ -2,7 +2,7 @@
 #define _USB_STD_REQUESTS_H_
 
 #include <xccompat.h>
-#include "XUD_USB_Defines.h"
+#include "xud_usb_defines.h"
 
 /* 9.3 USB Device Requests: Table 9-2 Format of Setup Data */
 /* bmRequestType: */

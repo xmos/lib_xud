@@ -33,30 +33,25 @@ Typical Resource Usage
   * - configuration: USB device (U series)
     - target: SLICEKIT-U16
     - flags: -DXUD_SERIES_SUPPORT=XUD_U_SERIES
-    - globals:
+    - globals: XUD_EpType epTypeTableOut[1] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
+               XUD_EpType epTypeTableIn[1] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
     - locals: chan c_ep_out[1];chan c_ep_in[1];
-    - fn: xud(c_ep_out, 1, c_ep_in, 1,
-              null, XUD_SPEED_HS, XUD_PWR_SELF);
+    - fn: XUD_Main(c_ep_out, 1, c_ep_in, 1,
+                      null, epTypeTableOut, epTypeTableIn, 
+                      null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
     - pins: 23 (internal)
     - ports: 11
   * - configuration: USB device (xCORE-200 series)
     - target: XCORE-200-EXPLORER
     - flags: -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
-    - globals:
+    - globals: XUD_EpType epTypeTableOut[1] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
+               XUD_EpType epTypeTableIn[1] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
     - locals: chan c_ep_out[1];chan c_ep_in[1];
-    - fn: xud(c_ep_out, 1, c_ep_in, 1,
-              null, XUD_SPEED_HS, XUD_PWR_SELF);
+    - fn: XUD_Main(c_ep_out, 1, c_ep_in, 1,
+                      null, epTypeTableOut, epTypeTableIn, 
+                      null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
     - pins: 23 (internal)
     - ports: 11
-  * - configuration: USB device (L series)
-    - target: SLICEKIT-L16
-    - flags: -DXUD_SERIES_SUPPORT=XUD_L_SERIES
-    - globals:
-    - locals: chan c_ep_out[1];chan c_ep_in[1];
-    - fn: xud_l_series(c_ep_out, 1, c_ep_in, 1,
-                       null, null, XUD_SPEED_HS, XUD_PWR_SELF);
-    - pins: 13
-    - ports: 8
 
 
 Software version and dependencies

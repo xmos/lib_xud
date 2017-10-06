@@ -25,8 +25,8 @@ APP_NAME = app_printer_demo
 # These flags define two build configurations - one for U-series and one for
 # the xCORE-200 series.
 
-XCC_FLAGS_U     = -Wall -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DUSE_XSCOPE=1 -fxscope
-XCC_FLAGS_X200  = -Wall -O3 -report -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSE_XSCOPE=1 -fxscope
+XCC_FLAGS_U     = -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DUSE_XSCOPE=1 -fxscope
+XCC_FLAGS_X200  = -O3 -report -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSE_XSCOPE=1 -fxscope
 
 # The USED_MODULES variable lists other module used by the application. 
 USED_MODULES = lib_xud lib_logging

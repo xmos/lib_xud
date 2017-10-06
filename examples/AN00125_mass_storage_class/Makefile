@@ -20,7 +20,7 @@ APP_NAME = app_mass_storage_demo
 
 # These flags define two build configurations - one for U-series 
 
-XCC_FLAGS_U     = -Wall -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DUSE_XSCOPE=1 -fxscope -lflash
+XCC_FLAGS_U     = -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DUSE_XSCOPE=1 -fxscope -lflash
 
 # The USED_MODULES variable lists other module used by the application. 
 USED_MODULES = lib_xud 

@@ -5,7 +5,7 @@ This section outlines the basic usage of XUD. Basic use is termed to
 mean each endpoint runs in its own dedicated core.
 Multiple endpoints in a single core are possible, please see Advanced Usage.
 
-XUD Core: ``XUD_Manager()``
+XUD Core: ``XUD_Main()``
 ---------------------------
 
 This is the main XUD task that interfaces with the USB transceiver.
@@ -16,7 +16,7 @@ This function should be called directly from the top-level ``par``
 statement in ``main()`` to ensure that the XUD library is ready
 within the 100ms allowed by the USB specification. 
 
-.. doxygenfunction:: XUD_Manager
+.. doxygenfunction:: XUD_Main
 
 Endpoint Type Table 
 ~~~~~~~~~~~~~~~~~~~
@@ -33,17 +33,17 @@ Endpoints that are not used will ``NAK`` any traffic from the host.
 ``PwrConfig``
 ~~~~~~~~~~~~~
 
-The ``PwrConfig`` parameter to ``XUD_Manager()`` indicates if the device is bus or self-powered.
+The ``PwrConfig`` parameter to ``XUD_Main()`` indicates if the device is bus or self-powered.
 
 Valid values for this parameter are ``XUD_PWR_SELF`` and ``XUD_PWR_BUS``.
 
-When ``XUD_PWR_SELF`` is used, ``XUD_Manager()`` monitors the VBUS input for a valid voltage and reponds appropriately. The USB Specification states that the devices pull-ups must be disabled when a valid VBUS is not present. This is important when submitting a device for compliance testing since this is explicitly tested.
+When ``XUD_PWR_SELF`` is used, ``XUD_Main()`` monitors the VBUS input for a valid voltage and reponds appropriately. The USB Specification states that the devices pull-ups must be disabled when a valid VBUS is not present. This is important when submitting a device for compliance testing since this is explicitly tested.
 
 If the device is bus-powered ``XUD_PWR_SELF`` can be used since is assumed that the device is not powered up when VBUS is not present and therefore no voltage monitoring is required.  In this configuration the VBUS input to the device/PHY need not be present.
 
 ``XUD_PWR_BUS`` can be used in order to run on a self-powered board without provision for VBUS wiring to the PHY/device, but this is not advised.
 
-Endpoint Communication with ``XUD_Manager()``
+Endpoint Communication with ``XUD_Main()``
 ---------------------------------------------
 
 Communication state between a core and the XUD library is encapsulated
@@ -62,7 +62,7 @@ Endpoint data is sent/received using three main functions,
 ``XUD_SetData()``, ``XUD_GetData()`` and ``XUD_GetSetupData()``.
 
 These assembly functions implement the low-level shared memory/channel
-communication with the ``XUD_Manager()`` core. For developer convenience
+communication with the ``XUD_Main()`` core. For developer convenience
 these calls are wrapped up by XC functions.
 
 These functions will automatically deal with any low-level complications required
@@ -168,12 +168,12 @@ SOF Channel
 -----------
 
 An application can pass a channel-end to the ``c_sof`` parameter of 
-``XUD_Manager()``.  This will cause a word of data to be output every time
+``XUD_Main()``.  This will cause a word of data to be output every time
 the device receives a SOF from the host.  This can be used for timing
 information for audio devices etc.  If this functionality is not required
 ``null`` should be passed as the parameter.  Please note, if a channel-end
-is passed into ``XUD_Manager()`` there must be a responsive task ready to
-receive SOF notifications otherwise the ``XUD_Manager()`` task will be
+is passed into ``XUD_Main()`` there must be a responsive task ready to
+receive SOF notifications otherwise the ``XUD_Main()`` task will be
 blocked attempting to send these messages.
 
 .. _xud_usb_test_modes:

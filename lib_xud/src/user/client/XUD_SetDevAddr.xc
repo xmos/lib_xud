@@ -26,7 +26,6 @@ void XUD_SetCrcTableAddr(unsigned addr);
   */
 XUD_Result_t XUD_SetDevAddr(unsigned addr)
 {
-    unsigned data;
 #ifdef ARCH_L
     /* Set device address in UIFM */
 #if defined(ARCH_X200)

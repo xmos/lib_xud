@@ -126,8 +126,6 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
     unsigned tmp;
     timer t;
     unsigned time;
-    unsigned before;
-    unsigned devAddr;
 
     /* Suspend can be handled in multiple ways:
     - Poll flags registers for resume/reset
@@ -136,6 +134,8 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
     */
 #if defined(ARCH_L) && defined(GLX_SUSPHY)
 #ifdef GLX_PWRDWN
+    unsigned devAddr;
+    unsigned before;
     /* Power suspend phy, power down zevious and used suspend controller to wake up */
 
     /* NOTE CURRENTLY XEV DOES NOT GET TURNED OFF, WE JUST ARE USING SUSPEND CONTROLLER TO

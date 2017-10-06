@@ -152,7 +152,8 @@ XUD_Result_t StillImageClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_Setu
              break;
 
     }
-
+    /* Never hit */
+    return XUD_RES_ERR;
 }
 
 

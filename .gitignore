@@ -1,6 +1,6 @@
 .build*
 __gen*
-_build*
+_build/
 */bin/*
 *~
 *.o
@@ -24,3 +24,4 @@ _README/**
 **/pdf/**
 *.doctree
 sphinx.output
+Installs/

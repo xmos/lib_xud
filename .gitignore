@@ -1,4 +1,5 @@
 .build*
+**/_build*
 */bin/*
 *~
 *.o
@@ -17,6 +18,8 @@
 *.so
 */logs/*
 test_results.csv
-**/_build/**
-**/__gen/**
-
+.DS_Store
+_README/**
+**/pdf/**
+*.doctree
+sphinx.output

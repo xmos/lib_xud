@@ -4,7 +4,7 @@
 #include <platform.h>
 #include "XUD_UIFM_Functions.h"
 #include "XUD_UIFM_Defines.h"
-#include "xud_usb_Defines.h"
+#include "xud_usb_defines.h"
 #include "XUD_TimingDefines.h"
 #include "XUD_Support.h"
 #include "xud.h"

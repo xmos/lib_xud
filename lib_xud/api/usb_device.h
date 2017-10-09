@@ -11,7 +11,7 @@
 #include "xud.h"
 
 /* Generic USB defines */
-#include "xud_usb_defines.h"
+#include "XUD_USB_Defines.h"
 
 /* Generic USB descriptor defines */
 #include "xud_std_descriptors.h"

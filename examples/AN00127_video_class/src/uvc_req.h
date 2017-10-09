@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2016, XMOS Ltd, All rights reserved
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #ifndef UVC_REQ_H_
 #define UVC_REQ_H_

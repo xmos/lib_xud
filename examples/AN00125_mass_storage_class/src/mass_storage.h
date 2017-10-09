@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2016, XMOS Ltd, All rights reserved
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #ifndef MASS_STORAGE_H_
 #define MASS_STORAGE_H_

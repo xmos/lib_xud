@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2016, XMOS Ltd, All rights reserved
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #ifndef PACKET_BUFFER_H_
 #define PACKET_BUFFER_H_

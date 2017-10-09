@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2016, XMOS Ltd, All rights reserved
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #ifndef __PTP_H__
 #define __PTP_H__
@@ -142,7 +142,7 @@ typedef struct _PTPUSBEventContainer PTPUSBEventContainer;
 #define PTP_RC_StoreNotAvailable        0x2013
 #define PTP_RC_SpecificationByFormatUnsupported         0x2014
 #define PTP_RC_NoValidObjectInfo        0x2015
-#define PTP_RC_InvalidCodeFormat        0x2016
+#define PTP_RC_InvalidCodeFormat        0x2017
 #define PTP_RC_UnknownVendorCode        0x2017
 #define PTP_RC_CaptureAlreadyTerminated 0x2018
 #define PTP_RC_DeviceBusy               0x2019

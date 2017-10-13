@@ -1,6 +1,9 @@
 Advanced Usage
 ==============
 
+
+This section outlines the advanced usage of XUD using the old-style sc_xud API. For new projects please refer to the newer *lib-xud API and Usage* section.
+
 Advanced usage is termed to mean the implementation of multiple endpoints in a single core as well as the addition of real-time processing to an endpoint core.
 
 The functions documented in Basic Usage such as ``XUD_SetBuffer()`` and ``XUD_GetBuffer()`` block until data has either been successfully sent or received to or from the host.  For this reason it is not generally possible to handle multiple endpoints in a single core efficiently (or at all, depending on the protocols involved).

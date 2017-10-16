@@ -3,7 +3,7 @@
  * @author     Ross Owen, XMOS Limited
  */
 
-#include "usb_device.h"          /* Defines related to the USB 2.0 Spec */
+#include "xud_device.h"          /* Defines related to the USB 2.0 Spec */
 
 #include <string.h>
 #include <xs1.h>

@@ -2,7 +2,7 @@
 #ifndef _USBAUDIOCOMMON_H_
 #define _USBAUDIOCOMMON_H_
 
-#include "devicedefines.h"
+#include "xud_conf_default.h"
 
 #ifdef __STDC__
 typedef struct

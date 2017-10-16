@@ -7,5 +7,4 @@
     #include "xud_conf.h"
 #endif
 
-#ifndef __XUD_CONF_DEFAULT_H__
 #endif

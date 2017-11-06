@@ -1,6 +1,6 @@
 // Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
-#include "usb_device.h"
+#include "xud_device.h"
 
 /* USB Endpoint Defines */
 #define XUD_EP_COUNT_OUT   2    //Includes EP0 (1 out EP0 + USBTMC data output EP)

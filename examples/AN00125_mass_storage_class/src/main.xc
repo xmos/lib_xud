@@ -1,7 +1,7 @@
 // Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #include <xscope.h>
-#include "usb_device.h"
+#include "xud_device.h"
 #include "debug_print.h"
 #include "mass_storage.h"
 #include "print.h"

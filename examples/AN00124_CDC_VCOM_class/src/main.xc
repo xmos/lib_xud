@@ -2,7 +2,7 @@
 
 #include <platform.h>
 #include <xs1.h>
-#include "usb_device.h"
+#include "xud_device.h"
 #include "xud_cdc.h"
 
 /* USB Endpoint Defines */

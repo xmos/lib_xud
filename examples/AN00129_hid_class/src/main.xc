@@ -1,5 +1,5 @@
 // Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
-#include "usb_device.h"
+#include "xud_device.h"
 
 /* Number of Endpoints used by this app */
 #define EP_COUNT_OUT   1

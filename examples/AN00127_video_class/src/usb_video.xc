@@ -1,7 +1,7 @@
 // Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #include "string.h"
-#include "usb_device.h"
+#include "xud_device.h"
 #include "usb_video.h"
 
 /* Definition of Descriptors */

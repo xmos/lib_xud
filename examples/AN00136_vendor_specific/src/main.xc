@@ -1,7 +1,7 @@
 // Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
-#include "usb_device.h"
 #include <platform.h>
+#include "xud_device.h"
 
 #define XUD_EP_COUNT_OUT   2
 #define XUD_EP_COUNT_IN    2

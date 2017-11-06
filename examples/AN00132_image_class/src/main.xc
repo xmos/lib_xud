@@ -2,7 +2,7 @@
 
 #include <string.h>
 #include <stdint.h>
-#include "usb_device.h"
+#include "xud_device.h"
 #include "ptp.h"
 
 /* USB endpoint defines */

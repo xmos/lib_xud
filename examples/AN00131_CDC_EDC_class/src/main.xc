@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <timer.h>
-#include "usb_device.h"
+#include "xud_device.h"
 #include "ethernet.h"
 
 /* xSCOPE Setup Function */

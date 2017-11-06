@@ -3,7 +3,7 @@
 #ifndef USB_VIDEO_H_
 #define USB_VIDEO_H_
 
-#include "usb_device.h"
+#include "xud_device.h"
 #include "uvc_req.h"
 #include "uvc_defs.h"
 

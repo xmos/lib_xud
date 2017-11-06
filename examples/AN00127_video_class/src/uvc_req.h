@@ -4,7 +4,7 @@
 #define UVC_REQ_H_
 
 #include <xccompat.h>
-#include "usb_device.h"
+#include "xud_device.h"
 
 /* Video Class-specific requests definitions */
 

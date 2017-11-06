@@ -3,7 +3,6 @@
 #include <xs1.h>
 #include <stdio.h>
 #include <string.h>
-#include "usb_device.h"
 #include "xud_cdc.h"
 
 /* USB CDC device product defines */

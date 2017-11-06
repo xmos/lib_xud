@@ -5,7 +5,7 @@
 #include <string.h>
 #include "packet_buffer.h"
 #include "queue.h"
-#include "usb_device.h"
+#include "xud_device.h"
 #include "xud_ecm.h"
 #include "ethernet.h"
 

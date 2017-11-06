@@ -1,7 +1,7 @@
 // Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #include <xs1.h>
-#include "usb_device.h"
+#include "xud_device.h"
 
 #define BCD_DEVICE              0x1000
 #define VENDOR_ID               0x20B1

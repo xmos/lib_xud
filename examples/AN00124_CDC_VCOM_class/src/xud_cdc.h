@@ -4,7 +4,7 @@
 #define XUD_CDC_H_
 
 #include <xccompat.h>
-#include "xud.h"
+#include "xud_device.h"
 
 #define DEBUG 0
 

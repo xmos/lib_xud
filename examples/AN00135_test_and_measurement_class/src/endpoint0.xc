@@ -6,7 +6,7 @@
 
 #include <xs1.h>
 #include <string.h>
-#include "usb_device.h"
+#include "xud_device.h"
 
 /* USB Device ID Defines */
 #define BCD_DEVICE   0x0126

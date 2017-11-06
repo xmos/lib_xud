@@ -5,7 +5,7 @@
  */
 
 #include <xs1.h>
-#include "usb_device.h"
+#include "xud_device.h"
 #include "debug_print.h"
 
 /* USB Device ID Defines */

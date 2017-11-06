@@ -8,7 +8,7 @@
 #include <string.h>
 #include <xscope.h>
 
-#include "usb_device.h"
+#include "xud_device.h"
 #include "debug_print.h"
 #include "print.h"
 

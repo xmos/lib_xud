@@ -1,6 +1,6 @@
 // Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
-#include "usb_device.h"
+#include "xud_device.h"
 #include "scpi_parser_wrapper.h"
 
 #define BUFFER_SIZE 128 //512   //8

@@ -3,7 +3,7 @@
  * @brief Implements endpoint zero for an example HID mouse device.
  */
 #include <xs1.h>
-#include "usb_device.h"
+#include "xud_device.h"
 #include "hid.h"
 
 /* USB HID Device Product Defines */

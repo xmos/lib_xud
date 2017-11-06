@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     helpers.args = xmostest.init(argparser)
 
-    xmostest.register_group("sc_xud",
+    xmostest.register_group("lib_xud",
                             "xud_sim_tests",
                             "XUD simulator tests",
     """

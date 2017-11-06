@@ -104,7 +104,7 @@ def do_rx_test(arch, tx_clk, tx_phy, packets, test_file, seed,
     create_expect(packets, expect_filename)
 
     tester = xmostest.ComparisonTester(open(expect_filename),
-                                      'sc_xud', 'xud_sim_tests', testname,
+                                      'lib_xud', 'xud_sim_tests', testname,
                                      {'clk':tx_clk.get_name(), 'arch':arch})
 
     tester.set_min_testlevel(level)

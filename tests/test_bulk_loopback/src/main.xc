@@ -1,10 +1,4 @@
-/*
- * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
- * in both directions between the ports.
- *
- * NOTE: The src/testbenches/ExampleTestbench must have been compiled for this to run without error.
- *
- */
+/* lib_xud simple bulk loopback test */
 #include <xs1.h>
 #include <print.h>
 #include <stdio.h>
@@ -19,89 +13,12 @@
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
-void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend ?c_usb_test);
-
 void exit(int);
-
-#define FAIL_RX_DATAERROR 0
-#define FAIL_RX_LENERROR 1
-
-unsigned fail(int x)
-{
-
-    printstr("\nXCORE: ### FAIL ******");
-    switch(x)
-    {
-        case FAIL_RX_DATAERROR:
-		    printstr("XCORE RX Data Error\n");
-            break;
-
-        case FAIL_RX_LENERROR:
-		    printstr("XCORE RX Length Error\n");
-            break;
-
-    }
-
-    exit(1);
-}
 
 unsigned char g_rxDataCheck[5] = {0, 0, 0, 0, 0};
 unsigned char g_txDataCheck[5] = {0,0,0,0,0,};
 unsigned g_txLength[5] = {0,0,0,0,0};
 
-
-#pragma unsafe arrays
-void SendTxPacket(XUD_ep ep, int length, int epNum)
-{
-    unsigned char buffer[1024];
-    unsigned char x;
-
-    for (int i = 0; i < length; i++)
-    {
-        buffer[i] = g_txDataCheck[epNum]++;
-
-        //asm("ld8u %0, %1[%2]":"=r"(x):"r"(g_txDataCheck),"r"(epNum));
-       // read_byte_via_xc_ptr_indexed(x, p_txDataCheck, epNum);
-
-        //buffer[i] = x;
-        //x++;
-        //asm("st8 %0, %1[%2]"::"r"(x),"r"(g_txDataCheck),"r"(epNum));
-        //write_byte_via_xc_ptr_indexed(p_txDataCheck,epNum,x);
-    }
-
-    XUD_SetBuffer(ep, buffer, length);
-}
-
-#pragma unsafe arrays
-int RxDataCheck(unsigned char b[], int l, int epNum)
-{
-    int fail = 0;
-    unsigned char x;
-
-    for (int i = 0; i < l; i++)
-    {
-        unsigned char y;
-        //read_byte_via_xc_ptr_indexed(y, p_rxDataCheck, epNum);
-        if(b[i] != g_rxDataCheck[epNum])
-        {
-            printstr("#### Mismatch on EP: ");
-            printint(epNum); 
-            printstr(". Got:");
-            printhex(b[i]);
-            printstr(" Expected:");
-            printhexln(g_rxDataCheck[epNum]);
-            //printintln(l); // Packet length
-            return 1;
-        }
-
-        g_rxDataCheck[epNum]++;
-        //read_byte_via_xc_ptr_indexed(x, p_rxDataCheck, epNum);
-        //x++;
-        //write_byte_via_xc_ptr_indexed(p_rxDataCheck,epNum,x);
-    }
-
-    return 0;
-}
 
 /* Loopback packets forever */
 #pragma unsafe arrays

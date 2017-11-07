@@ -15,15 +15,9 @@ if __name__ == "__main__":
     argparser.add_argument('--verbose', action='store_true', help='Enable verbose tracing in the phys')
 
     argparser.add_argument('--num-packets', type=int, help='Number of packets in the test', default='100')
-    argparser.add_argument('--weight-hp', type=int, help='Weight of high priority traffic', default='50')
-    argparser.add_argument('--weight-lp', type=int, help='Weight of low priority traffic', default='25')
-    argparser.add_argument('--weight-other', type=int, help='Weight of other (dropped) traffic', default='25')
     argparser.add_argument('--data-len-min', type=int, help='Minimum packet data bytes', default='46')
     argparser.add_argument('--data-len-max', type=int, help='Maximum packet data bytes', default='500')
-    argparser.add_argument('--weight-tagged', type=int, help='Weight of VLAN tagged traffic', default='50')
-    argparser.add_argument('--weight-untagged', type=int, help='Weight of non-VLAN tagged traffic', default='50')
-    argparser.add_argument('--max-hp-mbps', type=int, help='The maximum megabits per second', default='1000')
-
+    
     helpers.args = xmostest.init(argparser)
 
     xmostest.register_group("lib_xud",

@@ -69,8 +69,9 @@ The following application notes use this library:
    * AN00125 - USB mass storage device class 
    * AN00126 - USB printer device class 
    * AN00127 - USB video device class 
-   * AN00128 - USB Audio device class 
    * AN00129 - USB HID device class 
-   * AN00130 - Extended USB HID class 
    * AN00131 - USB CDC-EDC device class 
    * AN00132 - USB Image device class 
+   * AN00124 - USB CDC VCOM device class
+   * AN00135 - USB Test and Measurement device class
+   * AN00136 - USB Vendor specific device

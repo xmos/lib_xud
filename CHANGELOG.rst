@@ -10,7 +10,7 @@ lib_xud Change Log
 Legacy release history
 ----------------------
 
-Note: Forked from sc_xud at this point. lub_xud is now the mainline and sc_xud is no-longer maintained.
+Note: Forked from sc_xud at this point.
 
 
 2.6.0

@@ -1,8 +1,8 @@
 Basic Usage
 ===========
 
-This section outlines the basic usage of XUD. Basic use is termed to
-mean each endpoint runs in its own dedicated core.
+
+Basic use is termed to mean each endpoint runs in its own dedicated core.
 Multiple endpoints in a single core are possible, please see Advanced Usage.
 
 XUD Core: ``XUD_Main()``

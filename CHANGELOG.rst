@@ -10,7 +10,7 @@ lib_xud Change Log
 Legacy release history
 ----------------------
 
-(Note: Forked from sc_xud at this point)
+Note: Forked from sc_xud at this point.
 
 
 2.6.0

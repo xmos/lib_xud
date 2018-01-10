@@ -4,6 +4,8 @@ XMOS USB Device (XUD) Library
 Overview
 --------
 
+This library is currently in a pre-release state.
+
 lib_xud merges the existing sc_xud and unmaintained lib_usb and replaces them both. It includes an API that supports both previous libraries providing a unified and maintained library going forward.
 
 The XMOS USB Device (XUD) library provides a low-level interface to USB.  lib_xud is a software defined, industry-standard, USB library

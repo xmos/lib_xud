@@ -1,0 +1,46 @@
+def use_module(bld):
+    bld.env.XCC_FLAGS = bld.env.XCC_FLAGS + [
+        '-O3', '-DREF_CLK_FREQ=100', '-fasm-linenum', '-fcomment-asm',
+        '-fsubword-select', '-DXUD_FULL_PIDTABLE=1'
+    ]
+    
+    source = bld.path.ant_glob(
+        [
+            'src/**/*.xc', 'src/**/*.c', 'src/**/*.S'
+        ],
+        excl=[
+            '**/XUD_Token_In.S', '**/XUD_Token_Ping.S', '**/XUD_Token_SOF.S',
+            '**/XUD_Token_Out.S', '**/XUD_Token_Setup.S', '**/XUD_G_Crc.S',
+            '**/XUD_TokenJmp.S', '**/XUD_PidJumpTable.S'
+        ])
+        
+    depends_on = [
+        'lib_logging(>=2.0.0)', 'lib_xassert(>=2.0.0)', 'lib_gpio(>=1.0.0)'
+    ]
+    
+
+    bld.env['XCC_FLAGS_XUD_IoLoop.S'] = bld.env.XCC_FLAGS + ['-fschedule', '-g0']
+    
+    bld.env['XCC_FLAGS_endpoint0.xc'] = bld.env.XCC_FLAGS + ['-Os']
+    bld.env['XCC_FLAGS_dfu.xc'] = bld.env.XCC_FLAGS + ['-Os']
+    bld.env['XCC_FLAGS_dfu_flash.xc'] = bld.env.XCC_FLAGS + ['-Os']
+
+    bld.env['XCC_FLAGS_XUD_Client.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_Main.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_SetDevAddr.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_DeviceAttach.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue', '-Wno-return-type']
+    bld.env['XCC_FLAGS_XUD_PhyResetUser.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_Support.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_IOLoopCall.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_PowerSig.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue', '-Wno-return-type']
+    bld.env['XCC_FLAGS_XUD_TestMode.xc'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_GetDone.c'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_SetCrcTableAddr.c'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    bld.env['XCC_FLAGS_XUD_User.c'] = bld.env.XCC_FLAGS + ['-mno-dual-issue']
+    
+    bld.module(
+        source=source,
+        depends_on=depends_on,
+        includes=['api', 'src/user', 'src/user/class'],
+        optional_headers='xud_conf.h',
+        version='1.0.0')

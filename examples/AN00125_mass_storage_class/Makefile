@@ -23,7 +23,7 @@ APP_NAME = app_mass_storage_demo
 XCC_FLAGS_U     = -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DUSE_XSCOPE=1 -fxscope -lflash
 
 # The USED_MODULES variable lists other module used by the application. 
-USED_MODULES = lib_xud 
+USED_MODULES = lib_xud lib_logging(>=2.0.0) lib_xassert(>=3.0.0)
 
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure

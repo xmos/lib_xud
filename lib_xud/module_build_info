@@ -19,7 +19,7 @@ OPTIONAL_HEADERS += xud_conf.h
 
 VERSION = 1.0.0
 
-DEPENDENT_MODULES = lib_logging(>=2.0.0) lib_xassert(>=2.0.0) lib_gpio(>=1.0.0)
+DEPENDENT_MODULES = 
 
 XCC_FLAGS_endpoint0.xc = $(MODULE_XCC_FLAGS) -Os
 XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os

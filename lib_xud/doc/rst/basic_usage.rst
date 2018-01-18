@@ -39,7 +39,7 @@ Valid values for this parameter are ``XUD_PWR_SELF`` and ``XUD_PWR_BUS``.
 
 When ``XUD_PWR_SELF`` is used, ``XUD_Main()`` monitors the VBUS input for a valid voltage and reponds appropriately. The USB Specification states that the devices pull-ups must be disabled when a valid VBUS is not present. This is important when submitting a device for compliance testing since this is explicitly tested.
 
-If the device is bus-powered ``XUD_PWR_SELF`` can be used since is assumed that the device is not powered up when VBUS is not present and therefore no voltage monitoring is required.  In this configuration the VBUS input to the device/PHY need not be present.
+If the device is bus-powered ``XUD_PWR_BUS`` can be used since is assumed that the device is not powered up when VBUS is not present and therefore no voltage monitoring is required.  In this configuration the VBUS input to the device/PHY need not be present.
 
 ``XUD_PWR_BUS`` can be used in order to run on a self-powered board without provision for VBUS wiring to the PHY/device, but this is not advised.
 

@@ -1,11 +1,11 @@
-
 lib_xud Change Log
 ==================
 
 0.1.0
 -----
-    - CHANGE:      Fork from sc_xud to lib_xud
-    - CHANGE:      Documentation updates
+
+  * CHANGE:      Fork from sc_xud to lib_xud
+  * CHANGE:      Documentation updates
 
 
 Legacy release history
@@ -174,3 +174,4 @@ Note: Forked from sc_xud at this point.
 1.0.0
 -----
     * Initial stand-alone release
+

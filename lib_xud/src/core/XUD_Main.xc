@@ -296,13 +296,6 @@ extern out port p_usb_txd;
 extern port p_usb_rxd;
 #endif
 
-
-//#define VBUSHACK 1
-#ifdef VBUSHACK
-out port p_usb_stp = XS1_PORT_1E;
-in port p_usb_dir = XS1_PORT_1G;
-#endif
-
 #ifdef XUD_ISO_OUT_COUNTER
 int xud_counter = 0;
 #endif
@@ -571,9 +564,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #if !defined(ARCH_S) && !defined(ARCH_X200)
         p_usb_rxd <: 0;         // Note, this is important else phy clocks in invalid data before UIFM is enabled causing
         clearbuf(p_usb_rxd);    // connection issues
-#endif
-#ifdef VBUSHACK
-        p_usb_rxd :> void;
 #endif
 
 #if defined(ARCH_S) || defined(ARCH_X200)

@@ -568,87 +568,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #if defined(ARCH_S) || defined(ARCH_X200)
 
-//#if defined(ARCH_S) && defined(GLX_PWRDWN)
-        /* Check if waking up */
-#if 0
-        char rdata[1];
-
-
-        read_periph_8(USB_TILE_REF, XS1_GLX_PERIPH_SCTH_ID, 0xff, 1, rdata);
-
-        if(rdata[0])
-        {
-            unsigned resumeReason;
-
-            /* Check why we are waking up.. */
-            read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, resumeReason);
-
-            //p_test <: 0;
-            /* We're waking up.. */
-            /* Reset flag */
-            rdata[0] = 0;
-            write_periph_8(USB_TILE_REF, XS1_GLX_PERIPH_SCTH_ID, 0xff, 1, rdata);
-
-            waking = 1;
-
-            /* Unsuspend phy */
-            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,
-                                    (0x1 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE));
-
-            /* Resume */
-            if(resumeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMEK))
-            {
-                /* Wait for SE0 */
-                while(1)
-                {
-                    unsigned  x;
-                    read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
-                    x >>= 9;
-                    x &= 0x3;
-                    if(x == 0)
-                    {
-                        break;
-                    }
-                }
-
-                /* TODO might has suspended in FS */
-                /* Back to HS */
-                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
-
-            //p_test <:0;
-
-                /* Wait for end of SE0 */
-                while(1)
-                {
-                    unsigned  x;
-                    read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
-                    x >>= 9;
-                    x &= 0x3;
-                    if(x != 0)
-                    {
-                        break;
-                    }
-                }
-            }
-            else // if(resumeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMESE0))
-            {
-                /* Woke due to reset in suspend. Treat any other condition as reset also. */
-                //asm("ecallf %0"::"r"(0));
-
-                wakingReset = 1;
-                reset = 1;
-                one = 0;
-            }
-
-            //p_test <: 1;
-
-        }
-        else
-#endif
-        {
-#endif
-#if defined(ARCH_S) || defined(ARCH_X200)
-
 #ifndef SIMULATION
         unsigned settings[] = {0};
 
@@ -656,7 +575,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* For xCORE-200 enable USB port muxing before enabling phy etc */
         XUD_EnableUsbPortMux(); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 #endif
-
         /* Enable the USB clock */
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, ( 1 << XS1_SU_CFG_USB_CLK_EN_SHIFT));
 
@@ -672,7 +590,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Clear OTG control reg - incase we were running as host previously.. */
         write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
 #endif
-        }
+
 #ifdef GLX_PWRDWN
 #ifndef SIMULATION
         /* Setup sleep timers and supplies */

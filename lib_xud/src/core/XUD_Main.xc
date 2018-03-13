@@ -514,41 +514,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #if defined(ARCH_S) || defined(ARCH_X200)
 
-#ifdef GLX_PWRDWN
-#warning BUILDING WITH GLX POWER DOWN ENABLED
-
-#ifndef SIMULATION
-    /* Tell GLX to allow USB suspend/wake */
-    //write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 0x3 << XS1_GLX_PWR_USB_PD_EN_BASE);
-#endif
-#endif
-
-//All these delays are for a xev running at 500MHz
-//#ifdef SDF
-//#if 1
-//8 is abs max, any larger and the rdy's will not be produced
-//These setting cause the rdy to be sampled as soon as
-//possible then output the data if allowed on the next cycle
-//#define TX_RISE_DELAY 5
-//#define TX_FALL_DELAY 2
-//#define RX_RISE_DELAY 7
-//#define RX_FALL_DELAY 7
-//#else
-//#define TX_RISE_DELAY 1
-//define TX_FALL_DELAY 0
-//#define RX_RISE_DELAY 5
-//#define RX_FALL_DELAY 5
-//#endif
-
 #define TX_RISE_DELAY 5
-//TODO check this for U series (was 2)
+#if defined(ARCH_S)
+#define TX_FALL_DELAY 2
+#else
 #define TX_FALL_DELAY 1
+#endif
 #define RX_RISE_DELAY 5
 #define RX_FALL_DELAY 5
 
-//#if defined(ARCH_X200)
-  //  setps(XS1_PS_XCORE_CTRL0, 2);
-//#endif
     // Set up USB ports. Done in ASM as read port used in both directions initially.
     // Main difference from xevious is IFM not enabled.
     // GLX_UIFM_PortConfig (p_usb_clk, txd, rxd, flag0_port, flag1_port, flag2_port);

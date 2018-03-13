@@ -469,12 +469,6 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 
 }
 
-int waking = 0;
-int wakingReset = 0;
-
-
-void XUD_ULPIReg(out port p_usb_txd);
-
 // Main XUD loop
 static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, XUD_PwrConfig pwrConfig)
 {
@@ -718,8 +712,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #else
                 /* Setup flags for power signalling - J/K/SE0 line state*/
                 XUD_UIFM_PwrSigFlags();
-                //if(!wakingReset)
-                //{
 
                 if (one)
                 {
@@ -734,7 +726,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Sample line state and check for reset (or suspend) */
                     flag2_port :> reset; /* SE0 Line */
                 }
-//                }
 #endif
                 /* Inspect for suspend or reset */
                 if(!reset)
@@ -885,7 +876,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             /* Set flag2_port to RX_ERROR (bit 0) */
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK2, 0x01);   // bit 0
 #endif /* GLX */
-            waking = 0;
 
             set_thread_fast_mode_on();
 

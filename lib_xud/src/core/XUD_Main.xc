@@ -413,41 +413,6 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
 
     if (XUD_GetDone())
         return;
-
-    /* Not longer drain channels or recive CT from EP - this is because EPS's no longer use channels to indicate ready status */
-#if 0
-    for(int i = 0; i < nOut; i++)
-    {
-        if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
-        {
-            while(!XUD_Sup_testct(c[i]))
-            {
-                XUD_Sup_int(c[i]);
-            }
-            XUD_Sup_inct(c[i]);       // TODO chkct
-
-            /* Clear EP ready. Note, done after inct to avoid race with EP */
-            eps[i] = 0;
-        }
-    }
-    for(int i = 0; i < nIn; i++)
-    {
-        if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
-        {
-          int tok=-1;
-          while (tok != XS1_CT_END) {
-            while(!XUD_Sup_testct(c[i + USB_MAX_NUM_EP_OUT]))
-            {
-                XUD_Sup_int(c[i + USB_MAX_NUM_EP_OUT]);
-            }
-            tok = XUD_Sup_inct(c[i + USB_MAX_NUM_EP_OUT]);       // TODO chkct
-
-            /* Clear EP ready. Note, done after inct to avoid race with EP */
-            eps[i + USB_MAX_NUM_EP_OUT] = 0;
-          }
-        }
-    }
-#endif
 }
 
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed)

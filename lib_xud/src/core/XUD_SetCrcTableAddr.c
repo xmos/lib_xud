@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2015, XMOS Ltd, All rights reserved
 /** @file      XUD_SetCrcTableAddr.c
   * @author    Ross Owen, XMOS Limited
   */

@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 /**
  * @brief      Implements USB Device standard requests
  * @author     Ross Owen, XMOS Limited

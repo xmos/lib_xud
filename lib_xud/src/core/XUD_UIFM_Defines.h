@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2016, XMOS Ltd, All rights reserved
 /**
   * \brief Defines for interfacing UIFM (L-series and G-series only)
   * Author Ross Owen

@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
 /** @file       XUD_PowerSig.xc
   * @brief      Functions for USB power signaling
   * @author     Ross Owen, XMOS Limited

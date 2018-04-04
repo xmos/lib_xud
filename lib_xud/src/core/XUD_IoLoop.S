@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
 
 // XUD_LLD_IoLoop.S
 // Main USB interfacing loop

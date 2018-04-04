@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2016, XMOS Ltd, All rights reserved
 .align 4
 Pid_Ping:
 #ifdef ARCH_L

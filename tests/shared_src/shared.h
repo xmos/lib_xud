@@ -1,3 +1,4 @@
+// Copyright (c) 2016, XMOS Ltd, All rights reserved
 
 unsigned char g_rxDataCheck[7] = {0, 0, 0, 0, 0, 0, 0};
 unsigned char g_txDataCheck[5] = {0,0,0,0,0,};

@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2016, XMOS Ltd, All rights reserved
 #include "xud.h"
 
 #if 0

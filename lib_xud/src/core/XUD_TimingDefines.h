@@ -1,3 +1,4 @@
+// Copyright (c) 2015, XMOS Ltd, All rights reserved
 #ifndef _XUD_USB_DEFINES_H_
 #define _XUD_USB_DEFINES_H_
 

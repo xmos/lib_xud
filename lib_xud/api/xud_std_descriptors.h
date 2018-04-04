@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #ifndef _USB_DESCRIPTORS_H_
 #define _USB_DESCRIPTORS_H_

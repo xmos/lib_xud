@@ -1,3 +1,4 @@
+// Copyright (c) 2012-2014, XMOS Ltd, All rights reserved
 /*
  * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
  * in both directions between the ports.

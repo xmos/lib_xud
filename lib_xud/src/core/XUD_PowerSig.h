@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2015, XMOS Ltd, All rights reserved
 
 #ifndef _XUD_PWRSIG_H_
 #define _XUD_PWRSIG_H_

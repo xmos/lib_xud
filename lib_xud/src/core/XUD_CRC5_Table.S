@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2015, XMOS Ltd, All rights reserved
 /** XUD_CRC5_Table.S
   * @brief     Full USB CRC5 table
   * @author    Ross Owen, XMOS Limited

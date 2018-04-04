@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2016, XMOS Ltd, All rights reserved
 #include <xs1.h>
 
 // Ports

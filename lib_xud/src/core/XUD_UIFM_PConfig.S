@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2015, XMOS Ltd, All rights reserved
 
 // XUD_UIFM_PConfig.S
 // Port configuration for UIFM

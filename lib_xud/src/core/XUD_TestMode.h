@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2015, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 #ifndef __XUD_TESTMODE_H__
 #define __XUD_TESTMODE_H__
 

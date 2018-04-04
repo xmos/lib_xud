@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2015, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 // On Entry:
 //   ldw        r1, dp[crcmask]
 #if 0

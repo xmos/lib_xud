@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 /** XUD_EpFuncs.S
   * @brief     Functions for data transfer to/from XUD
   * @author    Ross Owen, XMOS Limited

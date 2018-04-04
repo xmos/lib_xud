@@ -1,4 +1,4 @@
-// Copyright (c) 2015, XMOS Ltd, All rights reserved
+// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
 /*
  * @brief Defines from USB Device Class Definition for Human Interface Devices Specification
  */

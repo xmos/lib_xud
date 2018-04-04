@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2015, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 
 #ifndef UIFM_FUNCTIONS_H_
 #define UIFM_FUNCTIONS_H_ 1

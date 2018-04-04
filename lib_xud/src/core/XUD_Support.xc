@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015, XMOS Ltd, All rights reserved
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 #include "XUD_Support.h"
 #include <xs1.h>
 

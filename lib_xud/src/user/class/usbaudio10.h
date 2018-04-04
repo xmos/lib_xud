@@ -1,4 +1,4 @@
-// Copyright (c) 2017, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 
 #ifndef _AUDIO10_H_
 #define _AUDIO10_H_ 1

@@ -1,4 +1,4 @@
-// Copyright (c) 2017, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 
 #ifndef _XS1_TO_GLX_H_
 #define _XS1_TO_GLX_H_

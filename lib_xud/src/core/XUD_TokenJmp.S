@@ -1,3 +1,4 @@
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 
 #ifdef ARCH_L
     ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here

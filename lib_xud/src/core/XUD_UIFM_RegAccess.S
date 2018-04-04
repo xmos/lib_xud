@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 /** XUD_UIFM_RegAccess.S
   * @brief     Functions for UIFM register read/write
   * @author    Ross Owen, XMOS Limited

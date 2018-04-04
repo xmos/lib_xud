@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 // r10: EP number
 // OUT Token Packet -----------------------------------------------------------------------------
 // Ports

@@ -1,3 +1,4 @@
+// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 /**
  * @brief      Defines from the USB Audio 2.0 Specifications
  * @author     Ross Owen, XMOS Limited

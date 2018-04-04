@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
 /*
  * @brief      USB Device helper functions
  */

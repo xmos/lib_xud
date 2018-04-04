@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 /** @file      XUD_Support.h
   * @brief     Various  support functions used in XUD
   * @author    Ross Owen, XMOS Limited

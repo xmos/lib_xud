@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
 
 #ifndef _XUD_USBTILE_SUPPORT_H_
 #define _XUD_USBTILE_SUPPORT_H_ 1

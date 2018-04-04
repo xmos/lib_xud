@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
 /**
  * @brief     Defines from the Universal Serial Bus Specification Revision 2.0
  **/

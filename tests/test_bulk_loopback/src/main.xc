@@ -1,3 +1,4 @@
+// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
 /* lib_xud simple bulk loopback test */
 #include <xs1.h>
 #include <print.h>

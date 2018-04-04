@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 
 #include "XUD_UIFM_Functions.h"
 #include "XUD_USB_Defines.h"

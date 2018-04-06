@@ -74,7 +74,3 @@ The following application notes use this library:
    * AN00135 - USB Test and Measurement device class
    * AN00136 - USB Vendor specific device
 
-Known Issues
-............
-
-There are no known issues with this library.

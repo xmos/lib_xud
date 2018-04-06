@@ -3,14 +3,15 @@ lib_xud Change Log
 
 0.1.1
 -----
-  
-    * RESOLVED:   Transmit timing fixes for U-series devices (introduced in sc_xud 2.3.0)     
+
+  * RESOLVED:   Transmit timing fixes for U-series devices (introduced in sc_xud
+    2.3.0)
 
 0.1.0
 -----
 
-    * CHANGE:     Fork from sc_xud to lib_xud
-    * CHANGE:     Documentation updates
+  * CHANGE:     Fork from sc_xud to lib_xud
+  * CHANGE:     Documentation updates
 
 
 Legacy release history

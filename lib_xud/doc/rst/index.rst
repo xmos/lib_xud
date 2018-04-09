@@ -22,7 +22,13 @@ the XMOS tool chain and XC language.
     Resource Usage <resource_usage>
     Basic Usage <basic_usage>
     Advanced Usage <advanced_usage>
-    Appendix <appendix>
+
+|appendix|
+
+Known Issues
+------------
+
+There are no known issues with this library.
 
 .. include:: ../../../CHANGELOG.rst
 

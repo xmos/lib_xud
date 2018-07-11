@@ -8,7 +8,7 @@ Ports/Pins
 ----------
 
 U-Series
-~~~~~~~~
+........
 
 The U-Series of devices have an integrated USB transceiver. Some ports
 are used to communicate with the USB transceiver inside the U-Series packages.
@@ -21,9 +21,9 @@ The ports/pins are shown in :ref:`table_xud_u_required_pin_port`.
     :class: horizontal-borders vertical_borders
 
     +-------+-------+------+-------+-------+--------+
-    | Pin   | Port                                  |                
+    | Pin   | Port                                  |
     |       +-------+------+-------+-------+--------+
-    |       | 1b    | 4b   | 8b    | 16b   | 32b    |                    
+    |       | 1b    | 4b   | 8b    | 16b   | 32b    |
     +=======+=======+======+=======+=======+========+
     | X0D02 |       | P4A0 | P8A0  | P16A0 | P32A20 |
     +-------+-------+------+-------+-------+--------+
@@ -43,7 +43,7 @@ The ports/pins are shown in :ref:`table_xud_u_required_pin_port`.
     +-------+-------+------+-------+-------+--------+
     | X0D23 | P1H0  |                               |
     +-------+-------+------+-------+-------+--------+
-    | X0D25 | P1J0  |                               | 
+    | X0D25 | P1J0  |                               |
     +-------+-------+------+-------+-------+--------+
     | X0D26 |       | P4E0 | P8C0  | P16B0 | P32A28 |
     +-------+-------+------+-------+-------+--------+
@@ -75,11 +75,11 @@ The ports/pins are shown in :ref:`table_xud_u_required_pin_port`.
 |newpage|
 
 xCORE-200 Series
-~~~~~~~~~~~~~~~~
+................
 
 The xCORE 200 series of devices have an integrated USB transceiver. Some ports
 are used to communicate with the USB transceiver inside the xCORE-200
-series 
+series
 packages.
 These ports/pins should not be used when USB functionality is enabled.
 The ports/pins are shown in :ref:`table_xud_x200_required_pin_port`.
@@ -90,9 +90,9 @@ The ports/pins are shown in :ref:`table_xud_x200_required_pin_port`.
     :class: horizontal-borders vertical_borders
 
     +-------+-------+------+-------+-------+--------+
-    | Pin   | Port                                  |                
+    | Pin   | Port                                  |
     |       +-------+------+-------+-------+--------+
-    |       | 1b    | 4b   | 8b    | 16b   | 32b    |                    
+    |       | 1b    | 4b   | 8b    | 16b   | 32b    |
     +=======+=======+======+=======+=======+========+
     | X0D00 | P1A0  |      |       |       |        |
     +-------+-------+------+-------+-------+--------+
@@ -147,7 +147,7 @@ The ports/pins are shown in :ref:`table_xud_x200_required_pin_port`.
 |newpage|
 
 L-Series
-~~~~~~~~
+........
 
 The ports used for the physical connection to the external ULPI transceiver must
 be connected as shown in :ref:`table_xud_ulpi_required_pin_port`.
@@ -191,7 +191,7 @@ be connected as shown in :ref:`table_xud_ulpi_required_pin_port`.
 
 In addition some ports are used internally when the XUD library is in
 operation. For example pins X0D2-X0D9, X0D26-X0D33 and X0D37-X0D43 on
-an XS1-L device should not be used. 
+an XS1-L device should not be used.
 
 Please refer to the device datasheet for further information on which ports
 are available.
@@ -210,7 +210,7 @@ priority cores that are guarrenteed 20% of the processor bandwidth. If XUD is as
 a priority core then up to eight cores may be used with the remaining seven getting
 (500 * 0.8) / 7 = 57.1MHz each.
 
-This restriction is only a requirement on the tile on which the ``XUD_Manager`` is running. 
+This restriction is only a requirement on the tile on which the ``XUD_Manager`` is running.
 For example, the other tile on an dual-core device is unaffected by this restriction.
 
 Clock Blocks
@@ -225,11 +225,11 @@ important that if a port is not required to be clocked from this 60MHz
 clock, then it is configured to use another clock block.
 
 U-Series / xCORE-200
-~~~~~~~~~~~~~~~~~~~~
+....................
 
 The XUD library uses two clock blocks (clock blocks 4 and 5). These are
-clocked from the USB clock.  Unlike the L devices, clock-block 0 is not 
-used or affected. 
+clocked from the USB clock.  Unlike the L devices, clock-block 0 is not
+used or affected.
 
 Timers
 ------

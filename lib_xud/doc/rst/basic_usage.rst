@@ -14,12 +14,12 @@ to/from the various endpoints.
 
 This function should be called directly from the top-level ``par``
 statement in ``main()`` to ensure that the XUD library is ready
-within the 100ms allowed by the USB specification. 
+within the 100ms allowed by the USB specification.
 
 .. doxygenfunction:: XUD_Main
 
-Endpoint Type Table 
-~~~~~~~~~~~~~~~~~~~
+Endpoint Type Table
+...................
 
 The endpoint type table should take an array of ``XUD_EpType`` to inform XUD
 about endpoints being used.  This is mainly used to indicate the transfer-type
@@ -31,7 +31,7 @@ whether the endpoint wishes to be informed about bus-resets (see `Status Reporti
 Endpoints that are not used will ``NAK`` any traffic from the host.
 
 ``PwrConfig``
-~~~~~~~~~~~~~
+.............
 
 The ``PwrConfig`` parameter to ``XUD_Main()`` indicates if the device is bus or self-powered.
 
@@ -69,58 +69,58 @@ These functions will automatically deal with any low-level complications require
 such as Packet ID toggling etc.
 
 ``XUD_GetBuffer()``
-~~~~~~~~~~~~~~~~~~~
+...................
 
 .. doxygenfunction:: XUD_GetBuffer
 
 ``XUD_SetBuffer()``
-~~~~~~~~~~~~~~~~~~~
+...................
 
 .. doxygenfunction:: XUD_SetBuffer
 
 
 ``XUD_SetBuffer_EpMax()``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.........................
 
 This function provides a similar function to ``XUD_SetBuffer`` function
 but it breaks the data up in packets of a fixed
-maximum size. This is especially useful for control transfers where large 
+maximum size. This is especially useful for control transfers where large
 descriptors must be sent in typically 64 byte transactions.
 
 .. doxygenfunction:: XUD_SetBuffer_EpMax
 
 ``XUD_DoGetRequest()``
-~~~~~~~~~~~~~~~~~~~~~~
+......................
 
 .. doxygenfunction:: XUD_DoGetRequest
 
 ``XUD_DoSetRequestStatus()``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+............................
 
 .. doxygenfunction:: XUD_DoSetRequestStatus
 
 ``XUD_SetDevAddr()``
-~~~~~~~~~~~~~~~~~~~~
+....................
 
 .. doxygenfunction:: XUD_SetDevAddr
 
 ``XUD_SetStall()``
-~~~~~~~~~~~~~~~~~~
+..................
 
 .. doxygenfunction:: XUD_SetStall
 
 ``XUD_SetStallByAddr()``
-~~~~~~~~~~~~~~~~~~~~~~~~
+........................
 
 .. doxygenfunction:: XUD_SetStallByAddr
 
 ``XUD_ClearStall()``
-~~~~~~~~~~~~~~~~~~~~
+....................
 
 .. doxygenfunction:: XUD_ClearStall
 
 ``XUD_ClearStallByAddr()``
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+..........................
 
 .. doxygenfunction:: XUD_ClearStallByAddr
 
@@ -128,7 +128,7 @@ descriptors must be sent in typically 64 byte transactions.
 .. _xud_status_reporting:
 
 Status Reporting
-~~~~~~~~~~~~~~~~
+................
 
 Status reporting on an endpoint can be enabled so that bus state is
 known. This is achieved by ORing ``XUD_STATUS_ENABLE`` into the relevant
@@ -159,7 +159,7 @@ After a reset notification has been received, the endpoint must call the
 speed.
 
 ``XUD_ResetEndpoint()``
-~~~~~~~~~~~~~~~~~~~~~~~
+.......................
 
 .. doxygenfunction:: XUD_ResetEndpoint
 
@@ -167,7 +167,7 @@ speed.
 SOF Channel
 -----------
 
-An application can pass a channel-end to the ``c_sof`` parameter of 
+An application can pass a channel-end to the ``c_sof`` parameter of
 ``XUD_Main()``.  This will cause a word of data to be output every time
 the device receives a SOF from the host.  This can be used for timing
 information for audio devices etc.  If this functionality is not required
@@ -181,10 +181,10 @@ blocked attempting to send these messages.
 USB Test Modes
 --------------
 
-XUD supports the required test modes for USB Compliance testing. 
+XUD supports the required test modes for USB Compliance testing.
 
 XUD accepts commands from the endpoint 0 channels (in or out) to signal which test mode
-to enter via the ``XUD_SetTestMode()`` function. The commands are based on the definitions 
+to enter via the ``XUD_SetTestMode()`` function. The commands are based on the definitions
 of the Test Mode Selector Codes in the USB 2.0 Specification Table 11-24.  The supported test modes are
 summarised in :ref:`table_test_modes`.
 
@@ -194,7 +194,7 @@ summarised in :ref:`table_test_modes`.
     :class: horizontal-borders vertical_borders
 
     +--------+-------------------------------------+
-    | Value  | Test Mode Description               |                
+    | Value  | Test Mode Description               |
     +========+=====================================+
     | 1      | Test_J                              |
     +--------+-------------------------------------+
@@ -211,6 +211,6 @@ behaviour.
 As per the USB 2.0 Specification a power cycle or reboot is required to exit the test mode.
 
 ``XUD_SetTestMode()``
-~~~~~~~~~~~~~~~~~~~~~~~
+.....................
 
 .. doxygenfunction:: XUD_SetTestMode

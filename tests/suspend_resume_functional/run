@@ -1,0 +1,1 @@
+xsim --plugin LoopbackPort.dll '-port tile[0] XS1_PORT_1L 1 0 -port tile[0] XS1_PORT_1J 1 0 -port tile[0] XS1_PORT_1A 1 0 -port tile[0] XS1_PORT_1E 1 0 -port tile[0] XS1_PORT_1B 1 0 -port tile[0] XS1_PORT_1F 1 0 -port tile[0] XS1_PORT_1C 1 0 -port tile[0] XS1_PORT_1G 1 0' $1 $2

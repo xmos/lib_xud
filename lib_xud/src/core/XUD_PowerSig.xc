@@ -32,14 +32,18 @@ extern tileref USB_TILE_REF;
 void XUD_UIFM_PwrSigFlags();
 
 #define T_WTRSTFS_us        26 // 26us
+#ifndef T_WTRSTFS
 #define T_WTRSTFS            (T_WTRSTFS_us * REF_CLK_FREQ)
+#endif
 #define STATE_START_TO_us 3000 // 3ms
 #define STATE_START_TO       (STATE_START_TO_us * REF_CLK_FREQ)
 #define DELAY_6ms_us      6000
 #define DELAY_6ms            (DELAY_6ms_us * REF_CLK_FREQ)
 #define T_FILTSE0          250
 
+#ifndef SUSPEND_VBUS_POLL_TIMER_TICKS
 #define SUSPEND_VBUS_POLL_TIMER_TICKS 500000
+#endif
 
 extern buffered in  port:32 p_usb_clk;
 extern in  port reg_read_port;
@@ -117,6 +121,8 @@ int XUD_Init()
            break;
        }
    }
+   __builtin_trap();
+   return -1;
 }
 
 /** XUD_DoSuspend

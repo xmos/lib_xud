@@ -18,13 +18,15 @@ out port lb_flag2 = XS1_PORT_1C;
 enum event {
   READ_OTG_FLAGS,
   DEVICEATTACHHS,
-  LLD_LOOP
+  LLD_LOOP,
+  PHY_WRITE_TWO_PART_START
 };
 
-const char str_event[][20] = {
+const char str_event[][40] = {
   "READ_OTG_FLAGS",
   "DEVICEATTACHHS",
-  "LLD_LOOP"
+  "LLD_LOOP",
+  "PHY_WRITE_TWO_PART_START"
 };
 
 static void event(enum event event, unsigned &value);
@@ -53,7 +55,7 @@ int write_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned
 
   char text[128] = "";
   describe_phy_access(text, addr, data);
-  printf("W P %02X %08X %s\n", addr, data, text);
+  printf("W U %02X %08X %s\n", addr, data, text);
 
   return 0;
 }
@@ -70,12 +72,16 @@ int test_write_sswitch_reg(unsigned tileid, unsigned reg, unsigned data)
 void write_periph_word_two_part_start(chanend tmpchan, tileref tile, unsigned peripheral,
                                       unsigned base_address, unsigned data)
 {
-  printf("write_periph start 0x%02X 0x%06X\n", base_address, data);
+  char text[128] = "";
+  describe_galaxian_access(text, base_address, data);
+  printf("W G %02X %08X part1 %s\n", base_address, data, text);
+
+  event(PHY_WRITE_TWO_PART_START, data);
 }
     
 void write_periph_word_two_part_end(chanend tmpchan, unsigned data)
 {
-  printf("write_periph end 0x%02X\n", data);
+  printf("W G part2\n");
 }
 
 int read_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned &data)
@@ -87,7 +93,7 @@ int read_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned 
 
   char text[128] = "";
   describe_phy_access(text, addr, data);
-  printf("R P %02X %08X %s\n", addr, data, text);
+  printf("R U %02X %08X %s\n", addr, data, text);
 
   return 0;
 }
@@ -118,13 +124,19 @@ static void event(enum event event, unsigned &value)
 
   static enum {
     FIRST,
-    SUBSEQUENT
+    SUBSEQUENT,
+    K,
+    SE0
   } previous, state = FIRST;
 
   static const char str_state[][20] = {
     "FIRST",
-    "SUBSEQUENT"
+    "SUBSEQUENT",
+    "K",
+    "SE0"
   };
+
+  static unsigned otg_flag_reads = 0;
 
   previous = state;
 
@@ -142,18 +154,32 @@ static void event(enum event event, unsigned &value)
       else {
         assert(0);
       }
+      if (otg_flag_reads == 10) {
+        state = K;
+        lb_flag0 <: 1;
+      }
+      otg_flag_reads++;
       break;
 
-    case DEVICEATTACHHS: {
-        if (state == FIRST)
-          value = 1;
-        else
-          assert(0);
-      }
+    case DEVICEATTACHHS:
+      assert(state == FIRST);
+      value = 1;
       break;
 
     case LLD_LOOP:
-      state = SUBSEQUENT;
+      if (state == SE0) {
+	printf("success\n");
+	exit(0);
+      }
+      else {
+	state = SUBSEQUENT;
+      }
+      break;
+
+    case PHY_WRITE_TWO_PART_START:
+      assert(state == K);
+      lb_flag2 <: 1;
+      state = SE0;
       break;
 
     default:

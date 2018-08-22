@@ -6,6 +6,8 @@ lib_xud Change Log
 
   * RESOLVED:   Transmit timing fixes for U-series devices (introduced in sc_xud
     2.3.0)
+  * RESOLVED:   Continuous suspend/resume notifications when host disconnected
+                (introduced earlier as part of #11813)
 
 0.1.0
 -----

@@ -5,8 +5,10 @@
   */
 #include "XUD_USB_Defines.h"
 
+#if !defined __XS2A__
 .set too_many_cores, main.maxcores > 6
 .assert 0, too_many_cores, "Warning: More than 6 cores used on a tile. Ensure this is not the case on tile running XUD."
+#endif
 
 #if 1
 //int XUD_GetSetupData(XUD_ep e_out, unsigned buffer[], unsigned &length);

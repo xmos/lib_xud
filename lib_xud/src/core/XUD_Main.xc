@@ -603,10 +603,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #if defined(ARCH_X200)
+#define XS1_UIFM_USB_PHY_EXT_CTRL_REG 0x50
+#define XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXT_MASK 0x4
         /* Remove requirement for VBUS in bus-powered mode */
         if(pwrConfig == XUD_PWR_BUS)
         {
-             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, 0x50, 6);
+             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_UIFM_USB_PHY_EXT_CTRL_REG, XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXTSEL_MASK | XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXT_MASK);
         }
 
 #define PHYTUNEREGVAL 0x0093B264

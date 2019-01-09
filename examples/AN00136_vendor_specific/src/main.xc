@@ -14,7 +14,7 @@ XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABL
 
 
 /* Prototype for Endpoint0 function in endpoint0.xc */
-void Endpoint0(chanend c_ep0_out, chanend c_ep0_in);
+void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_set_addr);
 
 #define BUFFER_SIZE 128
 
@@ -86,6 +86,7 @@ void bulk_endpoint(chanend chan_ep_from_host, chanend chan_ep_to_host)
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+    chan c_set_addr;
 
     par
     {
@@ -94,7 +95,7 @@ int main()
                       null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
 
 
-        on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);
+        on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0], c_set_addr);
 
         on USB_TILE: bulk_endpoint(c_ep_out[1], c_ep_in[1]);
     }

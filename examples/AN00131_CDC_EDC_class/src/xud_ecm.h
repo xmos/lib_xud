@@ -27,7 +27,7 @@ void CdcEcmEndpointsHandler(chanend c_epint_in, chanend c_epbulk_out, chanend c_
                             SERVER_INTERFACE(usb_cdc_ecm_if, cdc_ecm));
 
 /* Endpoint 0 handles both std USB requests and CDC class specific requests */
-void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in);
+void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in, chanend c_set_addr);
 
 
 #endif /* __XUD_ECM_H__ */

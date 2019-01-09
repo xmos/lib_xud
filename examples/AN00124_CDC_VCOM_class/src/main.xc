@@ -28,6 +28,7 @@ void app_virtual_com(client interface usb_cdc_interface cdc) {
 int main() {
     /* Channels to communicate with USB endpoints */
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+    chan c_set_addr;
     /* Interface to communicate with USB CDC (Virtual Serial) */
     interface usb_cdc_interface cdc_data;
 
@@ -37,7 +38,7 @@ int main() {
                       null, epTypeTableOut, epTypeTableIn, 
                       null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
 
-        on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);
+        on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0], c_set_addr);
 
         on USB_TILE: CdcEndpointsHandler(c_ep_in[1], c_ep_out[1], c_ep_in[2], cdc_data);
 

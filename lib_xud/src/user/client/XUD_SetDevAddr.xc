@@ -18,18 +18,17 @@ extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
 
-
 void XUD_SetCrcTableAddr(unsigned addr);
 
 /** @brief  Sets the device addres in XUD
   * @param  addr the new address
   */
-XUD_Result_t XUD_SetDevAddr(unsigned addr)
+XUD_Result_t XUD_SetDevAddr(chanend c, unsigned addr)
 {
 #ifdef ARCH_L
     /* Set device address in UIFM */
 #if defined(ARCH_X200)
-    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
+    write_periph_word_chanend(c, USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
 #elif defined(ARCH_S)
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
 #else

@@ -24,7 +24,7 @@ interface usb_cdc_interface {
 };
 
 /* Endpoint 0 handling both std USB requests and CDC class specific requests */
-void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in);
+void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in, chanend c_set_addr);
 
 /* Function to handle all endpoints of the CDC class excluding control endpoint0 */
 void CdcEndpointsHandler(chanend c_epint_in, chanend c_epbulk_out, chanend c_epbulk_in,

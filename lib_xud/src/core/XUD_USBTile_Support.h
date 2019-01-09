@@ -10,6 +10,10 @@ unsigned XUD_DisableUsbPortMux();
 
 int write_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned data);
 
+int write_periph_word_chanend(chanend c, tileref tile,
+                              unsigned peripheral,
+                              unsigned addr, unsigned data);
+
 int read_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned &data);
 
 unsigned get_tile_id(tileref ref);

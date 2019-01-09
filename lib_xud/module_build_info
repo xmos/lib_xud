@@ -17,7 +17,7 @@ EXCLUDE_FILES = XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S 
 
 OPTIONAL_HEADERS += xud_conf.h
 
-VERSION = 0.1.0
+VERSION = 0.2.0
 
 DEPENDENT_MODULES = 
 

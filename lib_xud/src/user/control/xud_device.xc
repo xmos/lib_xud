@@ -87,7 +87,8 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
     NULLABLE_ARRAY_OF(unsigned char, devDesc_fs), int devDescLength_fs,
     NULLABLE_ARRAY_OF(unsigned char, cfgDesc_fs), int cfgDescLength_fs,
     char * unsafe strDescs[], int strDescsLength,
-    USB_SetupPacket_t &sp, XUD_BusSpeed_t usbBusSpeed)
+    USB_SetupPacket_t &sp, XUD_BusSpeed_t usbBusSpeed,
+    chanend setAddrChanend)
 {
      /* Return value */
     int datalength;
@@ -141,7 +142,7 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                         }
 
                         /* Set the device address in XUD */
-                        return XUD_SetDevAddr(sp.wValue);
+                        return XUD_SetDevAddr(setAddrChanend, sp.wValue);
 
                     }
                     break;

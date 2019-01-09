@@ -158,7 +158,7 @@ XUD_Result_t StillImageClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_Setu
 
 
 /* Endpoint 0 Task */
-void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
+void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in, chanend c_set_addr)
 {
     USB_SetupPacket_t sp;
     unsigned bmRequestType;
@@ -204,7 +204,7 @@ void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
              *          XUD_RES_ERR if request was not handled (i.e. STALLed) */
             result = USB_StandardRequests(ep0_out, ep0_in, devDesc, sizeof(devDesc), cfgDesc, sizeof(cfgDesc),
                         null, 0, null, 0, stringDescriptors,
-                        sizeof(stringDescriptors)/sizeof(stringDescriptors[0]), sp, usbBusSpeed);
+                        sizeof(stringDescriptors)/sizeof(stringDescriptors[0]), sp, usbBusSpeed, c_set_addr);
 
         /* USB bus reset detected, reset EP and get new bus speed */
         if(result == XUD_RES_RST)

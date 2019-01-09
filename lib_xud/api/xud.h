@@ -324,10 +324,11 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
 /**
  * \brief   Sets the device's address. This function must be called by Endpoint 0
  *          once a ``setDeviceAddress`` request is made by the host.
+ * \param   c Channel end to use for talking to UIFM and save an allocation.
  * \param   addr New device address.
  * \warning Must be run on USB core
  */
-XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
+XUD_Result_t XUD_SetDevAddr(chanend c, /*tileref usbtile*/ unsigned addr);
 
 
 /**

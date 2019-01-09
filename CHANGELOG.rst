@@ -1,6 +1,12 @@
 lib_xud Change Log
 ==================
 
+0.2.0_uifm_channel_end
+----------------------
+
+  * CHANGE:      Pass channel end for hardware peripheral messages rather than
+                 allocating one with each message
+
 0.1.0
 -----
 

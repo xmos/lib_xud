@@ -12,7 +12,7 @@ XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_BUL};
 
 /* Prototype for Endpoint0 function in endpoint0.xc */
-void Endpoint0(chanend c_ep0_out, chanend c_ep0_in);
+void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_set_addr);
 
 /* Global report buffer, global since used by Endpoint0 core */
 unsigned char g_reportBuffer[4] = {0, 0, 0, 0};
@@ -84,16 +84,17 @@ void hid_mouse(chanend chan_ep_hid)
 int main()
 {
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
+    chan c_set_addr;
 
     par
     {
-      on tile[0]: XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
-                      null, epTypeTableOut, epTypeTableIn, 
-                      null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
+      on USB_TILE: XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
+                   null, epTypeTableOut, epTypeTableIn, 
+                   null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
 
-      on tile[0]: Endpoint0(c_ep_out[0], c_ep_in[0]);
+      on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0], c_set_addr);
 
-      on tile[0]: hid_mouse(c_ep_in[1]);
+      on USB_TILE: hid_mouse(c_ep_in[1]);
 
     }
 

@@ -127,7 +127,7 @@ int MassStorageEndpoint0Requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_
 }
 
 /* Endpoint 0 Task */
-void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
+void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in, chanend c_set_addr)
 {
   USB_SetupPacket_t sp;
   unsigned bmRequestType;
@@ -183,7 +183,7 @@ void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
                  sizeof(devDesc), cfgDesc, sizeof(cfgDesc),
                  null, 0, null, 0,
                  stringDescriptors, sizeof(stringDescriptors)/sizeof(stringDescriptors[0]),
-                 sp, usbBusSpeed);
+                 sp, usbBusSpeed, c_set_addr);
      }
 
      /* USB bus reset detected, reset EP and get new bus speed */

@@ -27,6 +27,7 @@ XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABL
 int main() {
 
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+    chan c_set_addr;
     interface usb_cdc_ecm_if cdc_ecm;
 
     /* 'Par' statement to run the following tasks in parallel */
@@ -36,7 +37,7 @@ int main() {
                       null, epTypeTableOut, epTypeTableIn, 
                       null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
 
-        on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);
+        on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0], c_set_addr);
 
         on USB_TILE: CdcEcmEndpointsHandler(c_ep_in[1], c_ep_out[1], c_ep_in[2], cdc_ecm);
 

@@ -30,6 +30,7 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, X
 int main() {
 
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
+    chan c_set_addr;
 
     /* 'Par' statement to run the following tasks in parallel */
     par
@@ -38,7 +39,7 @@ int main() {
                       null, epTypeTableOut, epTypeTableIn, 
                       null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
 
-        on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);
+        on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0], c_set_addr);
 
         on USB_TILE: VideoEndpointsHandler(c_ep_in[1], c_ep_in[2]);
     }

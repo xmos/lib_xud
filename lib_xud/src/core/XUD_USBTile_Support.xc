@@ -11,11 +11,60 @@
 
 unsigned getsr_int();
 
+// taken from libxs1 implementation (periph.xc and periph_asm.S)
+static int write_periph_32_chanend(chanend c, tileref tile, unsigned peripheral,
+                                   unsigned addr,
+                                   unsigned size, const unsigned data[size])
+{
+    unsigned old_dest;
+    asm volatile("getd %0, res[%1]" : "=r"(old_dest) : "r"(c));
+
+    unsigned dest = XS1_RES_TYPE_CHANEND |
+                    (get_tile_id(tile) << XS1_CHAN_ID_PROCESSOR_SHIFT) |
+                    (peripheral << XS1_CHAN_ID_CHANNUM_SHIFT);
+
+    asm volatile("setd res[%0], %1" :: "r"(c), "r"(dest));
+
+    const int with_ack = 1;
+    unsigned return_address;
+    unsigned ack = 1;
+    outct(c, CT_PERIPH_WRITE);
+    if (with_ack) {
+        unsafe {
+            return_address = (unsigned)c >> 8;
+        }
+    } else {
+        return_address = 0xff;
+    }
+    outuint(c, (return_address << 8) | addr);
+    outuchar(c, size << 2);
+
+    for (unsigned i = 0; i < size; i++) {
+        outuint(c, data[i]);
+    }
+    outct(c, XS1_CT_END);
+
+    if (with_ack) {
+        ack = (inct(c) == XS1_CT_ACK);
+        chkct(c, XS1_CT_END);
+    }
+
+    asm volatile("setd res[%0], %1" :: "r"(c), "r"(old_dest));
+    return ack;
+}
+
 int write_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned data)
 {
     unsigned tmp[1];
     tmp[0] = data;
     return write_periph_32(tile, peripheral, addr, 1, tmp);
+}
+
+int write_periph_word_chanend(chanend c, tileref tile, unsigned peripheral, unsigned addr, unsigned data)
+{
+    unsigned tmp[1];
+    tmp[0] = data;
+    return write_periph_32_chanend(c, tile, peripheral, addr, 1, tmp);
 }
 
 int read_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned &data)

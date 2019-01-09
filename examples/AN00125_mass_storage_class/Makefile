@@ -3,7 +3,11 @@
 # or a valid argument for the --target option when compiling.
 
 # In this case, the target depends on the build configuration.
+ifeq ($(CONFIG),X200)
+TARGET = XCORE-200-EXPLORER
+else
 TARGET = SLICEKIT-U16
+endif
 
 # The APP_NAME variable determines the name of the final .xe file. It should
 # not include the .xe postfix. If left blank the name will default to 
@@ -21,6 +25,7 @@ APP_NAME = app_mass_storage_demo
 # These flags define two build configurations - one for U-series 
 
 XCC_FLAGS_U     = -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DUSE_XSCOPE=1 -fxscope -lflash
+XCC_FLAGS_X200  = -O3 -report -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSE_XSCOPE=1 -fxscope -lflash
 
 # The USED_MODULES variable lists other module used by the application. 
 USED_MODULES = lib_xud lib_logging(>=2.0.0) lib_xassert(>=3.0.0)

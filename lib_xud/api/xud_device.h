@@ -58,6 +58,8 @@
   * \param     strDescsLength
   * \param     sp ``USB_SetupPacket_t`` (passed by ref) in which the setup data is returned
   * \param     usbBusSpeed The current bus speed (XUD_SPEED_HS or XUD_SPEED_FS)
+  * \param     setAddrChanend Channel end to use for talking to UIFM for the
+  *            Set Address request and save an allocation.
   *
   * \return   Returns XUD_RES_OKAY on success.
   */
@@ -72,7 +74,8 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
 #else
     char * strDescs[],
 #endif
-    int strDescsLength, REFERENCE_PARAM(USB_SetupPacket_t, sp), XUD_BusSpeed_t usbBusSpeed);
+    int strDescsLength, REFERENCE_PARAM(USB_SetupPacket_t, sp), XUD_BusSpeed_t usbBusSpeed,
+    chanend setAddrChanend);
 /**
  *  \brief  Receives a Setup data packet and parses it into the passed USB_SetupPacket_t structure.
  *  \param  ep_out   OUT endpint from XUD

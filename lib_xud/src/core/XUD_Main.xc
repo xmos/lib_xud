@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 
 /** XUD_Manager.xc
   * @brief     XMOS USB Device(XUD) Layer
@@ -296,13 +297,6 @@ extern out port p_usb_txd;
 extern port p_usb_rxd;
 #endif
 
-
-//#define VBUSHACK 1
-#ifdef VBUSHACK
-out port p_usb_stp = XS1_PORT_1E;
-in port p_usb_dir = XS1_PORT_1G;
-#endif
-
 #ifdef XUD_ISO_OUT_COUNTER
 int xud_counter = 0;
 #endif
@@ -420,41 +414,6 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
 
     if (XUD_GetDone())
         return;
-
-    /* Not longer drain channels or recive CT from EP - this is because EPS's no longer use channels to indicate ready status */
-#if 0
-    for(int i = 0; i < nOut; i++)
-    {
-        if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
-        {
-            while(!XUD_Sup_testct(c[i]))
-            {
-                XUD_Sup_int(c[i]);
-            }
-            XUD_Sup_inct(c[i]);       // TODO chkct
-
-            /* Clear EP ready. Note, done after inct to avoid race with EP */
-            eps[i] = 0;
-        }
-    }
-    for(int i = 0; i < nIn; i++)
-    {
-        if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
-        {
-          int tok=-1;
-          while (tok != XS1_CT_END) {
-            while(!XUD_Sup_testct(c[i + USB_MAX_NUM_EP_OUT]))
-            {
-                XUD_Sup_int(c[i + USB_MAX_NUM_EP_OUT]);
-            }
-            tok = XUD_Sup_inct(c[i + USB_MAX_NUM_EP_OUT]);       // TODO chkct
-
-            /* Clear EP ready. Note, done after inct to avoid race with EP */
-            eps[i + USB_MAX_NUM_EP_OUT] = 0;
-          }
-        }
-    }
-#endif
 }
 
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed)
@@ -475,12 +434,6 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
     }
 
 }
-
-int waking = 0;
-int wakingReset = 0;
-
-
-void XUD_ULPIReg(out port p_usb_txd);
 
 // Main XUD loop
 static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, XUD_PwrConfig pwrConfig)
@@ -514,41 +467,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #if defined(ARCH_S) || defined(ARCH_X200)
 
-#ifdef GLX_PWRDWN
-#warning BUILDING WITH GLX POWER DOWN ENABLED
-
-#ifndef SIMULATION
-    /* Tell GLX to allow USB suspend/wake */
-    //write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_MISC_CTRL_ADRS, 0x3 << XS1_GLX_PWR_USB_PD_EN_BASE);
-#endif
-#endif
-
-//All these delays are for a xev running at 500MHz
-//#ifdef SDF
-//#if 1
-//8 is abs max, any larger and the rdy's will not be produced
-//These setting cause the rdy to be sampled as soon as
-//possible then output the data if allowed on the next cycle
-//#define TX_RISE_DELAY 5
-//#define TX_FALL_DELAY 2
-//#define RX_RISE_DELAY 7
-//#define RX_FALL_DELAY 7
-//#else
-//#define TX_RISE_DELAY 1
-//define TX_FALL_DELAY 0
-//#define RX_RISE_DELAY 5
-//#define RX_FALL_DELAY 5
-//#endif
-
 #define TX_RISE_DELAY 5
-//TODO check this for U series (was 2)
+#if defined(ARCH_S)
+#define TX_FALL_DELAY 2
+#else
 #define TX_FALL_DELAY 1
+#endif
 #define RX_RISE_DELAY 5
 #define RX_FALL_DELAY 5
 
-//#if defined(ARCH_X200)
-  //  setps(XS1_PS_XCORE_CTRL0, 2);
-//#endif
     // Set up USB ports. Done in ASM as read port used in both directions initially.
     // Main difference from xevious is IFM not enabled.
     // GLX_UIFM_PortConfig (p_usb_clk, txd, rxd, flag0_port, flag1_port, flag2_port);
@@ -598,91 +525,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         p_usb_rxd <: 0;         // Note, this is important else phy clocks in invalid data before UIFM is enabled causing
         clearbuf(p_usb_rxd);    // connection issues
 #endif
-#ifdef VBUSHACK
-        p_usb_rxd :> void;
-#endif
 
-#if defined(ARCH_S) || defined(ARCH_X200)
-
-//#if defined(ARCH_S) && defined(GLX_PWRDWN)
-        /* Check if waking up */
-#if 0
-        char rdata[1];
-
-
-        read_periph_8(USB_TILE_REF, XS1_GLX_PERIPH_SCTH_ID, 0xff, 1, rdata);
-
-        if(rdata[0])
-        {
-            unsigned resumeReason;
-
-            /* Check why we are waking up.. */
-            read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG, resumeReason);
-
-            //p_test <: 0;
-            /* We're waking up.. */
-            /* Reset flag */
-            rdata[0] = 0;
-            write_periph_8(USB_TILE_REF, XS1_GLX_PERIPH_SCTH_ID, 0xff, 1, rdata);
-
-            waking = 1;
-
-            /* Unsuspend phy */
-            write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,
-                                    (0x1 << XS1_UIFM_PHY_CONTROL_SE0FILTVAL_BASE));
-
-            /* Resume */
-            if(resumeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMEK))
-            {
-                /* Wait for SE0 */
-                while(1)
-                {
-                    unsigned  x;
-                    read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
-                    x >>= 9;
-                    x &= 0x3;
-                    if(x == 0)
-                    {
-                        break;
-                    }
-                }
-
-                /* TODO might has suspended in FS */
-                /* Back to HS */
-                write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 0);
-
-            //p_test <:0;
-
-                /* Wait for end of SE0 */
-                while(1)
-                {
-                    unsigned  x;
-                    read_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_TESTSTATUS_REG, x);
-                    x >>= 9;
-                    x &= 0x3;
-                    if(x != 0)
-                    {
-                        break;
-                    }
-                }
-            }
-            else // if(resumeReason & (1<<XS1_UIFM_PHY_CONTROL_RESUMESE0))
-            {
-                /* Woke due to reset in suspend. Treat any other condition as reset also. */
-                //asm("ecallf %0"::"r"(0));
-
-                wakingReset = 1;
-                reset = 1;
-                one = 0;
-            }
-
-            //p_test <: 1;
-
-        }
-        else
-#endif
-        {
-#endif
 #if defined(ARCH_S) || defined(ARCH_X200)
 
 #ifndef SIMULATION
@@ -692,7 +535,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* For xCORE-200 enable USB port muxing before enabling phy etc */
         XUD_EnableUsbPortMux(); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 #endif
-
         /* Enable the USB clock */
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, ( 1 << XS1_SU_CFG_USB_CLK_EN_SHIFT));
 
@@ -708,7 +550,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Clear OTG control reg - incase we were running as host previously.. */
         write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
 #endif
-        }
+
 #ifdef GLX_PWRDWN
 #ifndef SIMULATION
         /* Setup sleep timers and supplies */
@@ -761,10 +603,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #if defined(ARCH_X200)
+#define XS1_UIFM_USB_PHY_EXT_CTRL_REG 0x50
+#define XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXT_MASK 0x4
         /* Remove requirement for VBUS in bus-powered mode */
         if(pwrConfig == XUD_PWR_BUS)
         {
-             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, 0x50, 6);
+             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_UIFM_USB_PHY_EXT_CTRL_REG, XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXTSEL_MASK | XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXT_MASK);
         }
 
 #define PHYTUNEREGVAL 0x0093B264
@@ -836,8 +680,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #else
                 /* Setup flags for power signalling - J/K/SE0 line state*/
                 XUD_UIFM_PwrSigFlags();
-                //if(!wakingReset)
-                //{
 
                 if (one)
                 {
@@ -852,7 +694,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Sample line state and check for reset (or suspend) */
                     flag2_port :> reset; /* SE0 Line */
                 }
-//                }
 #endif
                 /* Inspect for suspend or reset */
                 if(!reset)
@@ -1003,7 +844,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             /* Set flag2_port to RX_ERROR (bit 0) */
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK2, 0x01);   // bit 0
 #endif /* GLX */
-            waking = 0;
 
             set_thread_fast_mode_on();
 

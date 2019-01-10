@@ -13,13 +13,13 @@ MODULE_XCC_FLAGS = $(XCC_FLAGS) -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-a
 
 XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule -g0
 
-EXCLUDE_FILES = XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S XUD_Token_Setup.S XUD_G_Crc.S XUD_TokenJmp.S XUD_PidJumpTable.S
+EXCLUDE_FILES += XUD_Token_In.S XUD_Token_Ping.S XUD_Token_SOF.S XUD_Token_Out.S XUD_Token_Setup.S XUD_G_Crc.S XUD_TokenJmp.S XUD_PidJumpTable.S
 
 OPTIONAL_HEADERS += xud_conf.h
 
 VERSION = 0.2.0
 
-DEPENDENT_MODULES = 
+# DEPENDENT_MODULES = 
 
 XCC_FLAGS_endpoint0.xc = $(MODULE_XCC_FLAGS) -Os
 XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os

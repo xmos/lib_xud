@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 /*
  * \brief     User defines and functions for XMOS USB Device library
  */

@@ -1,3 +1,4 @@
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 #ifndef __xud_config_h__
 #define __xud_config_h__
 

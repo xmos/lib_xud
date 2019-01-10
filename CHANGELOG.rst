@@ -1,17 +1,26 @@
 lib_xud Change Log
 ==================
 
-0.2.0_uifm_channel_end
-----------------------
+0.2.0
+-----
 
   * CHANGE:      Pass channel end for hardware peripheral messages rather than
                  allocating one with each message
 
+0.1.1
+-----
+
+  * RESOLVED:   Transmit timing fixes for U-series devices (introduced in sc_xud
+    2.3.0)
+  * RESOLVED:   Continuous suspend/resume notifications when host disconnected
+                (introduced earlier as part of #11813)
+
+
 0.1.0
 -----
 
-  * CHANGE:      Fork from sc_xud to lib_xud
-  * CHANGE:      Documentation updates
+  * CHANGE:     Fork from sc_xud to lib_xud
+  * CHANGE:     Documentation updates
 
 
 Legacy release history

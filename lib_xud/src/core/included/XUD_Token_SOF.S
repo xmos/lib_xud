@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 //.cc_top Pid_Sof.func, Pid_Sof
 // Received SOF token: Reset suspend/reset detection timer
 

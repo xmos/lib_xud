@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
 #ifndef _USB_STD_REQUESTS_H_
 #define _USB_STD_REQUESTS_H_
 

@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 .globl SetupChannelVectorsOverride.nstackwords
 .globl SetupChannelVectorsOverride.maxthreads
 .globl SetupChannelVectorsOverride.maxtimers

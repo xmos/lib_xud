@@ -224,7 +224,7 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                 /* Standard Device Request: GetStatus (USB Spec 9.4.5)*/
                 case USB_GET_STATUS:
 
-                    /* Remote wakeup not supported */
+                    /* Remote wakeup not supported (bit 1) */
                     buffer[1] = 0;
 
                     /* Pull self/bus powered bit from the config descriptor */

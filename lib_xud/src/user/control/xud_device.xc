@@ -224,14 +224,20 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                 /* Standard Device Request: GetStatus (USB Spec 9.4.5)*/
                 case USB_GET_STATUS:
 
-                    /* Remote wakeup not supported */
+                    /* Remote wakeup not supported (bit 1) */
                     buffer[1] = 0;
 
                     /* Pull self/bus powered bit from the config descriptor */
-                    if (cfgDesc_hs[7] & 0x40)
-                        buffer[0] = 0x1;
-                    else
-                        buffer[0] = 0;
+                    unsigned char self_powered = 0;
+                    if((usbBusSpeed == XUD_SPEED_FS) && (cfgDescLength_fs != 0)) 
+                    {
+                        self_powered = (cfgDesc_fs[7] & 0x40) != 0;
+                    } 
+                    else if(cfgDescLength_hs != 0) 
+                    {
+                        self_powered = (cfgDesc_hs[7] & 0x40) != 0;
+                    }
+                    buffer[0] = self_powered;
 
                     return XUD_DoGetRequest(ep_out, ep_in, buffer, 2, sp.wLength);
 

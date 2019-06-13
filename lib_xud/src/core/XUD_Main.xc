@@ -58,8 +58,6 @@ extern tileref USB_TILE_REF;
 #error USB_MAX_NUM_EP_OUT must be 16!
 #endif
 
-extern int XUD_GetDone();
-
 void XUD_UserSuspend();
 void XUD_UserResume();
 void XUD_PhyReset_User();
@@ -343,14 +341,11 @@ void XUD_UIFM_PwrSigFlags()
 int epStatFlagTableIn[USB_MAX_NUM_EP_IN];
 int epStatFlagTableOut[USB_MAX_NUM_EP_OUT];
 
-/* Used for terminating XUD loop */
-int XUD_USB_Done = 0;
-
 //extern void SetupChannelVectorsOverride(XUD_chan chans[]);
 
 //extern void SetupChannelVectors(XUD_chan chans[], int countOut, int countIn);
 
-extern int XUD_LLD_IoLoop(
+extern unsigned XUD_LLD_IoLoop(
 #if defined(ARCH_S) || defined(ARCH_X200)
                             in buffered port:32 rxd_port,
 #else
@@ -411,9 +406,6 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
             XUD_Sup_outct(c[i + USB_MAX_NUM_EP_OUT], token);
         }
     }
-
-    if (XUD_GetDone())
-        return;
 }
 
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed)
@@ -442,8 +434,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #if !defined(ARCH_S) && !defined(ARCH_X200)
     const int reset_time = RESET_TIME;
 #endif
-
-    XUD_USB_Done = 0;
 
     /* Make sure ports are on and reset port states */
     set_port_use_on(p_usb_clk);
@@ -519,7 +509,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
 #endif
 
-    while(!XUD_GetDone())
+    unsigned noExit = 1;
+
+    while(noExit)
     {
 #if !defined(ARCH_S) && !defined(ARCH_X200)
         p_usb_rxd <: 0;         // Note, this is important else phy clocks in invalid data before UIFM is enabled causing
@@ -726,13 +718,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifdef ARCH_G
                     XUD_SetCrcTableAddr(0);
 #endif
-
-                    /* Check for exit */
-                    if (XUD_GetDone())
-                    {
-                        break;
-                    }
-
                     /* Reset the OUT ep structures */
                     for(int i = 0; i< noEpOut; i++)
                     {
@@ -935,8 +920,6 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     /* TODO use two arrays? */
 
     g_desSpeed = speed;
-
-    XUD_USB_Done = 0;
 
     for (int i=0; i < USB_MAX_NUM_EP;i++)
     {

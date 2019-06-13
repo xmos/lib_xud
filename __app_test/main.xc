@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-#include "test.h"
+//#include "test.h"
 #include "xc_ptr.h"
 
 #define XUD_EP_COUNT_OUT   5

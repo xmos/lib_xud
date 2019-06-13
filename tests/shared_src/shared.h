@@ -34,6 +34,8 @@ XUD_Result_t SendTxPacket(XUD_ep ep, int length, int epNum)
     return XUD_SetBuffer(ep, buffer, length);
 }
 
+#if 0
+// NEW API - WIP
 #pragma unsafe arrays
 XUD_Result_t SendControlPacket(XUD_ep ep, int length, int epNum)
 {
@@ -46,7 +48,7 @@ XUD_Result_t SendControlPacket(XUD_ep ep, int length, int epNum)
 
     return XUD_SetControlBuffer(ep, buffer, length);
 }
-
+#endif
 
 
 #pragma unsafe arrays

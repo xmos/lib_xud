@@ -5,7 +5,7 @@
 
 # This example runs on the XS-L1 usb audio board. It doesn't use any of
 # the audio functionality and just uses the USB functionality of the board
-TARGET = usb_audio_s1
+TARGET = XCORE-200-EXPLORER
 
 # The APP_NAME variable determines the name of the final .xe file. It should
 # not include the .xe postfix. If left blank the name will default to 
@@ -26,7 +26,7 @@ XCC_FLAGS = -Wall -O3 -report -fsubword-select -DUSB_CORE=0 -DGLX -DTEST_MODE_SU
 
 # The USED_MODULES variable lists other module used by the application. 
 
-USED_MODULES = module_usb_shared module_xud
+USED_MODULES = lib_xud
 
 MODULE_LIBRARIES = xud_u_sim
 

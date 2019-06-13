@@ -405,6 +405,12 @@ void XUD_ResetEpStateByAddr(unsigned epNum);
  */
 void XUD_SetTestMode(XUD_ep ep, unsigned testMode);
 
+/**
+ * \brief   Terminate XUD core
+ * \param   ep          XUD_ep type (must be endpoint 0 in or out)
+ * \warning Must be run on same tile as XUD core
+ */
+void XUD_Kill(XUD_ep ep);
 
 /**********************************************************************************************
  * Below are prototypes for main assembly functions for data transfer to/from USB I/O thread

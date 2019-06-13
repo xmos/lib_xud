@@ -32,6 +32,11 @@ XUD_Result_t XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength
     return XUD_SetData(c, buffer, datalength, 0, 0);
 }
 
+void XUD_Kill(XUD_ep ep)
+{
+    XUD_SetTestMode(ep, 0);
+}
+
 XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax)
 {
     int i = 0;

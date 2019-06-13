@@ -228,8 +228,8 @@ typedef enum XUD_Result
  *                      Valid values are XUD_PWR_SELF and XUD_PWR_BUS.
  *
  */
-int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */ chanend c_epOut[], int noEpOut,
-
+int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */
+                chanend c_epOut[], int noEpOut,
                 chanend c_epIn[], int noEpIn,
                 NULLABLE_RESOURCE(chanend, c_sof),
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],

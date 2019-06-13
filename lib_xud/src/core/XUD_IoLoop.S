@@ -61,11 +61,6 @@ suspend_t_wtwrsths:
 #define SP_REGREAD      (STACK_EXTEND + 10)
 #define SP_REGWRITE     (STACK_EXTEND + 11)
 
-
-
-
-
-
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 //////////////////////////////////////////////////////////////////////////
 // void UsbTestModeHandler()
@@ -86,8 +81,12 @@ UsbTestModeHandler_asm:
     in          r0, res[r11]
     chkct       res[r11], XS1_CT_END
 	outct       res[r11], XS1_CT_END
-//	in r0, res[r11]
-	retsp       0
+	
+    bf          r0, Return                                  // Speical case for Exit
+
+    bl          XUD_UsbTestModeHandler
+
+    retsp       0
 .cc_bottom UsbTestModeHandler_asm.func
 #endif
 
@@ -160,18 +159,8 @@ ResetIntHandler:
     ldw     r11, sp[15]                         // Put RxE back to events..
     setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
 
-
-ResetDetect:
-    ldc        r0, 0                            // Return 0 for reset
-    bu         writesuspendvar
-
-
-SuspendDetect:
-    ldc        r0, 1
-
-writesuspendvar:
-    //stw         r0, dp[suspend]
-    bu         Return                        // Return 1 for suspend
+    ldc        r0, 1                            // Load non-zero (zero is kill)
+    bu         Return                        
 
 .cc_bottom ResetIntHandler.func
 
@@ -257,7 +246,7 @@ TxHandShakeTimer:                                     // Used for timeout waitin
 
     stw        r10, sp[8]                             // Save timer resource ID to the stack
 #endif
-
+#if 0
 SetupOutTimer:
     getr       r10, XS1_RES_TYPE_TIMER
     ecallf     r10
@@ -267,6 +256,7 @@ SetupOutTimer:
     setc       res[r10], XS1_SETC_COND_AFTER
 
     stw        r10, sp[9]
+#endif
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
@@ -274,7 +264,7 @@ SetupUsbTestMode:
     ldaw         r9, dp[epChans0]
     ldw         r10, r9[0]                         // Load channel 0
 
-    ldap        r11, XUD_UsbTestModeHandler
+    ldap        r11, UsbTestModeHandler_asm
     setc        res[r10], XS1_SETC_IE_MODE_INTERRUPT
     setv        res[r10], r11
     eeu         res[r10]
@@ -471,11 +461,8 @@ XUD_InvalidTok_waitforRXALow:
 
 .align 4
 Return:
-    //ldw        r11, sp[8]                       # Free timers
-    //freer      res[r11]
-    ldw        r11, sp[9]
-    freer      res[r11]
-    ldw        r11, sp[14]
+    ldw        r11, sp[14]                      // Free suspend/reset timer
+    edu        res[r11]
     freer      res[r11]
 
     ldw        r4, sp[1]                        # Register restore

@@ -836,7 +836,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 flag0: Valid token flag
                 flag1: Rx Active
                 flag2: Rx Error */
-            XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
+            noExit = XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
                            reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
 
             set_thread_fast_mode_off();
@@ -855,6 +855,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
 #endif
 #endif
+    
+            if(!noExit)
+                break;
+
 
         }
 

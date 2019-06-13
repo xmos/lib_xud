@@ -150,10 +150,10 @@ PrimaryBufferFull_NoNak:
   bu        NextToken
 
 // Timedout waiting for data after OUT... go back to waiting for tokens
-OutDataTimeOut:
+//OutDataTimeOut:
   //clre
   //bl	ERR_OutDataTimeout
-  bu        NextToken
+  //bu        NextToken
 
 
 

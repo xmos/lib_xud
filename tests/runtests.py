@@ -20,10 +20,10 @@ if __name__ == "__main__":
     
     helpers.args = xmostest.init(argparser)
 
-   # xmostest.register_group("lib_xud",
-   #                         "xud_sim_tests",
-   #                         "XUD simulator tests",
-   # """
+    xmostest.register_group("lib_xud",
+                            "xud_sim_tests",
+                            "XUD simulator tests",
+    """
 #Tests are performed by running the GPIO library connected to a simulator model
 #(written as a python plugin to xsim). The simulator model checks that the pins
 #are driven and read by the ports as expected. Tests are run to test the
@@ -40,6 +40,6 @@ if __name__ == "__main__":
 #    * Outputting with timestamps
 #""")
 #'''
-  #  xmostest.runtests()
+    xmostest.runtests()
 
     xmostest.finish()

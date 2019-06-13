@@ -47,12 +47,13 @@ int TestEp_Bulk(chanend c_out1, chanend c_in1)
 
 /* Loopback packet and terminate */
 #pragma unsafe arrays
-int TestEp_Bulk2(chanend c_out, chanend c_in)
+int TestEp_Bulk2(chanend c_out, chanend c_in, chanend c_out_0)
 {
     unsigned int length;
     XUD_Result_t res;
 
     XUD_ep ep_out = XUD_InitEp(c_out);
+    XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
     XUD_ep ep_in  = XUD_InitEp(c_in);
 
     /* Buffer for Setup data */
@@ -61,6 +62,8 @@ int TestEp_Bulk2(chanend c_out, chanend c_in)
     XUD_GetBuffer(ep_out, buffer, length);
     XUD_SetBuffer(ep_in, buffer, length);
 
+
+    XUD_Kill(ep_out_0);
     exit(0);
 }
 
@@ -79,7 +82,7 @@ int main()
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
         TestEp_Bulk(c_ep_out[3], c_ep_in[3]);
-        TestEp_Bulk2(c_ep_out[2], c_ep_in[2]);
+        TestEp_Bulk2(c_ep_out[2], c_ep_in[2], c_ep_out[0]);
     }
 
     return 0;

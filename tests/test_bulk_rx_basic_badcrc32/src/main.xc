@@ -11,13 +11,12 @@
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-//#include "test.h"
 #include "xc_ptr.h"
-
-//#error
 
 #define XUD_EP_COUNT_OUT   5
 #define XUD_EP_COUNT_IN    5
+
+#define TEST_EP_NUM (1)
 
 //extern xc_ptr char_array_to_xc_ptr(const unsigned char a[]);
 
@@ -109,11 +108,13 @@ int RxDataCheck(unsigned char b[], int l, int epNum)
     return 0;
 }
 
-int TestEp_Bulk(chanend c_out, chanend c_in, int epNum)
+
+int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
 {
     unsigned int length;
     XUD_Result_t res;
 
+    XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
     XUD_ep ep_out = XUD_InitEp(c_out);
     XUD_ep ep_in  = XUD_InitEp(c_in);
 
@@ -145,6 +146,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum)
 
     }
 
+    XUD_Kill(ep_out_0);
     exit(0);
 }
 
@@ -153,8 +155,6 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum)
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-    chan c_sync;
-    chan c_sync_iso;
 
     //p_rxDataCheck = char_array_to_xc_ptr(g_rxDataCheck);
     //p_txDataCheck = char_array_to_xc_ptr(g_txDataCheck);
@@ -163,13 +163,13 @@ int main()
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
         //TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
 
-        TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1);
+        TestEp_Bulk(c_ep_out[TEST_EP_NUM], c_ep_in[TEST_EP_NUM], TEST_EP_NUM, c_ep_out[0]);
     }
 
     return 0;

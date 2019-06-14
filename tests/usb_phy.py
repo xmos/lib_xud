@@ -186,7 +186,7 @@ class UsbPhy(TxPhy):
                 #print "Waiting for inter_pkt_gap: {i}".format(i=packet.inter_frame_gap)
                 self.wait_until(xsi.get_time() + packet.inter_pkt_gap)
 
-                print "Sending packet {}".format(i)
+                print "Sending packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid)
                 if self._verbose:
                     sys.stdout.write(packet.dump())
 

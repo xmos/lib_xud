@@ -113,6 +113,22 @@ class UsbPacket(object):
     def get_data_valid_count(self):
         return self.data_valid_count
 
+    def get_pid_pretty(self):
+
+        if self.pid == 2:
+            return "ACK"
+        elif self.pid == 225:
+            return "OUT"
+        elif self.pid == 11:
+            return "DATA1"
+        elif self.pid == 3:
+            return "DATA0"
+        elif self.pid == 105:
+            return "IN"
+
+        else:
+           return "UNKNOWN"
+
 
 #Rx to host i.e. xCORE Tx
 class RxPacket(UsbPacket):
@@ -181,6 +197,8 @@ class DataPacket(UsbPacket):
             bytes.append((crc >> (8*i)) & 0xff)
 
         return bytes
+
+  
 
 
 class RxDataPacket(RxPacket, DataPacket):

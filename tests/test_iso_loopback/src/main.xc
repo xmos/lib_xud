@@ -27,7 +27,7 @@ void exit(int);
 
 /* Loopback packets forever */
 #pragma unsafe arrays
-int TestEp_Bulk(chanend c_out1, chanend c_in1)
+int TestEp_LoopbackForever(chanend c_out1, chanend c_in1)
 {
     unsigned int length;
     XUD_Result_t res;
@@ -50,11 +50,12 @@ int TestEp_Bulk(chanend c_out1, chanend c_in1)
 
 /* Loopback packet and terminate */
 #pragma unsafe arrays
-int TestEp_Bulk2(chanend c_out, chanend c_in)
+int TestEp_LoopbackOnce(chanend c_out, chanend c_in, chanend c_out_0)
 {
     unsigned int length;
     XUD_Result_t res;
 
+    XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
     XUD_ep ep_out = XUD_InitEp(c_out);
     XUD_ep ep_in  = XUD_InitEp(c_in);
 
@@ -64,6 +65,7 @@ int TestEp_Bulk2(chanend c_out, chanend c_in)
     XUD_GetBuffer(ep_out, buffer, length);
     XUD_SetBuffer(ep_in, buffer, length);
 
+    XUD_Kill(ep_out_0);
     exit(0);
 }
 
@@ -71,18 +73,16 @@ int TestEp_Bulk2(chanend c_out, chanend c_in)
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-    chan c_sync;
-    chan c_sync_iso;
 
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
-        TestEp_Bulk(c_ep_out[3], c_ep_in[3]);
-        TestEp_Bulk2(c_ep_out[2], c_ep_in[2]);
+        TestEp_LoopbackForever(c_ep_out[3], c_ep_in[3]);
+        TestEp_LoopbackOnce(c_ep_out[2], c_ep_in[2], c_ep_out[0]);
     }
 
     return 0;

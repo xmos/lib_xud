@@ -17,6 +17,7 @@
 #define XUD_EP_COUNT_OUT   7
 #define XUD_EP_COUNT_IN    1
 
+
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL};
@@ -29,7 +30,7 @@ int main()
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
@@ -37,7 +38,12 @@ int main()
         TestEp_Bulk_Rx(c_ep_out[3], 3);
         TestEp_Bulk_Rx(c_ep_out[4], 4);
         TestEp_Bulk_Rx(c_ep_out[5], 5);
-        TestEp_Bulk_Rx(c_ep_out[6], 6);
+        {
+            XUD_ep ep_out_0 = XUD_InitEp(c_ep_out[0]);
+            TestEp_Bulk_Rx(c_ep_out[6], 6);
+            XUD_Kill(ep_out_0);
+            exit(0);
+        }
     }
 
     return 0;

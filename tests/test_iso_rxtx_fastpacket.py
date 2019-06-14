@@ -22,7 +22,7 @@ def do_test(arch, clk, phy, seed):
     for pkt_length in range(10, 20):
 
         # < 17 fails
-        AppendOutToken(packets, ep, inter_pkt_gap=17)
+        AppendOutToken(packets, ep, inter_pkt_gap=20)
         packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
 
         AppendInToken(packets, ep, inter_pkt_gap=37)

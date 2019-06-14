@@ -30,6 +30,8 @@ void exit(int);
 #define PKT_COUNT           10
 #define INITIAL_PKT_LENGTH  10
 
+#define TEST_EP_NUMBER     (3)
+
 unsigned fail(int x)
 {
 
@@ -50,32 +52,6 @@ unsigned fail(int x)
 }
 
 unsigned char g_rxDataCheck[5] = {0, 0, 0, 0, 0};
-unsigned char g_txDataCheck[5] = {0,0,0,0,0,};
-unsigned g_txLength[5] = {0,0,0,0,0};
-
-
-#pragma unsafe arrays
-void SendTxPacket(XUD_ep ep, int length, int epNum)
-{
-    unsigned char buffer[1024];
-    unsigned char x;
-
-    for (int i = 0; i < length; i++)
-    {
-        buffer[i] = g_txDataCheck[epNum]++;
-
-        //asm("ld8u %0, %1[%2]":"=r"(x):"r"(g_txDataCheck),"r"(epNum));
-       // read_byte_via_xc_ptr_indexed(x, p_txDataCheck, epNum);
-
-        //buffer[i] = x;
-        //x++;
-        //asm("st8 %0, %1[%2]"::"r"(x),"r"(g_txDataCheck),"r"(epNum));
-        //write_byte_via_xc_ptr_indexed(p_txDataCheck,epNum,x);
-    }
-
-    XUD_SetBuffer(ep, buffer, length);
-}
-
 
 #pragma unsafe arrays
 int RxDataCheck(unsigned char b[], int l, int epNum)
@@ -86,7 +62,6 @@ int RxDataCheck(unsigned char b[], int l, int epNum)
     for (int i = 0; i < l; i++)
     {
         unsigned char y;
-        //read_byte_via_xc_ptr_indexed(y, p_rxDataCheck, epNum);
         if(b[i] != g_rxDataCheck[epNum])
         {
             printstr("#### Mismatch on EP: ");
@@ -95,42 +70,17 @@ int RxDataCheck(unsigned char b[], int l, int epNum)
             printhex(b[i]);
             printstr(" Expected:");
             printhexln(g_rxDataCheck[epNum]);
-            //printintln(l); // Packet length
             return 1;
         }
 
         g_rxDataCheck[epNum]++;
-        //read_byte_via_xc_ptr_indexed(x, p_rxDataCheck, epNum);
-        //x++;
-        //write_byte_via_xc_ptr_indexed(p_rxDataCheck,epNum,x);
     }
 
     return 0;
 }
 
-
 #pragma unsafe arrays
-int TestEp_Bulk_Tx(chanend c_in1, int epNum1)
-{
-    XUD_ep ep_in1  = XUD_InitEp(c_in1);
-    
-    unsigned char buffer[PKT_COUNT][1024];
-
-    int counter = 0;
-
-    for(int i = 0; i< PKT_COUNT; i++)
-    {
-        //for(int j = 0; j < lengths[i]; j++)
-        {
-        //    buffer[i] = counter++;
-        }
-    }
-
-}
-
-
-#pragma unsafe arrays
-int TestEp_Bulk_Rx(chanend c_out1, int epNum1)
+int TestEp_Bulk_Rx(chanend c_out1, int epNum1, chanend c_out_0)
 {
     // TODO check rx lengths
 
@@ -139,6 +89,7 @@ int TestEp_Bulk_Rx(chanend c_out1, int epNum1)
     XUD_Result_t res;
 
     XUD_ep ep_out1 = XUD_InitEp(c_out1);
+    XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
 
     /* Buffer for Setup data */
     unsigned char buffer[PKT_COUNT][1024];
@@ -163,18 +114,15 @@ int TestEp_Bulk_Rx(chanend c_out1, int epNum1)
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-    chan c_sync;
-    chan c_sync_iso;
-
+    
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
-        TestEp_Bulk_Rx(c_ep_out[3], 3);
-        //TestEp_Bulk_Tx(c_ep_in[3], 3);
+        TestEp_Bulk_Rx(c_ep_out[TEST_EP_NUMBER], TEST_EP_NUMBER, c_ep_out[0]);
     }
 
     return 0;

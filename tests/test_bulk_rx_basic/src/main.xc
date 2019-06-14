@@ -24,45 +24,6 @@ XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL,
                                                  XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
-
-int TestEp_Bulk(chanend c_out[XUD_EP_COUNT_OUT], chanend c_in[XUD_EP_COUNT_IN], int epNum)
-{
-    unsigned int length;
-    XUD_Result_t res;
-
-    XUD_ep ep_out_0 = XUD_InitEp(c_out[0]);
-    XUD_ep ep_out = XUD_InitEp(c_out[epNum]);
-    XUD_ep ep_in  = XUD_InitEp(c_in[epNum]);
-
-    /* Buffer for Setup data */
-    unsigned char buffer[1024];
-
-    for(int i = 10; i <= 14; i++)
-    {    
-        XUD_GetBuffer(ep_out, buffer, length);
-
-        if(length != i)
-        {
-            printintln(length);
-            fail(FAIL_RX_LENERROR);
-        }
-
-        unsafe
-        {
-            if(RxDataCheck(buffer, length, epNum))
-            {
-                fail(FAIL_RX_DATAERROR);
-            }
-        }
-    }
-
-    
-    XUD_SetTestMode(ep_out_0, 0);
-    exit(0);
-}
-
-
-#define USB_CORE 0
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
@@ -74,7 +35,8 @@ int main()
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
-        TestEp_Bulk(c_ep_out, c_ep_in, 1);
+        TestEp_Rx(c_ep_out, c_ep_in, 1, 10, 14);
+
     }
 
     return 0;

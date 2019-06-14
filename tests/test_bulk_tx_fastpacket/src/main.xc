@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2016-2019, XMOS Ltd, All rights reserved
 /*
  * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
  * in both directions between the ports.
@@ -63,22 +63,15 @@ void SendTxPacket(XUD_ep ep, int length, int epNum)
     for (int i = 0; i < length; i++)
     {
         buffer[i] = g_txDataCheck[epNum]++;
-
-        //asm("ld8u %0, %1[%2]":"=r"(x):"r"(g_txDataCheck),"r"(epNum));
-       // read_byte_via_xc_ptr_indexed(x, p_txDataCheck, epNum);
-
-        //buffer[i] = x;
-        //x++;
-        //asm("st8 %0, %1[%2]"::"r"(x),"r"(g_txDataCheck),"r"(epNum));
-        //write_byte_via_xc_ptr_indexed(p_txDataCheck,epNum,x);
     }
 
     XUD_SetBuffer(ep, buffer, length);
 }
 
 #pragma unsafe arrays
-int TestEp_Bulk_Tx(chanend c_in1, int epNum1)
+int TestEp_Bulk_Tx(chanend c_in1, int epNum1, chanend c_out_0)
 {
+    XUD_ep ep_out_0  = XUD_InitEp(c_out_0);
     XUD_ep ep_in1  = XUD_InitEp(c_in1);
     
     unsigned char buffer[PKT_COUNT][1024];
@@ -103,6 +96,7 @@ int TestEp_Bulk_Tx(chanend c_in1, int epNum1)
         XUD_SetBuffer(ep_in1, buffer[i], length++);
     }
 
+    XUD_Kill(ep_out_0);
     exit(0);
 
 }
@@ -113,17 +107,15 @@ int TestEp_Bulk_Tx(chanend c_in1, int epNum1)
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-    chan c_sync;
-    chan c_sync_iso;
 
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
-        TestEp_Bulk_Tx(c_ep_in[3], 3);
+        TestEp_Bulk_Tx(c_ep_in[3], 3, c_ep_out[0]);
     }
 
     return 0;

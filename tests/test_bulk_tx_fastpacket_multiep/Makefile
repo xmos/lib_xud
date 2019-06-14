@@ -20,7 +20,7 @@ APP_NAME =
 
 SHARED_CODE = ../../shared_src
 
-COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -DSIMULATION -DARCH_L
+COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -DSIMULATION -DARCH_L -Wno-timing
 
 XCC_FLAGS_xs2       = $(COMMON_FLAGS) -DARCH_X200 -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
 

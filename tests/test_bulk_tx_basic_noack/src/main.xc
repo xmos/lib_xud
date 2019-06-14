@@ -66,11 +66,9 @@ void SendTxPacket(XUD_ep ep, int length, int epNum)
     XUD_SetBuffer(ep, buffer, length);
 }
 
-int TestEp_Bulk(chanend c_out, chanend c_in, int epNum)
+int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
 {
-    unsigned int length;
-    XUD_Result_t res;
-
+    XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
     XUD_ep ep_out = XUD_InitEp(c_out);
     XUD_ep ep_in  = XUD_InitEp(c_in);
 
@@ -82,6 +80,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum)
         SendTxPacket(ep_in, i, epNum);
     }
 
+    XUD_Kill(ep_out_0);
     exit(0);
 }
 
@@ -93,20 +92,15 @@ int main()
     chan c_sync;
     chan c_sync_iso;
 
-    //p_rxDataCheck = char_array_to_xc_ptr(g_rxDataCheck);
-    //p_txDataCheck = char_array_to_xc_ptr(g_txDataCheck);
-    //p_txLength = array_to_xc_ptr(g_txLength);
-
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
-        //TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
 
-        TestEp_Bulk(c_ep_out[2], c_ep_in[2], 1);
+        TestEp_Bulk(c_ep_out[2], c_ep_in[2], 1, c_ep_out[0]);
     }
 
     return 0;

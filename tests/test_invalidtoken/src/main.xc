@@ -60,36 +60,6 @@ unsigned g_txLength[5] = {0,0,0,0,0};
 
 
 #pragma unsafe arrays
-void SendTxPacket(XUD_ep ep, int length, int epNum)
-{
-    unsigned char buffer[1024];
-    unsigned char x;
-
-    for (int i = 0; i < length; i++)
-    {
-        buffer[i] = g_txDataCheck[epNum]++;
-
-        //asm("ld8u %0, %1[%2]":"=r"(x):"r"(g_txDataCheck),"r"(epNum));
-       // read_byte_via_xc_ptr_indexed(x, p_txDataCheck, epNum);
-
-        //buffer[i] = x;
-        //x++;
-        //asm("st8 %0, %1[%2]"::"r"(x),"r"(g_txDataCheck),"r"(epNum));
-        //write_byte_via_xc_ptr_indexed(p_txDataCheck,epNum,x);
-    }
-
-    XUD_SetBuffer(ep, buffer, length);
-}
-
-
-
-
-
-//xc_ptr p_rxDataCheck;
-//xc_ptr p_txDataCheck;
-//xc_ptr p_txLength;
-
-#pragma unsafe arrays
 int RxDataCheck(unsigned char b[], int l, int epNum)
 {
     int fail = 0;
@@ -112,19 +82,17 @@ int RxDataCheck(unsigned char b[], int l, int epNum)
         }
 
         g_rxDataCheck[epNum]++;
-        //read_byte_via_xc_ptr_indexed(x, p_rxDataCheck, epNum);
-        //x++;
-        //write_byte_via_xc_ptr_indexed(p_rxDataCheck,epNum,x);
     }
 
     return 0;
 }
 
-int TestEp_Bulk(chanend c_out, chanend c_in, int epNum)
+int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
 {
     unsigned int length;
     XUD_Result_t res;
 
+    XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
     XUD_ep ep_out = XUD_InitEp(c_out);
     XUD_ep ep_in  = XUD_InitEp(c_in);
 
@@ -148,6 +116,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum)
 
     }
 
+    XUD_Kill(ep_out_0);
     exit(0);
 }
 
@@ -156,23 +125,16 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum)
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-    chan c_sync;
-    chan c_sync_iso;
-
-    //p_rxDataCheck = char_array_to_xc_ptr(g_rxDataCheck);
-    //p_txDataCheck = char_array_to_xc_ptr(g_txDataCheck);
-    //p_txLength = array_to_xc_ptr(g_txLength);
 
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
-        //TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
 
-        TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1);
+        TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1, c_ep_out[0]);
     }
 
     return 0;

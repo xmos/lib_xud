@@ -127,8 +127,8 @@ def create_expect(packets, filename):
                 for (i, byte) in enumerate(packet.get_bytes()):
                     f.write("Received byte: {0:#x}\n".format(byte))
             
-            else:
-                f.write("Sending packet {}\n".format(i))
+            else:  
+                f.write("Sending packet {} PID: {} ({})\n".format(i, packet.get_pid_pretty(), packet.pid))
         
         f.write("Test done\n")
 

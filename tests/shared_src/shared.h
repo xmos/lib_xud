@@ -162,12 +162,12 @@ int TestEp_Rx(chanend c_out[], int epNum, int start, int end)
 
     /* Receive a bunch of packets quickly, then check them */
 #pragma loop unroll
-    for(int i = 0; i <= (end-start); i++)
+    for(int i = 0; i < (end-start); i++)
     {
         XUD_GetBuffer(ep_out1, buffer[i], length[i]);
     }
 #pragma loop unroll
-    for(int i = 0; i <= (end-start); i++)
+    for(int i = 0; i < (end-start); i++)
     {
         unsafe
         {

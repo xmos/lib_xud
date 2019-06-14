@@ -12,7 +12,6 @@
 #include "xud.h"
 #include "platform.h"
 #include "shared.h"
-#include "xc_ptr.h"
 
 #define XUD_EP_COUNT_OUT   5
 #define XUD_EP_COUNT_IN    5
@@ -35,7 +34,12 @@ int main()
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
-        TestEp_Rx(c_ep_out, c_ep_in, 1, 10, 14);
+        {
+            TestEp_Rx(c_ep_out, 1, 10, 15);
+            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
+            XUD_Kill(ep0);
+            exit(0);
+        }
 
     }
 

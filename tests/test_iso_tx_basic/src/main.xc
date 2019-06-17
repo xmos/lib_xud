@@ -39,7 +39,7 @@ int main()
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
         
 		{
-			TestEp_Tx(c_ep_in, 3, 10, 14, RUNMODE_DIE);
+			TestEp_Tx(c_ep_in[3], 3, 10, 14, RUNMODE_DIE);
 			XUD_ep ep_out_0 = XUD_InitEp(c_ep_out[0]);
 			XUD_Kill(ep_out_0);
 			exit(0);

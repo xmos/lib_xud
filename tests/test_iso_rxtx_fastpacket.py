@@ -25,7 +25,7 @@ def do_test(arch, clk, phy, seed):
         AppendOutToken(packets, ep, inter_pkt_gap=20)
         packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
 
-        AppendInToken(packets, ep, inter_pkt_gap=37)
+        AppendInToken(packets, ep, inter_pkt_gap=58)
         packets.append(RxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid))
 
         data_val = data_val + pkt_length

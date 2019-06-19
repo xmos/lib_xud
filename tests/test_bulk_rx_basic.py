@@ -9,9 +9,7 @@ from helpers import do_rx_test, packet_processing_time, get_dut_address
 from helpers import choose_small_frame_size, check_received_packet, runall_rx
 
 
-# Single, setup transaction to EP 0
-
-def do_test(arch, tx_clk, tx_phy, seed):
+def do_test(arch, clk, phy, seed):
     rand = random.Random()
     rand.seed(seed)
 
@@ -50,8 +48,7 @@ def do_test(arch, tx_clk, tx_phy, seed):
     packets.append(RxHandshakePacket())
 
 
-    do_rx_test(arch, tx_clk, tx_phy, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
+    do_rx_test(arch, clk, phy, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def runtest():
     random.seed(1)

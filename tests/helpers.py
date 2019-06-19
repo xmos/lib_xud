@@ -5,6 +5,8 @@ import random
 import sys
 from usb_clock import Clock
 from usb_phy import UsbPhy
+from usb_phy_shim import UsbPhyShim
+from usb_phy_utmi import UsbPhyUtmi
 from usb_packet import RxPacket
 
 args = None
@@ -20,7 +22,7 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
 
     if arch=='xs2':
         clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-        phy = UsbPhy('tile[0]:XS1_PORT_8B',
+        phy = UsbPhyShim('tile[0]:XS1_PORT_8B',
                          'tile[0]:XS1_PORT_1F', #rxa
                          'tile[0]:XS1_PORT_1I', #rxv
                          'tile[0]:XS1_PORT_1G', #rxe
@@ -33,10 +35,26 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          do_timeout=do_timeout, complete_fn=complete_fn,
                          expect_loopback=expect_loopback,
                          dut_exit_time=dut_exit_time, initial_delay=initial_del)
-  
-    if arch=='xs1':
+ 
+    elif arch=='xs3':
         clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-        phy = UsbPhy('tile[0]:XS1_PORT_8C',
+        phy = UsbPhyUtmi('tile[0]:XS1_PORT_8B',
+                         'tile[0]:XS1_PORT_1F', #rxa
+                         'tile[0]:XS1_PORT_1I', #rxv
+                         'tile[0]:XS1_PORT_1G', #rxe
+                         'tile[0]:XS1_PORT_8A', #txd
+                         'tile[0]:XS1_PORT_1K', #txv
+                         'tile[0]:XS1_PORT_1H', #txrdy
+                         clk,
+                         verbose=verbose, test_ctrl=test_ctrl,
+                         do_timeout=do_timeout, complete_fn=complete_fn,
+                         expect_loopback=expect_loopback,
+                         dut_exit_time=dut_exit_time, initial_delay=initial_del)
+
+
+    elif arch=='xs1':
+        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
+        phy = UsbPhyShim('tile[0]:XS1_PORT_8C',
                          'tile[0]:XS1_PORT_1O', #rxa
                          'tile[0]:XS1_PORT_1M', #rxv
                          'tile[0]:XS1_PORT_1P', #rxe
@@ -66,18 +84,18 @@ def run_on(**kwargs):
 def runall_rx(test_fn):
     
    
-    if run_on(arch='xs1'):
-        (tx_clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs1')
+    if run_on(arch='xs3'):
+        (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
         seed = args.seed if args.seed else random.randint(0, sys.maxint)
-        test_fn('xs1', tx_clk_60, usb_phy, seed)
+        test_fn('xs3', clk_60, usb_phy, seed)
     
     if run_on(arch='xs2'):
-        (tx_clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
+        (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
         seed = args.seed if args.seed else random.randint(0, sys.maxint)
-        test_fn('xs2', tx_clk_60, usb_phy, seed)
+        test_fn('xs2', clk_60, usb_phy, seed)
 
 
-def do_rx_test(arch, tx_clk, tx_phy, packets, test_file, seed,
+def do_rx_test(arch, clk, phy, packets, test_file, seed,
                level='nightly', extra_tasks=[]):
 
     """ Shared test code for all RX tests using the test_rx application.
@@ -93,25 +111,25 @@ def do_rx_test(arch, tx_clk, tx_phy, packets, test_file, seed,
     if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
         print "Running {test}: {arch} arch sending {n} packets at {clk} (seed {seed})".format(
             test=testname, n=len(packets),
-            arch=arch, clk=tx_clk.get_name(), seed=seed)
+            arch=arch, clk=clk.get_name(), seed=seed)
 
-    tx_phy.set_packets(packets)
+    phy.set_packets(packets)
     #rx_phy.set_expected_packets(packets)
 
     expect_folder = create_if_needed("expect")
     expect_filename = '{folder}/{test}_{arch}.expect'.format(
-        folder=expect_folder, test=testname, phy=tx_phy.get_name(), clk=tx_clk.get_name(), arch=arch)
+        folder=expect_folder, test=testname, phy=phy.get_name(), clk=clk.get_name(), arch=arch)
     create_expect(packets, expect_filename)
 
     tester = xmostest.ComparisonTester(open(expect_filename),
                                       'lib_xud', 'xud_sim_tests', testname,
-                                     {'clk':tx_clk.get_name(), 'arch':arch})
+                                     {'clk':clk.get_name(), 'arch':arch})
 
     tester.set_min_testlevel(level)
 
-    simargs = get_sim_args(testname, tx_clk, tx_phy, arch)
+    simargs = get_sim_args(testname, clk, phy, arch)
     xmostest.run_on_simulator(resources['xsim'], binary,
-                              simthreads=[tx_clk, tx_phy] + extra_tasks,
+                              simthreads=[clk, phy] + extra_tasks,
                               tester=tester,
                               simargs=simargs)
 
@@ -137,8 +155,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
 
     if args and args.trace:
         log_folder = create_if_needed("logs")
-        #if phy.get_name() == 'rgmii':
-        #arch = 'xs2'
+
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(
             log=log_folder, test=testname,
             clk=clk.get_name(), phy=phy.get_name(), arch=arch)
@@ -149,13 +166,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
         vcd_args += (' -tile tile[0] -ports -ports-detailed -instructions'
                      ' -functions -cycles -clock-blocks -pads -cores')
 
-        # The RGMII pins are on tile[1]
-        #if phy.get_name() == 'rgmii':
-         #       vcd_args += (' -tile tile[0] -ports -ports-detailed -instructions'
-          #                   ' -functions -cycles -clock-blocks -cores')
-
         sim_args += ['--vcd-tracing', vcd_args]
-
 #        sim_args += ['--xscope', '-offline logs/xscope.xmt']
 
     return sim_args
@@ -163,12 +174,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
 def packet_processing_time(phy, data_bytes):
     """ Returns the time it takes the DUT to process a given frame
     """
-    #if mac == 'standard':
-    #    return 4000 * phy.get_clock().get_bit_time()
-    #elif phy.get_name() == 'rgmii' and mac == 'rt':
     return 6000 * phy.get_clock().get_bit_time()
-    ##else:
-     #   return 2000 * phy.get_clock().get_bit_time()
 
 def get_dut_address():
     """ Returns the busaddress of the DUT

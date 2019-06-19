@@ -8,15 +8,9 @@ if __name__ == "__main__":
     global trace
     argparser = argparse.ArgumentParser(description="XMOS lib_xud tests")
     argparser.add_argument('--trace', action='store_true', help='Run tests with simulator and VCD traces')
-    argparser.add_argument('--arch', choices=['xs1', 'xs2'], type=str, help='Run tests only on specified xcore architecture')
-    argparser.add_argument('--clk', choices=['25Mhz', '125Mhz'], type=str, help='Run tests only at specified clock speed')
-    argparser.add_argument('--mac', choices=['rt', 'rt_hp', 'standard'], type=str, help='Run tests only on specified MAC')
+    argparser.add_argument('--arch', choices=['xs2', 'xs3'], type=str, help='Run tests only on specified xcore architecture')
     argparser.add_argument('--seed', type=int, help='The seed', default=None)
     argparser.add_argument('--verbose', action='store_true', help='Enable verbose tracing in the phys')
-
-    argparser.add_argument('--num-packets', type=int, help='Number of packets in the test', default='100')
-    argparser.add_argument('--data-len-min', type=int, help='Minimum packet data bytes', default='46')
-    argparser.add_argument('--data-len-max', type=int, help='Maximum packet data bytes', default='500')
     
     helpers.args = xmostest.init(argparser)
 

@@ -11,23 +11,27 @@ WaitForEndDataPacket:
     bu         NextTokenAfterOut
 #endif
 
-// Expects
+// r3: Ep structure
 // r5: buffer address
 // RXD: Rx Data port
 // r4: zero
-// r7: crc init
+// r5: ep structures array
+// r6: crc rx init
+// r7: crc tx init
 // r9: crc poly
+// r10: ep number
+// r11: scratch
 .align 4
 .skip 0
 doRXData:
-    ldw         r10, sp[10]           	        // Load RxA Port ID (r1)
-    //in          r8, res[r10]                    // Doing an IN to clear any previous event data
+    ldw         r7, sp[10]           	        // Load RxA Port ID (r1)
+    //in          r8, res[r10]                  // Doing an IN to clear any previous event data
                                                 // - saves us havin to reload the port ID later...
                                                 // NOW MOVED TO RxALow
     inpw        r8, res[r0], 8                  // Input PID
 GotRxPid:
     stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
-    eeu         res[r10]
+    eeu         res[r7]
 .syntax architectural
     SETSR_lu6       1                           // Enable thread events. Note long inst to align loop
 .syntax default
@@ -44,7 +48,7 @@ NextRxWord:				                        // RXD port has event vector here
 .align 16
 .skip 8
 RxALow:
-    in          r11, res[r10]                   // Clear event data on RXA
+    in          r7, res[r7]                   // Clear event data on RXA
     endin       r8, res[r0]
 XUD_OUT_RxTail:
     in          r11, res[r0]

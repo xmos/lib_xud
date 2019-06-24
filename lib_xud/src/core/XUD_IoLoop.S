@@ -346,9 +346,9 @@ SetupSuspendResetTimer:
 NextToken:
     ldc         r9, 0xa001                      // CRC16 poly, used in doRxData
     ldw         r5, sp[(STACK_EXTEND+7)]        // EP structures array - pointers to EP tables or 0
-    ldc         r7, 0xf335                      // TX Crc init
 
 NextTokenAfterOut:
+    ldc         r7, 0xf335                      // TX Crc init
     ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
 #ifndef ARCH_G
     ldw         r1, sp[STACK_FLAG0_PORT]

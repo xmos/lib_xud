@@ -3,7 +3,6 @@
   * @author    Ross Owen, XMOS Limited
   */
 
-#ifdef ARCH_G
 
 /* Global table used to store complete valid CRC5 table */
 /* TODO Should be char */
@@ -20,25 +19,15 @@ extern unsigned char crc5Table_Addr[2048];
  */
 void XUD_SetCrcTableAddr(unsigned addr)
 {
-    int index, i, j;
+    unsigned index;
 
-    /* Addresses 0 - 0x7F */
-    for (i = 0; i <= 0x7F; i++)
+    /* Set whole table to invalid CRC */
+    memset(crc5Table_Addr, 0xff, 2048);
+
+    /* Copy over relevant entries */
+    for(unsigned ep = 0; ep <= 0xF; ep++)
     {
-        /* EPs 0 - 0xF */
-        for(j = 0; j <= 0xF; j++)
-        {
-            index = i + (j<<7);
-            if(i == addr)
-            {
-                crc5Table_Addr[index] = crc5Table[index];
-            }
-            else
-            {
-                /* Invalid CRC */
-                crc5Table_Addr[index] = 0xff;
-            }
-        }
+        index = addr + (ep << 7);
+        crc5Table_Addr[index] = crc5Table[index];
     }
 }
-#endif

@@ -271,15 +271,8 @@ BadHandShake:			                        // Received a bad (or no)handshake
 .skip 28
 SmallTxPacket:
     ldw          r8, r8[r4]                        // Load first data word
-//    inct       r8, res[r5]                      // Input tail length + 10
-    //inct       r6, res[r5]                      // get end of packet token
-    //sub        r8, r8, 10
-    //in         r6, res[r5]                      // Input tail data
-    //shl        r8, r8, 4                        // Tail length bytes to bits *2
-
-//    shr        r8, r8, 1
-
-    .xtabranch TxTail0s, TxTail1s, TxTail2s, TxTail3s
+    
+.xtabranch TxTail0s, TxTail1s, TxTail2s, TxTail3s
     bru         r6                              // branch taillength
 
 //--------------------------------------------------------------------------
@@ -320,29 +313,23 @@ XUD_IN_TxCrc_TailS1:
 .align 64
 .skip 0
 TxTail2s:
-    ldc        r6, 0
+    ldc         r6, 0
+    
     // Two tail byte
     shl         r8, r8, 8
-    or          r11, r11, r8
+    or          r11, r11, r8            // r11:  D1 | D0 | PID
     shr         r8, r8, 8
-    //outpw     res[TXD], r11, 8        // PID
-    //outpw        res[TXD], r6, 16
-
-    crc8         r7, r8, r8, r9
-    crc8         r7, r8, r8, r9
-    crc32        r7, r6, r9               // r5: 0
-    not          r7, r7
-    shr          r6, r7, 8
-
-    shl        r7, r7, 24
-    zext       r11, 24
-    or         r11, r11, r7
+    
 XUD_IN_TxPid_TailS2:
-    out     res[TXD], r11
-//    outpw        res[TXD], r7, 16
+    outpw       res[TXD], r11, 24
+
+    crc8        r7, r8, r8, r9
+    crc8        r7, r8, r8, r9
+    crc32       r7, r6, r9               // r6: 0
+    not         r7, r7
 
 XUD_IN_TxCrc_TailS2:
-    outpw      res[TXD], r6, 8
+    outpw      res[TXD], r7, 16
     bu           DoneTail
 
 .align 64

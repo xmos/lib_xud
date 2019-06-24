@@ -283,7 +283,7 @@ class HandshakePacket(UsbPacket):
     def __init__(self, **kwargs):
         super(HandshakePacket, self).__init__(**kwargs)
         self.pid = kwargs.pop('pid', 0x2) #Default to ACK
-
+        
     def get_bytes(self, do_tokens=False):
         bytes = []
         bytes.append(self.pid)
@@ -295,9 +295,18 @@ class RxHandshakePacket(HandshakePacket, RxPacket):
         super(RxHandshakePacket, self).__init__(**kwargs)
         self.pid = kwargs.pop('pid', 0xd2) #Default to ACK (not expect inverted bits on Rx)
         self.timeout = kwargs.pop('timeout', 9) 
-
+    
+ 
 class TxHandshakePacket(HandshakePacket, TxPacket):
     
     def __init__(self, **kwargs):
         super(TxHandshakePacket, self).__init__(**kwargs)
+        
+    def get_bytes(self, do_tokens=False):
+        bytes = []
+        if do_tokens:
+            bytes.append(self.pid)
+        else:
+            bytes.append(self.pid | ((~self.pid) << 4))
+        return bytes
 

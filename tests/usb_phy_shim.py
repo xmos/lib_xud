@@ -78,7 +78,7 @@ class UsbPhyShim(UsbPhy):
                     xsi.drive_port_pins(self._txrdy, 0)
 
                     # Check packet agaist expected
-                    expected = packet.get_bytes()
+                    expected = packet.get_bytes(do_tokens=True)
                     if len(expected) != len(rx_packet):
                         print "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(len(expected), len(rx_packet))
                 
@@ -103,7 +103,7 @@ class UsbPhyShim(UsbPhy):
                 #print "Waiting for inter_pkt_gap: {i}".format(i=packet.inter_frame_gap)
                 self.wait_until(xsi.get_time() + packet.inter_pkt_gap)
 
-                print "Sending packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid)
+                print "Phy transmitting packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid)
                 if self._verbose:
                     sys.stdout.write(packet.dump())
 

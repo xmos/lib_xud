@@ -120,7 +120,7 @@ def do_usb_test(arch, clk, phy, packets, test_file, seed,
     expect_folder = create_if_needed("expect")
     expect_filename = '{folder}/{test}_{arch}.expect'.format(
         folder=expect_folder, test=testname, phy=phy.get_name(), clk=clk.get_name(), arch=arch)
-    create_expect(packets, expect_filename)
+    create_expect(arch, packets, expect_filename)
 
     tester = xmostest.ComparisonTester(open(expect_filename),
                                       'lib_xud', 'xud_sim_tests', testname,
@@ -134,7 +134,9 @@ def do_usb_test(arch, clk, phy, packets, test_file, seed,
                               tester=tester,
                               simargs=simargs)
 
-def create_expect(packets, filename):
+def create_expect(arch, packets, filename):
+    do_tokens = (arch == "xs2")
+   
     """ Create the expect file for what packets should be reported by the DUT
     """
     with open(filename, 'w') as f:
@@ -143,7 +145,7 @@ def create_expect(packets, filename):
             if isinstance(packet, RxPacket):
                 f.write("Receiving packet {}\n".format(i))
 
-                for (i, byte) in enumerate(packet.get_bytes()):
+                for (i, byte) in enumerate(packet.get_bytes(do_tokens=do_tokens)):
                     f.write("Received byte: {0:#x}\n".format(byte))
             
             else:  

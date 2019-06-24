@@ -69,7 +69,7 @@ class UsbPhyUtmi(UsbPhy):
                     xsi.drive_port_pins(self._txrdy, 0)
 
                     # Check packet agaist expected
-                    expected = packet.get_bytes()
+                    expected = packet.get_bytes(do_tokens=False)
                     if len(expected) != len(rx_packet):
                         print "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(len(expected), len(rx_packet))
                 

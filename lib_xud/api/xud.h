@@ -6,6 +6,18 @@
 #ifndef __xud_h__
 #define __xud_h__
 
+#include <platform.h>
+
+#if defined(__XS1A__) || defined(__XS3A__)
+#define XUD_OPT_SOFTCRC5 (1)
+#else
+#define XUD_OPT_SOFTCRC5 (0)
+#endif
+
+#ifndef XUD_STARTUP_ADDRESS
+#define XUD_STARTUP_ADDRESS (0)
+#endif
+        
 
 #ifndef XUD_U_SERIES
 #define XUD_U_SERIES 1
@@ -69,7 +81,6 @@
 #endif
 
 #if defined(PORT_USB_CLK)
-
   /* Ports declared in the .xn file. Automatically detect device series */
   #if defined(PORT_USB_RX_READY)
     #if !defined(XUD_SERIES_SUPPORT)
@@ -99,8 +110,8 @@
   #endif
 
   /* Ports have not been defined in the .xn file */
-
-  #if (XUD_SERIES_SUPPORT == XUD_U_SERIES)
+  #if defined (__XS1B__) 
+#error
     #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8C
@@ -110,7 +121,7 @@
     #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
     #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
     #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
-  #elif (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+  #else // __XS3A__ and __XS2A__
     #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
@@ -120,16 +131,6 @@
     #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1E
     #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1F
     #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
-  #else
-    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1H
-    #define PORT_USB_REG_WRITE   on USB_TILE: XS1_PORT_8C
-    #define PORT_USB_REG_READ    on USB_TILE: XS1_PORT_8D
-    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
-    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
-    #define PORT_USB_STP_SUS     on USB_TILE: XS1_PORT_1E
-    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
-    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
   #endif
 #endif // PORT_USB_CLK
 

@@ -17,7 +17,7 @@
 .cc_top XUD_GetSetupData.func
 .align 4
 XUD_GetSetupData:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 4
 #else
@@ -136,7 +136,7 @@ XUD_GetSetupData_Reset:
 .cc_top XUD_GetData.func
 .align 4
 XUD_GetData:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 4
 #else
@@ -273,7 +273,7 @@ XUD_GetDataSetupData_ResetPid:                      // We must reset PID togglin
 .cc_top XUD_SetData.func
 .align 4
 XUD_SetData:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 8
 #else
@@ -371,7 +371,7 @@ XUD_SetData_Reset:
 .cc_top XUD_GetData_Select.func
 .align 4
 XUD_GetData_Select:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
@@ -462,7 +462,7 @@ XUD_GetData_Select_Return_Reset:
 .cc_top XUD_SetData_Select.func
 .align 4
 XUD_SetData_Select:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
@@ -520,7 +520,7 @@ XUD_SetData_Select_Reset:
 .cc_top XUD_SetStallByAddr.func
 .align 4
 XUD_SetStallByAddr:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
@@ -566,7 +566,7 @@ XUD_SetStallByAddr_OUT:
 .cc_top XUD_ClearStallByAddr.func
 .align 4
 XUD_ClearStallByAddr:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined (__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
@@ -632,7 +632,7 @@ XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
 .cc_top XUD_ResetEpStateByAddr.func
 .align 4
 XUD_ResetEpStateByAddr:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
@@ -642,7 +642,8 @@ XUD_ResetEpStateByAddr:
     ldc         r1, USB_PIDn_DATA0
     bu          XUD_ResetEpStateByAddr_
 XUD_ResetEpStateByAddr_OUT:
-#if(XUD_SERIES_SUPPORT==3)
+//#if(XUD_SERIES_SUPPORT==3)
+#if defined(__XS1A__) //G-series
     ldc         r1, USB_PIDn_DATA0
 #else
     ldc         r1, USB_PID_DATA0
@@ -687,7 +688,7 @@ NoOffset:
 .cc_top XUD_SetTestMode.func
 .align 4
 XUD_SetTestMode:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif

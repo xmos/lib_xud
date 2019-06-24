@@ -191,7 +191,7 @@ ResetIntHandler:
 
 .align 4
 XUD_LLD_IoLoop:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
     ENTSP_lu6  STACK_EXTEND
 #else
@@ -302,6 +302,7 @@ ConfigSofJump:
 ConfigSofJump_Done:
 
 
+#if !defined (__XS3A__)
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ
     setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
@@ -311,7 +312,7 @@ ConfigRxErrEventVector:
     setd       res[r3], r11                 // Set event cond data to 1
     stw        r3, sp[15]                   // Store flag port to stack
     eeu        res[r3]
-
+#endif
 
 
 SetupSuspendResetTimer:
@@ -363,7 +364,7 @@ NextTokenAfterPing:
 
 
 //------------------------------------------------------------------------------------------------
-#ifdef ARCH_L
+#if defined(__XS2A__) || defined(__XS1B__)
     //ldw         r1, sp[11]                    // Load Valid Token port
     ldaw        r10, dp[PidJumpTable]           // TODO Could load from sp here
                                                 // Original USB Token: | CRC | EP | ADDR | PID | junk
@@ -375,28 +376,13 @@ XUD_TokenRx_Pid:
 
     ldw        r10, r10[r11]                    // Load relevant branch address
 
-#if 1
 BranchOnTokenPid:
 .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
 
     bau        r10
 
-#else
-XUD_TokenRx_Ep:
-    inpw      r10, res[RXD], 8                  // Read EP Number
-    shr       r10, r10, 24                      // Shift off junk
+#else // XS3A
 
-CheckValidToken:
-    in         r1, res[r1]
-    bt         r1, InvalidToken                 // If VALID_TOKEN not high, ignore token
-                                                // REMEMBER VALID TOKEN NOW INVERTED!
-
-BranchOnTokenPid:
-.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
-    bau         r11                             // Branch on PID to relevant token handing code
-                                                // (e.g. in utmi_out.S etc). When done branchs back to NextToken
-#endif
-#else // ARCH_G
     ldc         r4, 16
 
 ReadToken:
@@ -429,18 +415,13 @@ waitforRXALow0:
 
 // Un-implemented PID list
 Pid_Reserved:                                  // Should never get here
-//Pid_Out:
 Pid_Ack:
-//Pid_Ping:
-//Pid_Sof:                                      // Should never get here: (G4) hardware swallows SOF
 Pid_NYet:
 Pid_Nyet:
 Pid_Data2:
 Pid_Split:
-//Pid_In:
 Pid_Nak:
 Pid_Pre:
-//Pid_Setup:
 Pid_Stall:
 Pid_MData:
 Pid_Datam:

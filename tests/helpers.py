@@ -16,9 +16,12 @@ def create_if_needed(folder):
         os.makedirs(folder)
     return folder
 
+#todo
+dut_address = 1
+
 def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                        complete_fn=None, expect_loopback=False,
-                       dut_exit_time=350000, initial_del=40000, arch='xs2'):
+                       dut_exit_time=350000, arch='xs2'):
 
     if arch=='xs2':
         clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
@@ -34,7 +37,7 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,
                          expect_loopback=expect_loopback,
-                         dut_exit_time=dut_exit_time, initial_delay=initial_del)
+                         dut_exit_time=dut_exit_time)
  
     elif arch=='xs3':
         clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
@@ -49,7 +52,7 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,
                          expect_loopback=expect_loopback,
-                         dut_exit_time=dut_exit_time, initial_delay=initial_del)
+                         dut_exit_time=dut_exit_time)
 
 
     elif arch=='xs1':
@@ -66,7 +69,7 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,
                          expect_loopback=expect_loopback,
-                         dut_exit_time=dut_exit_time, initial_delay=initial_del)
+                         dut_exit_time=dut_exit_time)
         
     return (clk, phy)
 
@@ -82,7 +85,6 @@ def run_on(**kwargs):
     return True
 
 def runall_rx(test_fn):
-    
    
     if run_on(arch='xs3'):
         (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
@@ -95,7 +97,7 @@ def runall_rx(test_fn):
         test_fn('xs2', clk_60, usb_phy, seed)
 
 
-def do_rx_test(arch, clk, phy, packets, test_file, seed,
+def do_usb_test(arch, clk, phy, packets, test_file, seed,
                level='nightly', extra_tasks=[]):
 
     """ Shared test code for all RX tests using the test_rx application.
@@ -114,7 +116,6 @@ def do_rx_test(arch, clk, phy, packets, test_file, seed,
             arch=arch, clk=clk.get_name(), seed=seed)
 
     phy.set_packets(packets)
-    #rx_phy.set_expected_packets(packets)
 
     expect_folder = create_if_needed("expect")
     expect_filename = '{folder}/{test}_{arch}.expect'.format(
@@ -146,7 +147,7 @@ def create_expect(packets, filename):
                     f.write("Received byte: {0:#x}\n".format(byte))
             
             else:  
-                f.write("Sending packet {} PID: {} ({})\n".format(i, packet.get_pid_pretty(), packet.pid))
+                f.write("Phy transmitting packet {} PID: {} ({})\n".format(i, packet.get_pid_pretty(), packet.pid))
         
         f.write("Test done\n")
 
@@ -176,11 +177,11 @@ def packet_processing_time(phy, data_bytes):
     """
     return 6000 * phy.get_clock().get_bit_time()
 
-def get_dut_address():
-    """ Returns the busaddress of the DUT
-    """
-    #todo, we need the ability to config this
-    return 1
+#def get_dut_address():
+#    """ Returns the busaddress of the DUT
+#    """
+#    #TODO, we need the ability to config this
+#    return 1
 
 def choose_small_frame_size(rand):
     """ Choose the size of a frame near the minimum size frame (46 data bytes)

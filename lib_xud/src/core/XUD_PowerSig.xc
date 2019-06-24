@@ -4,6 +4,7 @@
   * @author     Ross Owen, XMOS Limited
   **/
 
+#ifndef __XS3A__
 #include <xs1.h>
 #include <print.h>
 
@@ -49,7 +50,9 @@ extern buffered in  port:32 p_usb_clk;
 extern in  port reg_read_port;
 extern in  port flag0_port;
 extern in  port flag1_port;
+
 extern in  port flag2_port;
+
 extern out port p_usb_txd;
 #if defined(ARCH_S) || defined(ARCH_X200)
 extern in buffered port:32 p_usb_rxd;
@@ -455,4 +458,4 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #endif
 }
 
-
+#endif

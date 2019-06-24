@@ -8,13 +8,13 @@ from usb_phy import UsbPhy
 class UsbPhyUtmi(UsbPhy):
 
     def __init__(self, rxd, rxa, rxdv, rxer, txd, txv, txrdy, clock,
-                 initial_delay=85000, verbose=False, test_ctrl=None,
+                 initial_delay=60000, verbose=False, test_ctrl=None,
                  do_timeout=True, complete_fn=None, expect_loopback=True,
                  dut_exit_time=25000):
-        super(UsbPhy, self).__init__('mii', rxd, rxa, rxdv, rxer, vld, txd, txv, txrdy, clock,
+
+        super(UsbPhyUtmi, self).__init__('mii', rxd, rxa, rxdv, rxer, txd, txv, txrdy, clock,
                                              initial_delay, verbose, test_ctrl,
-                                             do_timeout, complete_fn, expect_loopback,
-                                             dut_exit_time)
+                                             do_timeout, complete_fn, expect_loopback, dut_exit_time)
 
     def run(self):
         xsi = self.xsi
@@ -22,7 +22,6 @@ class UsbPhyUtmi(UsbPhy):
         self.start_test()
 
         for i,packet in enumerate(self._packets):
-            #error_nibbles = packet.get_error_nibbles()
             
             if isinstance(packet, RxPacket):
  
@@ -49,9 +48,7 @@ class UsbPhyUtmi(UsbPhy):
             
                 if in_rx_packet == False:
                     print "ERROR: Timed out waiting for packet"
-
                 else:
-                    #print "in packet"
                     while in_rx_packet == True:
                         
                         # TODO txrdy pulsing
@@ -67,9 +64,7 @@ class UsbPhyUtmi(UsbPhy):
                         if xsi.sample_port_pins(self._txv) == 0:
                             #print "TXV low, breaking out of loop"
                             in_rx_packet = False
-                   
-                        
-
+                    
                     # End of packet
                     xsi.drive_port_pins(self._txrdy, 0)
 
@@ -87,8 +82,10 @@ class UsbPhyUtmi(UsbPhy):
                         print "Received:" 
                         for item in rx_packet:
                             print "{0:#x}".format(item)
+
             else:
 
+                #TokenPacket or TxPacket
                 
                 # xCore should not be trying to send if we are trying to send..
                 if xsi.sample_port_pins(self._txv) == 1:
@@ -99,7 +96,7 @@ class UsbPhyUtmi(UsbPhy):
                 #print "Waiting for inter_pkt_gap: {i}".format(i=packet.inter_frame_gap)
                 self.wait_until(xsi.get_time() + packet.inter_pkt_gap)
 
-                print "Sending packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid)
+                print "Phy transmitting packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid)
                 if self._verbose:
                     sys.stdout.write(packet.dump())
 
@@ -109,10 +106,6 @@ class UsbPhyUtmi(UsbPhy):
                 # Wait for RXA rise delay TODO, this should be configurable 
                 self.wait(lambda x: self._clock.is_high())
                 self.wait(lambda x: self._clock.is_low())
-
-                #if isinstance(packet, TokenPacket):
-                 #   print "Token packet, clear valid token"
-                xsi.drive_port_pins(self._vld, 0)
 
                 for (i, byte) in enumerate(packet.get_bytes()):
 
@@ -143,13 +136,6 @@ class UsbPhyUtmi(UsbPhy):
                     #print "Sending byte {0:#x}".format(byte)
 
                     rxv_count = packet.get_data_valid_count();
-
-                    if isinstance(packet, TokenPacket):
-                        #print "Token packet, driving valid"
-                        if packet.get_token_valid():
-                            xsi.drive_port_pins(self._vld, 1)
-                        else:
-                            xsi.drive_port_pins(self._vld, 0)
 
                 # Wait for last byte
                 self.wait(lambda x: self._clock.is_high())

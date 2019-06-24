@@ -28,17 +28,16 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "XUD_DeviceAttach.h"
 #include "XUD_PowerSig.h"
 
-#ifdef ARCH_L
-#elif  ARCH_G
-#else
-#error ARCH_L or ARCH_G must be defined
+#if defined __XS3A__
+#undef __XS2A__
+#warning Building for XS3
 #endif
 
-#ifdef ARCH_S
+#ifdef __XS1B__
 #include "xs1_su_registers.h"
 #endif
 
-#ifdef ARCH_X200
+#ifdef __XS2A__
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
 #endif
@@ -351,16 +350,14 @@ XUD_ep_info ep_info[USB_MAX_NUM_EP];
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
 {
-#if defined(ARCH_X200)
+#if defined(__XS2A__)
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM, ((1<<XS1_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
         | ((1<<XS1_UIFM_IFM_FLAGS_K_SHIFT)<<8) | (1 << XS1_UIFM_IFM_FLAGS_J_SHIFT));
-#elif defined(ARCH_S)
+#elif defined(__XS1B__)
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_MASK_NUM, ((1<<XS1_SU_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
         | ((1<<XS1_SU_UIFM_IFM_FLAGS_K_SHIFT)<<8) | (1 << XS1_SU_UIFM_IFM_FLAGS_J_SHIFT));
-#else
-    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK0, 0x8);  // flag0_port - J
-    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK1, 0x10); // flag1_port - K
-    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK2, 0x20); // flag2_port - SE0
+#elif defined(__XS3A__)
+    // TODO
 #endif
 }
 
@@ -368,23 +365,11 @@ void XUD_UIFM_PwrSigFlags()
 int epStatFlagTableIn[USB_MAX_NUM_EP_IN];
 int epStatFlagTableOut[USB_MAX_NUM_EP_OUT];
 
-//extern void SetupChannelVectorsOverride(XUD_chan chans[]);
-
-//extern void SetupChannelVectors(XUD_chan chans[], int countOut, int countIn);
-
 extern unsigned XUD_LLD_IoLoop(
-#if defined(ARCH_S) || defined(ARCH_X200)
                             in buffered port:32 rxd_port,
-#else
-                            in port rxd_port,
-#endif
                             in port rxa_port,
-#if defined(ARCH_S) || defined(ARCH_X200)
                             out buffered port:32 txd_port,
-#else
-                            out port txd_port,
-#endif
-                            in port rxe_port, in port flag0_port,
+                            in port ?rxe_port, in port newtok_port,
                             in port ?read, out port ?write, int x,
                             XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
                             int  epCount, chanend? c_sof) ;
@@ -399,7 +384,7 @@ unsigned chanArray;
 #define RESET_TIME_us               5 // 5us
 #define RESET_TIME                  (RESET_TIME_us * REF_CLK_FREQ)
 
-#ifndef ARCH_L
+#if (XUD_OPT_SOFTCRC5 == 1)
 extern unsigned char crc5Table[2048];
 unsigned char crc5Table_Addr[2048];
 
@@ -458,38 +443,27 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, XUD_PwrConfig pwrConfig)
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
-#if !defined(ARCH_S) && !defined(ARCH_X200)
-    const int reset_time = RESET_TIME;
-#endif
-
     /* Make sure ports are on and reset port states */
     set_port_use_on(p_usb_clk);
-#if !defined(ARCH_S) && !defined(ARCH_X200)
-    set_port_clock(p_usb_clk, clk);
-#endif
     set_port_use_on(p_usb_txd);
     set_port_use_on(p_usb_rxd);
     set_port_use_on(flag0_port);
     set_port_use_on(flag1_port);
+#if !defined(__XS3A__)
     set_port_use_on(flag2_port);
-#if !defined(ARCH_S) && !defined(ARCH_X200)
-    set_port_use_on(reg_read_port);
-    set_port_use_on(reg_write_port);
 #endif
 
-    //TODO use XUD_SetDevAddr
-#ifdef ARCH_G
-    XUD_SetCrcTableAddr(0);
+#if (XUD_OPT_SOFTCRC5)
+    XUD_SetCrcTableAddr(XUD_STARTUP_ADDRESS);
 #endif
-
-#if defined(ARCH_S) || defined(ARCH_X200)
 
 #define TX_RISE_DELAY 5
 #if defined(ARCH_S)
-#define TX_FALL_DELAY 2
+    #define TX_FALL_DELAY 2
 #else
-#define TX_FALL_DELAY 1
+    #define TX_FALL_DELAY 1
 #endif
+
 #define RX_RISE_DELAY 5
 #define RX_FALL_DELAY 5
 
@@ -508,7 +482,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_inv(p_usb_clk);
     set_port_sample_delay(p_usb_clk);
 
-#ifndef SIMULATION
+#ifdef SIMULATION
+    set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY+5);
+#else
     //This delay controls the capture of rdy
     set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);
 
@@ -518,60 +494,56 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     //this delay th capture of the rdyIn and data.
     set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
-#else
-    set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY+5);
 #endif
    
-    //set_port_sample_delay(p_usb_rxd);
-    //set_port_sample_delay(rx_rdy);
-
+#ifndef __XS3__
+    /* Invert valid token port */
   	set_port_inv(flag0_port);
+#endif
+
 #ifndef SIMULATION
 	set_pad_delay(flag1_port, 2);
 #endif
-
-  	start_clock(tx_usb_clk);
+    
+    start_clock(tx_usb_clk);
   	start_clock(rx_usb_clk);
+
  	configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
   	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
-#endif
 
     unsigned noExit = 1;
 
     while(noExit)
     {
-#if !defined(ARCH_S) && !defined(ARCH_X200)
+#if !defined(ARCH_S) && !defined(__XS2A__) && !defined(__XS3A__)
         p_usb_rxd <: 0;         // Note, this is important else phy clocks in invalid data before UIFM is enabled causing
         clearbuf(p_usb_rxd);    // connection issues
 #endif
 
-#if defined(ARCH_S) || defined(ARCH_X200)
 
 #ifndef SIMULATION
         unsigned settings[] = {0};
 
-#if defined (ARCH_X200)
+    #if defined (ARCH_X200)
         /* For xCORE-200 enable USB port muxing before enabling phy etc */
         XUD_EnableUsbPortMux(); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
-#endif
+    #endif
         /* Enable the USB clock */
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, ( 1 << XS1_SU_CFG_USB_CLK_EN_SHIFT));
 
-#ifdef ARCH_S
+    #ifdef ARCH_S
         /* Now reset the phy */
         write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_PHY_CONTROL_NUM,    1); //(1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
-#else
+    #else
         write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_PHY_CONTROL_NUM,  0); //(0<<XS1_UIFM_PHY_CONTROL_FORCERESET));
-#endif
+    #endif
         /* Keep usb clock active, enter active mode */
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, (1 << XS1_SU_CFG_USB_CLK_EN_SHIFT) | (1<<XS1_SU_CFG_USB_EN_SHIFT)  );
 
         /* Clear OTG control reg - incase we were running as host previously.. */
         write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
-#endif
 
 #ifdef GLX_PWRDWN
-#ifndef SIMULATION
         /* Setup sleep timers and supplies */
         write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
         write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
@@ -579,22 +551,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
         write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
         write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
-#endif
-#endif
-
-#else
-#ifndef SIMULATION
-        /* Reset transceiver */
-        if (!isnull(p_rst))
-        {
-            XUD_PhyReset(p_rst, reset_time*10, rstMask);
-        }
-        else
-        {
-            XUD_PhyReset_User();
-        }
-#endif
-#endif
+#endif // GLX_PWRDWN
+#endif // SIMILATION
 
         /* Wait for USB clock (typically 1ms after reset) */
         p_usb_clk when pinseq(1) :> int _;
@@ -602,23 +560,23 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
 
-#if !defined(ARCH_S) && !defined(ARCH_X200)
-        /* Configure ports and clock blocks for use with UIFM */
-        XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
-
-        //set_pad_delay(flag1_port, 5);
-        set_port_inv(flag0_port);
-
-#endif
+//#if !defined(ARCH_S) && !defined(__XS2A__) && !defined(__XS3A__)
+//        /* Configure ports and clock blocks for use with UIFM */
+//        XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
+//
+//        //set_pad_delay(flag1_port, 5);
+//        set_port_inv(flag0_port);
+//
+// #endif
 
 #if (defined(ARCH_L) && !defined(ARCH_X200) && !defined(ARCH_S)) || defined(ARCH_G)
         /* For L/G series we wait for clock from phy, then enable UIFM logic */
         // 3 u series, else 2
-#if defined (ARCH_S)
+    #if defined (ARCH_S)
         XUD_UIFM_Enable(3); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
-#else
+    #else
         XUD_UIFM_Enable(2); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
-#endif
+    #endif
 #endif
 
 #if defined(ARCH_X200)
@@ -646,12 +604,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_UIFM_USB_PHY_TUNE_REG, PHYTUNEREGVAL);
 #endif
 
-#if defined(ARCH_S) || defined(ARCH_X200)
 #ifndef SIMULATION
+    #if defined(ARCH_S) || defined(ARCH_X200)
         write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_SU_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
-#endif
-#else
+    #elif !defined(__XS3A__)
         XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
+    #endif
 #endif
         while(1)
         {
@@ -683,19 +641,18 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     }
                 }
 #ifndef SIMULATION
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(__XS1B__) || defined(__XS2A__)
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM,
                       (1<<XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT)
                     | (1<<XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
-#else
-                XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x7);
+#elif defined(__XS3A__)
+            // TODO
 #endif
 #endif  /* SIMULATION */
 
 #ifdef SIMULATION
                 reset = 1;
-
 #else
                 /* Setup flags for power signalling - J/K/SE0 line state*/
                 XUD_UIFM_PwrSigFlags();
@@ -713,7 +670,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Sample line state and check for reset (or suspend) */
                     flag2_port :> reset; /* SE0 Line */
                 }
-#endif
                 /* Inspect for suspend or reset */
                 if(!reset)
                 {
@@ -732,7 +688,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Run user resume code */
                     XUD_UserResume();
                 }
-
+#endif
                 /* Test if coming back from reset or suspend */
                 if(reset==1)
                 {
@@ -742,8 +698,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         SendResetToEps(epChans0, epChans, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
                         sentReset = 1;
                     }
-#ifdef ARCH_G
-                    XUD_SetCrcTableAddr(0);
+#ifdef __XS3A__
+                    XUD_SetCrcTableAddr(XUD_STARTUP_ADDRESS);
 #endif
                     /* Reset the OUT ep structures */
                     for(int i = 0; i< noEpOut; i++)
@@ -762,13 +718,13 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         ep_info[USB_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
                     }
 
-                    /* Set default device address */
-#if defined(ARCH_S) || defined(ARCH_X200)
 #ifndef SIMULATION
+                    /* Set default device address */
+    #if defined(__XS1B__) || defined(__XS2A__)
                     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, 0);
-#endif
-#else
-                    XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
+    #elif defined(__XS3A__)
+        // TODO
+    #endif
 #endif
 
 #ifdef SIMULATION
@@ -821,67 +777,51 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
             /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
             NOTE: Need to do this every iteration since CHKTOK would break power signaling */
-#ifdef ARCH_L
-#if defined(ARCH_S) || defined(ARCH_X200)
 #ifndef SIMULATION
+    #if defined(__XS1B__) || defined(__XS2A__)
             write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_SU_UIFM_IFM_CONTROL_DOTOKENS_SHIFT)
                 | (1<< XS1_SU_UIFM_IFM_CONTROL_CHECKTOKENS_SHIFT)
                 | (1<< XS1_SU_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT)
                 | (1<< XS1_SU_UIFM_IFM_CONTROL_SOFISTOKEN_SHIFT));
+    #endif
 #endif
-#else
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_CHKTOK | UIFM_CTRL_DECODE_LS);
 
-            /* Allow SOF tokens through */
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_MISC, UIFM_MISC_SOFISTOKEN);
-#endif /* GLX */
-#else
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
-#endif /* ARCH_L */
-
-#if defined(ARCH_S) || defined (ARCH_X200)
 #ifndef SIMULATION
+    #if defined(__XS1B__) || defined (__XS2A__)
             write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_MASK_NUM,
                 ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)
                 | ((1<<XS1_SU_UIFM_IFM_FLAGS_RXACTIVE_SHIFT)<<8)
                 | ((1<<XS1_SU_UIFM_IFM_FLAGS_RXERROR_SHIFT)<<16)));
+    #elif defined(__XS3A__)
+        // TODO 
+    #endif
 #endif
-#else
-            /* Set flag0_port to NEW_TOKEN (bit 6 of ifm flags) */
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK0, 0x40);   // bit 6
-
-            /* Set flag1_port to RX_ACTIVE (bit 1) */
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK1, 0x02);   // bit 1
-
-            /* Set flag2_port to RX_ERROR (bit 0) */
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_FLAG_MASK2, 0x01);   // bit 0
-#endif /* GLX */
 
             set_thread_fast_mode_on();
 
-            /* Run main IO loop
-                flag0: Valid token flag
-                flag1: Rx Active
-                flag2: Rx Error */
-            noExit = XUD_LLD_IoLoop(p_usb_rxd,  flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port,
-                           reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
-
+            /* Run main IO loop */
+            /* TODO re-order flag ports such that this check is not required */
+#if defined (__XS3__)
+            /* flag0: Rx Error
+               flag1: Rx Active
+               flag2: Null */
+            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag0_port,  flag2_port, reg_read_port, reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
+#else
+            /* flag0: Valid token flag
+               flag1: Rx Active
+               flag2: Rx Error */
+            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port, reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
+#endif
             set_thread_fast_mode_off();
 
             /* Put UIFM back to default state */
-#ifdef ARCH_L
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_S) || defined(__XS2A__)
            // write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_IFM_CONTROL_REG,
                 //(1<<XS1_UIFM_IFM_CONTROL_DOTOKENS) |
                 //(1<< XS1_UIFM_IFM_CONTROL_CHECKTOKENS) |
              //   (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE));
                  //(1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
-#else
-            /* Disable SOF passing */
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_MISC, 0);
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_CTRL, UIFM_CTRL_DECODE_LS);
-#endif
-#endif
+#endif 
     
             if(!noExit)
                 break;
@@ -896,22 +836,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
     }
 
-
-#if !defined(ARCH_S) && !defined(ARCH_X200)
-    XUD_UIFM_Enable(0);
-#endif
+    /* TODO stop clock blocks */
 
     /* Turn ports off */
     set_port_use_off(p_usb_txd);
     set_port_use_off(p_usb_rxd);
     set_port_use_off(flag0_port);
     set_port_use_off(flag1_port);
+#if !defined(__XS3A__)
     set_port_use_off(flag2_port);
-#if defined(ARCH_S) || defined(ARCH_X200)
-    /* TODO switch off ports */
-#else
-    set_port_use_off(reg_read_port);
-    set_port_use_off(reg_write_port);
 #endif
     set_port_use_off(p_usb_clk);
     return 0;

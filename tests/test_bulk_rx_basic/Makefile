@@ -20,20 +20,26 @@ APP_NAME =
 
 SHARED_CODE = ../../shared_src
 
-COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -DSIMULATION -DARCH_L -Wno-timing
+COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -DSIMULATION -Wno-timing
 
-XCC_FLAGS_xs2       = $(COMMON_FLAGS) -DARCH_X200 -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
+XCC_FLAGS_xs2       = $(COMMON_FLAGS) -DARCH_X200 -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DARCH_L
 
-XCC_FLAGS_xs1       = $(COMMON_FLAGS) -DARCH_S -DXUD_SERIES_SUPPORT=XUD_U_SERIES
+XCC_FLAGS_xs1       = $(COMMON_FLAGS) -DARCH_S -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DARCH_L
+
+XCC_FLAGS_xs3		= $(COMMON_FLAGS) -DXUD_STARTUP_ADDRESS=1
 
 
 
 ifeq ($(CONFIG),$(filter $(CONFIG),xs1))
-	TARGET = test_xs1.xn
+	TARGET = ../shared_src/test_xs1.xn
 endif
 
 ifeq ($(CONFIG),$(filter $(CONFIG),xs2))
-	TARGET = test.xn
+	TARGET = test_xs2.xn
+endif
+
+ifeq ($(CONFIG),$(filter $(CONFIG),xs3))
+	TARGET = test_xs3.xn
 endif
 
 

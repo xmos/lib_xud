@@ -25,7 +25,10 @@ extern tileref USB_TILE_REF;
 
 extern in  port flag0_port;
 extern in  port flag1_port;
+#if !defined(__XS3A__)
 extern in  port flag2_port;
+#endif
+
 #if defined(ARCH_S) || defined(ARCH_X200)
 extern out buffered port:32 p_usb_txd;
 #define reg_write_port null
@@ -35,8 +38,8 @@ extern out port reg_write_port;
 extern in  port reg_read_port;
 extern out port p_usb_txd;
 extern port p_usb_rxd;
-
 #endif
+
 #define TEST_PACKET_LEN 14
 #define T_INTER_TEST_PACKET_us 2
 #define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * REF_CLK_FREQ)
@@ -60,11 +63,11 @@ unsigned int test_packet[TEST_PACKET_LEN] =
     0xceb67efd
 };
 
-
-
 int XUD_TestMode_TestJ ()
 {
-#if defined(ARCH_L) || defined(ARCH_X200)
+#if defined (__XS3A__)
+
+#elif defined(ARCH_L) || defined(ARCH_X200)
 
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
@@ -82,7 +85,9 @@ int XUD_TestMode_TestJ ()
 
 int XUD_TestMode_TestK ()
 {
-#if defined(ARCH_L) || defined(ARCH_X200)
+#if defined(__XS3A__)
+
+#elif defined(ARCH_L) || defined(ARCH_X200)
 
 #else
     XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
@@ -130,14 +135,20 @@ int XUD_UsbTestModeHandler()
     {
         case USB_WINDEX_TEST_J:
             //Function Control Reg. Suspend: 1 Opmode 10
-#if defined(ARCH_X200)
-            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
-#elif defined(ARCH_S)
-            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
-#else
-            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
-#endif
 
+#if defined(__XS3A__)
+#warning TODO
+#elif defined(__XS2A__)
+            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
+#elif defined (__XS1B__) 
+    #if defined(ARCH_S)
+            /* U-series */
+            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
+    #else
+            /* L-series */
+            XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
+    #endif
+#endif
             while(1)
             {
                 p_usb_txd <: 0xffffffff;
@@ -146,12 +157,16 @@ int XUD_UsbTestModeHandler()
 
         case USB_WINDEX_TEST_K:
             //Function Control Reg. Suspend: 1 Opmode 10
-#if defined(ARCH_X200)
+#if defined(__XS3A__)
+#warning TODO
+#elif defined(__XS2A__)
             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
-#elif defined(ARCH_S)
+#elif defined(__XS1B__)
+    #if defined(ARCH_S)
             write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
-#else
+    #else
             XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x11);
+    #endif
 #endif
 
             while(1)

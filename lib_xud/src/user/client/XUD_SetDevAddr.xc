@@ -5,20 +5,23 @@
 #include "XUD_UIFM_Defines.h"
 #include "xud.h"
 
-#ifdef ARCH_S
-#include <xs1_su_registers.h>
+#if defined(ARCH_S)
+    #if !defined(__XS1B__)
+        #error
+    #else
+        #include <xs1_su_registers.h>
+    #endif
 #endif
 
-#ifdef ARCH_X200
+#if defined(__XS2A__)
 #include "xs2_su_registers.h"
 #endif
 
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_S) || defined(__XS2A__)
 #include "XUD_USBTile_Support.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
 #endif
-
 
 void XUD_SetCrcTableAddr(unsigned addr);
 
@@ -27,23 +30,23 @@ void XUD_SetCrcTableAddr(unsigned addr);
   */
 XUD_Result_t XUD_SetDevAddr(unsigned addr)
 {
-#ifdef ARCH_L
     /* Set device address in UIFM */
-#if defined(ARCH_X200)
-    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
-#elif defined(ARCH_S)
-    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
+#if defined(__XS2A__)
+        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
+#elif defined(__XS1B__)
+    #if defined(ARCH_S)
+        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, addr);
+    #else
+            /* Vanilla XS1B/XS1-L */
+            /* RegWrite_ loads write port from dp to avoid parallel usage checks */
+            /* TODO this should really be locked for mutual exclusion */
+            XUD_UIFM_RegWrite_(UIFM_REG_ADDRESS, addr);
+    #endif
+    #elif defined(__XS1A__) || defined (__XS3A__)
+        /* XS1A (XS1-G) and XS3: Modify CRC table for current address */
+        XUD_SetCrcTableAddr(addr);
 #else
-    /* RegWrite_ loads write port from dp to avoid parallel usage checks */
-    /* TODO this should really be locked for mutual exclusion */
-    XUD_UIFM_RegWrite_(UIFM_REG_ADDRESS, addr);
-#endif
-
-#elif ARCH_G
-    /* Modify CRC table for current address */
-    XUD_SetCrcTableAddr(addr);
-#else
-#error ARCH_L or ARCH_G MUST be defined
+    #error ARCH define error
 #endif
 
     return XUD_RES_OKAY;

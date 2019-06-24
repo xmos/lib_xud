@@ -3,32 +3,33 @@ import sys
 import zlib
 import random
 
-def AppendSetupToken(packets, ep, **kwargs):
-    ipg = kwargs.pop('inter_pkt_gap', 500) 
-    AppendTokenPacket(packets, 0x2d, ep, ipg)
+def AppendSetupToken(packets, ep, address, **kwargs):
+    ipg = kwargs.pop('inter_pkt_gap', 500)
+    address = kwargs.pop('address', 0)
+    AppendTokenPacket(packets, 0x2d, ep, ipg, address)
 
-def AppendOutToken(packets, ep, **kwargs):
+def AppendOutToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
-    AppendTokenPacket(packets, 0xe1, ep, ipg)
+    AppendTokenPacket(packets, 0xe1, ep, ipg, address)
 
-def AppendPingToken(packets, ep, **kwargs):
+def AppendPingToken(packets, ep, address, *kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
-    AppendTokenPacket(packets, 0xb4, ep, ipg)
+    AppendTokenPacket(packets, 0xb4, ep, ipg, address)
 
-def AppendInToken(packets, ep, **kwargs):
+def AppendInToken(packets, ep, address, **kwargs):
 
     #357 was min IPG supported on bulk loopback to not nak
     #lower values mean the loopback NAKs
     ipg = kwargs.pop('inter_pkt_gap', 10) 
-    AppendTokenPacket(packets, 0x69, ep, ipg)
+    AppendTokenPacket(packets, 0x69, ep, ipg, address)
 
     
-def AppendTokenPacket(packets, _pid, ep, ipg):
+def AppendTokenPacket(packets, _pid, ep, ipg, addr=0):
     
     packets.append(TokenPacket( 
         inter_pkt_gap=ipg, 
         pid=_pid,
-        address=0, 
+        address=addr, 
         endpoint=ep))
 
 def reflect(val, numBits):
@@ -67,6 +68,35 @@ def GenCrc16(args):
     crc = crc & 0xffff;
     #print "CRC: : {0:#x}".format(crc)
     return crc;
+
+def GenCrc5(args):
+    intSize = 32;
+    elevenBits = args
+
+    poly5 = (0x05 << (intSize - 5));
+    crc5 = (0x1F << (intSize - 5));
+    udata = (elevenBits << (intSize - 11));    #crc over 11 bits
+  
+    iBitcnt = 11;
+
+    while iBitcnt > 0:
+        if ((udata ^ crc5) & (0x1 << (intSize - 1))):   #bit4 != bit4?
+            crc5 <<= 1;
+            crc5 ^= poly5;
+        else:
+            crc5 <<= 1;
+        udata <<= 1;
+        iBitcnt = iBitcnt-1
+
+    #Shift back into position
+    crc5 >>= intSize - 5;
+
+    #Invert contents to generate crc field
+    crc5 ^= 0x1f;
+    
+    crc5 = reflect(crc5, 5);
+    return crc5;
+
 
 # Functions for creating the data contents of packets
 def create_data(args):
@@ -178,7 +208,7 @@ class DataPacket(UsbPacket):
         crc = GenCrc16(packet_bytes)   
         return crc
 
-    def get_bytes(self):
+    def get_bytes(self, do_tokens=False):
         bytes = []
 
         bytes.append(self.pid)
@@ -197,9 +227,6 @@ class DataPacket(UsbPacket):
             bytes.append((crc >> (8*i)) & 0xff)
 
         return bytes
-
-  
-
 
 class RxDataPacket(RxPacket, DataPacket):
     
@@ -223,14 +250,28 @@ class TokenPacket(TxPacket):
         super(TokenPacket, self).__init__(**kwargs)
         self.endpoint = kwargs.pop('endpoint', 0)
         self.valid = kwargs.pop('valid', 1)
- 
+        self.address = kwargs.pop('address', 0)
+        self.crc5 = GenCrc5(reflect(((self.endpoint & 0xf)<<7) | ((self.address & 0x7f)<<0), 11))
+    
+
         # Always override to match IFM
         self.data_valid_count = 4 #todo
 
-    def get_bytes(self):
+    def get_bytes(self, do_tokens=False):
         bytes = []
-        bytes.append(self.pid & 0xf)
-        bytes.append(self.endpoint)
+        
+        if do_tokens:
+            bytes.append(self.pid & 0xf)
+            bytes.append(self.endpoint)
+        else:
+            bytes.append(self.pid)
+           
+            tokenbyte0 = self.address | ((self.endpoint & 1) << 7);
+            tokenbyte1 = (self.endpoint >> 1) | (self.crc5 << 3)
+            
+            bytes.append(tokenbyte0);
+            bytes.append(tokenbyte1);
+        
         return bytes
 
     # Token valid
@@ -243,7 +284,7 @@ class HandshakePacket(UsbPacket):
         super(HandshakePacket, self).__init__(**kwargs)
         self.pid = kwargs.pop('pid', 0x2) #Default to ACK
 
-    def get_bytes(self):
+    def get_bytes(self, do_tokens=False):
         bytes = []
         bytes.append(self.pid)
         return bytes

@@ -118,7 +118,7 @@ class UsbPhyShim(UsbPhy):
                  #   print "Token packet, clear valid token"
                 xsi.drive_port_pins(self._vld, 0)
 
-                for (i, byte) in enumerate(packet.get_bytes()):
+                for (i, byte) in enumerate(packet.get_bytes(do_tokens=True)):
 
                     # xCore should not be trying to send if we are trying to send..
                     if xsi.sample_port_pins(self._txv) == 1:

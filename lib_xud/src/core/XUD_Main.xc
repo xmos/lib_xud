@@ -269,31 +269,58 @@ unsigned g_txHandshakeTimeout;
 unsigned g_prevPid=0xbadf00d;
 unsigned int data_pid=0xbadf00d;
 
-#if defined(ARCH_S) || defined (ARCH_X200)
 /* USB Port declarations - for Zevious with Galaxion */
-extern out port tx_readyout; // aka txvalid
-extern in port tx_readyin;
-extern out buffered port:32 p_usb_txd;
-extern in buffered port:32 p_usb_rxd;
-extern in port rx_rdy;
-extern in port flag0_port;
-extern in port flag1_port;
-extern in port flag2_port;
-extern in buffered port:32 p_usb_clk;
-extern clock tx_usb_clk;
-extern clock rx_usb_clk;
-#define reg_write_port null
-#define reg_read_port null
+//extern out port tx_readyout; // aka txvalid
+//extern in port tx_readyin;
+//extern out buffered port:32 p_usb_txd;
+//extern in buffered port:32 p_usb_rxd;
+//extern in port rx_rdy;
+//extern in port flag0_port;
+//extern in port flag1_port;
+//#if !defined(__XS3A__)
+//extern in port flag2_port;
+//#else
+//#define flag2_port null
+//#endif
+//extern in buffered port:32 p_usb_clk;
+//extern clock tx_usb_clk;
+//extern clock rx_usb_clk;
+
+in port flag0_port = PORT_USB_FLAG0; /* For XS3: Mission: RXA */
+in port flag1_port = PORT_USB_FLAG1; /* For XS3: Mission: RXE */
+
+#if !defined (__XS3A__)
+in port flag2_port = PORT_USB_FLAG2;
 #else
-extern in buffered port:32  p_usb_clk;
-extern out port reg_write_port;
-extern in  port reg_read_port;
-extern in  port flag0_port;
-extern in  port flag1_port;
-extern in  port flag2_port;
-extern out port p_usb_txd;
-extern port p_usb_rxd;
+#define flag2_port null
 #endif
+
+#if defined(ARCH_S) || defined(ARCH_X200) || defined(__XS3A__)
+in buffered port:32 p_usb_clk     = PORT_USB_CLK;
+out buffered port:32 p_usb_txd = PORT_USB_TXD;
+in  buffered port:32 p_usb_rxd = PORT_USB_RXD;
+out port tx_readyout           = PORT_USB_TX_READYOUT;
+in port tx_readyin             = PORT_USB_TX_READYIN;
+in port rx_rdy                 = PORT_USB_RX_READY;
+
+on USB_TILE: clock tx_usb_clk  = XS1_CLKBLK_2;
+on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_3;
+
+#elif defined(ARCH_L) || defined(ARCH_G)
+
+in port p_usb_clk       = PORT_USB_CLK;
+out port reg_write_port = PORT_USB_REG_WRITE;
+in  port reg_read_port  = PORT_USB_REG_READ;
+out port p_usb_txd      = PORT_USB_TXD;
+port p_usb_rxd          = PORT_USB_RXD;
+in port p_usb_stp       = PORT_USB_STP_SUS;
+#else
+#error XUD_SERIES_SUPPORT not equal to XUD_U_SERIES, XUD_G_SERIES or XUD_L_SERIES
+#endif
+
+// TODO RM ME
+#define reg_read_port null
+#define reg_write_port null
 
 #ifdef XUD_ISO_OUT_COUNTER
 int xud_counter = 0;

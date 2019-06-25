@@ -4,13 +4,14 @@ import random
 import xmostest
 from  usb_packet import *
 from usb_clock import Clock
-from helpers import do_rx_test, packet_processing_time, get_dut_address
-from helpers import choose_small_frame_size, check_received_packet, runall_rx
+from helpers import do_usb_test, runall_rx
 
 def do_test(arch, clk, phy, seed):
     
     rand = random.Random()
     rand.seed(seed)
+
+    address = 1
 
     ep_loopback = 3
     ep_loopback_kill = 2
@@ -23,13 +24,14 @@ def do_test(arch, clk, phy, seed):
 
     for pkt_length in range(200, 204):
         
-        AppendOutToken(packets, ep_loopback)
+        AppendOutToken(packets, ep_loopback, address)
         packets.append(TxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid)) #DATA0
    
         #XXwas min IPG supported on iso loopback to not nak
         #This was 420, had to increase when moved to lib_xud (14.1.2 tools)
         # increased again from 437 when SETUP/OUT checking added
-        AppendInToken(packets, ep_loopback, inter_pkt_gap=477)
+        # increaed from 477 when adding xs3
+        AppendInToken(packets, ep_loopback, address, inter_pkt_gap=498)
         packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid, timeout=9)) #DATA0
 
         #No toggle for Iso
@@ -37,16 +39,16 @@ def do_test(arch, clk, phy, seed):
     pkt_length = 10
 
     #Loopback and die..
-    AppendOutToken(packets, ep_loopback_kill)
+    AppendOutToken(packets, ep_loopback_kill, address)
     packets.append(TxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
     packets.append(RxHandshakePacket())
    
-    AppendInToken(packets, ep_loopback_kill, inter_pkt_gap=397)
+    AppendInToken(packets, ep_loopback_kill, address, inter_pkt_gap=397)
     packets.append(RxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
     packets.append(TxHandshakePacket())
 
 
-    do_rx_test(arch, clk, phy, packets, __file__, seed,
+    do_usb_test(arch, clk, phy, packets, __file__, seed,
                level='smoke', extra_tasks=[])
 
 def runtest():

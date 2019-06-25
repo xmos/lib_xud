@@ -12,7 +12,7 @@ def AppendOutToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
     AppendTokenPacket(packets, 0xe1, ep, ipg, address)
 
-def AppendPingToken(packets, ep, address, *kwargs):
+def AppendPingToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
     AppendTokenPacket(packets, 0xb4, ep, ipg, address)
 

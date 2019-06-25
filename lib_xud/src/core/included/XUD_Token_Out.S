@@ -36,7 +36,8 @@ InformEP_Iso:                                   // Iso EP - no handshake
     ldw        r11, r3[1]                       // Load EP chanend
     out        res[r11], r4                     // Output datalength (words)
     outt       res[r11], r8                     // Send tail length
-
+    
+    ldc        r7, 0xf335                       // CRC16 init (in) 
     ldc        r6, 0x3334                       // CRC16 init (out) - Needs reseting after an out
 #ifndef ARCH_G
     ldw        r1, sp[STACK_FLAG0_PORT]

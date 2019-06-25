@@ -23,19 +23,19 @@ def do_test(arch, clk, phy, seed):
         #min 237
         AppendOutToken(packets, 3, address, inter_pkt_gap=1)
         packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket(timeout=9))
+        packets.append(RxHandshakePacket(timeout=10))
 
         AppendOutToken(packets, 4, address, inter_pkt_gap=1)
         packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket(timeout=9))
+        packets.append(RxHandshakePacket(timeout=10))
 
         AppendOutToken(packets, 5, address, inter_pkt_gap=0)
         packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket(timeout=9))
+        packets.append(RxHandshakePacket(timeout=10))
 
         AppendOutToken(packets, 6, address, inter_pkt_gap=0)
         packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket(timeout=9))
+        packets.append(RxHandshakePacket(timeout=10))
 
         data_val = data_val + pkt_length
         data_pid = data_pid ^ 8

@@ -14,7 +14,7 @@ lib_xud::xud_sim_tests::test_bulk_rx_basic_rxerror[arch=xs2;clk=60Mhz]      FAIL
 lib_xud::xud_sim_tests::test_bulk_rx_fastpacket[arch=xs3;clk=60Mhz]         PASS
 lib_xud::xud_sim_tests::test_bulk_rx_fastpacket[arch=xs2;clk=60Mhz]         PASS
 lib_xud::xud_sim_tests::test_bulk_rx_fastpacket_multiep[arch=xs3;clk=60Mhz] PASS
-lib_xud::xud_sim_tests::test_bulk_rx_fastpacket_multiep[arch=xs2;clk=60Mhz] FAIL
+lib_xud::xud_sim_tests::test_bulk_rx_fastpacket_multiep[arch=xs2;clk=60Mhz] PASS
 lib_xud::xud_sim_tests::test_bulk_rxtx_fastpacket[arch=xs3;clk=60Mhz]       PASS
 lib_xud::xud_sim_tests::test_bulk_rxtx_fastpacket[arch=xs2;clk=60Mhz]       PASS
 lib_xud::xud_sim_tests::test_bulk_tx_basic[arch=xs3;clk=60Mhz]              PASS

@@ -1,0 +1,43 @@
+------------
+TEST SUMMARY
+------------
+lib_xud::xud_sim_tests::test_bulk_loopback[arch=xs3;clk=60Mhz]              PASS
+lib_xud::xud_sim_tests::test_bulk_loopback[arch=xs2;clk=60Mhz]              PASS
+lib_xud::xud_sim_tests::test_bulk_rx_basic[arch=xs3;clk=60Mhz]              PASS
+lib_xud::xud_sim_tests::test_bulk_rx_basic[arch=xs2;clk=60Mhz]              PASS
+lib_xud::xud_sim_tests::test_bulk_rx_basic_badcrc32[arch=xs3;clk=60Mhz]     PASS
+lib_xud::xud_sim_tests::test_bulk_rx_basic_badcrc32[arch=xs2;clk=60Mhz]     PASS
+lib_xud::xud_sim_tests::test_bulk_rx_basic_badpid[arch=xs3;clk=60Mhz]       PASS
+lib_xud::xud_sim_tests::test_bulk_rx_basic_badpid[arch=xs2;clk=60Mhz]       PASS
+lib_xud::xud_sim_tests::test_bulk_rx_basic_rxerror[arch=xs3;clk=60Mhz]      FAIL
+lib_xud::xud_sim_tests::test_bulk_rx_basic_rxerror[arch=xs2;clk=60Mhz]      FAIL
+lib_xud::xud_sim_tests::test_bulk_rx_fastpacket[arch=xs3;clk=60Mhz]         PASS
+lib_xud::xud_sim_tests::test_bulk_rx_fastpacket[arch=xs2;clk=60Mhz]         PASS
+lib_xud::xud_sim_tests::test_bulk_rx_fastpacket_multiep[arch=xs3;clk=60Mhz] PASS
+lib_xud::xud_sim_tests::test_bulk_rx_fastpacket_multiep[arch=xs2;clk=60Mhz] FAIL
+lib_xud::xud_sim_tests::test_bulk_rxtx_fastpacket[arch=xs3;clk=60Mhz]       PASS
+lib_xud::xud_sim_tests::test_bulk_rxtx_fastpacket[arch=xs2;clk=60Mhz]       PASS
+lib_xud::xud_sim_tests::test_bulk_tx_basic[arch=xs3;clk=60Mhz]              PASS
+lib_xud::xud_sim_tests::test_bulk_tx_basic[arch=xs2;clk=60Mhz]              PASS
+lib_xud::xud_sim_tests::test_bulk_tx_basic_noack[arch=xs3;clk=60Mhz]        PASS
+lib_xud::xud_sim_tests::test_bulk_tx_basic_noack[arch=xs2;clk=60Mhz]        PASS
+lib_xud::xud_sim_tests::test_bulk_tx_fastpacket[arch=xs3;clk=60Mhz]         PASS
+lib_xud::xud_sim_tests::test_bulk_tx_fastpacket[arch=xs2;clk=60Mhz]         PASS
+lib_xud::xud_sim_tests::test_bulk_tx_fastpacket_multiep[arch=xs3;clk=60Mhz] PASS
+lib_xud::xud_sim_tests::test_bulk_tx_fastpacket_multiep[arch=xs2;clk=60Mhz] PASS
+lib_xud::xud_sim_tests::test_invalidtoken[arch=xs3;clk=60Mhz]               FAIL
+lib_xud::xud_sim_tests::test_invalidtoken[arch=xs2;clk=60Mhz]               PASS
+lib_xud::xud_sim_tests::test_iso_loopback[arch=xs3;clk=60Mhz]               PASS
+lib_xud::xud_sim_tests::test_iso_loopback[arch=xs2;clk=60Mhz]               PASS
+lib_xud::xud_sim_tests::test_iso_rx_basic[arch=xs3;clk=60Mhz]               PASS
+lib_xud::xud_sim_tests::test_iso_rx_basic[arch=xs2;clk=60Mhz]               PASS
+lib_xud::xud_sim_tests::test_iso_rxtx_fastpacket[arch=xs3;clk=60Mhz]        FAIL
+lib_xud::xud_sim_tests::test_iso_rxtx_fastpacket[arch=xs2;clk=60Mhz]        FAIL
+lib_xud::xud_sim_tests::test_iso_tx_basic[arch=xs3;clk=60Mhz]               FAIL
+lib_xud::xud_sim_tests::test_iso_tx_basic[arch=xs2;clk=60Mhz]               PASS
+lib_xud::xud_sim_tests::test_ping_rx_basic[arch=xs3;clk=60Mhz]              PASS
+lib_xud::xud_sim_tests::test_ping_rx_basic[arch=xs2;clk=60Mhz]              PASS
+------------
+28/36 PASSED
+------------
+

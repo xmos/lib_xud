@@ -49,7 +49,6 @@ int TestEp_PingTest(chanend c_out[], int epNum1, int epNum2)
         }
 
     }
-
         
 	XUD_GetBuffer(ep_out2, buffer, length);
 
@@ -63,6 +62,20 @@ int TestEp_PingTest(chanend c_out[], int epNum1, int epNum2)
 	{
 		fail(FAIL_RX_DATAERROR);
 	}
+
+    // Another packet to EP 1 means we can exit
+    XUD_GetBuffer(ep_out1, buffer, length);
+
+    if(length != i)
+    {
+        printintln(length);
+        fail(FAIL_RX_LENERROR);
+    }
+
+    if(RxDataCheck(buffer, length, epNum1))
+    {
+        fail(FAIL_RX_DATAERROR);
+    }
 	
 	return 0;
 }

@@ -54,6 +54,11 @@ def do_test(arch, clk, phy, seed):
     AppendPingToken(packets, 2, address)
     packets.append(RxHandshakePacket(pid=0x5a))
 
+    # Send a packet to EP 1 so the DUT knows it can exit.
+    AppendOutToken(packets, ep, address)
+    packets.append(TxDataPacket(rand, data_start_val=dataval+10, length=10, pid=0x3^8)) #DATA1
+    packets.append(RxHandshakePacket())
+
     do_usb_test(arch, clk, phy, packets, __file__, seed,level='smoke', extra_tasks=[])
 
 def runtest():

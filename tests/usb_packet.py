@@ -155,7 +155,8 @@ class UsbPacket(object):
             return "DATA0"
         elif self.pid == 105:
             return "IN"
-
+        elif self.pid == 180:
+            return "PING"
         else:
            return "UNKNOWN"
 

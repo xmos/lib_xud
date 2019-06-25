@@ -25,7 +25,7 @@ lib_xud::xud_sim_tests::test_bulk_tx_fastpacket[arch=xs3;clk=60Mhz]         PASS
 lib_xud::xud_sim_tests::test_bulk_tx_fastpacket[arch=xs2;clk=60Mhz]         PASS
 lib_xud::xud_sim_tests::test_bulk_tx_fastpacket_multiep[arch=xs3;clk=60Mhz] PASS
 lib_xud::xud_sim_tests::test_bulk_tx_fastpacket_multiep[arch=xs2;clk=60Mhz] PASS
-lib_xud::xud_sim_tests::test_invalidtoken[arch=xs3;clk=60Mhz]               FAIL
+lib_xud::xud_sim_tests::test_invalidtoken[arch=xs3;clk=60Mhz]               PASS
 lib_xud::xud_sim_tests::test_invalidtoken[arch=xs2;clk=60Mhz]               PASS
 lib_xud::xud_sim_tests::test_iso_loopback[arch=xs3;clk=60Mhz]               PASS
 lib_xud::xud_sim_tests::test_iso_loopback[arch=xs2;clk=60Mhz]               PASS

@@ -34,15 +34,15 @@ def do_test(arch, clk, phy, seed):
     packets.append(TokenPacket( 
         inter_pkt_gap=200, 
         pid=0x69,
-        address=address, 
+        address=address+1, 
         endpoint=ep,
-        valid=False))
+        valid=False))   #Note, the valid is the valid flag for xs2
 
   # Valid OUT but not for us..
     packets.append(TokenPacket( 
         inter_pkt_gap=200, 
         pid=0xe1,
-        address=address, 
+        address=address+1, 
         endpoint=ep,
         valid=False))
 
@@ -54,7 +54,7 @@ def do_test(arch, clk, phy, seed):
     packets.append(TokenPacket( 
         inter_pkt_gap=200, 
         pid=0x2d,
-        address=address, 
+        address=address+2, 
         endpoint=ep,
         valid=False))
 
@@ -69,7 +69,7 @@ def do_test(arch, clk, phy, seed):
     packets.append(TokenPacket( 
         inter_pkt_gap=200, 
         pid=0xb4,
-        address=address, 
+        address=address+3, 
         endpoint=ep,
         valid=False))
 

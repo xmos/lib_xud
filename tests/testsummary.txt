@@ -37,6 +37,8 @@ lib_xud::xud_sim_tests::test_iso_tx_basic[arch=xs3;clk=60Mhz]               PASS
 lib_xud::xud_sim_tests::test_iso_tx_basic[arch=xs2;clk=60Mhz]               PASS
 lib_xud::xud_sim_tests::test_ping_rx_basic[arch=xs3;clk=60Mhz]              PASS
 lib_xud::xud_sim_tests::test_ping_rx_basic[arch=xs2;clk=60Mhz]              PASS
+lib_xud::xud_sim_tests::test_shorttoken[arch=xs3;clk=60Mhz]                 FAIL
+lib_xud::xud_sim_tests::test_shorttoken[arch=xs2;clk=60Mhz]                 PASS
 ------------
-33/36 PASSED
+34/38 PASSED
 ------------

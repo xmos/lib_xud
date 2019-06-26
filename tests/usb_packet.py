@@ -168,7 +168,6 @@ class RxPacket(UsbPacket):
         self.timeout = kwargs.pop('timeout', 8)
         super(RxPacket, self).__init__(**kwargs)
 
-
     def get_timeout(self):
         return self.timeout
 

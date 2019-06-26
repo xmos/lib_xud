@@ -135,8 +135,8 @@ class UsbPacket(object):
 
     def __init__(self, **kwargs):
         self.pid = kwargs.pop('pid', 0xc3) 
+        self.data_bytes = kwargs.pop('data_bytes', None)
         self.num_data_bytes = kwargs.pop('length', 0)
-        self.data_bytes = None
         self.data_valid_count = kwargs.pop('data_valid_count', 0)
         self.bad_crc = kwargs.pop('bad_crc', False)
 
@@ -185,6 +185,18 @@ class TxPacket(UsbPacket):
 
     def get_inter_pkt_gap(self):
         return self.inter_pkt_gap
+
+# Implemented such that we can generate broken or bad packets
+    def get_bytes(self, do_tokens=False):
+        bytes = []
+        if do_tokens:
+            bytes.append(self.pid)
+        else:
+            bytes.append(self.pid | ((~self.pid) << 4))
+            for x in range(len(self.data_bytes)):
+               bytes.append(self.data_bytes[x])
+        return bytes
+
 
 # DataPacket class, inherits from Usb Packet
 class DataPacket(UsbPacket):
@@ -237,7 +249,7 @@ class RxDataPacket(RxPacket, DataPacket):
         #Re-construct full PID - xCORE sends out full PIDn | PID on Tx
         super(RxDataPacket, self).__init__(pid = (_pid & 0xf) | (((~_pid)&0xf) << 4), **kwargs)
 
-class TxDataPacket(TxPacket, DataPacket):
+class TxDataPacket(DataPacket, TxPacket):
 
     def __init__(self, rand, **kwargs):
         super(TxDataPacket, self).__init__(**kwargs)

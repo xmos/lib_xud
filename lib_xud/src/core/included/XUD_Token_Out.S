@@ -39,7 +39,7 @@ InformEP_Iso:                                   // Iso EP - no handshake
     
     ldc        r7, 0xf335                       // CRC16 init (in) 
     ldc        r6, 0x3334                       // CRC16 init (out) - Needs reseting after an out
-#ifndef ARCH_G
+#ifndef __XS3A__
     ldw        r1, sp[STACK_FLAG0_PORT]
 #endif
     //ldc        r4, XUD_MAX_NUM_EP_OUT           // This could be shaved if XUD_MAX_NUM_EP's < 12. Now use an LDAW to at 16.

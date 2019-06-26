@@ -7,7 +7,6 @@
 
 .align 4
 .skip 0
-//.cc_top Pid_Out.func, Pid_Out
 Pid_Out:
 #ifdef ARCH_L
     inpw       r10, res[RXD], 8;                // Read EP Number */
@@ -45,7 +44,7 @@ InformEP_Iso:                                   // Iso EP - no handshake
     //ldc        r4, XUD_MAX_NUM_EP_OUT           // This could be shaved if XUD_MAX_NUM_EP's < 12. Now use an LDAW to at 16.
 
 //------------------------------------------------------------------------------------------------
-#ifdef ARCH_L
+#if defined(__XS2A__) || defined(__XS1B__)
     ldaw        r10, dp[PidJumpTable]
                                                 // Original USB Token: | CRC | EP | ADDR | PID | junk
                                                 // Received token is address and CRC checked.
@@ -158,4 +157,3 @@ PrimaryBufferFull_NoNak:
 
 
 
-//.cc_bottom Pid_Out.func

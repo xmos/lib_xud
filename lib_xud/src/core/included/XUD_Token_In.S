@@ -226,10 +226,6 @@ TxHandshakeTimeOut:
     edu         res[RXD]
     bu          BadHandShake
 
-    //ldc         r11, 1
-    //out         res[r5], r11
-    //bu        	NextToken
-
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align 4
 TxHandShakeReceived:
@@ -238,8 +234,8 @@ XUD_IN_RxAck:
     clrpt		res[r1]			                // Clear port time on valid token port
     edu         res[RXD]
     shr         r11, r11, 24                    // Shift off junk data to leave ACK
-#ifdef ARCH_L
-    ldc         r9, USB_PID_ACK                     // Check for good ACK (L series strips of negated bits from PID)
+#if defined(__XS2A__) || defined(__XS1B__)
+    ldc         r9, USB_PID_ACK                 // Check for good ACK (L series strips of negated bits from PID)
 #else
     ldc         r9, USB_PIDn_ACK
 #endif

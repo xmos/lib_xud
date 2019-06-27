@@ -1,7 +1,6 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
-//.cc_top Pid_Sof.func, Pid_Sof
-// Received SOF token: Reset suspend/reset detection timer
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 
+// Received SOF token: Reset suspend/reset detection timer
 .align 4
 Pid_Sof:
 #ifdef ARCH_L
@@ -12,8 +11,12 @@ Pid_Sof:
     bt          r11, InvalidToken;              // If VALID_TOKEN not high, ignore token
 
 #else
-//#include "XUD_G_Crc.S"
+    // NOTE: we are not CRC checking SOF's
     in          r10, res[RXD]                   // Input Frame number
+    shr         r10 , r10, 16                   // Shift off port junk
+    ldc         r11, 0x7ff                      // Remove CRC5
+    and         r10, r10, r11
+                                                
 #endif
     clrsr       0x3
     ldw         r11, sp[(STACK_EXTEND+9)]
@@ -33,11 +36,6 @@ Pid_Sof:
 
 	bu          Loop_BadPid
 
-//.cc_bottom Pid_Sof.func
-
-
-//.cc_top Pid_Sof_NoChan.func, Pid_Sof_NoChan
-
 // Received SOF token: Reset suspend/reset detection timer
 .align 4
 Pid_Sof_NoChan:
@@ -48,7 +46,6 @@ Pid_Sof_NoChan:
     in         r11, res[r1];
     bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
 
-//bl printintln
 #else
 //#include "XUD_G_Crc.S"
     in          r10, res[RXD]                   // Input Frame number
@@ -66,7 +63,6 @@ Pid_Sof_NoChan:
 	bu          Loop_BadPid
 
 
-//.cc_bottom Pid_Sof_NoChan.func
 
 
 

@@ -103,6 +103,7 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
 #define FAIL_RX_LENERROR    1
 #define FAIL_RX_EXPECTED_CTL 2
 #define FAIL_RX_BAD_RETURN_CODE 3
+#define FAIL_RX_FRAMENUMBER 4
 
 unsigned fail(int x)
 {
@@ -124,6 +125,9 @@ unsigned fail(int x)
             printstr("\nXCORE: ### FAIL ### : Unexpcected return code\n");
             break;
 
+        case FAIL_RX_FRAMENUMBER:
+            printstr("\nXCORE: ### FAIL ### : Received bad frame number\n");
+            break;
     }
 
     exit(1);

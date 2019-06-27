@@ -85,7 +85,7 @@ class UsbPhyUtmi(UsbPhy):
 
             else:
 
-                #TokenPacket or TxPacket
+                #TxPacket (which could be a TxToken or TxDataPacket)
                 
                 # xCore should not be trying to send if we are trying to send..
                 if xsi.sample_port_pins(self._txv) == 1:

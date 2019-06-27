@@ -17,13 +17,19 @@ def AppendPingToken(packets, ep, address, **kwargs):
     AppendTokenPacket(packets, 0xb4, ep, ipg, address)
 
 def AppendInToken(packets, ep, address, **kwargs):
-
     #357 was min IPG supported on bulk loopback to not nak
     #lower values mean the loopback NAKs
     ipg = kwargs.pop('inter_pkt_gap', 10) 
     AppendTokenPacket(packets, 0x69, ep, ipg, address)
 
+def AppendSofToken(packets, framenumber, **kwargs):
+    ipg = kwargs.pop('inter_pkt_gap', 500) 
     
+    # Override EP and Address 
+    ep = (framenumber >> 7) & 0xf
+    address = (framenumber) & 0x7f
+    AppendTokenPacket(packets, 0xa5, ep, ipg, address)
+
 def AppendTokenPacket(packets, _pid, ep, ipg, addr=0):
     
     packets.append(TokenPacket( 
@@ -157,6 +163,8 @@ class UsbPacket(object):
             return "IN"
         elif self.pid == 180:
             return "PING"
+        elif self.pid == 165:
+            return "SOF"
         else:
            return "UNKNOWN"
 
@@ -263,8 +271,12 @@ class TokenPacket(TxPacket):
         self.endpoint = kwargs.pop('endpoint', 0)
         self.valid = kwargs.pop('valid', 1)
         self.address = kwargs.pop('address', 0)
-        self.crc5 = GenCrc5(reflect(((self.endpoint & 0xf)<<7) | ((self.address & 0x7f)<<0), 11))
-    
+       
+        # Generate correct crc5
+        crc5 = GenCrc5(reflect(((self.endpoint & 0xf)<<7) | ((self.address & 0x7f)<<0), 11))
+        
+        # Correct crc5 can be overridden
+        self.crc5 = kwargs.pop('crc5', crc5)
 
         # Always override to match IFM
         self.data_valid_count = 4 #todo

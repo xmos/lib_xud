@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Copyright (c) 2016-2019, XMOS Ltd, All rights reserved
 
 #Generate a SETUP transaction that is too short... with a bad CRC
 #Dont really expect a short packet with a good CRC - would be a very bad host (though would be good to be able to handle this..)

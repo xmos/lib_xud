@@ -26,3 +26,4 @@ _README/**
 sphinx.output
 Installs/
 .settings
+**/.venv/**

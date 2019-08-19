@@ -10,11 +10,11 @@ lib_xud Change Log
 -----
 
   * RESOLVED:   Transmit timing fixes for U-series devices (introduced in sc_xud
-                2.3.0)
+    2.3.0)
   * RESOLVED:   Continuous suspend/resume notifications when host disconnected
-                (introduced in sc_xud 2.4.2, #11813)
-  * RESOLVED:   Exception raised in GET_STATUS request when null pointer passed for
-                high-speed configuration descriptor
+    (introduced in sc_xud 2.4.2, #11813)
+  * RESOLVED:   Exception raised in GET_STATUS request when null pointer passed
+    for high-speed configuration descriptor
 
 0.1.0
 -----

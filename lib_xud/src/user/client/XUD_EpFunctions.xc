@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 /** @file      XUD_EPFunctions.xc
   * @brief     Implementation of user API functions.  See xud.h for documentation.
   * @author    Ross Owen, XMOS Limited
@@ -31,66 +31,6 @@ XUD_Result_t XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength
     /* No PID reset, 0 start index */
     return XUD_SetData(c, buffer, datalength, 0, 0);
 }
-
-//New API (WIP)
-//XUD_Result_t XUD_GetControlBuffer(XUD_ep c, unsigned char buffer[], unsigned &datalength)
-//{
-//    return XUD_GetData(c, buffer, datalength);
-//}
-
-//XUD_Result_t XUD_SetControlBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
-//{
-    /* No PID reset, 0 start index */
-  //  return XUD_SetData(c, buffer, datalength, 0, 0);
-//}
-
-
-/**
- * Special case of set buffer for control EP's where you care if you receive a new SETUP instead of sending
- * the passed IN data.
- *
- * NOTE: This function is currently in use
- *
- * TODO we dont want to pass in channels here really.. get that out of the XUD_EP struct..
- */
-int XUD_SetControlBuffer2(chanend c_out, chanend c_in, XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer_out[], unsigned char buffer_in[], unsigned datalength)
-{
-    unsigned length;
-    XUD_Result_t result;
-
-    /* Set ready on both the In and Out Eps */
-    XUD_SetReady_Out(ep_out, buffer_out);
-    XUD_SetReady_In(ep_in, buffer_in, datalength);
-
-    select
-    {
-        case XUD_GetData_Select(c_out, ep_out, length, result):
-
-                if (result == -1)
-                {
-                    /* If tmp - then we got a reset */
-                    return result;
-                }
-                else
-                {
-                    /* Got data instead of sending */
-                    return 2;
-                }
-            break;
-
-
-        case XUD_SetData_Select(c_in, ep_in, result):
-
-            /* We sent the data we wanted to send...
-             * Return 0 for no error */
-            return 0;
-            break;
-    }
-    return 0;
-}
-
-
-
 
 XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax)
 {

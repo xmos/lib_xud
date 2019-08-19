@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 /** XUD_EpFuncs.S
   * @brief     Functions for data transfer to/from XUD
   * @author    Ross Owen, XMOS Limited
@@ -10,7 +10,6 @@
 .assert 0, too_many_cores, "Warning: More than 6 cores used on a tile. Ensure this is not the case on tile running XUD."
 #endif
 
-#if 1
 //int XUD_GetSetupData(XUD_ep e_out, unsigned buffer[], unsigned &length);
 //                     r0            r1                 r2
 .globl XUD_GetSetupData
@@ -129,136 +128,6 @@ XUD_GetSetupData_Reset:
 .set XUD_GetSetupData.locnoglobalaccess, 1
 .set XUD_GetSetupData.locnointerfaceaccess, 1
 .set XUD_GetSetupData.locnonotificationselect, 1
-
-
-//void XUD_GetSetupData_Select(chan c,XUD_ep e_out, unsigned &length, XUD_Result_t &result);
-//                              r0            r1                 r2     r3
-.globl XUD_GetSetupData_Select
-.type XUD_GetSetupData_Select, @function
-.cc_top XUD_GetSetupData_Select.func
-.align 4
-XUD_GetSetupData_Select:
-#if defined(__XS2A__)
-.issue_mode single
-  ENTSP_lu6 4
-#else
-  entsp       4
-#endif
-    stw         r4, sp[1]
-    stw         r10, sp[2]
-
-XUD_GetSetupData_Select_Retry:
-    testct     r11, res[r0]                    // Test whether there is a RESET
-    bt         r11, XUD_GetSetupData_Select_Reset
-
-XUD_GetSetupData_Select_NoReq:                         // Entry for _NoReq
-    in         r4, res[r0]                     // Input packet "word" length
-    testct     r11, res[r0]                    // CT means we got a SETUP (not OUT).
-    bf         r11, XUD_GetSetupData_Select_GotOut
-    inct       r11, res[r0]                    // Always get 0 (expect 8 bytes data)
-
-//XUD_GetSetupData_Select_CheckPid:
-                                                // We expect data0 else something gone wrong...
-                                                // TODO..
-
-XUD_GetSetupData_Select_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
-#if (XUD_SERIES_SUPPORT==3)
-    ldc         r11, USB_PIDn_DATA1
-#else
-    ldc         r11, USB_PID_DATA1
-#endif
-    stw         r11, r1[4]                      // Reset OUT toggle
-
-    ldc         r11, 640                        // Assuming MAX_NUM_EPS is 16 and struct size is 40 here!
-    add         r11, r1, r11
-
-    ldc         r0, USB_PIDn_DATA1
-    stw         r0, r11[4]                     // Reset IN toggle
-
-    ldc         r0, 8                           // Return 8 byte length (TODO really could return actual length here)
-    stw         r0, r2[0]
-
-    ldc         r0, 0                           // Return no error XUD_RES_OKAY
-    stw         r0, r3[0]
-    ldw         r10, sp[2]
-    ldw         r4, sp[1]
-    retsp       4
-
-XUD_GetSetupData_Select_GotOut:                        // Got an OUT instead not a SETUP
-    int         r11, res[r0]
-
-    shl         r4, r4, 2                       // Num received words to bytes
-    add         r4, r11, r4                     // r11: Total bytes received (Note this includes 2 byte crc)
-
-XUD_GetSetupData_Select_CheckPid:
-    ldw         r11, r1[6]                      // Load received PID from EP structure
-    shr         r11, r11, 24                    // Shift down due to inpw
-    ldw         r0, r1[4]                       // Load expected PID
-
-    xor         r11, r0, r11                    // Do the comparison
-    bt          r11, XUD_GetSetupData_Select_BadPkt          // Ignore packet...
-
-XUD_GetSetupData_Select_PidOkay:
-    ldw         r11, r1[5]                      // Load EP type
-    bf          r11, XUD_GetSetupData_Select_ReturnOk  // Jump over PID toggle for ISO
-
-XUD_GetSetupData_Select_PidToggle:
-    ldc         r11, 8
-    xor         r0, r0, r11
-    stw         r0, r1[4]
-
-XUD_GetSetupData_Select_ReturnOk:
-    sub         r0, r4, 2                       // Length correction for CRC correction (return val in r2[0])
-    stw         r0, r2[0]
-    ldc         r11, 0
-    stw         r11, r3[0]
-
-    ldw         r10, sp[2]
-    ldw         r4, sp[1]
-    retsp       4
-
-
-XUD_GetSetupData_Select_BadPkt:
-    ldc         r0, 0                           // Return 0 length to be ultra safe and tidy..
-    stw         r0, r2[0]                       // Return length (note: passed by ref)
-    ldc         r0, 1
-    stw         r0, r3[0]                       // Return RES_ERR (note: passed by ref)
-    ldw         r10, sp[2]
-    ldw         r4, sp[1]
-    retsp       4
-
-
-XUD_GetSetupData_Select_Reset:
-    mkmsk      r0, 32                           // Return -1 as result
-    stw        r0, r3[0]
-    ldw        r10, sp[2]
-    ldw        r4, sp[1]
-    retsp      4
-
-.size XUD_GetSetupData_Select, .-XUD_GetSetupData_Select
-.cc_bottom XUD_GetSetupData_Select.func
-.globl XUD_GetSetupData_Select.nstackwords
-.globl XUD_GetSetupData_Select.maxchanends
-.globl XUD_GetSetupData_Select.maxtimers
-.globl XUD_GetSetupData_Select.maxcores
-.set XUD_GetSetupData_Select.nstackwords, 4
-.set XUD_GetSetupData_Select.maxchanends, 0
-.set XUD_GetSetupData_Select.maxtimers, 0
-.set XUD_GetSetupData_Select.maxcores, 1
-.globl XUD_GetSetupData_Select.locnoside
-.globl XUD_GetSetupData_Select.locnochandec
-.globl XUD_GetSetupData_Select.locnoglobalaccess
-.globl XUD_GetSetupData_Select.locnointerfaceaccess
-.globl XUD_GetSetupData_Select.locnonotificationselect
-.set XUD_GetSetupData_Select.locnoside, 1
-.set XUD_GetSetupData_Select.locnochandec, 1
-.set XUD_GetSetupData_Select.locnoglobalaccess, 1
-.set XUD_GetSetupData_Select.locnointerfaceaccess, 1
-.set XUD_GetSetupData_Select.locnonotificationselect, 1
-
-#endif
-
-
 
 //int XUD_GetData(XUD_ep c, unsigned char buffer[], unsigned &length);
 //                r0        r1                      r2

@@ -23,10 +23,16 @@ pipeline {
       upstreamProjects:
         (env.JOB_NAME.contains('PR-') ?
           "../lib_logging/${env.CHANGE_TARGET}," +
-          "../lib_xassert/${env.CHANGE_TARGET}"
+          "../lib_xassert/${env.CHANGE_TARGET}," +
+          "../tools_released/${env.CHANGE_TARGET}," +
+          "../tools_xmostest/${env.CHANGE_TARGET}," +
+          "../xdoc_released/${env.CHANGE_TARGET}"
         :
           "../lib_logging/${env.BRANCH_NAME}," +
-          "../lib_xassert/${env.BRANCH_NAME}"),
+          "../lib_xassert/${env.BRANCH_NAME}," +
+          "../tools_released/${env.BRANCH_NAME}," +
+          "../tools_xmostest/${env.BRANCH_NAME}," +
+          "../xdoc_released/${env.BRANCH_NAME}"),
       threshold: hudson.model.Result.SUCCESS
     )
   }

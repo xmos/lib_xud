@@ -4,7 +4,7 @@ lib_xud Change Log
 0.2.0
 -----
 
-  * CHANGED: Build files updated to support new "xcommon" behaviour in xwaf.
+  * CHANGE:     Build files updated to support new "xcommon" behaviour in xwaf.
 
 0.1.1
 -----

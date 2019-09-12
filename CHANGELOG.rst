@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+0.2.0
+-----
+
+  * CHANGE:     Build files updated to support new "xcommon" behaviour in xwaf.
+
 0.1.1
 -----
 
@@ -29,18 +34,18 @@ Note: Forked from sc_xud at this point.
     * RESOLVED    Issue referenced as #11813 in 2.4.2 for XS1 devices
 
 2.5.0
------ 
+-----
     * RESOLVED:   xCORE-200 USB phy parameters tuned for optimal Tx performance resulting
                   in much improved TX eye diagram and compliance test results
 
 2.4.2
 -----
-    * CHANGE:     VBUS connection to xCORE-200 no longer required when using XUD_PWR_BUS i.e. 
-                  for bus-powered devices. This removes the need to any protection circuitry and 
+    * CHANGE:     VBUS connection to xCORE-200 no longer required when using XUD_PWR_BUS i.e.
+                  for bus-powered devices. This removes the need to any protection circuitry and
                   allows for a reduced BOM.
                   Note, VBUS should still be present for self powered devices in order to pass USB
                   compliance tests.
-    * RESOLVED:   Device might hang during resume if host follows resume signality with activity 
+    * RESOLVED:   Device might hang during resume if host follows resume signality with activity
                   after a time close to specified minimum of 1.33us (#11813)
 
 2.4.1
@@ -51,12 +56,12 @@ Note: Forked from sc_xud at this point.
 -----
     * RESOLVED:   Intermittent initialisation issues with xCORE-200
     * RESOLVED:   SETUP transaction data CRC not properly checked
-    * RESOLVED:   RxError line from phy handled 
+    * RESOLVED:   RxError line from phy handled
     * RESOLVED:   Isochronous IN endpoints now send an 0-length packet if not ready rather than
-                  an (invalid) NAK. 
-    * RESOLVED:   Receive of short packets sometimes prematurely ended  
-    * RESOLVED:   Data PID not reset to DATA0 in ClearStallByAddr() (used on ClearFeature(HALT) 
-                  request from host) (#17092) 
+                  an (invalid) NAK.
+    * RESOLVED:   Receive of short packets sometimes prematurely ended
+    * RESOLVED:   Data PID not reset to DATA0 in ClearStallByAddr() (used on ClearFeature(HALT)
+                  request from host) (#17092)
 
 2.3.2
 -----
@@ -66,13 +71,13 @@ Note: Forked from sc_xud at this point.
 2.3.1
 -----
     * RESOLVED:   (Minor) XUD_ResetEpStateByAddr() could operate on corresponding OUT endpoint
-                  instead of the desired IN endpoint address as passed into the function (and 
+                  instead of the desired IN endpoint address as passed into the function (and
                   vice versa). Re-introduced into 2.3.0 due to manual merge with lib_usb.
 
 2.3.0
 -----
     * ADDED:      Support for XCORE-200 (libxud_x200.a)
-    * CHANGE:     Compatibility fixes for XMOS toolset version 14 (dual-issue support etc)  
+    * CHANGE:     Compatibility fixes for XMOS toolset version 14 (dual-issue support etc)
 
 2.2.4
 -----
@@ -82,9 +87,9 @@ Note: Forked from sc_xud at this point.
 2.2.3
 ------
     * RESOLVED:   (Minor) XUD_ResetEpStateByAddr() could operate on corresponding OUT endpoint
-                  instead of the desired IN endpoint address as passed into the function (and 
+                  instead of the desired IN endpoint address as passed into the function (and
                   vice versa)
-                  
+
 2.2.2
 -----
     * CHANGE:     Header file comment clarification only

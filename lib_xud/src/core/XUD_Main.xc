@@ -496,7 +496,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
 #endif
    
-#ifndef __XS3__
+#ifndef __XS3A__
     /* Invert valid token port */
   	set_port_inv(flag0_port);
 #endif
@@ -521,13 +521,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 
-#ifndef SIMULATION
         unsigned settings[] = {0};
 
-    #if defined (ARCH_X200)
+    #if defined(__XS2A__) || defined(__XS3A__)
         /* For xCORE-200 enable USB port muxing before enabling phy etc */
         XUD_EnableUsbPortMux(); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
     #endif
+
+#ifndef SIMULATION
         /* Enable the USB clock */
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, ( 1 << XS1_SU_CFG_USB_CLK_EN_SHIFT));
 
@@ -801,11 +802,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
             /* Run main IO loop */
             /* TODO re-order flag ports such that this check is not required */
-#if defined (__XS3__)
+#if defined (__XS3A__)
             /* flag0: Rx Error
                flag1: Rx Active
                flag2: Null */
-            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag0_port,  flag2_port, reg_read_port, reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
+            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port, reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
 #else
             /* flag0: Valid token flag
                flag1: Rx Active

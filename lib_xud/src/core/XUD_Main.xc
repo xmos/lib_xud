@@ -28,6 +28,10 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "XUD_DeviceAttach.h"
 #include "XUD_PowerSig.h"
 
+#include "xs3a_registers.h"
+#include "XUD_HAL.h"
+
+
 #if defined __XS3A__
 #undef __XS2A__
 #warning Building for XS3
@@ -543,31 +547,30 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Clear OTG control reg - incase we were running as host previously.. */
         write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
 
-#ifdef GLX_PWRDWN
-        /* Setup sleep timers and supplies */
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_ASLEEP_ADRS,    0x00007f); // 32KHz sleep requires reset
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING1_ADRS,   0x00007f);
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_WAKING2_ADRS,   0x00007f);
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_AWAKE_ADRS,     0x00007f);
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING1_ADRS, 0x00007f);
-        write_periph_word(USB_TILE_REF, XS1_GLX_PERIPH_PWR_ID, XS1_GLX_PWR_STATE_SLEEPING2_ADRS, 0x00007f); // 32KHz transition done in SLEEPING2, PLL goes x unless reset here
-#endif // GLX_PWRDWN
 #endif // SIMILATION
 
+#ifdef __XS3A__
+        XUD_EnableUsbPortMux();
+
+        unsigned d = 0;
+
+        read_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG2_NUM, d);
+        d = XS1_USB_PHY_CFG2_PONRST_SET(d, 1);
+        d = XS1_USB_PHY_CFG2_UTMI_RESET_SET(d, 0);
+        write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG2_NUM, d); 
+
+        read_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d);
+        d = XS1_USB_PHY_CFG0_PLL_EN_SET(d,1);
+        write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+#endif
         /* Wait for USB clock (typically 1ms after reset) */
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
-
-//#if !defined(ARCH_S) && !defined(__XS2A__) && !defined(__XS3A__)
-//        /* Configure ports and clock blocks for use with UIFM */
-//        XUD_UIFM_PortConfig(p_usb_clk, reg_write_port, reg_read_port, flag0_port, flag1_port, flag2_port, p_usb_txd, p_usb_rxd) ;
-//
-//        //set_pad_delay(flag1_port, 5);
-//        set_port_inv(flag0_port);
-//
-// #endif
+       
+        // TODO MOVE ME 
+        XUD_HAL_EnterMode_PeripheralFullSpeed();
 
 #if (defined(ARCH_L) && !defined(ARCH_X200) && !defined(ARCH_S)) || defined(ARCH_G)
         /* For L/G series we wait for clock from phy, then enable UIFM logic */
@@ -648,6 +651,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     | (1<<XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
 #elif defined(__XS3A__)
             // TODO
+            //XUD_HAL_EnterMode
 #endif
 #endif  /* SIMULATION */
 
@@ -797,7 +801,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     #endif
 #endif
 
-            set_thread_fast_mode_on();
+            //set_thread_fast_mode_on();
 
             /* Run main IO loop */
             /* TODO re-order flag ports such that this check is not required */

@@ -29,7 +29,7 @@ extern in  port flag1_port;
 extern in  port flag2_port;
 #endif
 
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(ARCH_S) || defined(ARCH_X200) || defined(__XS3A__)
 extern out buffered port:32 p_usb_txd;
 #define reg_write_port null
 #define reg_read_port null

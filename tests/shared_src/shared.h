@@ -145,7 +145,7 @@ int RxDataCheck(unsigned char b[], int l, int epNum)
         unsafe
         {
 
-        if(b[i] != g_rxDataCheck[epNum])
+        if(b[i] != i)//g_rxDataCheck[epNum])
         {
             printstr("#### Mismatch on EP: ");
             printint(epNum); 
@@ -188,7 +188,7 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     {
         unsafe
         {
-            RxDataCheck(buffer[i], length[i], epNum);       
+            return RxDataCheck(buffer[i], length[i], epNum);       
         }
     }
 }

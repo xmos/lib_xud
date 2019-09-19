@@ -507,6 +507,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #ifndef SIMULATION
 	set_pad_delay(flag1_port, 2);
+#else
+	set_pad_delay(flag1_port, 4);
 #endif
     
     start_clock(tx_usb_clk);
@@ -562,6 +564,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
         read_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d);
         d = XS1_USB_PHY_CFG0_PLL_EN_SET(d,1);
+        d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, 0b101);
         write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
 #endif
         /* Wait for USB clock (typically 1ms after reset) */
@@ -709,7 +712,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Reset the OUT ep structures */
                     for(int i = 0; i< noEpOut; i++)
                     {
-#ifdef ARCH_G
+#ifdef __XS3A__
                         ep_info[i].pid = USB_PIDn_DATA0;
 #else
                         ep_info[i].pid = USB_PID_DATA0;
@@ -932,7 +935,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
       ep_info[i].epType = epTypeTableOut[i];
 
-#ifdef ARCH_G
+#ifdef __XS3A__
       ep_info[i].pid = USB_PIDn_DATA0;
 #else
       ep_info[i].pid = USB_PID_DATA0;

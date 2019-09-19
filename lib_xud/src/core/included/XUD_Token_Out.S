@@ -84,6 +84,11 @@ DoOutNonIso:
 doRXDataReturn_NonIso:
     bf         r1, NextTokenAfterOut            // Check for bad crc
     ldc        r11, USB_PIDn_ACK                // Data CRC good and EP not Iso: Send Ack
+    nop
+    nop
+    nop
+    nop
+    nop
     outpw      res[TXD], r11, 8
     syncr      res[TXD]
 

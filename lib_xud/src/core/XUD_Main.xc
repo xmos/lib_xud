@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 
 /** XUD_Manager.xc
   * @brief     XMOS USB Device(XUD) Layer
@@ -28,15 +28,6 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "XUD_DeviceAttach.h"
 #include "XUD_PowerSig.h"
 
-#include "xs3a_registers.h"
-#include "XUD_HAL.h"
-
-
-#if defined __XS3A__
-#undef __XS2A__
-#warning Building for XS3
-#endif
-
 #ifdef __XS1B__
 #include "xs1_su_registers.h"
 #endif
@@ -44,6 +35,11 @@ void XUD_Error_hex(char errString[], int i_err);
 #ifdef __XS2A__
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
+#endif
+
+#ifdef __XS3A__
+#include "XUD_HAL.h"
+#include "xs3a_registers.h"
 #endif
 
 #if defined(ARCH_X200) || defined(ARCH_S)
@@ -550,7 +546,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Clear OTG control reg - incase we were running as host previously.. */
         write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
 
-#endif // SIMILATION
 
 #ifdef __XS3A__
         XUD_EnableUsbPortMux();
@@ -567,14 +562,19 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, 0b101);
         write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
 #endif
+
+#endif // SIMILATION
+
         /* Wait for USB clock (typically 1ms after reset) */
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
-       
+
+#if defined (__XS3A__) && !defined(SIMULATION)   
         // TODO MOVE ME 
         XUD_HAL_EnterMode_PeripheralFullSpeed();
+#endif
 
 #if (defined(ARCH_L) && !defined(ARCH_X200) && !defined(ARCH_S)) || defined(ARCH_G)
         /* For L/G series we wait for clock from phy, then enable UIFM logic */

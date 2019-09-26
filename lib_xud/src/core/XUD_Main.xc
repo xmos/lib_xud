@@ -253,7 +253,7 @@ void XUD_PhyReset_User();
 #endif
 
 /* Timeout differences due to using 60MHz vs 100MHz */
-#if !defined(ARCH_S) && !defined(ARCH_X200)
+#if !defined(ARCH_S) && !defined(__XS2A__) && !defined(__XS3A__)
 #define HS_TX_HANDSHAKE_TIMEOUT 100
 #define FS_TX_HANDSHAKE_TIMEOUT 3000
 #else
@@ -504,7 +504,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifndef SIMULATION
 	set_pad_delay(flag1_port, 2);
 #else
-	set_pad_delay(flag1_port, 4);
+	set_pad_delay(flag1_port, 5);
 #endif
     
     start_clock(tx_usb_clk);
@@ -546,10 +546,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         /* Clear OTG control reg - incase we were running as host previously.. */
         write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
 
+#endif // SIMULATION
 
 #ifdef __XS3A__
         XUD_EnableUsbPortMux();
-
         unsigned d = 0;
 
         read_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG2_NUM, d);
@@ -563,7 +563,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
 #endif
 
-#endif // SIMILATION
 
         /* Wait for USB clock (typically 1ms after reset) */
         p_usb_clk when pinseq(1) :> int _;
@@ -571,7 +570,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
 
-#if defined (__XS3A__) && !defined(SIMULATION)   
+#if defined (__XS3A__) //&& !defined(SIMULATION)  
         // TODO MOVE ME 
         XUD_HAL_EnterMode_PeripheralFullSpeed();
 #endif
@@ -736,16 +735,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #ifdef SIMULATION
-                    if(g_desSpeed == XUD_SPEED_HS)
-                    {
+    #if defined(XUD_TEST_SPEED_HS)
                         g_curSpeed = XUD_SPEED_HS;
                         g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
-                    }
-                    else
-                    {
+    #elif defined(XUD_TEST_SPEED_FS)
                         g_curSpeed = XUD_SPEED_FS;
                         g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
-                    }
+    #else 
+                        #error
+    #endif
+
 #else
                     if(g_desSpeed == XUD_SPEED_HS)
                     {

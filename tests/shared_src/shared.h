@@ -145,8 +145,10 @@ int RxDataCheck(unsigned char b[], int l, int epNum)
         unsafe
         {
 
-        if(b[i] != i)//g_rxDataCheck[epNum])
+        if(b[i] != g_rxDataCheck[epNum])
         {
+//#ifndef XUD_TEST_RTL
+#if 0
             printstr("#### Mismatch on EP: ");
             printint(epNum); 
             printstr(". Got:");
@@ -154,6 +156,7 @@ int RxDataCheck(unsigned char b[], int l, int epNum)
             printstr(" Expected:");
             printhexln(g_rxDataCheck[epNum]);
             //printintln(l); // Packet length
+#endif
             return 1;
         }
 
@@ -188,9 +191,14 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     {
         unsafe
         {
-            return RxDataCheck(buffer[i], length[i], epNum);       
+            unsigned fail = RxDataCheck(buffer[i], length[i], epNum);
+            if (fail) 
+                return fail;
+                       
         }
     }
+
+    return 0;
 }
 
 #if 0

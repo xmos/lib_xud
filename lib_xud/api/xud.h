@@ -599,6 +599,11 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
 
+#ifndef XUD_OSC_MHZ
+#define XUD_OSC_MHZ (24)
+#endif
+
+
 #endif //__XC__ || __STDC__
 
 #endif // __xud_h__

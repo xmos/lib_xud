@@ -85,8 +85,8 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    //t when timerafter(start_time+10000):> void;
 
    // output k-chirp for required time
-#ifdef SIMULATION
-   for (int i = 0; i < 4000; i++)
+#if defined(XUD_SIM_RTL) || (XUD_SIM_XSIM)
+   for (int i = 0; i < 800; i++)
 #else  
    for (int i = 0; i < 16000; i++)    // 16000 words @ 480 MBit = 1.066 ms
 #endif    
@@ -95,8 +95,11 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
     }
 
    // J, K, SE0 on flag ports 0, 1, 2 respectively (on XS2)
+   // XS3 has raw linestate on flag port 0 and 1
    // Wait for fs chirp k (i.e. HS chirp j)
+#ifndef __XS3A
    flag1_port when pinseq(0) :> tmp; // Wait for out k to go
+#endif
 
     t :> start_time;
     while(1) 
@@ -107,8 +110,8 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
            /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
 #ifdef __XS3A__
-#warning TODO FOR XS3
-
+            
+            XUD_HAL_EnterMode_PeripheralFullSpeed();
 #elif defined(ARCH_S) || defined(ARCH_X200)
            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,
                              XS1_SU_PER_UIFM_FUNC_CONTROL_NUM,
@@ -124,14 +127,22 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                /* TODO Use a timer to save some juice...*/
 
 #ifdef __XS3A__
-
+                while(1)
+                {
+                    unsigned dp, dm;
+                    flag0_port :> dm;
+                    flag1_port :> dp;
+                        
+                    if(dp || dm)
+                        return 0;
+                }
 #else
                flag2_port :> tmp;
-#endif
 
                if(!tmp) {
                    return 0;                /* SE0 gone, return 0 to indicate FULL SPEED */
                }
+#endif
 
                if(pwrConfig == XUD_PWR_SELF) {
                    unsigned x;
@@ -173,8 +184,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                    // Three pairs of KJ received... de-assert TermSelect...
                    // (and opmode = 0, suspendm = 1)
 #ifdef __XS3A__
-#warning TODO FOR XS3
-
+                    XUD_HAL_EnterMode_PeripheralHighSpeed();
 #elif defined(ARCH_S) || defined(ARCH_X200)
                    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,
                                      XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b0000);

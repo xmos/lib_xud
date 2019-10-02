@@ -545,8 +545,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, (1 << XS1_SU_CFG_USB_CLK_EN_SHIFT) | (1<<XS1_SU_CFG_USB_EN_SHIFT)  );
 
         /* Clear OTG control reg - incase we were running as host previously.. */
-        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0);
-        
+        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0); 
 #elif !(defined XUD_SIM_XSIM) && defined(__XS3A__)  
         unsigned d = 0;
 
@@ -568,7 +567,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         p_usb_clk when pinseq(0) :> int _;
         p_usb_clk when pinseq(1) :> int _;
         p_usb_clk when pinseq(0) :> int _;
-
+        
 #if (defined(ARCH_L) && !defined(ARCH_X200) && !defined(ARCH_S)) || defined(ARCH_G)
         /* For L/G series we wait for clock from phy, then enable UIFM logic */
         // 3 u series, else 2
@@ -737,14 +736,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #ifdef XUD_BYPASS_RESET
-    #if defined(XUD_TEST_SPEED_HS)
+    #if defined(XUD_SIM_SPEED_HS)
                         g_curSpeed = XUD_SPEED_HS;
                         g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
-    #elif defined(XUD_TEST_SPEED_FS)
+    #elif defined(XUD_SIM_SPEED_FS)
                         g_curSpeed = XUD_SPEED_FS;
                         g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
     #else 
-                        #error
+                        #error XUD_SIM_SPEED_ must be defined if using XUD_BYPASS_RESET!
     #endif
 #else
                     if(g_desSpeed == XUD_SPEED_HS)

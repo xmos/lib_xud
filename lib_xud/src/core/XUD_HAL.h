@@ -3,6 +3,7 @@
 
 void XUD_HAL_EnterMode_PeripheralFullSpeed();
 void XUD_HAL_EnterMode_PeripheralChirp();
+void XUD_HAL_EnterMode_PeripheralHighSpeed();
 
 
 typedef struct XUD_HAL_t

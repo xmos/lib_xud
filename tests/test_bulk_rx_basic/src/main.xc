@@ -35,9 +35,17 @@ int main()
             
     par
     {
-        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        { 
+            #if defined(XUD_TEST_SPEED_FS)
+            unsigned speed = XUD_SPEED_FS;
+            #elif defined(XUD_TEST_SPEED_HS)
+            unsigned speed = XUD_SPEED_HS;
+            #endif
+
+            XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                 null, epTypeTableOut, epTypeTableIn,
-                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                null, null, -1, speed, XUD_PWR_BUS);
+        }
 
         {
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);

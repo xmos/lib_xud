@@ -38,9 +38,9 @@ GotRxPid:
 
 NextRxWord:				                        // RXD port has event vector here
     in 	        r11, res[r0]
-    crc32       r6, r11, r9
     stw         r11, r1[r4]
-    add         r4, r4, 1
+    crc32_inc       r6, r11, r9, r4, 1 
+   //add         r4, r4, 1
 .xtabranch NextRxWord, RxALow
     bu          NextRxWord
 

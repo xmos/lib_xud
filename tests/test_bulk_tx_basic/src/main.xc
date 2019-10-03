@@ -39,7 +39,7 @@ XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_ISO};
 
-#ifdef XUD_TEST_RTL
+#ifdef XUD_SIM_RTL
 int testmain()
 #else
 int main()
@@ -57,7 +57,7 @@ int main()
 		{
 			unsigned fail = TestEp_Tx(c_ep_in[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
 
-#ifdef XUD_TEST_RTL
+#ifdef XUD_SIM_RTL
             /* Note, this test relies on checking at the host side */
 
             if(fail)

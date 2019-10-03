@@ -49,11 +49,19 @@ int main()
 
     par
     {
-        // TODO test is running at 400MHz 
-        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        {
+            #if defined(XUD_TEST_SPEED_FS)
+            unsigned speed = XUD_SPEED_FS;
+            #elif defined(XUD_TEST_SPEED_HS)
+            unsigned speed = XUD_SPEED_HS;
+            #endif
+            
+            // TODO test is running at 400MHz 
+            XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
-        
+                                null, null, -1, speed, XUD_PWR_BUS);
+        }
+
 		{
 			unsigned fail = TestEp_Tx(c_ep_in[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
 

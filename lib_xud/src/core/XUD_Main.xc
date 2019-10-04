@@ -40,6 +40,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #ifdef __XS3A__
 #include "XUD_HAL.h"
 #include "xs3a_registers.h"
+unsigned XtlSelFromMhz(unsigned m);
 #endif
 
 #if defined(ARCH_X200) || defined(ARCH_S)
@@ -557,14 +558,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     
         /* Setup clocking appropriately */
         read_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d);
-        d = XS1_USB_PHY_CFG0_PLL_EN_SET(d,1);
-        if(XUD_OSC_MHZ == 24)
-            d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, 0b101);
-        else if(XUD_OSC_MHZ == 12)
-            d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, 0b001);
-        else
-            // PANIC
-            while(1);
+        unsigned xtlselVal = XtlSelFromMhz(XUD_OSC_MHZ);
+        d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlselVal);
         write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
 #endif
 

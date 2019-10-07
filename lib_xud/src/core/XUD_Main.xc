@@ -40,6 +40,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #ifdef __XS3A__
 #include "XUD_HAL.h"
 #include "xs3a_registers.h"
+/* TODO should not be expose here, should be in HAL */
 unsigned XtlSelFromMhz(unsigned m);
 #endif
 

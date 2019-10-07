@@ -23,7 +23,7 @@
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END 14
+#define PKT_LENGTH_END 19
 #endif
 
 #define XUD_EP_COUNT_OUT   4

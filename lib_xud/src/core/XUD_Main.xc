@@ -461,14 +461,35 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #define TX_RISE_DELAY 5
+
 #if defined(ARCH_S)
+    #define RX_RISE_DELAY 5
+    #define RX_FALL_DELAY 5
+    #define TX_RISE_DELAY 5
     #define TX_FALL_DELAY 2
+#elif defined(__XS3A__)
+    #if (XUD_CORE_CLOCK > 500)
+        #define RX_RISE_DELAY 2
+        #define RX_FALL_DELAY 5
+        #define TX_RISE_DELAY 2
+        #define TX_FALL_DELAY 3
+    #elif (XUD_CORE_CLOCK > 400)
+        #define RX_RISE_DELAY 5
+        #define RX_FALL_DELAY 5
+        #define TX_RISE_DELAY 2
+        #define TX_FALL_DELAY 3
+    #else /* 400 */
+        #define RX_RISE_DELAY 4
+        #define RX_FALL_DELAY 5
+        #define TX_RISE_DELAY 2  
+        #define TX_FALL_DELAY 3
+    #endif
 #else
+    #define RX_RISE_DELAY 5
+    #define RX_FALL_DELAY 5
+    #define TX_RISE_DELAY 5
     #define TX_FALL_DELAY 1
 #endif
-
-#define RX_RISE_DELAY 5
-#define RX_FALL_DELAY 5
 
     // Set up USB ports. Done in ASM as read port used in both directions initially.
     // Main difference from xevious is IFM not enabled.

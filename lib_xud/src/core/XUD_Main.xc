@@ -287,8 +287,8 @@ unsigned int data_pid=0xbadf00d;
 //extern clock tx_usb_clk;
 //extern clock rx_usb_clk;
 
-in port flag0_port = PORT_USB_FLAG0; /* For XS3: Mission: RXA */
-in port flag1_port = PORT_USB_FLAG1; /* For XS3: Mission: RXE */
+in port flag0_port = PORT_USB_FLAG0; /* For XS3: Mission: RXE */
+in port flag1_port = PORT_USB_FLAG1; /* For XS3: Mission: RXA */
 
 #if !defined (__XS3A__)
 in port flag2_port = PORT_USB_FLAG2;
@@ -460,8 +460,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     XUD_SetCrcTableAddr(XUD_STARTUP_ADDRESS);
 #endif
 
-#define TX_RISE_DELAY 5
-
 #if defined(ARCH_S)
     #define RX_RISE_DELAY 5
     #define RX_FALL_DELAY 5
@@ -525,8 +523,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
   	set_port_inv(flag0_port);
 #endif
 
-#if defined (XUD_SIM_RTL) || defined (XUD_SIM_XSIM)	
-    set_pad_delay(flag1_port, 5);
+#ifdef __XS3A__
+    set_pad_delay(flag1_port, 3);
 #else
 	set_pad_delay(flag1_port, 2);
 #endif
@@ -536,6 +534,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
  	configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
   	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
+
+    configure_in_port(flag1_port, rx_usb_clk);
 
     unsigned noExit = 1;
 

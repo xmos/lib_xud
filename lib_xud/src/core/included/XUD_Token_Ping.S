@@ -17,9 +17,11 @@ LoadStatTablePing:
 
 .scheduling off
 PrimaryBufferEmpty_PING:                        // Send ACK
+#if (XUD_CORE_CLOCK > 400)
     nop
     nop
     nop
+#endif
     nop
     nop
     nop
@@ -29,9 +31,11 @@ PrimaryBufferEmpty_PING:                        // Send ACK
     bu           NextTokenAfterPing
 
 PrimaryBufferFull_PING:                         // Send NAK
+#if (XUD_CORE_CLOCK > 400)
     nop
     nop
     nop
+#endif
     nop
     nop
     nop

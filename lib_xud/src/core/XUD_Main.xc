@@ -479,9 +479,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         #define TX_RISE_DELAY 2
         #define TX_FALL_DELAY 3
     #else /* 400 */
-        #define RX_RISE_DELAY 4
+        #define RX_RISE_DELAY 3
         #define RX_FALL_DELAY 5
-        #define TX_RISE_DELAY 2  
+        #define TX_RISE_DELAY 3  
         #define TX_FALL_DELAY 3
     #endif
 #else

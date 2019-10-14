@@ -13,6 +13,9 @@ void XUD_Error_hex(char errString[], int i_err);
 #define XUD_Error_hex(a, b) /* */
 #endif
 
+#undef __XS2A__
+#define __XS3A__
+
 #include <xs1.h>
 #include <print.h>
 #include <xclib.h>
@@ -350,6 +353,7 @@ typedef struct XUD_ep_info
 
 XUD_ep_info ep_info[USB_MAX_NUM_EP];
 
+#ifndef XUD_SIM_XSIM
 /* Sets the UIFM flags into a mode suitable for power signalling */
 void XUD_UIFM_PwrSigFlags()
 {
@@ -360,9 +364,10 @@ void XUD_UIFM_PwrSigFlags()
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_MASK_NUM, ((1<<XS1_SU_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
         | ((1<<XS1_SU_UIFM_IFM_FLAGS_K_SHIFT)<<8) | (1 << XS1_SU_UIFM_IFM_FLAGS_J_SHIFT));
 #elif defined(__XS3A__)
-    // TODO
+    // Done in in HAL
 #endif
 }
+#endif
 
 /* Tables storing if EP's are signed up to bus state updates */
 int epStatFlagTableIn[USB_MAX_NUM_EP_IN];
@@ -664,14 +669,12 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         t when timerafter(time):> void;
                     }
                 }
-#if !defined(XUD_SIM_XSIM)
 #if defined(__XS1B__) || defined(__XS2A__)
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, (1<<XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT) | (1<<XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
 #elif defined(__XS3A__)
                 XUD_HAL_EnterMode_PeripheralFullSpeed();
 #endif
-#endif  /* !XUD_SIM_XSIM */
 
 #if defined(XUD_SIM_XSIM) 
                 reset = 1;
@@ -759,14 +762,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #ifdef XUD_BYPASS_RESET
-    #if defined(XUD_SIM_SPEED_HS)
+    #if defined(XUD_TEST_SPEED_HS)
                         g_curSpeed = XUD_SPEED_HS;
                         g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
-    #elif defined(XUD_SIM_SPEED_FS)
+    #elif defined(XUD_TEST_SPEED_FS)
                         g_curSpeed = XUD_SPEED_FS;
                         g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
     #else 
-                        #error XUD_SIM_SPEED_ must be defined if using XUD_BYPASS_RESET!
+                        #error XUD_TEST_SPEED_ must be defined if using XUD_BYPASS_RESET!
     #endif
 #else
                     if(g_desSpeed == XUD_SPEED_HS)

@@ -7,15 +7,14 @@ from usb_phy import UsbPhy
 
 class UsbPhyUtmi(UsbPhy):
 
-    def __init__(self, rxd, rxa, rxdv, rxer, txd, txv, txrdy, clock,
+    def __init__(self, rxd, rxa, rxdv, rxer, txd, txv, txrdy, ls0, ls1, clock,
                  initial_delay=60000, verbose=False, test_ctrl=None,
                  do_timeout=True, complete_fn=None, expect_loopback=True,
                  dut_exit_time=25000):
 
-        super(UsbPhyUtmi, self).__init__('mii', rxd, rxa, rxdv, rxer, txd, txv, txrdy, clock,
+        super(UsbPhyUtmi, self).__init__('mii', rxd, rxa, rxdv, rxer, txd, txv, txrdy, ls0, ls1, clock,
                                              initial_delay, verbose, test_ctrl,
                                              do_timeout, complete_fn, expect_loopback, dut_exit_time)
-
     def run(self):
         xsi = self.xsi
 
@@ -23,6 +22,11 @@ class UsbPhyUtmi(UsbPhy):
 
         for i,packet in enumerate(self._packets):
             
+            #if isinstance(packet, BusReset):
+
+             #  print "BUS RESET" 
+
+
             if isinstance(packet, RxPacket):
  
                 timeout = packet.get_timeout()
@@ -101,7 +105,8 @@ class UsbPhyUtmi(UsbPhy):
                     sys.stdout.write(packet.dump())
 
                 # Set RXA high
-                xsi.drive_port_pins(self._rxa, 1)
+                #xsi.drive_port_pins(self._rxa, 1)
+                xsi.drive_periph_pin(self._rxa, 1)
 
                 # Wait for RXA rise delay TODO, this should be configurable 
                 self.wait(lambda x: self._clock.is_high())
@@ -117,16 +122,17 @@ class UsbPhyUtmi(UsbPhy):
 
                     self.wait(lambda x: self._clock.is_high())
                     self.wait(lambda x: self._clock.is_low())
-                    xsi.drive_port_pins(self._rxdv, 1)
-                    xsi.drive_port_pins(self._rxd, byte)
+                    xsi.drive_periph_pin(self._rxdv, 1)
+                    xsi.drive_periph_pin(self._rxd, byte)
  
                     if (packet.rxe_assert_time != 0) and (packet.rxe_assert_time == i):
-                        xsi.drive_port_pins(self._rxer, 1)
+                        #xsi.drive_port_pins(self._rxer, 1)
+                        xsi.drive_periph_pin(self._rxer, 1)
 
                     while rxv_count != 0:
                         self.wait(lambda x: self._clock.is_high())
                         self.wait(lambda x: self._clock.is_low())
-                        xsi.drive_port_pins(self._rxdv, 0)
+                        xsi.drive_periph_pin(self._rxdv, 0)
                         rxv_count = rxv_count - 1
 
                         # xCore should not be trying to send if we are trying to send..
@@ -141,8 +147,8 @@ class UsbPhyUtmi(UsbPhy):
                 self.wait(lambda x: self._clock.is_high())
                 self.wait(lambda x: self._clock.is_low())
 
-                xsi.drive_port_pins(self._rxdv, 0)
-                xsi.drive_port_pins(self._rxer, 0)
+                xsi.drive_periph_pin(self._rxdv, 0)
+                xsi.drive_periph_pin(self._rxer, 0)
 
                 rxa_end_delay = packet.rxa_end_delay
                 while rxa_end_delay != 0:
@@ -155,7 +161,8 @@ class UsbPhyUtmi(UsbPhy):
                     if xsi.sample_port_pins(self._txv) == 1:
                         print "ERROR: Unexpected packet from xCORE"
 
-                xsi.drive_port_pins(self._rxa, 0)
+                #xsi.drive_port_pins(self._rxa, 0)
+                xsi.drive_periph_pin(self._rxa, 0)
 
                 #if self._verbose:
                     #print "Sent"

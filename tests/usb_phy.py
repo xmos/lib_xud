@@ -10,7 +10,7 @@ class UsbPhy(xmostest.SimThread):
     # Time in ns from the last packet being sent until the end of test is signalled to the DUT
     END_OF_TEST_TIME = 5000
 
-    def __init__(self, name, rxd, rxa, rxdv, rxer, txd, txv, txrdy, clock, initial_delay, verbose,
+    def __init__(self, name, rxd, rxa, rxdv, rxer, txd, txv, txrdy, ls0, ls1, clock, initial_delay, verbose,
                  test_ctrl, do_timeout, complete_fn, expect_loopback, dut_exit_time):
         self._name = name
         self._test_ctrl = test_ctrl
@@ -21,6 +21,8 @@ class UsbPhy(xmostest.SimThread):
         self._txd = txd
         self._txv = txv
         self._txrdy = txrdy
+        self.ls0 = ls0
+        self.ls1 = ls1
         self._packets = []
         self._clock = clock
         self._initial_delay = initial_delay

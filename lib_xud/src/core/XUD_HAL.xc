@@ -39,6 +39,7 @@ unsigned XtlSelFromMhz(unsigned m)
 
 void XUD_HAL_EnterMode_PeripheralFullSpeed()
 {
+#ifndef XUD_SIM_XSIM
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 1);
     d = XS1_USB_PHY_CFG0_UTMI_TERMSELECT_SET(d, 1);
@@ -56,10 +57,12 @@ void XUD_HAL_EnterMode_PeripheralFullSpeed()
     d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlSelVal);
     
     write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+#endif
 }
 
 void XUD_HAL_EnterMode_PeripheralChirp()
 {
+#ifndef XUD_SIM_XSIM
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0);
     d = XS1_USB_PHY_CFG0_UTMI_TERMSELECT_SET(d, 1);
@@ -76,10 +79,12 @@ void XUD_HAL_EnterMode_PeripheralChirp()
     unsigned xtlselVal = XtlSelFromMhz(XUD_OSC_MHZ);
     d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlselVal);
     write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+#endif
 }
 
 void XUD_HAL_EnterMode_PeripheralHighSpeed()
 {
+#ifndef XUD_SIM_XSIM
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0); // HS
     d = XS1_USB_PHY_CFG0_UTMI_TERMSELECT_SET(d, 0); // HS
@@ -96,6 +101,8 @@ void XUD_HAL_EnterMode_PeripheralHighSpeed()
     unsigned xtlselVal = XtlSelFromMhz(XUD_OSC_MHZ);
     d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlselVal);
     write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+
+#endif
 }
 
 /* TODO pass structure  */
@@ -136,16 +143,20 @@ int XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
 
 void XUD_HAL_Mode_PowerSig()
 {
+#ifndef XUD_SIM_XSIM
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 1);
     write_sswitch_reg(0, XS1_SSWITCH_USB_SHIM_CFG_NUM, d); 
+#endif
 }
 
 void XUD_HAL_Mode_DataTransfer()
 {
+#ifndef XUD_SIM_XSIM
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 0);
     write_sswitch_reg(0, XS1_SSWITCH_USB_SHIM_CFG_NUM, d); 
+#endif
 }
 
 #endif

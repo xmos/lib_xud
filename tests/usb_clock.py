@@ -33,7 +33,8 @@ class Clock(xmostest.SimThread):
 
             if self._running:
                 #print "{}".format(self._val)
-                self.xsi.drive_port_pins(self._port, self._val)
+                #self.xsi.drive_port_pins(self._port, self._val)
+                self.xsi.drive_periph_pin(self._port, self._val)
 
     def is_high(self):
         return (self._val == 1)

@@ -4,6 +4,8 @@
   * @author     Ross Owen, XMOS Limited
   **/
 
+#ifndef XUD_SIM_XSIM
+
 #include <xs1.h>
 #include <print.h>
 
@@ -249,4 +251,5 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
         // TODO
 }
 
+#endif
 #endif

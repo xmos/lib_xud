@@ -47,12 +47,12 @@ def do_test(arch, clk, phy, seed):
     dataval += 12
     AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, length=13, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket(timeout=9))
+    packets.append(RxHandshakePacket(timeout=10))
 
     dataval += 13
     AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, length=14, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    packets.append(RxHandshakePacket(timeout=10))
 
 
     do_usb_test(arch, clk, phy, packets, __file__, seed, level='smoke', extra_tasks=[])

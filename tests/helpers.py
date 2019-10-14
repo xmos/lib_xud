@@ -8,6 +8,7 @@ from usb_phy import UsbPhy
 from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
 from usb_packet import RxPacket
+from usb_packet import BusReset
 
 args = None
 
@@ -40,14 +41,17 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          dut_exit_time=dut_exit_time)
  
     elif arch=='xs3':
-        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-        phy = UsbPhyUtmi('tile[0]:XS1_PORT_8B',
-                         'tile[0]:XS1_PORT_1F', #rxa
-                         'tile[0]:XS1_PORT_1I', #rxv
+        #clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
+        clk = Clock('XS1_USB_CLK', Clock.CLK_60MHz)
+        phy = UsbPhyUtmi('XS1_USB_RXD',
+                         'XS1_USB_RXA', #rxa
+                         'XS1_USB_RXV', #rxv
                          'tile[0]:XS1_PORT_1G', #rxe
                          'tile[0]:XS1_PORT_8A', #txd
                          'tile[0]:XS1_PORT_1K', #txv
                          'tile[0]:XS1_PORT_1H', #txrdy
+                         'XS1_USB_LS0', 
+                         'XS1_USB_LS1',
                          clk,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,

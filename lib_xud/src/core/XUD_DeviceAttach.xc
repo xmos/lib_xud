@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
-#ifndef XUD_BYPASS_RESET
+#if !defined(XUD_BYPASS_RESET) && !defined(XUD_SIM_XSIM)
 #include <xs1.h>
 #include <print.h>
 #include <platform.h>

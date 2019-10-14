@@ -2,7 +2,7 @@
 # compiled for. It either refers to an XN file in the source directories
 # or a valid argument for the --target option when compiling.
 
-TARGET = test.xn
+#TARGET = test.xn
 
 # The APP_NAME variable determines the name of the final .xe file. It should
 # not include the .xe postfix. If left blank the name will default to 
@@ -20,11 +20,11 @@ APP_NAME =
 
 SHARED_CODE = ../../shared_src
 
-COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -DSIMULATION -Wno-timing
+COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -Xmapper MAPFILE -I$(SHARED_CODE) -DUSB_TILE=tile[0] -Wno-timing -DXUD_SIM_XSIM=1 -DXUD_TEST_SPEED_HS=1 -DXUD_BYPASS_RESET=1
 
-XCC_FLAGS_xs2       = $(COMMON_FLAGS) -DARCH_X200 -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DARCH_L
+#XCC_FLAGS_xs1       = $(COMMON_FLAGS) -DARCH_S -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DARCH_L
 
-XCC_FLAGS_xs1       = $(COMMON_FLAGS) -DARCH_S -DXUD_SERIES_SUPPORT=XUD_U_SERIES -DARCH_L
+#XCC_FLAGS_xs2       = $(COMMON_FLAGS) -DARCH_X200 -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DARCH_L
 
 XCC_FLAGS_xs3		= $(COMMON_FLAGS) -DXUD_STARTUP_ADDRESS=1
 

@@ -3,6 +3,12 @@ import sys
 import zlib
 import random
 
+# In USB clocks
+RX_TX_DELAY = 12
+
+PID_DATA1 = 0xb
+PID_DATA0 = 0x3
+
 def AppendSetupToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500)
     address = kwargs.pop('address', 0)
@@ -134,6 +140,13 @@ def create_data_expect_same(args):
     value,num_data_bytes = args
     return "Value = {0}\n".format(value)
 
+class BusReset(object):
+
+    def __init__(self, **kwargs):
+        self.duration_ms  = kwargs.pop('duraton', 10) #Duration of reset
+        self.bus_speed = kwargs.pop('bus_speed', 'high') #Bus speed to reset into
+
+
 # Lowest base class for all packets. All USB packets have:
 # - a PID
 # - some (or none) data bytes
@@ -195,13 +208,14 @@ class TxPacket(UsbPacket):
 
 # Implemented such that we can generate broken or bad packets
     def get_bytes(self, do_tokens=False):
+        print "GET BYTES\n"
         bytes = []
-        if do_tokens:
-            bytes.append(self.pid)
-        else:
-            bytes.append(self.pid | ((~self.pid) << 4))
-            for x in range(len(self.data_bytes)):
-               bytes.append(self.data_bytes[x])
+        #if do_tokens:
+        #    bytes.append(self.pid)
+        #else:
+        #    bytes.append(self.pid | ((~self.pid) << 4))
+        #    for x in range(len(self.data_bytes)):
+        #       bytes.append(self.data_bytes[x])
         return bytes
 
 
@@ -229,9 +243,13 @@ class DataPacket(UsbPacket):
         return crc
 
     def get_bytes(self, do_tokens=False):
+        
         bytes = []
 
-        bytes.append(self.pid)
+        if do_tokens:
+           bytes.append(self.pid)
+        else:
+            bytes.append(self.pid | ((~self.pid) << 4))
 
         packet_bytes = self.get_packet_bytes()
         for byte in packet_bytes:
@@ -242,7 +260,7 @@ class DataPacket(UsbPacket):
         else:    
             crc = self.get_crc(packet_bytes)
 
-        # Append the 2 bytes of CRC onto the packet
+        #Append the 2 bytes of CRC onto the packet
         for i in range(0, 2):
             bytes.append((crc >> (8*i)) & 0xff)
 
@@ -318,7 +336,7 @@ class RxHandshakePacket(HandshakePacket, RxPacket):
     def __init__(self, **kwargs):
         super(RxHandshakePacket, self).__init__(**kwargs)
         self.pid = kwargs.pop('pid', 0xd2) #Default to ACK (not expect inverted bits on Rx)
-        self.timeout = kwargs.pop('timeout', 9) 
+        self.timeout = kwargs.pop('timeout', RX_TX_DELAY) 
     
  
 class TxHandshakePacket(HandshakePacket, TxPacket):

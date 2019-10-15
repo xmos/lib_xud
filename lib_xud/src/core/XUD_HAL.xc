@@ -32,7 +32,7 @@ unsigned XtlSelFromMhz(unsigned m)
             return 0b111;
         default:
             /* Panic */
-            while(1)
+            while(1);
             break;
     }
 }

@@ -7,9 +7,12 @@ import random
 RX_TX_DELAY = 20
 RXA_END_DELAY = 2 # Pad delay not currently simulated in xsim for USB or OTP, so add this delay here
 RXA_START_DELAY = 5 #Taken from RTL sim
+RX_RX_DELAY = 40
 
 PID_DATA1 = 0xb
 PID_DATA0 = 0x3
+
+
 
 def AppendSetupToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500)
@@ -198,7 +201,7 @@ class RxPacket(UsbPacket):
 class TxPacket(UsbPacket):
 
     def __init__(self, **kwargs):
-        self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', 13) #13 lowest working for single issue loopback
+        self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', RX_RX_DELAY) #13 lowest working for single issue loopback
         self.rxa_start_delay = kwargs.pop('rxa_start_delay', 2)
         self.rxa_end_delay = kwargs.pop('rxa_end_delay', RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop('rxe_assert_time', 0)

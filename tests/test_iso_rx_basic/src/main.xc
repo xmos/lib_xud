@@ -11,16 +11,15 @@
 #define XUD_EP_COUNT_IN    5
 
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START 10
+#define PKT_LENGTH_START   10
 #endif
 
-
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END 14
+#define PKT_LENGTH_END     14
 #endif
 
 #ifndef TEST_EP_NUM
-#define TEST_EP_NUM   2
+#define TEST_EP_NUM        2
 #endif
 
 /* Endpoint type tables */
@@ -29,30 +28,43 @@ XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, X
                                                  XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
+#ifdef XUD_SIM_RTL
+int testmain()
+#else
 int main()
+#endif
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-
+            
     par
     {
-        
-        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
-                                null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+        { 
+            #if defined(XUD_TEST_SPEED_FS)
+            unsigned speed = XUD_SPEED_FS;
+            #elif defined(XUD_TEST_SPEED_HS)
+            unsigned speed = XUD_SPEED_HS;
+            #else
+            #error XUD_TEST_SPEED_XX not defined
+            #endif
 
-        {
-            TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
-            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
-            XUD_Kill(ep0);
-
-            exit(0); // TODO should be able to move outside of the par{}
-
+            XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+                null, epTypeTableOut, epTypeTableIn,
+                null, null, -1, speed, XUD_PWR_BUS);
         }
 
+        {
+            unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
 
-
+            if(fail)
+                TerminateFail(fail);
+            else
+                TerminatePass(fail);    
+            
+            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
+            XUD_Kill(ep0);
+            exit(0);
+        }
     }
-
 
     return 0;
 }

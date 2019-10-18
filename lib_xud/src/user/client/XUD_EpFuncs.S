@@ -138,9 +138,9 @@ XUD_GetSetupData_Reset:
 XUD_GetData:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-  ENTSP_lu6 4
+  ENTSP_lu6    4
 #else
-  entsp       4
+  entsp        4
 #endif
     stw         r10, sp[1]
     mov         r11, r1
@@ -408,7 +408,8 @@ XUD_GetData_Select_CheckPid:                    // Check PID
     bt          r11, XUD_GetData_Select_BadPkt
 
 XUD_GetData_Select_PidToggle:
-#if (XUD_SERIES_SUPPORT==3)
+//#if (XUD_SERIES_SUPPORT==3)
+#ifdef __XS3A__
     ldc         r2, 0x88
 #else
     ldc         r2, 8
@@ -588,7 +589,8 @@ XUD_ClearStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
     stw         r2, r1[r0]
 
-#if(XUD_SERIES_SUPPORT==3)
+//#if(XUD_SERIES_SUPPORT==3)
+#ifdef __XS3A__
     ldc         r1, USB_PIDn_DATA0
 #else
     ldc         r1, USB_PID_DATA0

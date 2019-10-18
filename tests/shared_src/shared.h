@@ -12,6 +12,16 @@ unsafe
 
 void exit(int);
 
+#ifdef XUD_SIM_XSIM
+void TerminateFail(unsigned x)
+{
+    printstr("FAIL\n");
+}
+void TerminatePass(unsigned x)
+{
+}
+#endif
+
 #ifndef PKT_LEN_START
 #define PKT_LEN_START  10
 #endif
@@ -47,23 +57,6 @@ XUD_Result_t SendTxPacket(XUD_ep ep, int length, int epNum)
 
     return XUD_SetBuffer(ep, buffer, length);
 }
-
-#if 0
-// NEW API - WIP
-#pragma unsafe arrays
-XUD_Result_t SendControlPacket(XUD_ep ep, int length, int epNum)
-{
-    unsigned char buffer[1024];
-
-    for (int i = 0; i < length; i++)
-    {
-        buffer[i] = g_txDataCheck[epNum]++;
-    }
-
-    return XUD_SetControlBuffer(ep, buffer, length);
-}
-#endif
-
 
 #pragma unsafe arrays
 int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode runMode)
@@ -147,15 +140,15 @@ int RxDataCheck(unsigned char b[], int l, int epNum)
 
         if(b[i] != g_rxDataCheck[epNum])
         {
-//#ifndef XUD_TEST_RTL
-#if 0
+#ifdef XUD_SIM_XSIM
             printstr("#### Mismatch on EP: ");
             printint(epNum); 
             printstr(". Got:");
             printhex(b[i]);
             printstr(" Expected:");
-            printhexln(g_rxDataCheck[epNum]);
-            //printintln(l); // Packet length
+            printhex(g_rxDataCheck[epNum]);
+            printstr(" Pkt len: ");
+            printintln(l); // Packet length
 #endif
             return 1;
         }

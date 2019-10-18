@@ -1,6 +1,6 @@
 // Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 
-#ifdef ARCH_L
+#ifndef __XS3A__
     ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
                                                       // We receive: | 0000 4-bit EP | 0000 4-bit PID |
     inpw       r11, res[RXD], 8                       // Read 8 bit PID
@@ -10,15 +10,12 @@
 
 .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
     bau        r10
-#else // ARCH_G
-    //ldaw        r8, dp[crc5Table_Addr]
+#else //__XS3A__ 
     ldaw        r10, dp[PidJumpTable]
-    //ldw         r6, dp[crcmask]
     ldc         r8, 16
 
     inpw        r11, res[RXD], 8                       // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
-    setpsc      res[RXD], r8
-    shr         r11, r11, 24
+    {setpsc      res[RXD], r8; shr      r11, r11, 24}
 
     ldw         r11, r10[r11]
 .xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup

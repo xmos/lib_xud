@@ -5,7 +5,7 @@
 #define RXD r0
 #define TXD r2
 
-.align 4
+.align 8
 .skip 0
 Pid_Out:
 #ifdef ARCH_L

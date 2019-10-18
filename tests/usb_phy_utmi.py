@@ -3,6 +3,7 @@ import xmostest
 import sys
 import zlib
 from usb_packet import RxPacket, TokenPacket
+import usb_packet
 from usb_phy import UsbPhy
 
 class UsbPhyUtmi(UsbPhy):
@@ -108,9 +109,13 @@ class UsbPhyUtmi(UsbPhy):
                 #xsi.drive_port_pins(self._rxa, 1)
                 xsi.drive_periph_pin(self._rxa, 1)
 
-                # Wait for RXA rise delay TODO, this should be configurable 
-                self.wait(lambda x: self._clock.is_high())
-                self.wait(lambda x: self._clock.is_low())
+                # Wait for RXA start delay
+                rxa_start_delay = usb_packet.RXA_START_DELAY;
+
+                while rxa_start_delay != 0:
+                    self.wait(lambda x: self._clock.is_high())
+                    self.wait(lambda x: self._clock.is_low())
+                    rxa_start_delay = rxa_start_delay- 1;
 
                 for (i, byte) in enumerate(packet.get_bytes()):
 

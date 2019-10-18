@@ -21,6 +21,84 @@ WaitForEndDataPacket:
 // r9: crc poly
 // r10: ep number
 // r11: scratch
+#if defined(__XS2A__) || defined(__XS3A__)
+.align 4
+.skip 0
+doRXData:
+    ldw         r7, sp[10]           	        // Load RxA Port ID (r1)
+    inpw        r8, res[r0], 8                  // Input PID
+GotRxPid:
+    stw         r8, r3[6]                       // Store (NON-SHIFTED) PID into EP structure
+    eeu         res[r7]
+.syntax architectural
+    SETSR_lu6       1                           // Enable thread events. Note long inst to align loop
+.syntax default
+
+NextRxWord:				                        // RXD port has event vector here
+    in 	        r11, res[r0]
+    stw         r11, r1[r4]
+    crc32_inc       r6, r11, r9, r4, 1 
+    bu          NextRxWord
+
+/////////////////////////////////////////////////////////////////////////////
+.align 32
+.skip 16
+RxALow:
+    in          r7, res[r7]                   // Clear event data on RXA
+    endin       r8, res[r0]
+XUD_OUT_RxTail:
+    in          r11, res[r0]
+
+.xtabranch OutTail0, OutTail1, OutTail2, OutTail3, OutTail4, OutTail5
+    bru	        r8
+
+// Word aligned data (0 byte tail)
+.align 32
+OutTail0:
+    crc32       r6, r8, r9                      // CRC zero step
+    ldc         r11, 0x7000                     // Load relevant CRC magic number
+    retsp       0
+
+// 1 Tail Byte
+.align 32
+OutTail1:
+    shr         r11, r11, 24                    // Shift off junk
+    crc32       r6, r11, r9
+    stw         r11, r1[r4]                     // Store last data
+    ldc         r11, 0x80be                     // Load CRC magic number
+    retsp       0
+
+// Two Tail Bytes
+.align 32
+OutTail2:
+    shr         r11, r11, 16
+    crc32       r6, r11, r9
+    stw         r11, r1[r4]                      // Store last data
+    ldc         r11, 0x3ffe
+    retsp       0
+
+// Three Tail Bytes
+.align 32
+OutTail3:
+    shr         r11, r11, 8
+    stw         r11, r1[r4]                     // Store last data
+    crc32       r6, r11, r9
+    ldw         r11, sp[12]
+    crc8        r6, r1, r2, r9                  // Use the fact the the bottom byte of port id is 0.. saves us an ldc
+    retsp       0
+
+// Four Tail Bytes
+.align 32
+OutTail4:
+    bu          ERR_EndIn4
+
+
+// Five Tail Bytes
+.align 32
+OutTail5:
+    bu          ERR_EndIn5
+
+#else
 .align 4
 .skip 0
 doRXData:
@@ -100,6 +178,8 @@ OutTail4:
 .align 16
 OutTail5:
     bu          ERR_EndIn5
+#endif
+
 
 
 // We received a setup token.  This is much the same as out token, apart from:

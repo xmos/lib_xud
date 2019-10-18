@@ -1,8 +1,7 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 /** XUD_CRC5_Table.S
   * @brief     Full USB CRC5 table
   * @author    Ross Owen, XMOS Limited
-  * @version   0v9
   */
 
 .section .dp.data, "adw", @progbits
@@ -10,6 +9,7 @@
 .type crc5Table, @object
 .cc_top crc5Table.func, crc5Table
 .align 4
+.skip 0
 crc5Table:
 .byte 0x2
 .byte 0x1d

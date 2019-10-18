@@ -4,7 +4,9 @@ import zlib
 import random
 
 # In USB clocks
-RX_TX_DELAY = 12
+RX_TX_DELAY = 20
+RXA_END_DELAY = 2 # Pad delay not currently simulated in xsim for USB or OTP, so add this delay here
+RXA_START_DELAY = 5 #Taken from RTL sim
 
 PID_DATA1 = 0xb
 PID_DATA0 = 0x3
@@ -186,7 +188,7 @@ class UsbPacket(object):
 class RxPacket(UsbPacket):
 
     def __init__(self, **kwargs):
-        self.timeout = kwargs.pop('timeout', 8)
+        self.timeout = kwargs.pop('timeout', 25)
         super(RxPacket, self).__init__(**kwargs)
 
     def get_timeout(self):
@@ -198,7 +200,7 @@ class TxPacket(UsbPacket):
     def __init__(self, **kwargs):
         self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', 13) #13 lowest working for single issue loopback
         self.rxa_start_delay = kwargs.pop('rxa_start_delay', 2)
-        self.rxa_end_delay = kwargs.pop('rxa_end_delay', 2)
+        self.rxa_end_delay = kwargs.pop('rxa_end_delay', RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop('rxe_assert_time', 0)
         self.rxe_assert_length = kwargs.pop('rxe_assert_length', 1)
         super(TxPacket, self).__init__(**kwargs)
@@ -249,7 +251,7 @@ class DataPacket(UsbPacket):
         if do_tokens:
            bytes.append(self.pid)
         else:
-            bytes.append(self.pid | ((~self.pid) << 4))
+            bytes.append(self.pid | (((~self.pid)&0xf) << 4))
 
         packet_bytes = self.get_packet_bytes()
         for byte in packet_bytes:
@@ -297,7 +299,8 @@ class TokenPacket(TxPacket):
         self.crc5 = kwargs.pop('crc5', crc5)
 
         # Always override to match IFM
-        self.data_valid_count = 4 #todo
+        #self.data_valid_count = 4 #todo
+        self.data_valid_count = 0
 
     def get_bytes(self, do_tokens=False):
         bytes = []

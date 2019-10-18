@@ -182,18 +182,26 @@ ResetIntHandler:
 .cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
 .text
 
+#if defined(__XS2A__) 
+.issue_mode single
+#include "./included/XUD_Token_In.S"
+#elif defined(__XS3A__)
+.issue_mode dual
+#include "./included/XUD_Token_In_DI.S"
+#endif
+
 // Note, included here so in same elimination blocks to avoid long jumps
 #include "./included/XUD_Token_Out.S"
 #include "./included/XUD_Token_Ping.S"
-#include "./included/XUD_Token_In.S"
 #include "./included/XUD_Token_Setup.S"
 #include "./included/XUD_Token_SOF.S"
 
 .align 4
 XUD_LLD_IoLoop:
-#if defined(__XS2A__) || defined(__XS3A__)
-.issue_mode single
+#if defined(__XS2A__)
     ENTSP_lu6  STACK_EXTEND
+#elif defined(__XS3A__)
+    DUALENTSP_lu6  STACK_EXTEND
 #else
     entsp      STACK_EXTEND
 #endif
@@ -341,7 +349,7 @@ SetupSuspendResetTimer:
     bu         NextToken
 
 // Main IO Loop
-.align 4
+.align 8
 .skip 0
 NextToken:
     ldc         r9, 0xa001                      // CRC16 poly, used in doRxData
@@ -383,24 +391,14 @@ BranchOnTokenPid:
 
 #else // XS3A
 
-    ldc         r4, 16
+    #include "XUD_TokenJmp.S"
 
-ReadToken:
-    inpw        r11, res[RXD], 8                // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
-    ldaw        r10, dp[PidJumpTable]
-    setpsc      res[RXD], r4
-    shr         r11, r11, 24
-
-JumpOnPid:
-    ldw         r11, r10[r11]
-.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup
-    bau         r11
 
 BadCrcAddr:
-   // zext        r11, 8
-   // ldc         r10, PIDn_SOF
-   // eq          r11, r11, r10
-    //ecallt     r11
+    // zext       r11, 8
+    // ldc        r10, PIDn_SOF
+    // eq         r11, r11, r10
+    //ecallt      r11
     //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
 
     ldw         r11, sp[10]

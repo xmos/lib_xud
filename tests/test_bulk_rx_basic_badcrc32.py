@@ -3,6 +3,7 @@
 import random
 import xmostest
 from  usb_packet import *
+import usb_packet
 from usb_clock import Clock
 from helpers import do_usb_test, runall_rx
 
@@ -23,7 +24,7 @@ def do_test(arch, tx_clk, tx_phy, seed):
     
     # Good OUT transaction
     AppendOutToken(packets, ep, dev_address)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=10, pid=0x3)) #DATA0
+    packets.append(TxDataPacket(rand, data_start_val=dataval, length=10, pid=usb_packet.PID_DATA0)) 
     packets.append(RxHandshakePacket())
 
     # Note, quite big gap to allow checking.
@@ -31,12 +32,12 @@ def do_test(arch, tx_clk, tx_phy, seed):
     # Another good OUT transaction
     dataval += 10
     AppendOutToken(packets, ep, dev_address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=11, pid=0xb)) #DATA1
+    packets.append(TxDataPacket(rand, data_start_val=dataval, length=11, pid=usb_packet.PID_DATA1)) 
     packets.append(RxHandshakePacket())
 
     dataval += 11
     AppendOutToken(packets, ep, dev_address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=12, bad_crc=True, pid=0x3)) #DATA0
+    packets.append(TxDataPacket(rand, data_start_val=dataval, length=12, bad_crc=True, pid=usb_packet.PID_DATA0))
     # Bad CRC - dont expect ACK
     #packets.append(RxHandshakePacket())
 
@@ -44,7 +45,7 @@ def do_test(arch, tx_clk, tx_phy, seed):
     dataval += 12
     AppendOutToken(packets, ep, dev_address, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, length=13, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket(timeout=10))
+    packets.append(RxHandshakePacket())
 
     # PID toggle as normal
     dataval += 13

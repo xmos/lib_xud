@@ -3,6 +3,7 @@
 import random
 import xmostest
 from  usb_packet import *
+import usb_packet
 from usb_clock import Clock
 from helpers import do_usb_test, runall_rx
 
@@ -19,19 +20,20 @@ def do_test(arch, clk, phy, seed):
     packets = []
 
     dataval = 0;
-    data_pid = 0x3 #DATA0 
+    data_pid = usb_packet.PID_DATA0 
 
+    # TODO randomise packet lengths and data
     for pkt_length in range(0, 20):
         
         AppendOutToken(packets, ep_loopback, address)
-        packets.append(TxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket(timeout=9))
+        packets.append(TxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid)) 
+        packets.append(RxHandshakePacket())
    
         # 357 was min IPG supported on bulk loopback to not nak
         # For move from sc_xud to lib_xud (14.1.2 tools) had to increase this to 377 
         # Increased again due to setup/out checking 
         AppendInToken(packets, ep_loopback, address, inter_pkt_gap=417)
-        packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid, timeout=9)) #DATA0
+        packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid)) 
         packets.append(TxHandshakePacket())
 
         data_pid = data_pid ^ 8

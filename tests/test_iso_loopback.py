@@ -22,6 +22,8 @@ def do_test(arch, clk, phy, seed):
     dataval = 0;
     data_pid = 0x3 #DATA0 
 
+    ipg = 6000
+
     for pkt_length in range(200, 204):
         
         AppendOutToken(packets, ep_loopback, address)
@@ -32,7 +34,7 @@ def do_test(arch, clk, phy, seed):
         # increased again from 437 when SETUP/OUT checking added
         # increaed from 477 when adding xs3
         AppendInToken(packets, ep_loopback, address, inter_pkt_gap=498)
-        packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid, timeout=9)) #DATA0
+        packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid)) #DATA0
 
         #No toggle for Iso
 
@@ -43,7 +45,7 @@ def do_test(arch, clk, phy, seed):
     packets.append(TxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
     packets.append(RxHandshakePacket())
    
-    AppendInToken(packets, ep_loopback_kill, address, inter_pkt_gap=397)
+    AppendInToken(packets, ep_loopback_kill, address, inter_pkt_gap=ipg)
     packets.append(RxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
     packets.append(TxHandshakePacket())
 

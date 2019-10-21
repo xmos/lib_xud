@@ -20,6 +20,8 @@ def do_test(arch, clk, phy, seed):
     pkt_length = 20
     data_pid = 0x3 #DATA0 
 
+    ipg = 200
+
     for pkt_length in range(10, 20):
         
         #Single EP:
@@ -28,19 +30,19 @@ def do_test(arch, clk, phy, seed):
         
         #Multi EP:
         #177 lowest for valid data (DI)
-        AppendInToken(packets, start_ep, address, inter_pkt_gap=177)
+        AppendInToken(packets, start_ep, address, inter_pkt_gap=ipg)
         packets.append(RxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid))
         packets.append(TxHandshakePacket())
 
-        AppendInToken(packets, start_ep+1, address, inter_pkt_gap=177)
+        AppendInToken(packets, start_ep+1, address, inter_pkt_gap=ipg)
         packets.append(RxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid))
         packets.append(TxHandshakePacket())
        
-        AppendInToken(packets, start_ep+2, address, inter_pkt_gap=177)
+        AppendInToken(packets, start_ep+2, address, inter_pkt_gap=ipg)
         packets.append(RxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid))
         packets.append(TxHandshakePacket())
       
-        AppendInToken(packets, start_ep+3, address, inter_pkt_gap=177)
+        AppendInToken(packets, start_ep+3, address, inter_pkt_gap=ipg)
         packets.append(RxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid))
         packets.append(TxHandshakePacket())
        

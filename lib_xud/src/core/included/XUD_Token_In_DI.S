@@ -40,7 +40,7 @@ XUD_IN_TxNak:                                       // Non-Iso
 .align 256
 .skip 156
 Pid_In:
-    #include "XUD_G_Crc.S"
+    #include "XUD_CrcAddrCheck.S"
     ldaw       r3, r10[4]                       // R3 = R10 + 16
     ldw        r4, r5[r3]                       // Load EP structure address
     bf         r4, InNotReady                   // If 0 then not ready...

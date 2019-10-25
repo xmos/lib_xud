@@ -185,16 +185,33 @@ ResetIntHandler:
 #if defined(__XS2A__) 
 .issue_mode single
 #include "./included/XUD_Token_In.S"
+#include "./included/XUD_Token_Setup.S"
 #elif defined(__XS3A__)
 .issue_mode dual
 #include "./included/XUD_Token_In_DI.S"
+#include "./included/XUD_Token_Setup_DI.S"
 #endif
 
 // Note, included here so in same elimination blocks to avoid long jumps
 #include "./included/XUD_Token_Out.S"
 #include "./included/XUD_Token_Ping.S"
-#include "./included/XUD_Token_Setup.S"
 #include "./included/XUD_Token_SOF.S"
+
+BadCrcAddr:
+    // zext       r11, 8
+    // ldc        r10, PIDn_SOF
+    // eq         r11, r11, r10
+    //ecallt      r11
+    //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
+
+    ldw         r11, sp[10]
+waitforRXALow0:
+    in          r10, res[r11]
+    bt          r10, waitforRXALow0
+    setc        res[RXD], XS1_SETC_RUN_CLRBUF
+    bu          Loop_BadPid
+
+
 
 .align 4
 XUD_LLD_IoLoop:
@@ -225,8 +242,6 @@ ConfigRxDEventVector:                         // Configure events
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
     ldap         r11,  TxHandShakeReceived
     setv         res[RXD], r11
-
-
 
 ConfigRxA:
     setc       res[RXA], XS1_SETC_COND_EQ
@@ -394,19 +409,6 @@ BranchOnTokenPid:
     #include "XUD_TokenJmp.S"
 
 
-BadCrcAddr:
-    // zext       r11, 8
-    // ldc        r10, PIDn_SOF
-    // eq         r11, r11, r10
-    //ecallt      r11
-    //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
-
-    ldw         r11, sp[10]
-waitforRXALow0:
-    in          r10, res[r11]
-    bt          r10, waitforRXALow0
-    setc        res[RXD], XS1_SETC_RUN_CLRBUF
-    bu          Loop_BadPid
 
 #endif
 

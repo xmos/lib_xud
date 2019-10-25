@@ -8,23 +8,14 @@
 .align 8
 .skip 0
 Pid_Out:
-#ifdef ARCH_L
-    inpw       r10, res[RXD], 8;                // Read EP Number */
-    shr        r10, r10, 24;                    // Shift off junk */
-
-    in         r4, res[r1];
-    bt         r4, InvalidToken;                // If VALID_TOKEN not high, ignore token */
-#else
-    // ARCH_G
-    #include "XUD_G_Crc.S"
-#endif
+    #include "XUD_CrcAddrCheck.S"
     ldw        r3, r5[r10]                      // Load relevant EP pointer
     bf         r3, XUD_TokenOut_BufferFull
     ldw        r1, r3[3]                        // Load buffer from EP structure
 
 CheckEpTypeOut:
     ldw        r11, r3[5]                       // Load EP type
-    bt         r11, DoOutNonIso                 // ISO endpoint
+    BRFT_ru6   r11, DoOutNonIso           // ISO endpoint
 
 OutReady:
     stw        r11, r5[r10]                     // Clear ready straight away - we don't to CRC checking on Iso - else we would have to wait for end of packet

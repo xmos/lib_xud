@@ -33,65 +33,53 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
 {
     unsigned int slength;
     unsigned int length;
+    XUD_Result_t sres;
     XUD_Result_t res;
 
     XUD_ep c_ep0_out = XUD_InitEp(c_out);
     XUD_ep c_ep0_in  = XUD_InitEp(c_in);
 
     /* Buffer for Setup data */
+    unsigned char sbuffer[120];
     unsigned char buffer[120];
 
     unsafe
     {
         /* Wait for Setup data */
-        res = XUD_GetControlBuffer(c_ep0_out, buffer, slength);
+        sres = XUD_GetSetupBuffer(c_ep0_out, sbuffer, slength);
+
+        res = SendTxPacket(c_ep0_in, 10, epNum);
+
+        res = XUD_GetBuffer(c_ep0_out, buffer, length);
+
+        if(length != 0)
+        {
+            fail(FAIL_RX_DATAERROR);
+        }
+      
+        /* Do some checking */ 
+        if(res != XUD_RES_OKAY)
+        {
+            fail(FAIL_RX_BAD_RETURN_CODE);
+        }
 
         if(slength != 8)
         {
             printintln(length);
             fail(FAIL_RX_DATAERROR);
         }
-    
-        if(res != XUD_RES_CTL)
-        {
-            fail(FAIL_RX_EXPECTED_CTL);
-        }
-
-        if(RxDataCheck(buffer, slength, epNum))
+        
+        if(RxDataCheck(sbuffer, slength, epNum))
         {
             fail(FAIL_RX_DATAERROR);
         }
+        
+        XUD_Kill(c_ep0_out);
 
-        /* Send 0 length back */
-        res = SendControlPacket(c_ep0_in, 10, epNum);
-
-        if(res != XUD_RES_OKAY)
-        {
-            fail(FAIL_RX_BAD_RETURN_CODE);
-        }
-
-        res = XUD_GetControlBuffer(c_ep0_out, buffer, slength);
-
-        if(slength != 0)
-        {
-            fail(FAIL_RX_DATAERROR);
-        }
-
-        if(RxDataCheck(buffer, length, epNum))
-        {
-            fail(FAIL_RX_DATAERROR);
-        }
-
-        if(res != XUD_RES_OKAY)
-        {
-            fail(FAIL_RX_BAD_RETURN_CODE);
-        }
-
-        exit(0);
+        return 0;
     }
 }
 
-#define USB_CORE 0
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
@@ -102,8 +90,17 @@ int main()
         XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
-
-        TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
+       
+        {
+            int fail = TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
+       
+            if(fail)
+                TerminateFail(fail);
+            else
+                TerminatePass(fail);    
+            
+            exit(0);
+        }
     }
 
     return 0;

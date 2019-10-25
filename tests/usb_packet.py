@@ -16,7 +16,6 @@ PID_DATA0 = 0x3
 
 def AppendSetupToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500)
-    address = kwargs.pop('address', 0)
     AppendTokenPacket(packets, 0x2d, ep, ipg, address)
 
 def AppendOutToken(packets, ep, address, **kwargs):
@@ -183,6 +182,8 @@ class UsbPacket(object):
             return "PING"
         elif self.pid == 165:
             return "SOF"
+        elif self.pid == 45:
+            return "SETUP"
         else:
            return "UNKNOWN"
 
@@ -211,16 +212,15 @@ class TxPacket(UsbPacket):
     def get_inter_pkt_gap(self):
         return self.inter_pkt_gap
 
-# Implemented such that we can generate broken or bad packets
+# Implemented such that we can generate malformed packets
     def get_bytes(self, do_tokens=False):
-        print "GET BYTES\n"
         bytes = []
-        #if do_tokens:
-        #    bytes.append(self.pid)
-        #else:
-        #    bytes.append(self.pid | ((~self.pid) << 4))
-        #    for x in range(len(self.data_bytes)):
-        #       bytes.append(self.data_bytes[x])
+        if do_tokens:
+            bytes.append(self.pid)
+        else:
+            bytes.append(self.pid | ((~self.pid) << 4))
+            for x in range(len(self.data_bytes)):
+               bytes.append(self.data_bytes[x])
         return bytes
 
 

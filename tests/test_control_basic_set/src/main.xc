@@ -18,11 +18,7 @@
 #define XUD_EP_COUNT_IN    5
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
-                                                XUD_EPTYPE_BUL,
-                                                XUD_EPTYPE_ISO,
-                                                XUD_EPTYPE_BUL,
-                                                 XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
 
@@ -33,65 +29,63 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
 {
     unsigned int slength;
     unsigned int length;
+    
+    XUD_Result_t sres;
     XUD_Result_t res;
 
     XUD_ep c_ep0_out = XUD_InitEp(c_out);
     XUD_ep c_ep0_in  = XUD_InitEp(c_in);
 
-    /* Buffer for Setup data */
+    unsigned char sbuffer[120];
     unsigned char buffer[120];
 
     unsafe
     {
         /* Wait for Setup data */
-        res = XUD_GetControlBuffer(c_ep0_out, buffer, slength);
+        sres = XUD_GetSetupBuffer(c_ep0_out, sbuffer, slength);
 
+        res = XUD_GetBuffer(c_ep0_out, buffer, length);
+
+        res = SendTxPacket(c_ep0_in, 0, epNum);
+
+        /* Checking for the Setup */
+        if(sres != XUD_RES_OKAY)
+        {
+            return 1;
+        }
+        
         if(slength != 8)
         {
-            printintln(length);
-            fail(FAIL_RX_DATAERROR);
+            return 1;
         }
-    
-        if(res != XUD_RES_CTL)
+
+        if(RxDataCheck(sbuffer, slength, epNum))
         {
-            fail(FAIL_RX_EXPECTED_CTL);
+            return 1;
         }
 
-        if(RxDataCheck(buffer, slength, epNum))
+        /* Checking for the OUT buffer */
+        if(res != XUD_RES_OKAY)
         {
-            fail(FAIL_RX_DATAERROR);
+            return 1;
         }
 
-        res = XUD_GetControlBuffer(c_ep0_out, buffer, slength);
-
-        if(slength != 10)
+        if(length != 10)
         {
-            fail(FAIL_RX_DATAERROR);
+            return 1;
         }
-
+       
         if(RxDataCheck(buffer, length, epNum))
         {
-            fail(FAIL_RX_DATAERROR);
+            return 1;
         }
 
-        if(res != XUD_RES_OKAY)
-        {
-            fail(FAIL_RX_BAD_RETURN_CODE);
-        }
+        XUD_Kill(c_ep0_out);
 
-        /* Send 0 length back */
-        res = SendControlPacket(c_ep0_in, 0, epNum);
-
-        if(res != XUD_RES_OKAY)
-        {
-            fail(FAIL_RX_BAD_RETURN_CODE);
-        }
-
-        exit(0);
+        return 0;
     }
 }
 
-#define USB_CORE 0
 int main()
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
@@ -103,8 +97,15 @@ int main()
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
 
-        TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
-    }
+        {
+            int fail = TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
+    
+            if (fail)
+                TerminateFail(fail);
+            else
+                TerminatePass(fail);
 
-    return 0;
+            exit(0);
+        }
+    }
 }

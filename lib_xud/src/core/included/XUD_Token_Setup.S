@@ -37,7 +37,7 @@ GotRxPid:
 NextRxWord:				                        // RXD port has event vector here
     in 	        r11, res[r0]
     stw         r11, r1[r4]
-    crc32_inc       r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1 
     bu          NextRxWord
 
 /////////////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ NextRxWord:				                        // RXD port has event vector here
 .align 16
 .skip 8
 RxALow:
-    in          r7, res[r7]                   // Clear event data on RXA
+    in          r7, res[r7]                     // Clear event data on RXA
     endin       r8, res[r0]
 XUD_OUT_RxTail:
     in          r11, res[r0]

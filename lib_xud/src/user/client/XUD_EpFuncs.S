@@ -51,7 +51,7 @@ XUD_GetSetupData_NoReq:                         // Entry for _NoReq
                                                 // TODO..
 
 XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
-#if (XUD_SERIES_SUPPORT==3)
+#ifdef __XS3A__
     ldc         r11, USB_PIDn_DATA1
 #else
     ldc         r11, USB_PID_DATA1
@@ -220,8 +220,8 @@ XUD_GetData_GotSetup:
                                                 // We expect data0 else something gone wrong...
                                                 // TODO..
 
-XUD_GetDataSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
-#if (XUD_SERIES_SUPPORT==3)
+XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on SETUP (both IN AND OUT)
+#ifdef __XS3A__
     ldc         r11, USB_PIDn_DATA1
 #else
     ldc         r11, USB_PID_DATA1
@@ -589,7 +589,6 @@ XUD_ClearStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
     stw         r2, r1[r0]
 
-//#if(XUD_SERIES_SUPPORT==3)
 #ifdef __XS3A__
     ldc         r1, USB_PIDn_DATA0
 #else
@@ -645,8 +644,7 @@ XUD_ResetEpStateByAddr:
     ldc         r1, USB_PIDn_DATA0
     bu          XUD_ResetEpStateByAddr_
 XUD_ResetEpStateByAddr_OUT:
-//#if(XUD_SERIES_SUPPORT==3)
-#if defined(__XS1A__) //G-series
+#if defined(__XS3A__) 
     ldc         r1, USB_PIDn_DATA0
 #else
     ldc         r1, USB_PID_DATA0

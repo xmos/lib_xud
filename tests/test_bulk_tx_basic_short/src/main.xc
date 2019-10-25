@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-#include "xc_ptr.h"
 #include "shared.h"
 
 #ifndef TEST_EP_NUM
@@ -56,7 +55,6 @@ int main()
             unsigned speed = XUD_SPEED_HS;
             #endif
             
-            // TODO test is running at 400MHz 
             XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 null, null, -1, speed, XUD_PWR_BUS);

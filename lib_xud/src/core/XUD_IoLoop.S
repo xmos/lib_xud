@@ -38,12 +38,18 @@ suspend_t_wtwrsths:
 // 1..7:             : Reg save
 // 8                 : TX handshake timer
 // 9                 : Out timer
-#define STACK_FLAG1_PORT (STACK_EXTEND-12)// 10                : RXA_port
-#define STACK_FLAG0_PORT (STACK_EXTEND-11)// 11                : Valid token port
+#define STACK_FLAG1_PORT (10)                 //RXA_port
+#define STACK_FLAG0_PORT (11)                 // Valid token port
 // 12                : ?
 // 13                : Suspend timeout
 // 14                : Suspend/Reset timer
 // 15                : RxError port (flag 2)
+#define STACK_RXCRC_TAIL0       (16)
+#define STACK_RXCRC_TAIL1       (17)
+#define STACK_RXCRC_TAIL2       (18)
+#define STACK_RXCRC_TAIL3       (19)
+#define STACK_TXCRC_INIT        (20)
+#define STACK_RXCRC_INIT        (21)
 
 #define STACK_PID_JUMP_TABLE (STACK_EXTEND-3)
 
@@ -53,8 +59,7 @@ suspend_t_wtwrsths:
 // STACK_EXTEND + 3  : reg_write_port
 // STACK_EXTEND + 4  : 0
 // STACK_EXTEND + 5  : c_ctl_buf
-
-#define SP_EPTYPES_OUT  (STACK_EXTEND +6)    // STACK_EXTEND + 6  : EP Type table (out)
+#define SP_EPTYPES_OUT  (STACK_EXTEND + 6)    // STACK_EXTEND + 6  : EP Type table (out)
 #define SP_EPTYPES_IN   (STACK_EXTEND + 7)   // EP Type table (in)
 #define SP_EPCHANS      (STACK_EXTEND + 7)
 #define SP_EPCOUNT      (STACK_EXTEND + 9)
@@ -305,9 +310,23 @@ PortsOnStack:                                   // Put ports on stack (loads the
     stw        r11, sp[10]
     ldw        r11, dp[flag0_port]              // Valid token port
     stw        r11, sp[STACK_FLAG0_PORT]
+   
+CrcRxResidualsOnStack: 
+    ldc        r11, 0x7000
+    stw        r11, sp[STACK_RXCRC_TAIL0]
+    ldc        r11, 0x80be
+    stw        r11, sp[STACK_RXCRC_TAIL1]
     ldc        r11, 0x3ffe
-    stw        r11, sp[12]
+    stw        r11, sp[STACK_RXCRC_TAIL2]
+    ldc        r11, 0x3ffe
+    stw        r11, sp[STACK_RXCRC_TAIL3]
 
+    ldc        r11, 0xf335                       // CRC16 init (in) 
+    stw        r11, sp[STACK_TXCRC_INIT]
+   
+    ldc        r11, 0x3334                      // CRC16 init (out) 
+    stw        r11, sp[STACK_RXCRC_INIT]
+    
     ldw        r11, sp[(STACK_EXTEND+7)]
     stw        r11, dp[chanArray]
 
@@ -373,48 +392,15 @@ NextToken:
 NextTokenAfterOut:
     ldc         r7, 0xf335                      // TX Crc init
     ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
-#ifndef ARCH_G
-    ldw         r1, sp[STACK_FLAG0_PORT]
-#else
-    //ldaw        r1, dp[crc5Table_Addr]
-#endif
 NextTokenAfterInNak:
 Loop_BadPid:
-    //ldc         r4, XUD_MAX_NUM_EP_OUT        // Number of OUT endpoints
 NextTokenAfterPing:
     setsr       1                               // Enable thread events
 
-
-
-//------------------------------------------------------------------------------------------------
-#if defined(__XS2A__) || defined(__XS1B__)
-    //ldw         r1, sp[11]                    // Load Valid Token port
-    ldaw        r10, dp[PidJumpTable]           // TODO Could load from sp here
-                                                // Original USB Token: | CRC | EP | ADDR | PID | junk
-                                                // Received token is address and CRC checked.
-                                                // We receive: | 0000 4-bit EP | 0000 4-bit PID |
-XUD_TokenRx_Pid:
-    inpw       r11, res[RXD], 8                 // Read 8 bit PID
-    shr        r11, r11, 24                     // Shift off junk
-
-    ldw        r10, r10[r11]                    // Load relevant branch address
-
-BranchOnTokenPid:
-.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
-
-    bau        r10
-
-#else // XS3A
-
     #include "XUD_TokenJmp.S"
 
-
-
-#endif
-
-
 // Un-implemented PID list
-Pid_Reserved:                                  // Should never get here
+Pid_Reserved:                                   
 Pid_Ack:
 Pid_NYet:
 Pid_Nyet:
@@ -429,16 +415,13 @@ Pid_Data0:
 Pid_Data1:
 Pid_Bad:                                        // Bad PID received, ignore
 
-InvalidToken:
 XUD_InvalidToken:
     ldw        r10, sp[10]           		    // Load RxA Port ID (r1)
-waitforRXALow:
 XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]
-    bt         r11, waitforRXALow
+    bt         r11, XUD_InvalidTok_waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     bu         Loop_BadPid                      // Invalid token received Ignore unknown toks
-
 
 .align 4
 Return:
@@ -446,7 +429,7 @@ Return:
     edu        res[r11]
     freer      res[r11]
 
-    ldw        r4, sp[1]                        # Register restore
+    ldw        r4, sp[1]                        // Register restore
     ldw        r5, sp[2]
     ldw        r6, sp[3]
     ldw        r7, sp[4]
@@ -459,7 +442,6 @@ Return:
 .cc_bottom XUD_LLD_IoLoop.func
 
 
-
-
 // Tables of tables...
 #include "./included/XUD_PidJumpTable.S"
+

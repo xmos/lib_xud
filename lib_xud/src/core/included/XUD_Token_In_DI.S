@@ -56,120 +56,33 @@ InReady:
     ldw         r4, r4[6]                       // Load buffer index
     bf          r4, SmallTxPacket               // Check for Short packet
 
-.xtabranch TxTail0, TxTail1, TxTail2, TxTail3
-    bru         r6                              // Branch on tail length
+XUD_IN_Tx:
+    outpw       res[TXD], r11, 8                // Out PID
+    ldw         r11, r8[r4]                     // Load first data word
 
-//--------------------------------------------------------------------------
-.align 128
-.skip 0
-TxTail0:
-    ldw         r6, r8[r4]                      // Load first data word
-    add         r4, r4, 1                       // Buffer index increment
-XUD_IN_TxPid_Tail0:
-    outpw       res[TXD], r11, 8                // Output PID to port
-    out         res[TXD], r6                    // Output first data word
-    crc32       r7, r6, r9                      // Run CRC
-    bf          r4, TxLoop0End
-TxLoop0:
-    ldw         r6, r8[r4]                      // Load last data word
-    add         r4, r4, 1
-TxLoop0_Out:
-    out         res[TXD], r6                    // Output last data word
-    crc32       r7, r6, r9
-    bt          r4, TxLoop0
-TxLoop0End:                                     // Word aligned data (just output CRC)
-    crc32       r7, r4, r9                      // R4: 0 (from bt)
-    not         r7, r7
+XUD_IN_TxPid:
+    out         res[TXD], r11
+    crc32_inc   r7, r11, r9, r4, 1
+    bf          r4, XUD_IN_TxLoopEnd
 
-XUD_IN_TxCrc_Tail0:
-    outpw        res[TXD], r7, 16               // Output CRC
-    bu           DoneTail
+XUD_IN_TxLoop:
+    ldw         r11, r8[r4]                      // Load first data word
+    crc32_inc   r7, r11, r9, r4, 1
+    {out         res[TXD], r11;     bt          r4, XUD_IN_TxLoop}
 
-.align 128
-.skip 0
-TxTail1:
-    ldw         r6, r8[r4]                      // Load first data word
-    add         r4, r4, 1                       // Buffer index increment
-XUD_IN_TxPid_Tail1:
-    outpw    res[TXD], r11, 8                   // Out PID
-    out      res[TXD], r6
-    crc32         r7, r6, r9
-    bf            r4, TxLoop1End
-TxLoop1:
-    ldw         r6, r8[r4]                      // Load last data word
-    add         r4, r4, 1
-    out         res[TXD], r6
-    crc32       r7, r6, r9
-    bt          r4, TxLoop1
-TxLoop1End:
-    ldw         r6, r8[r4]                      // Load last data word
-    outpw       res[TXD], r6, 8
-    crc8        r7, r6, r6, r9
+XUD_IN_TxLoopEnd:
+    ldw         r11, r8[r4]                     // Load tail
+    crcn        r7, r11, r9, r6
+    outpw       res[TXD], r11, r6
+
+XUD_IN_TxLoopEnd_CrcCalc:
     crc32       r7, r4, r9                      // r4: 0 (from bf)
     not         r7, r7
-
-XUD_IN_TxCrc_Tail1:
-    outpw        res[TXD], r7, 16
-    bu           DoneTail
-
-.scheduling off
-.align 128
-.skip 0
-TxTail2:
-    ldw         r6, r8[r4]                        // Load first data word
-    crc32       r7, r6, r9
-XUD_IN_TxPid_Tail2:
-    outpw       res[TXD], r11, 8                   // Out PID
-    out         res[TXD], r6
-    add         r4, r4, 1
-    bf          r4, TxLoop2End
-TxLoop2:
-    ldw         r6, r8[r4]                        // Load first data word
-    add         r4, r4, 1
-    crc32       r7, r6, r9
-    out         res[TXD], r6
-    bt          r4, TxLoop2
-
-TxLoop2End:
-    ldw         r6, r8[r4]                      // Load tail
-    crc8        r7, r11, r6, r9
-    outpw       res[TXD], r6, 16
-    crc8        r7, r11, r11, r9
-    crc32       r7, r4, r9                      // r4: 0 (from bf)
-    not         r7, r7
-
-XUD_IN_TxCrc_Tail2:
-    outpw       res[TXD], r7, 16
-    bu          DoneTail
-
-.align 128
-.skip 0
-TxTail3:
-    ldw         r6, r8[r4]                      // Load first data word
-    add         r4, r4, 1
-XUD_IN_TxPid_Tail3:
-    outpw    res[TXD], r11, 8                   // Out PID
-    out      res[TXD], r6
-    crc32      r7, r6, r9
-    bf         r4, TxLoop3End
-TxLoop3:
-    ldw         r6, r8[r4]                      // Load first data word
-    add         r4, r4, 1
-    crc32       r7, r6, r9
-    out         res[TXD], r6
-    bt          r4, TxLoop3
-TxLoop3End:
-    ldw          r6, r8[r4]                     // Load tail
-    crc8         r7, r11, r6, r9
-    outpw        res[TXD], r6, 24
-    crc8         r7, r11, r11, r9
-    crc8         r7, r11, r11, r9
-    crc32        r7, r4, r9                     // r4: 0 (from bf)
-    not          r7, r7
-XUD_IN_TxCrc_Tail3:
-    outpw        res[TXD], r7, 16
+XUD_IN_TxCrc:
+    outpw       res[TXD], r7, 16                // Output 16-bit CRC
 
 .scheduling default
+
 // Wait for handshake... or timeout
 DoneTail:
     ldw         r11, sp[SP_EPTYPES_OUT]

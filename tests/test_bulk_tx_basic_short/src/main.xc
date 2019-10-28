@@ -14,19 +14,19 @@
 #include "shared.h"
 
 #ifndef TEST_EP_NUM
-#define TEST_EP_NUM   1
+#define TEST_EP_NUM        (1)
 #endif
 
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START 0
+#define PKT_LENGTH_START   (0)
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END 7
+#define PKT_LENGTH_END     (7)
 #endif
 
-#define XUD_EP_COUNT_OUT   4
-#define XUD_EP_COUNT_IN    4
+#define XUD_EP_COUNT_OUT   (4)
+#define XUD_EP_COUNT_IN    (4)
 
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL,

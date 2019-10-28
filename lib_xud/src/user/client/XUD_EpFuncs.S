@@ -293,15 +293,24 @@ XUD_SetData_NoReq:
     add         r1, r1, r3                      // Add start index to buffer address
 
 CalcTailLength:
-    shl         r3, r2, 5                       // Taillength: bytes to bits * 2
-    zext        r3, 7
+    shl         r3, r2, 3                       // Taillength: bytes to bits
+    zext        r3, 5
 
 SetupLoopTerm:
     shr         r2, r2, 2                       // r2: datalength (bytes) ---> r2: datalength (words)
 
+    // TODO do this a bit more effciently..
+    // If tail is 0 and word-length not 0. Make tail-length 32 and word-length--
+    bt          r3, AdjustBufferPointer
+    bf          r2, AdjustBufferPointer
+
+    sub         r2, r2, 1
+    ldc         r3, 32
+
 AdjustBufferPointer:
     shl         r5, r2, 2                       // Get end off buffer address
     add         r1, r1, r5
+   
 
 NegativeIndex:                                  // Produce negtive offset from end of buffer
     neg         r2, r2

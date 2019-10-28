@@ -40,8 +40,8 @@ XUD_OUT_RxTail:
 .align 32
 OutTail0:
     crc32       r6, r8, r9                      // CRC zero step
-    ldc         r11, 0x7000                     // Load relevant CRC magic number
-    retsp       0
+    ldw         r11, sp[STACK_RXCRC_TAIL0]
+    RETSP_u6    0
 
 // 1 Tail Byte
 .align 32
@@ -49,8 +49,8 @@ OutTail1:
     shr         r11, r11, 24                    // Shift off junk
     crc32       r6, r11, r9
     stw         r11, r1[r4]                     // Store last data
-    ldc         r11, 0x80be                     // Load CRC magic number
-    retsp       0
+    LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL1]
+    RETSP_u6    0
 
 // Two Tail Bytes
 .align 32
@@ -58,8 +58,8 @@ OutTail2:
     shr         r11, r11, 16
     crc32       r6, r11, r9
     stw         r11, r1[r4]                      // Store last data
-    ldc         r11, 0x3ffe
-    retsp       0
+    ldw         r11, sp[STACK_RXCRC_TAIL2]
+    RETSP_u6    0
 
 // Three Tail Bytes
 .align 32
@@ -67,9 +67,9 @@ OutTail3:
     shr         r11, r11, 8
     stw         r11, r1[r4]                     // Store last data
     crc32       r6, r11, r9
-    ldw         r11, sp[12]
+    LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL3]
     crc8        r6, r1, r2, r9                  // Use the fact the the bottom byte of port id is 0.. saves us an ldc
-    retsp       0
+    RETSP_u6    0
 
 // Four Tail Bytes
 .align 32
@@ -96,7 +96,7 @@ Pid_Setup:
 LoadSetupBuffer:
     bl          doRXData			            // RXData writes available data to buffer and does crc check.
                                                 // r8: Data tail size (bytes)
-    {clre;           eq          r1, r6, r11}   // Check for good CRC16
+    {clre;      eq      r1, r6, r11}            // Check for good CRC16
     bf          r1, NextTokenAfterOut           // Check for bad crc
 
 ClearStall:                                     // CRC OK
@@ -127,10 +127,3 @@ SBuffFull:
     endin       r11, res[RXD]
     in          r11, res[RXD]
     bu          NextTokenAfterOut
-
-BadDataCrcSetup:
-    mov         r0, r1
-    bl          ERR_BadCrc
-    outct       res[r5], 9
-    in          r11, res[r5]                    // TODO should only need CT
-    bu          NextToken

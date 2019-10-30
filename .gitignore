@@ -26,3 +26,5 @@ _README/**
 sphinx.output
 Installs/
 .settings
+tests/bin.txt
+tests/log

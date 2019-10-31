@@ -36,8 +36,8 @@ suspend_t_wtwrsths:
 // Stack frame:
 // 0
 // 1..7:             : Reg save
-// 8                 : TX handshake timer
-// 9                 : Out timer
+// 8                 : // Unused
+#define STACK_OUT_TIMER (9)                 // Used for out data timeout
 #define STACK_FLAG1_PORT (10)                 //RXA_port
 #define STACK_FLAG0_PORT (11)                 // Valid token port
 // 12                : ?
@@ -262,29 +262,8 @@ ConfigValidToken:
     setc       res[r10], XS1_SETC_COND_NONE
     ldap       r11, TxHandshakeTimeOut                // ValidToken is used for timing timeout period when expecting an ack after tx
     setv       res[r10], r11
-#if 0
-    // Port counter used instead
-TxHandShakeTimer:                                     // Used for timeout waiting for handshake after tx
-    getr       r10, XS1_RES_TYPE_TIMER
-    ecallf     r10
 
-    ldap       r11, TxHandshakeTimeOut
-    setv       res[r10], r11
-    setc       res[r10], XS1_SETC_COND_AFTER
 
-    stw        r10, sp[8]                             // Save timer resource ID to the stack
-#endif
-#if 0
-SetupOutTimer:
-    getr       r10, XS1_RES_TYPE_TIMER
-    ecallf     r10
-
-    ldap       r11, OutDataTimeOut
-    setv       res[r10], r11
-    setc       res[r10], XS1_SETC_COND_AFTER
-
-    stw        r10, sp[9]
-#endif
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
@@ -354,6 +333,18 @@ ConfigRxErrEventVector:
     setd       res[r3], r11                 // Set event cond data to 1
     stw        r3, sp[15]                   // Store flag port to stack
     eeu        res[r3]
+#endif
+
+#if 0
+SetupOutTimer:
+    getr       r1, XS1_RES_TYPE_TIMER
+    ecallf     r1
+
+    ldap       r11, OutDataTimeOut
+    setv       res[r1], r11
+    setc       res[r1], XS1_SETC_COND_AFTER
+
+    stw        r1, sp[STACK_OUT_TIMER]
 #endif
 
 

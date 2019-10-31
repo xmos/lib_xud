@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-#include "xc_ptr.h"
 #include "shared.h"
 
 #ifndef TEST_EP_NUM

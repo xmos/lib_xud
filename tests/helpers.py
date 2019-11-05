@@ -46,7 +46,7 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
         phy = UsbPhyUtmi('XS1_USB_RXD',
                          'XS1_USB_RXA', #rxa
                          'XS1_USB_RXV', #rxv
-                         'tile[0]:XS1_PORT_1G', #rxe
+                         'XS1_USB_RXE', #rxe
                          'tile[0]:XS1_PORT_8A', #txd
                          'tile[0]:XS1_PORT_1K', #txv
                          'tile[0]:XS1_PORT_1H', #txrdy

@@ -201,6 +201,7 @@ ResetIntHandler:
 #include "./included/XUD_Token_Out.S"
 #include "./included/XUD_Token_Ping.S"
 #include "./included/XUD_Token_SOF.S"
+#include "./included/XUD_RxData.S"
 
 BadCrcAddr:
     // zext       r11, 8

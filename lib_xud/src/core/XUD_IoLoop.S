@@ -195,13 +195,13 @@ ResetIntHandler:
 .issue_mode dual
 #include "./included/XUD_Token_In_DI.S"
 #include "./included/XUD_Token_Setup_DI.S"
+#include "./included/XUD_RxData.S"
 #endif
 
 // Note, included here so in same elimination blocks to avoid long jumps
 #include "./included/XUD_Token_Out.S"
 #include "./included/XUD_Token_Ping.S"
 #include "./included/XUD_Token_SOF.S"
-#include "./included/XUD_RxData.S"
 
 BadCrcAddr:
     // zext       r11, 8

@@ -163,9 +163,7 @@ int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
 #pragma unsafe arrays
 int TestEp_Rx(chanend c_out, int epNum, int start, int end)
 {
-    // TODO check rx lengths
     unsigned int length[MAX_PKT_COUNT];
-    //XUD_Result_t res;
 
     XUD_ep ep_out1 = XUD_InitEp(c_out);
 

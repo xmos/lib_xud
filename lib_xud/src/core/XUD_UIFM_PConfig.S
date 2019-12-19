@@ -52,7 +52,7 @@ InvertUsbClock:
   setc      res[r0], XS1_SETC_COND_NONE
 
 ConfigClockBlock:
-  ldc       r10, XS1_CLKBLK_REF               // TODO Don't use clock block 0
+  ldc       r10, XS1_CLKBLK_REF               // Ideally we don't use clock block 0 but its hardwired 
   setc      res[r10], XS1_SETC_INUSE_ON
   //setc      res[r10], XS1_SETC_RUN_STOPR
   setclk    res[r10], r0  			              // Clock clockblock from usb clock

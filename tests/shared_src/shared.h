@@ -127,34 +127,33 @@ unsigned fail(int x)
 }
 
 #pragma unsafe arrays
-int RxDataCheck(unsigned char b[], int l, int epNum)
+int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
 {
-    // TODO check lengths
+    if (l != expectedLength)
+        return 2;
+
     for (int i = 0; i < l; i++)
     {
         unsigned char y;
-        //read_byte_via_xc_ptr_indexed(y, p_rxDataCheck, epNum);
         
         unsafe
         {
-
-        if(b[i] != g_rxDataCheck[epNum])
-        {
+            if(b[i] != g_rxDataCheck[epNum])
+            {
 #ifdef XUD_SIM_XSIM
-            printstr("#### Mismatch on EP: ");
-            printint(epNum); 
-            printstr(". Got:");
-            printhex(b[i]);
-            printstr(" Expected:");
-            printhex(g_rxDataCheck[epNum]);
-            printstr(" Pkt len: ");
-            printintln(l); // Packet length
+                printstr("#### Mismatch on EP: ");
+                printint(epNum); 
+                printstr(". Got:");
+                printhex(b[i]);
+                printstr(" Expected:");
+                printhex(g_rxDataCheck[epNum]);
+                printstr(" Pkt len: ");
+                printintln(l); // Packet length
 #endif
-            return 1;
-        }
+                return 1;
+            }
 
-        g_rxDataCheck[epNum]++;
-
+            g_rxDataCheck[epNum]++;
         }
     }
 
@@ -184,7 +183,8 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     {
         unsafe
         {
-            unsigned fail = RxDataCheck(buffer[i], length[i], epNum);
+            unsigned expectedLength = start+i;
+            unsigned fail = RxDataCheck(buffer[i], length[i], epNum, expectedLength);
             if (fail) 
                 return fail;
                        

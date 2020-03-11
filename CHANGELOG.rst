@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+1.0.0
+-----
+
+  * CHANGE:     Version for first major release.
+
 0.2.0
 -----
 

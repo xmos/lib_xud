@@ -8,7 +8,7 @@ Pid_Sof:
     shr         r10, r10, 24;                   // Shift off junk
 
     in          r11, res[r1];
-    bt          r11, InvalidToken;              // If VALID_TOKEN not high, ignore token
+    bt          r11, XUD_InvalidToken;              // If VALID_TOKEN not high, ignore token
 
 #else
     // NOTE: we are not CRC checking SOF's
@@ -44,7 +44,7 @@ Pid_Sof_NoChan:
     shr       r10, r10, 24;                            /* Shift off junk */
 
     in         r11, res[r1];
-    bt         r11, InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
+    bt         r11, XUD_InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
 
 #else
 //#include "XUD_G_Crc.S"

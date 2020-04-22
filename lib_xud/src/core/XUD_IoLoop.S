@@ -392,6 +392,10 @@ NextToken:
 NextTokenAfterOut:
     ldc         r7, 0xf335                      // TX Crc init
     ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
+#ifdef __XS2A__
+    ldw         r1, sp[STACK_FLAG0_PORT]
+#endif
+
 NextTokenAfterInNak:
 Loop_BadPid:
 NextTokenAfterPing:

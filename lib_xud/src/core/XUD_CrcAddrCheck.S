@@ -1,5 +1,7 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 // On Entry:
+#ifdef __XS3A__
+
 #if 0
 //CrcAddrCheck:                                          // Extract 11 bits for CRC5: | EP(4) | ADDR(7) |
     ldw        r1, dp[crcmask]
@@ -52,7 +54,15 @@
     //bt          r4,  BadCrcAddr
 //ExtractEP:
     shr         r10, r10, 7
+#endif
 
+
+#else // XS2
+    inpw      r10, res[RXD], 8;                 // Read EP Number
+    shr       r10, r10, 24;                     // Shift off junk
+
+    in         r11, res[r1];
+    bt         r11, InvalidToken;               // If VALID_TOKEN not high, ignore token - PORT INVERTED! */
 #endif
 
 // Required on exit:

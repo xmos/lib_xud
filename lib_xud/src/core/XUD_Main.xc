@@ -13,9 +13,6 @@ void XUD_Error_hex(char errString[], int i_err);
 #define XUD_Error_hex(a, b) /* */
 #endif
 
-#undef __XS2A__
-#define __XS3A__
-
 #include <xs1.h>
 #include <print.h>
 #include <xclib.h>
@@ -41,11 +38,11 @@ void XUD_Error_hex(char errString[], int i_err);
 #endif
 
 #ifdef __XS3A__
-#include "XUD_HAL.h"
 #include "xs3a_registers.h"
 /* TODO should not be expose here, should be in HAL */
 unsigned XtlSelFromMhz(unsigned m);
 #endif
+#include "XUD_HAL.h"
 
 #if defined(ARCH_X200) || defined(ARCH_S)
 #include "XUD_USBTile_Support.h"

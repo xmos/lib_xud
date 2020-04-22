@@ -21,7 +21,7 @@ WaitForEndDataPacket:
 // r9: crc poly
 // r10: ep number
 // r11: scratch
-#if defined(__XS2A__) || defined(__XS3A__)
+#if defined(__XS3A__)
 .align 4
 .skip 0
 doRXData:

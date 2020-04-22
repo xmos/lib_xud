@@ -160,3 +160,42 @@ void XUD_HAL_Mode_DataTransfer()
 }
 
 #endif
+
+extern in port flag0_port;
+extern in port flag1_port;
+extern in port flag2_port;
+
+/* TODO pass structure  */
+int XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
+{
+    unsigned dm, dp;
+   // xudHal.p_usb_fl0 :> dp;
+   // xudHal.p_usb_fl1 :> dm;
+
+#ifdef __XS3A__
+    flag0_port :> dp;
+    flag1_port :> dm;
+
+    if(dp && !dm)
+        return XUD_LINESTATE_J;
+    else if(dm && !dp)
+        return XUD_LINESTATE_K;
+    else if(!dm && !dp)
+        return XUD_LINESTATE_SE0;
+    else
+        return XUD_LINESTATE_INVALID;
+#else   
+
+    unsigned j, k, se0;
+    flag0_port :> j;
+    flag1_port :> k;
+    flag2_port :> se0;
+
+    if(j) 
+        return XUD_LINESTATE_J;
+    if(k)
+        return XUD_LINESTATE_K;
+    if(se0)
+        return XUD_LINESTATE_SE0;
+#endif
+    }

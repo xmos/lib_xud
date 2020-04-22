@@ -293,19 +293,12 @@ XUD_SetData_NoReq:
     add         r1, r1, r3                      // Add start index to buffer address
 
 CalcTailLength:
-#ifdef __XS2A__
-    shl         r3, r2, 5                       // Taillength: bytes to bits * 2
-    zext        r3, 7
-#else
     shl         r3, r2, 3                       // Taillength: bytes to bits
     zext        r3, 5
-#endif
-
 
 SetupLoopTerm:
     shr         r2, r2, 2                       // r2: datalength (bytes) ---> r2: datalength (words)
 
-#ifdef __XS3A__
     // TODO do this a bit more effciently..
     // If tail is 0 and word-length not 0. Make tail-length 32 and word-length--
     bt          r3, AdjustBufferPointer
@@ -313,7 +306,6 @@ SetupLoopTerm:
 
     sub         r2, r2, 1
     ldc         r3, 32
-#endif
 
 AdjustBufferPointer:
     shl         r5, r2, 2                       // Get end off buffer address

@@ -188,18 +188,20 @@ ResetIntHandler:
 .text
 
 #if defined(__XS2A__) 
-.issue_mode single
-#include "./included/XUD_Token_In.S"
+//.issue_mode single
+.issue_mode dual
+#include "./included/XUD_Token_In_DI.S"
 #include "./included/XUD_Token_Setup.S"
+#include "./included/XUD_Token_Out.S"
 #elif defined(__XS3A__)
 .issue_mode dual
 #include "./included/XUD_Token_In_DI.S"
 #include "./included/XUD_Token_Setup_DI.S"
+#include "./included/XUD_Token_Out_DI.S"
 #include "./included/XUD_RxData.S"
 #endif
 
 // Note, included here so in same elimination blocks to avoid long jumps
-#include "./included/XUD_Token_Out.S"
 #include "./included/XUD_Token_Ping.S"
 #include "./included/XUD_Token_SOF.S"
 
@@ -209,24 +211,21 @@ BadCrcAddr:
     // eq         r11, r11, r10
     //ecallt      r11
     //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
-
     ldw         r11, sp[10]
+
 waitforRXALow0:
     in          r10, res[r11]
     bt          r10, waitforRXALow0
     setc        res[RXD], XS1_SETC_RUN_CLRBUF
     bu          Loop_BadPid
 
-
-
 .align 4
 XUD_LLD_IoLoop:
 #if defined(__XS2A__)
-    ENTSP_lu6  STACK_EXTEND
+    //ENTSP_lu6  STACK_EXTEND
+    DUALENTSP_lu6  STACK_EXTEND
 #elif defined(__XS3A__)
     DUALENTSP_lu6  STACK_EXTEND
-#else
-    entsp      STACK_EXTEND
 #endif
     stw         r4, sp[1]
     stw         r5, sp[2]

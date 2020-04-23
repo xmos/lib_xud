@@ -187,21 +187,12 @@ ResetIntHandler:
 .cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
 .text
 
-#if defined(__XS2A__) 
-//.issue_mode single
 .issue_mode dual
-#include "./included/XUD_Token_In_DI.S"
-#include "./included/XUD_Token_Setup.S"
-#include "./included/XUD_Token_Out.S"
-#elif defined(__XS3A__)
-.issue_mode dual
+// Note, included here so in same elimination blocks to avoid long jumps
 #include "./included/XUD_Token_In_DI.S"
 #include "./included/XUD_Token_Setup_DI.S"
 #include "./included/XUD_Token_Out_DI.S"
 #include "./included/XUD_RxData.S"
-#endif
-
-// Note, included here so in same elimination blocks to avoid long jumps
 #include "./included/XUD_Token_Ping.S"
 #include "./included/XUD_Token_SOF.S"
 
@@ -221,12 +212,7 @@ waitforRXALow0:
 
 .align 4
 XUD_LLD_IoLoop:
-#if defined(__XS2A__)
-    //ENTSP_lu6  STACK_EXTEND
     DUALENTSP_lu6  STACK_EXTEND
-#elif defined(__XS3A__)
-    DUALENTSP_lu6  STACK_EXTEND
-#endif
     stw         r4, sp[1]
     stw         r5, sp[2]
     stw         r6, sp[3]
@@ -314,7 +300,7 @@ ConfigSofJump:
     bt         r11, ConfigSofJump_Done
     ldap       r11, Pid_Sof_NoChan
     ldaw       r10, dp[PidJumpTable]
-#ifdef ARCH_L
+#ifdef __XS2A__
     stw        r11, r10[5]
 #else
     ldc        r9, 0xa5

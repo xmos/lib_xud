@@ -6,7 +6,7 @@
 ifeq ($(CONFIG),X200)
 TARGET = XCORE-200-EXPLORER
 else
-TARGET = SLICEKIT-U16
+TARGET = XCORE-AI-EXPLORER-NO-DDR.xn
 endif
 
 # The APP_NAME variable determines the name of the final .xe file. It should
@@ -25,8 +25,8 @@ APP_NAME = app_hid_mouse_demo
 # These flags define two build configurations - one for U-series and one for
 # the xCORE-200 series.
 
-XCC_FLAGS_U     = -O3 -report -DXUD_SERIES_SUPPORT=XUD_U_SERIES
 XCC_FLAGS_X200  = -O3 -report -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
+XCC_FLAGS_AI  = -O3 -report
 
 # The USED_MODULES variable lists other module used by the application. 
 USED_MODULES = lib_xud

@@ -375,7 +375,6 @@ extern unsigned XUD_LLD_IoLoop(
                             in port rxa_port,
                             out buffered port:32 txd_port,
                             in port ?rxe_port, in port newtok_port,
-                            in port ?read, out port ?write, int x,
                             XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
                             int  epCount, chanend? c_sof) ;
 
@@ -518,11 +517,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     //this delay th capture of the rdyIn and data.
     set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
-#endif
-   
-#ifndef __XS3A__
-    /* Invert valid token port */
-  	set_port_inv(flag0_port);
 #endif
 
 #ifdef __XS3A__
@@ -819,28 +813,32 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifndef SIMULATION
     #if defined(__XS1B__) || defined (__XS2A__)
             write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_MASK_NUM,
-                ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)
+                ((1<<XS1_SU_UIFM_IFM_FLAGS_RXERROR_SHIFT)
                 | ((1<<XS1_SU_UIFM_IFM_FLAGS_RXACTIVE_SHIFT)<<8)
-                | ((1<<XS1_SU_UIFM_IFM_FLAGS_RXERROR_SHIFT)<<16)));
+                | ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)<<16)));
     #elif defined(__XS3A__)
             XUD_HAL_Mode_DataTransfer();
     #endif
 #endif
 
-            //set_thread_fast_mode_on();
+#ifdef __XS2A__
+            /* Flag 2 (VALID_TOKEN) port is inverted as an optimisation (having a zero is useful) */
+  	        set_port_inv(flag2_port);
+#endif
 
+            //set_thread_fast_mode_on();
+            
             /* Run main IO loop */
-            /* TODO re-order flag ports such that this check is not required */
 #if defined (__XS3A__)
             /* flag0: Rx Error
                flag1: Rx Active
                flag2: Null */
-            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port, reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
+            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag2_port,  flag0_port, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
 #else
             /* flag0: Valid token flag
                flag1: Rx Active
                flag2: Rx Error */
-            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag2_port,  flag0_port, reg_read_port, reg_write_port, 0, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
+            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag0_port,  flag2_port, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
 #endif
             set_thread_fast_mode_off();
 
@@ -852,7 +850,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
              //   (1<< XS1_UIFM_IFM_CONTROL_DECODELINESTATE));
                  //(1<< XS1_UIFM_IFM_CONTROL_SOFISTOKEN));
 #endif 
-    
+  	   
+#ifdef __XS2A__     
+  	        set_port_no_inv(flag2_port);
+#endif
+
             if(!noExit)
                 break;
 

@@ -40,7 +40,7 @@ StoreTailData:                                  // TODO: don't assume setups are
 
 SBuffFull:
     ldc         r11, 0
-    ldw         r10, sp[10]                     // Load RxA Port ID (r1)
+    ldw         r10, sp[STACK_RXA_PORT]                     // Load RxA Port ID (r1)
     in 	        r11, res[r10]			        // RXA event cond = 0 TODO: Wait for RXA high first?
     endin       r11, res[RXD]
     in          r11, res[RXD]

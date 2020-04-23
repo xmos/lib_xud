@@ -1,9 +1,6 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 // r10: EP number
 // OUT Token Packet -----------------------------------------------------------------------------
-// Ports
-#define RXD r0
-#define TXD r2
 
 .align 8
 .skip 0
@@ -59,10 +56,14 @@ StoreTailDataOut:
 Err_RxErr:                                      // RxError signal high during data packet receive:
     clrsr     3
     clre
-    ldw       r10, sp[15]                       // Read out data from RxE port
+#ifdef __XS2A__
+    ldw       r10, sp[STACK_RXE_PORT]           // Read out data from RxE port
+#else
+    ldw       r10,sp[STACK_FLAG0_PORT]
+#endif
     in        r11, res[r10]
     eeu       res[r10]
-    ldw       r10, sp[10]
+    ldw       r10, sp[STACK_RXA_PORT]
     in        r11, res[r10]                     // Wait for rxa low and ignore packet (let transaction timout)
     setsr     3                                 // Re-enable thread interrupts
     bu        NextToken

@@ -35,7 +35,7 @@ LABEL(doRXData):
     and     r11, r11, r7
     eq      r11, r11, 3
     bf      r11, doRXData_badPid
-    {setsr  1;             ldw      r7, sp[10]}             // Load RxA Port ID
+    {setsr  1;             ldw      r7, sp[STACK_RXA_PORT]}             // Load RxA Port ID
 
 LABEL(GotRxPid):
     eeu        res[r7]                                      // Enable events on RxA

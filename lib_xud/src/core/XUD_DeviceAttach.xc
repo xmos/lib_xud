@@ -174,7 +174,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
            }
            break;
 
-       case !detecting_k => flag0_port when pinseq(0) :> void @ tx:     // J Chirp, inverted!
+       case !detecting_k => flag0_port when pinseq(1) :> void @ tx:     // J Chirp
            flag0_port @ tx + T_FILT :> tmp;
            if (tmp == 0) {                                              // inverted!
                chirpCount ++;                                              // Seen an extra K-J pair

@@ -35,7 +35,7 @@
     {BRFF_ru6  r4,  5;          shr        r10, r11, 7}          // Extract EP number
     
 //waitforRXALow0:
-    ldw        r11, sp[10]
+    ldw        r11, sp[STACK_RXA_PORT]
     in         r10, res[r11]
     bt         r10, waitforRXALow0
     setc       res[RXD], XS1_SETC_RUN_CLRBUF

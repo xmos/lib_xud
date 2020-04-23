@@ -36,14 +36,14 @@ suspend_t_wtwrsths:
 // Stack frame:
 // 0
 // 1..7:             : Reg save
-// 8                 : // Unused
+// 8                 : Unused
 #define STACK_OUT_TIMER (9)                 // Used for out data timeout
-#define STACK_FLAG1_PORT (10)                 //RXA_port
-#define STACK_FLAG0_PORT (11)                 // Valid token port
-// 12                : ?
-// 13                : Suspend timeout
-// 14                : Suspend/Reset timer
-// 15                : RxError port (flag 2)
+#define STACK_RXA_PORT (10)                 // RXA_port
+// 11                : Unused
+// 12                : Unused
+#define STACK_SUSPEND_TIMEOUT   (13)
+#define STACK_SUSPEND_TIMER     (14)
+#define STACK_RXE_PORT          (15)
 #define STACK_RXCRC_TAIL0       (16)
 #define STACK_RXCRC_TAIL1       (17)
 #define STACK_RXCRC_TAIL2       (18)
@@ -51,20 +51,14 @@ suspend_t_wtwrsths:
 #define STACK_TXCRC_INIT        (20)
 #define STACK_RXCRC_INIT        (21)
 
-#define STACK_PID_JUMP_TABLE (STACK_EXTEND-3)
 
 // Params
-// STACK_EXTEND + 1  : Flag0_port
-// STACK_EXTEND + 2  : reg_read_port
-// STACK_EXTEND + 3  : reg_write_port
-// STACK_EXTEND + 4  : 0
-// STACK_EXTEND + 5  : c_ctl_buf
-#define SP_EPTYPES_OUT  (STACK_EXTEND + 6)    // STACK_EXTEND + 6  : EP Type table (out)
-#define SP_EPTYPES_IN   (STACK_EXTEND + 7)   // EP Type table (in)
-#define SP_EPCHANS      (STACK_EXTEND + 7)
-#define SP_EPCOUNT      (STACK_EXTEND + 9)
-#define SP_REGREAD      (STACK_EXTEND + 10)
-#define SP_REGWRITE     (STACK_EXTEND + 11)
+#define STACK_VTOK_PORT (STACK_EXTEND + 1)
+#define SP_EPTYPES_OUT  (STACK_EXTEND + 2)    // STACK_EXTEND + 6  : EP Type table (out)
+#define SP_EPTYPES_IN   (STACK_EXTEND + 3)   // EP Type table (in)
+#define STACK_EPCHANS      (STACK_EXTEND + 4)
+#define SP_EPCOUNT      (STACK_EXTEND + 5)
+#define STACK_SOFCHAN      (STACK_EXTEND + 6)
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 //////////////////////////////////////////////////////////////////////////
@@ -161,7 +155,7 @@ ResetIntHandler:
     ldw     r10, dp[SavedSp]                    // Restore stack pointer
     set     sp, r10
 
-    ldw     r11, sp[15]                         // Put RxE back to events..
+    ldw     r11, sp[STACK_RXE_PORT]                         // Put RxE back to events..
     setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
 
     ldc        r0, 1                            // Load non-zero (zero is kill)
@@ -202,7 +196,7 @@ BadCrcAddr:
     // eq         r11, r11, r10
     //ecallt      r11
     //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
-    ldw         r11, sp[10]
+    ldw         r11, sp[STACK_RXA_PORT]
 
 waitforRXALow0:
     in          r10, res[r11]
@@ -220,6 +214,9 @@ XUD_LLD_IoLoop:
     stw         r8, sp[5]
     stw         r9, sp[6]
     stw         r10, sp[7]
+PortsOnStack:                                   // Put ports on stack (loads therefore short insts)
+    stw         r1, sp[STACK_RXA_PORT]
+    stw         r3, sp[STACK_RXE_PORT] 
 
 SaveStackPointer:
     ldaw        r11, sp[0]
@@ -227,7 +224,7 @@ SaveStackPointer:
 
 
     ldw         r11, cp[suspendTimeout]
-    stw         r11, sp[13]
+    stw         r11, sp[STACK_SUSPEND_TIMEOUT]
 
 ConfigRxDEventVector:                         // Configure events
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
@@ -244,12 +241,10 @@ ConfigRxA:
     eeu        res[RXA]
 
 ConfigValidToken:
-    ldw        r10, dp[flag0_port]                    // Valid token port
+    ldw        r10, sp[STACK_VTOK_PORT]               
     setc       res[r10], XS1_SETC_COND_NONE
-    ldap       r11, TxHandshakeTimeOut                // ValidToken is used for timing timeout period when expecting an ack after tx
+    ldap       r11, TxHandshakeTimeOut           // ValidToken is used for timing timeout period when expecting an ack after tx
     setv       res[r10], r11
-
-
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
@@ -270,11 +265,7 @@ SetupUsbTestMode:
     eeu         res[r10]
 #endif
 
-PortsOnStack:                                   // Put ports on stack (loads therefore short insts)
-    ldw        r11, dp[flag1_port]              // RxA
-    stw        r11, sp[10]
-    ldw        r11, dp[flag0_port]              // Valid token port
-    stw        r11, sp[STACK_FLAG0_PORT]
+
    
 CrcRxResidualsOnStack: 
     ldc        r11, 0x7000
@@ -292,11 +283,11 @@ CrcRxResidualsOnStack:
     ldc        r11, 0x3334                      // CRC16 init (out) 
     stw        r11, sp[STACK_RXCRC_INIT]
     
-    ldw        r11, sp[(STACK_EXTEND+7)]
+    ldw        r11, sp[STACK_EPCHANS]
     stw        r11, dp[chanArray]
 
 ConfigSofJump:
-    ldw        r11, sp[(STACK_EXTEND+9)]
+    ldw        r11, sp[STACK_SOFCHAN]
     bt         r11, ConfigSofJump_Done
     ldap       r11, Pid_Sof_NoChan
     ldaw       r10, dp[PidJumpTable]
@@ -317,7 +308,6 @@ ConfigRxErrEventVector:
     setv       res[r3], r11
     ldc        r11, 1
     setd       res[r3], r11                 // Set event cond data to 1
-    stw        r3, sp[15]                   // Store flag port to stack
     eeu        res[r3]
 #endif
 
@@ -338,7 +328,7 @@ SetupSuspendResetTimer:
     getr       r10, XS1_RES_TYPE_TIMER
     ecallf     r10
 
-    stw        r10, sp[14]
+    stw        r10, sp[STACK_SUSPEND_TIMER]
 
     ldap       r11, ResetIntHandler
     setv       res[r10], r11
@@ -364,13 +354,13 @@ SetupSuspendResetTimer:
 .skip 0
 NextToken:
     ldc         r9, 0xa001                      // CRC16 poly, used in doRxData
-    ldw         r5, sp[(STACK_EXTEND+7)]        // EP structures array - pointers to EP tables or 0
+    ldw         r5, sp[(STACK_EXTEND+4)]        // EP structures array - pointers to EP tables or 0
 
 NextTokenAfterOut:
     ldc         r7, 0xf335                      // TX Crc init
     ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
 #ifdef __XS2A__
-    ldw         r1, sp[STACK_FLAG0_PORT]
+    ldw         r1, sp[STACK_VTOK_PORT]
 #endif
 
 NextTokenAfterInNak:
@@ -397,7 +387,7 @@ Pid_Data1:
 Pid_Bad:                                        // Bad PID received, ignore
 
 XUD_InvalidToken:
-    ldw        r10, sp[10]           		    // Load RxA Port ID (r1)
+    ldw        r10, sp[STACK_RXA_PORT]           		    // Load RxA Port ID (r1)
 XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]
     bt         r11, XUD_InvalidTok_waitforRXALow

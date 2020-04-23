@@ -124,11 +124,11 @@ int XUD_Init()
                 break;
 
             /* J State */
-            case flag0_port when pinseq(0) :> void:                 // Inverted!
+            case flag0_port when pinseq(1) :> void:                 
                 SE0_timer :> SE0_start_time;
                 select
                 {
-                    case flag0_port when pinseq(1) :> void:         // Inverted!
+                    case flag0_port when pinseq(0) :> void:         
                         break;
 
                     case SE0_timer when timerafter(SE0_start_time + STATE_START_TO) :> int:
@@ -194,7 +194,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 break;
     
             // K, start of resume
-            case flag0_port when pinseq(0) :> void: // inverted port
+            case flag0_port when pinseq(1) :> void: 
                 // TODO debounce?
                 unsafe chanend c;
                 asm("getr %0, 2" : "=r"(c)); // XS1_RES_TYPE_CHANEND=2 (no inline assembly immediate operands in xC)

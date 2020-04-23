@@ -61,8 +61,8 @@
     inpw      r10, res[RXD], 8;                 // Read EP Number
     shr       r10, r10, 24;                     // Shift off junk
 
-    in         r11, res[r1];
-    bt         r11, XUD_InvalidToken;               // If VALID_TOKEN not high, ignore token - PORT INVERTED! */
+    in         r4, res[r1];
+    bt         r4, XUD_InvalidToken;               // If VALID_TOKEN not high, ignore token - PORT INVERTED! */
 #endif
 
 // Required on exit:

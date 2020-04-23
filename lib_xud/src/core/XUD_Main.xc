@@ -575,16 +575,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
         unsigned d = 0;
 
         /* Enable wphy and take out of reset */
-        read_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG2_NUM, d);
+        read_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG2_NUM, d);
         d = XS1_USB_PHY_CFG2_PONRST_SET(d, 1);
         d = XS1_USB_PHY_CFG2_UTMI_RESET_SET(d, 0);
-        write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG2_NUM, d); 
+        write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG2_NUM, d); 
     
         /* Setup clocking appropriately */
-        read_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d);
+        read_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d);
         unsigned xtlselVal = XtlSelFromMhz(XUD_OSC_MHZ);
         d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlselVal);
-        write_sswitch_reg(0, XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+        write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
 #endif
 
         /* Wait for USB clock (typically 1ms after reset) */

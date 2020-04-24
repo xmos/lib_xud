@@ -13,20 +13,12 @@
 #include "XUD_Support.h"
 #include "XUD_UIFM_Functions.h"
 #include "XUD_USB_Defines.h"
-#include "XUD_UIFM_Defines.h"
 #include "XUD_HAL.h"
 
 
 #ifdef __XS2A__
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
-#endif
-
-#ifdef ARCH_S
-#include "xs1_su_registers.h"
-#endif
-
-#if defined(ARCH_S) || defined(ARCH_X200)
 #include "XUD_USBTile_Support.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
@@ -57,14 +49,8 @@ extern in  port flag1_port;
 extern in  port flag2_port;
 
 extern out port p_usb_txd;
-#if defined(ARCH_S) || defined(ARCH_X200)
 extern in buffered port:32 p_usb_rxd;
-#define reg_read_port null
-#define reg_write_port null
-#else
-extern out port reg_write_port;
-extern port p_usb_rxd;
-#endif
+
 extern unsigned g_curSpeed;
 
 /* Reset USB transceiver for specified time */
@@ -99,6 +85,7 @@ int XUD_Init()
 
 #ifdef __XS3A__ 
     
+#warning XUD_Init() not properly implemented for XS3A
         XUD_LineState_t ls = XUD_HAL_GetLineState();
         
         if(ls == XUD_LINESTATE_SE0)
@@ -246,7 +233,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #else
 int XUD_Suspend(XUD_PwrConfig pwrConfig)
 {
-
+#warning Suspend not implemented for XS3A
     while(1);
         // TODO
 }

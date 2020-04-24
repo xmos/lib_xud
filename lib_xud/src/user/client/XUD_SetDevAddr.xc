@@ -2,22 +2,10 @@
 
 #include "XUD_UIFM_Functions.h"
 #include "XUD_USB_Defines.h"
-#include "XUD_UIFM_Defines.h"
 #include "xud.h"
-
-#if defined(ARCH_S)
-    #if !defined(__XS1B__)
-        #error
-    #else
-        #include <xs1_su_registers.h>
-    #endif
-#endif
 
 #if defined(__XS2A__)
 #include "xs2_su_registers.h"
-#endif
-
-#if defined(ARCH_S) || defined(__XS2A__)
 #include "XUD_USBTile_Support.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;

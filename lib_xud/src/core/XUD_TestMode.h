@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 #ifndef __XUD_TESTMODE_H__
 #define __XUD_TESTMODE_H__
 
@@ -6,7 +6,6 @@
 #include <print.h>
 
 #include "XUD_UIFM_Functions.h"
-#include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_Support.h"
 

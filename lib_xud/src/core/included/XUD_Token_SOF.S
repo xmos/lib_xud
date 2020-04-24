@@ -3,7 +3,7 @@
 // Received SOF token: Reset suspend/reset detection timer
 .align 4
 Pid_Sof:
-#ifdef ARCH_L
+#ifdef __XS2A__
     inpw        r10, res[RXD], 8                // Read EP Number
     shr         r10, r10, 24;                   // Shift off junk
 
@@ -39,7 +39,7 @@ Pid_Sof:
 // Received SOF token: Reset suspend/reset detection timer
 .align 4
 Pid_Sof_NoChan:
-#ifdef ARCH_L
+#ifdef __XS2A__
     inpw      r10, res[RXD], 8;                        /* Read EP Number */
     shr       r10, r10, 24;                            /* Shift off junk */
 

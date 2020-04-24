@@ -3,8 +3,6 @@
 #include <xs1.h>
 #include <print.h>
 #include <platform.h>
-#include "XUD_UIFM_Functions.h"
-#include "XUD_UIFM_Defines.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_TimingDefines.h"
 #include "XUD_Support.h"
@@ -12,16 +10,12 @@
 
 #include "XUD_HAL.h"
 
-#ifdef ARCH_S
-#include "xs1_su_registers.h"
-#endif
-
-#ifdef ARCH_X200
+#ifdef __XS2A__
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
 #endif
 
-#if defined(ARCH_S) || defined(ARCH_X200)
+#ifdef __XS2A__
 #include "XUD_USBTile_Support.h"
 extern unsigned get_tile_id(tileref ref);
 extern tileref USB_TILE_REF;
@@ -30,15 +24,7 @@ extern tileref USB_TILE_REF;
 extern in  port flag0_port;
 extern in  port flag1_port;
 extern in  port flag2_port;
-#if defined(ARCH_S) || defined(__XS2A__) || defined(__XS3A__)
 extern out buffered port:32 p_usb_txd;
-#define reg_write_port null
-#define reg_read_port null
-#else
-extern out port reg_write_port;
-extern in  port reg_read_port;
-extern out port p_usb_txd;
-#endif
 
 #define TUCHEND_DELAY_us   1500 // 1.5ms
 #define TUCHEND_DELAY      (TUCHEND_DELAY_us * REF_CLK_FREQ)
@@ -71,10 +57,8 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    // opmode = 0b10, termsel = 1, xcvrsel = 0b00;
 #if defined(__XS3A__)
    XUD_HAL_EnterMode_PeripheralChirp();
-#elif defined(ARCH_S) || defined(ARCH_X200)
+#elif defined(__XS2A__)
    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1010);
-#else
-   XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x15);
 #endif
 
    //t :> start_time;
@@ -97,7 +81,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    // J, K, SE0 on flag ports 0, 1, 2 respectively (on XS2)
    // XS3 has raw linestate on flag port 0 and 1
    // Wait for fs chirp k (i.e. HS chirp j)
-#ifndef __XS3A
+#if defined(__XS2A__)
    flag1_port when pinseq(0) :> tmp; // Wait for out k to go
 #endif
 
@@ -109,10 +93,10 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
             case t when timerafter(start_time + INVALID_DELAY) :> void:
 
            /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-#ifdef __XS3A__
+#if defined(__XS3A__)
             
             XUD_HAL_EnterMode_PeripheralFullSpeed();
-#elif defined(ARCH_S) || defined(ARCH_X200)
+#elif defined(__XS2A__)
            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,
                              XS1_SU_PER_UIFM_FUNC_CONTROL_NUM,
                              (1<<XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT)
@@ -125,7 +109,6 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
            while(1)
             {
                /* TODO Use a timer to save some juice...*/
-
 #ifdef __XS3A__
                 while(1)
                 {
@@ -139,14 +122,15 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #else
                flag2_port :> tmp;
 
-               if(!tmp) {
+               if(!tmp) 
+               {
                    return 0;                /* SE0 gone, return 0 to indicate FULL SPEED */
                }
 #endif
 
                if(pwrConfig == XUD_PWR_SELF) {
                    unsigned x;
-#if defined(ARCH_S) || defined(ARCH_X200)
+#if defined(__XS2A__)
                    read_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,
                                     XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
                    if(!(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))) {
@@ -154,14 +138,6 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                                          XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4);
                        return -1;             // VBUS gone, handshake fails completely.
                    }
-#elif ARCH_L
-                   x = XUD_UIFM_RegRead(reg_write_port, reg_read_port, UIFM_OTG_FLAGS_REG);
-                   if(!(x&(1<<UIFM_SU_OTG_FLAGS_SESSVLD_SHIFT))) {
-                       XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x9);
-                       return -1;             // VBUS gone, handshake fails completely.
-                   }
-#else
-#warning cannot poll for vbus on ARCH_G
 #endif
                }
            }
@@ -185,15 +161,12 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                    // (and opmode = 0, suspendm = 1)
 #ifdef __XS3A__
                     XUD_HAL_EnterMode_PeripheralHighSpeed();
-#elif defined(ARCH_S) || defined(ARCH_X200)
+#elif defined(__XS2A__)
                    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,
                                      XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b0000);
-#else
-                   XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_PHYCON, 0x1);
 #endif
 
 #ifdef __XS3A__
-
 #warning TODO for XS3
 #else
                    //wait for SE0 (TODO consume other chirps?)

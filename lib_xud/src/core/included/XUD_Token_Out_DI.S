@@ -56,11 +56,7 @@ StoreTailDataOut:
 Err_RxErr:                                      // RxError signal high during data packet receive:
     clrsr     3
     clre
-#ifdef __XS2A__
     ldw       r10, sp[STACK_RXE_PORT]           // Read out data from RxE port
-#else
-    ldw       r10,sp[STACK_FLAG0_PORT]
-#endif
     in        r11, res[r10]
     eeu       res[r10]
     ldw       r10, sp[STACK_RXA_PORT]

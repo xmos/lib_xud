@@ -11,7 +11,6 @@
 #include <xs1.h>
 #include "xud.h"
 #include "XUD_USB_Defines.h"
-#include "XUD_UIFM_Defines.h"
 #include "XUD_TimingDefines.h"
 
 .section        .cp.const4,"aMc",@progbits,4
@@ -50,7 +49,6 @@ suspend_t_wtwrsths:
 #define STACK_RXCRC_TAIL3       (19)
 #define STACK_TXCRC_INIT        (20)
 #define STACK_RXCRC_INIT        (21)
-
 
 // Params
 #define STACK_VTOK_PORT (STACK_EXTEND + 1)
@@ -222,7 +220,6 @@ SaveStackPointer:
     ldaw        r11, sp[0]
     stw         r11, dp[SavedSp]
 
-
     ldw         r11, cp[suspendTimeout]
     stw         r11, sp[STACK_SUSPEND_TIMEOUT]
 
@@ -240,11 +237,13 @@ ConfigRxA:
     setv       res[r1], r11
     eeu        res[RXA]
 
+#ifdef __XS2A__
 ConfigValidToken:
     ldw        r10, sp[STACK_VTOK_PORT]               
     setc       res[r10], XS1_SETC_COND_NONE
     ldap       r11, TxHandshakeTimeOut           // ValidToken is used for timing timeout period when expecting an ack after tx
     setv       res[r10], r11
+#endif
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
@@ -346,7 +345,11 @@ SetupSuspendResetTimer:
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
 
     clre
+#ifdef __XS2A__
     setsr      0x2                             // Enable thread interrupts
+#else
+    #warning no suspend functionalty currently implemented for XS3
+#endif
     bu         NextToken
 
 // Main IO Loop

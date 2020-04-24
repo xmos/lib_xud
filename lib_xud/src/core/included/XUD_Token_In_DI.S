@@ -92,6 +92,7 @@ SetupReceiveHandShake:
     setpsc       res[RXD], r11		                // Set port shift count (expect 8 bit handshake)
     eeu		     res[RXD]                           // Events on RXD always enabled - Can;t be any more due to using events on channels
 
+#ifdef __XS2A__
 SetupTimeout:				                        // Timeout done using another port off same clock block we dont happen to already be using events on. Cunning.
     ldw 		r1, sp[STACK_VTOK_PORT]            // Load saved ValidToken port. Event vector already set.
     in          r11, res[r1]		                // Do input and get port time/timestamps
@@ -100,6 +101,9 @@ SetupTimeout:				                        // Timeout done using another port off 
     add         r11, r11, r9
     setpt	    res[r1], r11		                // Set port time and enable events
     eeu	        res[r1]
+#else
+#warning XS3 doesntnot have handshake timeout implemented
+#endif
 
 WaitForHandshake:			                        // Wait for timeout or handshake
     .xtabranch TxHandshakeTimeOut, TxHandShakeReceived
@@ -117,7 +121,11 @@ TxHandshakeTimeOut:
 TxHandShakeReceived:
 XUD_IN_RxAck:
     in 		    r11, res[RXD]                       // Input data from RXD port
+#ifdef __XS2A__
+    #warning needs addressing for XS3A as part of the handshake timeout
     clrpt		res[r1]			                    // Clear port time on valid token port
+#endif
+    
     {edu         res[RXD];  shr      r11, r11, 24}  // Shift off junk data to leave ACK
 #if defined(__XS2A__) || defined(__XS1B__)
     ldc         r9, USB_PID_ACK                     // Check for good ACK (L series strips of negated bits from PID)
@@ -125,7 +133,11 @@ XUD_IN_RxAck:
     ldc         r9, USB_PIDn_ACK
 #endif
     xor         r9, r11, r9
+#ifdef __XS2A__
     {edu        res[r1];   bt       r9, BadHandshake}     // Disable events on ValidToken port
+#else
+    {bt       r9, BadHandshake}     
+#endif
 
 DoneTx:
 

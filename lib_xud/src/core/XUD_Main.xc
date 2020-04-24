@@ -383,7 +383,7 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 }
 
 // Main XUD loop
-static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, out port ?p_rst, unsigned rstMask, clock ?clk, XUD_PwrConfig pwrConfig)
+static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, XUD_PwrConfig pwrConfig)
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
     /* Make sure ports are on and reset port states */
@@ -794,7 +794,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
                 chanend c_ep_in[], int noEpIn,
                 chanend ?c_sof,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                out port ?p_rst, clock ?clk, unsigned rstMask, XUD_BusSpeed_t speed, XUD_PwrConfig pwrConfig)
+                XUD_BusSpeed_t speed, XUD_PwrConfig pwrConfig)
 {
     /* Arrays for channels... */
     /* TODO use two arrays? */
@@ -906,7 +906,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 #endif
 
     /* Run the main XUD loop */
-    XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, p_rst, rstMask, clk, pwrConfig);
+    XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, pwrConfig);
 
     // Need to close, drain, and check - three stages.
     for(int i = 0; i < 3; i++)

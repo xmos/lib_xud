@@ -165,14 +165,6 @@ typedef enum XUD_Result
  *                            endpoints, the second array contains the
  *                            endpoint types for each of the IN
  *                            endpoints.
- * \param   p_usb_rst   The port to used to connect to an external phy reset line.
- *                      Should be ``null`` for U-Series.
- * \param   clk         The clock block to use for the p_usb_rst port -
- *                      this should not be clock block 0. Should be ``null`` for U-Series.
- * \param   rstMask     The mask to use when taking an external phy into/out of reset. The mask is
- *                      ORed into the port to disable reset, and unset when
- *                      deasserting reset. Use '-1' as a default mask if this
- *                      port is not shared.
  * \param   desiredSpeed This parameter specifies what speed the device will attempt to run at
  *                      i.e. full-speed (ie 12Mbps) or high-speed (480Mbps) if supported
  *                      by the host. Pass ``XUD_SPEED_HS`` if high-speed is desired or ``XUD_SPEED_FS``
@@ -187,9 +179,6 @@ int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */
                 chanend c_epIn[], int noEpIn,
                 NULLABLE_RESOURCE(chanend, c_sof),
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                NULLABLE_RESOURCE(out port, p_usb_rst),
-                NULLABLE_RESOURCE(clock, clk),
-                unsigned rstMask,
                 XUD_BusSpeed_t desiredSpeed,
                 XUD_PwrConfig pwrConfig);
 #endif

@@ -88,8 +88,7 @@ int main()
     par
     {
       on tile[0]: XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
-                      null, epTypeTableOut, epTypeTableIn, 
-                      null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
+                      null, epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_BUS);
 
       on tile[0]: Endpoint0(c_ep_out[0], c_ep_in[0]);
 

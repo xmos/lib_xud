@@ -53,22 +53,6 @@ extern in buffered port:32 p_usb_rxd;
 
 extern unsigned g_curSpeed;
 
-/* Reset USB transceiver for specified time */
-void XUD_PhyReset(out port p_rst, int time, unsigned rstMask)
-{
-    unsigned x;
-
-    x = peek(p_rst);
-    x &= (~rstMask);
-    p_rst <: x;
-
-    XUD_Sup_Delay(time);
-
-    x = peek(p_rst);
-    x |= rstMask;
-    p_rst <: x;
-}
-
 int XUD_Init()
 {
    timer SE0_timer;

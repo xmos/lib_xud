@@ -7,7 +7,7 @@
   </Declarations>
 
   <Packages>
-    <Package id="0" Type="XS3-UnA-1024-FB236">
+    <Package id="0" Type="XS3-UnA-1024-FB265">
       <Nodes>
         <Node Id="0" InPackageId="0" Type="phoenix" SystemFrequency="500MHz">
           <Tile Number="0" Reference="tile[0]"/>

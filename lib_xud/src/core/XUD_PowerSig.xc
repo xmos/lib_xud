@@ -217,10 +217,74 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #else
 int XUD_Suspend(XUD_PwrConfig pwrConfig)
 {
-#warning Suspend not implemented for XS3A
-    while(1);
-        // TODO
-}
+    timer t;
+    unsigned time;
 
+    unsigned reset = 0;
+
+    while(1);
+
+#if 0
+    XUD_LineState_t currentLs = XUD_LINESTATE_J;
+    
+    while(1)
+    {
+        unsigned timedOut = XUD_HAL_WaitForLineStateChange(currentLs, 0);
+
+        switch(currentLs)
+        {
+            case XUD_LINESTATE_J:
+                /* Do nothing */
+                break;
+
+
+            /* Reset signalliung */
+            case XUD_LINESTATE_SE0:
+
+                timedOut = XUD_HAL_WaitForLineStateChange(currentLs, T_FILTSE0);
+
+                if(timedOut)
+                {
+                    /* Consider 2.5ms a complete reset */
+                    t :> time;
+                    t when timerafter(time + 250000) :> void;
+
+                    /* Return 1 for reset */
+                    return 1;
+
+                }
+
+                /* If didnt timeout then keep looping...*/
+
+            /* K, start of resume */
+            case XUD_LINESTATE_K:
+
+                /* TODO debounce? */
+                XUD_HAL_WaitForLineStateChange(currentLs, 0);
+
+                switch(currentLs)
+                {
+                    /* J, unexpected, return to suspend.. */
+                    case XUD_LINESTATE_J:
+
+                        break;
+
+                    /* SE0, end of resume */
+                    case XUD_LINESTATE_SE0:
+                        if (g_curSpeed == XUD_SPEED_HS)
+                        {
+                            /* Move back into high-speed mode */
+                            XUD_HAL_EnterMode_PeripheralHighSpeed();
+
+                            /* Return 0 for resumed */
+                            return 0;
+                        }
+                        break;
+                }
+                break;
+        }
+    }
+#endif
+}
 #endif
 #endif

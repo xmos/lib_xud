@@ -23,8 +23,8 @@ typedef enum XUD_LineState_t
 } XUD_LineState_t;
 
 
-int XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/);
-
+XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/);
+unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned timeout);
 
 void XUD_HAL_Mode_PowerSig();
 void XUD_HAL_Mode_DataTransfer();

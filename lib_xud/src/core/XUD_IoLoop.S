@@ -337,7 +337,6 @@ SetupSuspendResetTimer:
     ldw        r9, cp[suspendTimeout]
     add        r11, r11, r9
     setd       res[r10], r11
-
     setc       res[r10], XS1_SETC_COND_AFTER
     setc       res[r10], XS1_SETC_IE_MODE_INTERRUPT
     eeu        res[r10]                         // Enable events/interupts on resource
@@ -345,11 +344,7 @@ SetupSuspendResetTimer:
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
 
     clre
-#ifdef __XS2A__
     setsr      0x2                             // Enable thread interrupts
-#else
-    #warning no suspend functionalty currently implemented for XS3
-#endif
     bu         NextToken
 
 // Main IO Loop

@@ -222,9 +222,6 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 
     unsigned reset = 0;
 
-    while(1);
-
-#if 0
     XUD_LineState_t currentLs = XUD_LINESTATE_J;
     
     while(1)
@@ -255,6 +252,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 }
 
                 /* If didnt timeout then keep looping...*/
+                break;
 
             /* K, start of resume */
             case XUD_LINESTATE_K:
@@ -284,7 +282,6 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 break;
         }
     }
-#endif
 }
 #endif
 #endif

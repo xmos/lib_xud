@@ -170,7 +170,7 @@ XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
     unsigned dp, dm;
     flag0_port :> dp;
     flag1_port :> dm;
-    return LinesToLineState(dp, dp);
+    return LinesToLineState(dp, dm);
 #else   
 
     unsigned j, k, se0;

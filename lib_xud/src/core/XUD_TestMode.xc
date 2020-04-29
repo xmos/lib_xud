@@ -29,29 +29,6 @@ unsigned int test_packet[] =
     0xceb67efd
 };
 
-int XUD_TestMode_TestPacket ()
-{
-    // Repetitively transmit specific test packet forever.
-    // Timings must still meet minimum interpacket gap
-    // Have to relate KJ pairings to data.
-    unsigned i;
-    timer test_packet_timer;
-
-#pragma unsafe arrays
-    while (1)
-    {
-#pragma loop unroll
-        for (i=0; i < sizeof(test_packet)/sizeof(test_packet[0]); i++)
-        {
-            p_usb_txd <: test_packet[i];
-        };
-        sync(p_usb_txd);
-        test_packet_timer :> i;
-        test_packet_timer when timerafter (i + T_INTER_TEST_PACKET) :> int _;
-    }
-    return 0;
-}
-
 // Runs in XUD thread with interrupt on entering testmode.
 int XUD_UsbTestModeHandler()
 {
@@ -80,13 +57,31 @@ int XUD_UsbTestModeHandler()
             break;
 
         case USB_WINDEX_TEST_SE0_NAK:
-            // NAK every IN packet if the CRC is correct.
-            // Drop into asm to deal with.
+            /* Drop into asm to deal with this mode */
             XUD_UsbTestSE0();
             break;
 
         case USB_WINDEX_TEST_PACKET:
-            XUD_TestMode_TestPacket();
+            {
+                // Repetitively transmit specific test packet forever.
+                // Timings must still meet minimum interpacket gap
+                // Have to relate KJ pairings to data.
+                unsigned i;
+                timer test_packet_timer;
+
+#pragma unsafe arrays
+                while (1)
+                {
+#pragma loop unroll
+                    for (i=0; i < sizeof(test_packet)/sizeof(test_packet[0]); i++)
+                    {
+                        p_usb_txd <: test_packet[i];
+                    };
+                    sync(p_usb_txd);
+                    test_packet_timer :> i;
+                    test_packet_timer when timerafter (i + T_INTER_TEST_PACKET) :> int _;
+                }
+            }
             break;
 
         default:

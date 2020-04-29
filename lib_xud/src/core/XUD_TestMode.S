@@ -9,6 +9,9 @@
 .globl XUD_UsbTestSE0
 .text
 .cc_top XUD_UsbTestSE0.func, XUD_UsbTestSE0
+
+// NAK every IN token if the CRC is correct.
+
 XUD_UsbTestSE0:
     DUALENTSP_lu6  0                                        // Note, don't really need DI here..
                                                             // TODO ideally don't load these from dp..

@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 
 // Received SOF token: Reset suspend/reset detection timer
 .align 4
@@ -19,7 +19,7 @@ Pid_Sof:
                                                 
 #endif
     clrsr       0x3
-    ldw         r11, sp[(STACK_EXTEND+9)]
+    ldw         r11, sp[STACK_SOFCHAN]
 
     out         res[r11], r10
 

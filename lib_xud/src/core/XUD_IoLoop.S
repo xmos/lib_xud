@@ -94,6 +94,7 @@ UsbTestModeHandler_asm:
 .text
 .cc_top XUD_UsbTestSE0.func, XUD_UsbTestSE0
 XUD_UsbTestSE0:
+#warning TODO UsbTestSE0 needs updating for XS3
     ldw         r0, dp[p_usb_rxd]                           // Load RXD port
     ldw         r1, dp[flag0_port]                          // Valid token port
     ldw         r2, dp[p_usb_txd]                           // Load TXD port
@@ -153,7 +154,7 @@ ResetIntHandler:
     ldw     r10, dp[SavedSp]                    // Restore stack pointer
     set     sp, r10
 
-    ldw     r11, sp[STACK_RXE_PORT]                         // Put RxE back to events..
+    ldw     r11, sp[STACK_RXE_PORT]             // Put RxE back to events..
     setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
 
     ldc        r0, 1                            // Load non-zero (zero is kill)

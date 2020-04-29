@@ -58,24 +58,43 @@ int XUD_Init()
    timer SE0_timer;
    unsigned SE0_start_time = 0;
 
-#ifdef DO_TOKS
-   /* Set default device address */
-   XUD_UIFM_RegWrite(reg_write_port, UIFM_REG_ADDRESS, 0x0);
-#endif
-
    /* Wait for host */
     while (1)
     {
 
 #ifdef __XS3A__ 
     
-#warning XUD_Init() not properly implemented for XS3A
-        XUD_LineState_t ls = XUD_HAL_GetLineState();
+        XUD_LineState_t currentLs = XUD_HAL_GetLineState();
         
-        if(ls == XUD_LINESTATE_SE0)
-            return 1;
-        else if(ls == XUD_LINESTATE_J)
-            return 0;
+        switch (currentLs)
+        {
+
+           case XUD_LINESTATE_SE0:
+
+                unsigned timedOut = XUD_HAL_WaitForLineStateChange(currentLs, T_WTRSTFS);
+    
+                /* If no change in LS then return 1 for reset */
+                if(timedOut) 
+                    return 1; 
+
+                /* Otherwise SE0 went away.. keep looking */
+                break;
+
+            case XUD_LINESTATE_J:
+    
+                 unsigned timedOut = XUD_HAL_WaitForLineStateChange(currentLs, STATE_START_TO);
+    
+                /* If no change in LS then return 0 for suspend */
+                if(timedOut) 
+                    return 0; 
+
+                /* Otherwise J went away.. keep looking */
+                break;
+
+            default:
+                /* Shouldn't expect to get here, but ignore anyway */
+                break;
+        }
 
 #else
         select

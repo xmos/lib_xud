@@ -163,16 +163,14 @@ static inline XUD_LineState_t LinesToLineState(unsigned dp, unsigned dm)
 /* TODO pass structure  */
 XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
 {
-   // xudHal.p_usb_fl0 :> dp;
-   // xudHal.p_usb_fl1 :> dm;
-
 #ifdef __XS3A__
+    // xudHal.p_usb_fl0 :> dp;
+    // xudHal.p_usb_fl1 :> dm;
     unsigned dp, dm;
     flag0_port :> dp;
     flag1_port :> dm;
     return LinesToLineState(dp, dm);
 #else   
-
     unsigned j, k, se0;
     flag0_port :> j;
     flag1_port :> k;

@@ -8,6 +8,8 @@ extern in port flag1_port;
 extern in port flag2_port;
 #else
 
+void XUD_SetCrcTableAddr(unsigned addr);
+
 #include <xs3a_registers.h>
 
 extern in port flag0_port; /* For XS3: RXA  or DP */
@@ -219,4 +221,13 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     #error TODO
 #endif
     
+}
+
+void XUD_HAL_SetDeviceAddress(unsigned char address)
+{
+#if defined(__XS2A__)
+    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, address);
+#elif defined(__XS3A__)
+    XUD_SetCrcTableAddr(address);
+#endif
 }

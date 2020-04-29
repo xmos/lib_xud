@@ -397,6 +397,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #if (XUD_OPT_SOFTCRC5)
+
+    // TODO is this required
     XUD_SetCrcTableAddr(XUD_STARTUP_ADDRESS);
 #endif
 
@@ -630,9 +632,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         SendResetToEps(epChans0, epChans, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
                         sentReset = 1;
                     }
-#ifdef __XS3A__
-                    XUD_SetCrcTableAddr(XUD_STARTUP_ADDRESS);
-#endif
+                    
                     /* Reset the OUT ep structures */
                     for(int i = 0; i< noEpOut; i++)
                     {
@@ -652,11 +652,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 #if !defined (XUD_SIM_XSIM)
                     /* Set default device address */
-    #if defined(__XS1B__) || defined(__XS2A__)
-                    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, 0);
-    #elif defined(__XS3A__)
-                    XUD_SetCrcTableAddr(XUD_STARTUP_ADDRESS);
-    #endif
+                    XUD_HAL_SetDeviceAddress(XUD_STARTUP_ADDRESS);
 #endif
 
 #ifdef XUD_BYPASS_RESET

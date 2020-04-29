@@ -271,7 +271,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                     case XUD_LINESTATE_SE0:
                         if (g_curSpeed == XUD_SPEED_HS)
                         {
-                            /* Move back into high-speed mode */
+                            /* Move back into high-speed mode - Notes, writes to XS3A registers orders of magnitude faster than XS2A */
                             XUD_HAL_EnterMode_PeripheralHighSpeed();
 
                             /* Return 0 for resumed */

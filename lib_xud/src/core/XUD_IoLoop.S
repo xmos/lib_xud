@@ -87,53 +87,6 @@ UsbTestModeHandler_asm:
 .cc_bottom UsbTestModeHandler_asm.func
 #endif
 
-
-.globl XUD_UsbTestSE0.nstackwords
-.linkset XUD_UsbTestSE0.nstackwords, 0
-.globl XUD_UsbTestSE0
-.text
-.cc_top XUD_UsbTestSE0.func, XUD_UsbTestSE0
-XUD_UsbTestSE0:
-#warning TODO UsbTestSE0 needs updating for XS3
-    ldw         r0, dp[p_usb_rxd]                           // Load RXD port
-    ldw         r1, dp[flag0_port]                          // Valid token port
-    ldw         r2, dp[p_usb_txd]                           // Load TXD port
-    ldw         r3, dp[flag1_port]                          // Load RXA port
-
-XUD_UsbTestSE0_loop:
-    inpw        r11, res[r0], 8                             // Read 8 bit PID
-    shr         r11, r11, 24                                // shift off junk
-
-    inpw        r9, res[r0], 8                              // Read EP Number (dont care)
-
-    in          r9, res[r1]
-    bt          r9, InvalidTestToken                        // If VALID_TOKEN high, ignore token
-
-    eq          r10, r11, USB_PID_IN
-    bf          r10, XUD_UsbTestSE0_loop
-
-    nop
-    nop
-    nop
-    nop
-    nop
-
-    ldc         r11, USB_PIDn_NAK
-	outpw       res[r2], r11, 8
-	syncr       res[r2]
-    bu          XUD_UsbTestSE0_loop
-
-InvalidTestToken:
-    in          r11, res[r3]
-    bt          r11, InvalidTestToken
-    setc        res[r0], XS1_SETC_RUN_CLRBUF                // Clear RXD port
-    bu          XUD_UsbTestSE0_loop
-
-
-// End of code for Test_SE0_NAK
-.cc_bottom XUD_UsbTestSE0.func
-
-
 /////////////////////////////////////////////////////////////////////////
 // void ResetIntHandler()
 // Interupt handler for reset/suspend timer

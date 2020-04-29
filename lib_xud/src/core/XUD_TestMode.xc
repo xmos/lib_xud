@@ -1,34 +1,17 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 #include <xs1.h>
-#include <print.h>
 
-#include "XUD_UIFM_Functions.h"
-#include "XUD_USB_Defines.h"
-#include "XUD_Support.h"
-#include "XUD_TestMode.h"
 #include "xud.h"
+#include "XUD_TestMode.h"
 
-#if defined(__XS2A__)
-#include "xs2_su_registers.h"
-#include "XUD_USBTile_Support.h"
-extern unsigned get_tile_id(tileref ref);
-extern tileref USB_TILE_REF;
-#endif
-
-extern in  port flag0_port;
-extern in  port flag1_port;
-#if !defined(__XS3A__)
-extern in  port flag2_port;
-#endif
 
 extern out buffered port:32 p_usb_txd;
 
-#define TEST_PACKET_LEN 14
 #define T_INTER_TEST_PACKET_us 2
 #define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * REF_CLK_FREQ)
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
-unsigned int test_packet[TEST_PACKET_LEN] =
+unsigned int test_packet[] =
 {
     0x000000c3,
     0x00000000,
@@ -58,13 +41,13 @@ int XUD_TestMode_TestPacket ()
     while (1)
     {
 #pragma loop unroll
-        for (i=0; i < TEST_PACKET_LEN; i++ )
+        for (i=0; i < sizeof(test_packet)/sizeof(test_packet[0]); i++)
         {
             p_usb_txd <: test_packet[i];
         };
         sync(p_usb_txd);
         test_packet_timer :> i;
-        test_packet_timer when timerafter (i +   T_INTER_TEST_PACKET) :> int _;
+        test_packet_timer when timerafter (i + T_INTER_TEST_PACKET) :> int _;
     }
     return 0;
 }
@@ -77,13 +60,9 @@ int XUD_UsbTestModeHandler()
     switch(cmd)
     {
         case USB_WINDEX_TEST_J:
-            //Function Control Reg. Suspend: 1 Opmode 10
-
-#if defined(__XS3A__)
-    #warning Test modes not implemented for XS3A
-#elif defined(__XS2A__)
-            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
-#endif
+          
+            XUD_HAL_EnterMode_PeripheralTestJTestK();
+            
             while(1)
             {
                 p_usb_txd <: 0xffffffff;
@@ -91,13 +70,9 @@ int XUD_UsbTestModeHandler()
             break;
 
         case USB_WINDEX_TEST_K:
-            //Function Control Reg. Suspend: 1 Opmode 10
-#if defined(__XS3A__)
-    // TODO
-#elif defined(__XS2A__)
-            write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
-#endif
-
+            
+            XUD_HAL_EnterMode_PeripheralTestJTestK();
+            
             while(1)
             {
                 p_usb_txd <: 0;

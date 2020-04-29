@@ -3,11 +3,9 @@
 #define __XUD_TESTMODE_H__
 
 #include <xs1.h>
-#include <print.h>
 
-#include "XUD_UIFM_Functions.h"
+#include "XUD_HAL.h"
 #include "XUD_USB_Defines.h"
-#include "XUD_Support.h"
 
 unsigned UsbTestModeHandler_asm();
 unsigned XUD_UsbTestSE0();

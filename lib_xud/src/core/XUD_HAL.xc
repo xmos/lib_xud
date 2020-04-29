@@ -3,17 +3,23 @@
 #include <xs1.h>
 
 #ifdef __XS2A__
+#include "xs2_su_registers.h"
+#include "XUD_USBTile_Support.h"
+
 extern in port flag0_port;
 extern in port flag1_port;
 extern in port flag2_port;
+
+extern unsigned get_tile_id(tileref ref);
+extern tileref USB_TILE_REF;
+
 #else
 
-void XUD_SetCrcTableAddr(unsigned addr);
-
 #include <xs3a_registers.h>
-
 extern in port flag0_port; /* For XS3: RXA  or DP */
 extern in port flag1_port; /* For XS3: RXE  or DM */
+
+void XUD_SetCrcTableAddr(unsigned addr);
 
 unsigned XtlSelFromMhz(unsigned m)
 {
@@ -106,11 +112,43 @@ void XUD_HAL_EnterMode_PeripheralHighSpeed()
     unsigned xtlselVal = XtlSelFromMhz(XUD_OSC_MHZ);
     d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlselVal);
     write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
-
 #endif
 }
 
+void XUD_HAL_EnterMode_PeripheralTestJTestK()
+{
+#ifndef XUD_SIM_XSIM
+#ifdef __XS3A__
 
+  /* From ULPI Specification Revsion 1.1, table 41 
+     * XcvrSelect:  00b
+     * TermSelect:  0b
+     * OpMode:      10b
+     * DpPullDown   0b
+     * DmPullDown:  0b
+     */
+    unsigned d = 0;
+    d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_UTMI_TERMSELECT_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_UTMI_OPMODE_SET(d, 2);
+    d = XS1_USB_PHY_CFG0_DMPULLDOWN_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_DPPULLDOWN_SET(d, 0);
+
+    d = XS1_USB_PHY_CFG0_UTMI_SUSPENDM_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_TXBITSTUFF_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_PLL_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_LPM_ALIVE_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_IDPAD_EN_SET(d, 0);
+
+    unsigned xtlSelVal = XtlSelFromMhz(XUD_OSC_MHZ);
+    d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlSelVal);
+
+    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+#else
+    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
+#endif
+#endif
+}
 
 void XUD_HAL_Mode_PowerSig()
 {
@@ -231,3 +269,6 @@ void XUD_HAL_SetDeviceAddress(unsigned char address)
     XUD_SetCrcTableAddr(address);
 #endif
 }
+
+
+

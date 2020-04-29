@@ -20,6 +20,7 @@ typedef enum XUD_LineState_t
 void XUD_HAL_EnterMode_PeripheralChirp();
 void XUD_HAL_EnterMode_PeripheralFullSpeed();
 void XUD_HAL_EnterMode_PeripheralHighSpeed();
+void XUD_HAL_EnterMode_PeripheralTestJTestK();
 
 /**
  * \brief   Get current linestate status 

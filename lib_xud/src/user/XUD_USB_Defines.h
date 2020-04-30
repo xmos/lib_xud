@@ -6,8 +6,6 @@
 #ifndef _USB_DEFS_H_
 #define _USB_DEFS_H_
 
-#define USB_TILE_REF usb_tile
-
 /* Table 8-1. PID Types */
 #define USB_PID_OUT                     0x1         /* Tokens */
 #define USB_PID_IN                      0x9

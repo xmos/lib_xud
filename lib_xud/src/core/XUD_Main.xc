@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 
 /**
-  * @file      XUD_Manager.xc
+  * @file      XUD_Main.xc
   * @brief     XMOS USB Device (XUD) Layer
   * @author    Ross Owen
   **/
@@ -21,23 +21,10 @@ void XUD_Error_hex(char errString[], int i_err);
 
 #include "xud.h"                 /* External user include file */
 #include "XUD_USB_Defines.h"
-#include "XUD_USBTile_Support.h"
 #include "XUD_Support.h"
-#include "XUD_UIFM_Functions.h"
 
 #include "XUD_DeviceAttach.h"
 #include "XUD_PowerSig.h"
-
-#ifdef __XS2A__
-#include "xs1_to_glx.h"
-#include "xs2_su_registers.h"
-#endif
-
-#ifdef __XS3A__
-#include "xs3a_registers.h"
-/* TODO should not be expose here, should be in HAL */
-unsigned XtlSelFromMhz(unsigned m);
-#endif
 #include "XUD_HAL.h"
 
 #if (USB_MAX_NUM_EP_IN != 16)
@@ -281,76 +268,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     while(noExit)
     {
         unsigned settings[] = {0};
-
-#if defined(__XS2A__) || defined(__XS3A__)
-        /* For xCORE-200 enable USB port muxing before enabling phy etc */
-        XUD_EnableUsbPortMux(); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
-#endif
-
-#if !defined(XUD_SIM_XSIM) && defined (__XS2A__)
-    /* Enable the USB clock */
-    write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, ( 1 << XS1_SU_CFG_USB_CLK_EN_SHIFT));
-
-        /* Now reset the phy */
-        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_PHY_CONTROL_NUM,  0); //(0<<XS1_UIFM_PHY_CONTROL_FORCERESET));
-        
-        /* Keep usb clock active, enter active mode */
-        write_sswitch_reg(get_tile_id(USB_TILE_REF), XS1_SU_CFG_RST_MISC_NUM, (1 << XS1_SU_CFG_USB_CLK_EN_SHIFT) | (1<<XS1_SU_CFG_USB_EN_SHIFT)  );
-
-        /* Clear OTG control reg - incase we were running as host previously.. */
-        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_CONTROL_NUM, 0); 
-#elif !(defined XUD_SIM_XSIM) && defined(__XS3A__)  
-        unsigned d = 0;
-
-        /* Enable wphy and take out of reset */
-        read_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG2_NUM, d);
-        d = XS1_USB_PHY_CFG2_PONRST_SET(d, 1);
-        d = XS1_USB_PHY_CFG2_UTMI_RESET_SET(d, 0);
-        write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG2_NUM, d); 
     
-        /* Setup clocking appropriately */
-        read_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d);
-        unsigned xtlselVal = XtlSelFromMhz(XUD_OSC_MHZ);
-        d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlselVal);
-        write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
-#endif
-
-        /* Wait for USB clock (typically 1ms after reset) */
-        p_usb_clk when pinseq(1) :> int _;
-        p_usb_clk when pinseq(0) :> int _;
-        p_usb_clk when pinseq(1) :> int _;
-        p_usb_clk when pinseq(0) :> int _;
+        /* Enable USB funcitonality in the device */
+        XUD_HAL_EnableUsb(pwrConfig);
         
-#if defined(__XS2A__)
-#define XS1_UIFM_USB_PHY_EXT_CTRL_REG 0x50
-#define XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXT_MASK 0x4
-        /* Remove requirement for VBUS in bus-powered mode */
-        if(pwrConfig == XUD_PWR_BUS)
-        {
-             write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_UIFM_USB_PHY_EXT_CTRL_REG, XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXTSEL_MASK | XS1_UIFM_USB_PHY_EXT_CTRL_VBUSVLDEXT_MASK);
-        }
-
-#define PHYTUNEREGVAL 0x0093B264
-#define XS1_UIFM_USB_PHY_TUNE_REG 0x4c
-        /* Phy Tuning parameters */
-        /* OTG TUNE: 3b'100
-         * TXFSLSTUNE: 4b'1001
-         * TXVREFTUNE:4b'1001 -- +1.25% adjustment in HS DC voltage level
-         * BIASTUNE: 1b'0
-         * COMDISTUNE:3b'011 -- -1.5% adjustment from default (disconnect threshold adjustment)
-         * SQRXTUNE:3b'010 -- +5% adjustment from default (Squelch Threshold)
-         * TXRISETUNE: 1b'0
-         * TXPREEMPHASISTUNE:1b'1 -- enabled (default is disabled)
-         * TXHSXVTUNE: 2b'11
-         */
-        write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_UIFM_USB_PHY_TUNE_REG, PHYTUNEREGVAL);
-#endif
-
-#if !defined(XUD_SIM_XSIM)
-    #ifdef __XS2A__
-        write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_SU_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT));
-    #endif
-#endif
         while(1)
         {
             {

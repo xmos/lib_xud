@@ -4,6 +4,17 @@
  * \brief   USB HAL Layer 
 **/
 
+#ifdef __XS3A__
+#include <xs3a_registers.h>
+// TODO shoudl be properlty in HAL
+unsigned XtlSelFromMhz(unsigned m);
+#else
+#include "XUD_USBTile_Support.h"
+#include "xs1_to_glx.h"
+#include "xs2_su_registers.h"
+#define USB_TILE_REF usb_tile
+#endif
+
 /** 
  * \enum    XUD_LineState_t
  * \brief   USB Line States 
@@ -57,3 +68,9 @@ void XUD_HAL_Mode_DataTransfer();
  * \return  void
  **/
 void XUD_HAL_SetDeviceAddress(unsigned char address);
+
+/**
+ * \brief   Enable USB funtionality in the device 
+ **/
+void XUD_HAL_EnableUsb(unsigned pwrConfig);
+

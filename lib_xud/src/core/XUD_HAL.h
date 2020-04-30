@@ -10,10 +10,10 @@
  */
 typedef enum XUD_LineState_t 
 {
-    XUD_LINESTATE_SE0,      /**< SE0 State */
-    XUD_LINESTATE_J,        /**< J State */
-    XUD_LINESTATE_K,        /**< K State */
-    XUD_LINESTATE_INVALID   /**< Invalid bus state both lines high **/
+    XUD_LINESTATE_SE0 = 0,      /**< SE0 State */
+    XUD_LINESTATE_J = 1,        /**< J State */
+    XUD_LINESTATE_K = 2,        /**< K State */
+    XUD_LINESTATE_SE1 = 3       /**< Invalid bus state both lines high **/
 } XUD_LineState_t;
 
 

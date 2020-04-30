@@ -170,45 +170,28 @@ void XUD_HAL_Mode_DataTransfer()
 
 #endif
 
+/* In full-speed and low-speed mode, LineState(0) always reflects DP and LineState(1) reflects DM */
+/* Note, this port ordering is the opposide of what might be expected - but linestate is swapped in the USB shim */
+#define dp_port flag1_port      // DP: LINESTATE[0]
+#define dm_port flag0_port      // DM: LINESTATE[1]
+
 {unsigned, unsigned} LineStateToLines(XUD_LineState_t ls)
 {
-    switch(ls)
-    {
-        case XUD_LINESTATE_J:
-            return {1,0};
-        case XUD_LINESTATE_K:
-            return {0, 1};
-        case XUD_LINESTATE_SE0:
-            return {0, 0};
-        case XUD_LINESTATE_INVALID:
-            return {1,1};
-    }
+    return {ls & 1, (ls >> 1) & 1};
 }
 
 static inline XUD_LineState_t LinesToLineState(unsigned dp, unsigned dm)
 {
-    if(dp && !dm)
-        return XUD_LINESTATE_J;
-    else if(dm && !dp)
-        return XUD_LINESTATE_K;
-    else if(!dm && !dp)
-        return XUD_LINESTATE_SE0;
-    else
-        return XUD_LINESTATE_INVALID;
+    return (XUD_LineState_t) (dp & 1) | ((dm & 1)<< 1);
 }
-
-#define dp_port flag0_port
-#define dm_port flag1_port
 
 /* TODO pass structure  */
 XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
 {
 #ifdef __XS3A__
-    // xudHal.p_usb_fl0 :> dp;
-    // xudHal.p_usb_fl1 :> dm;
     unsigned dp, dm;
-    flag0_port :> dp;
-    flag1_port :> dm;
+    dp_port :> dp;
+    dm_port :> dm;
     return LinesToLineState(dp, dm);
 #else   
     unsigned j, k, se0;

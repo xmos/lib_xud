@@ -249,11 +249,6 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 
         switch(currentLs)
         {
-            case XUD_LINESTATE_J:
-                /* Do nothing */
-                break;
-
-
             /* Reset signalliung */
             case XUD_LINESTATE_SE0:
 
@@ -281,11 +276,6 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 
                 switch(currentLs)
                 {
-                    /* J, unexpected, return to suspend.. */
-                    case XUD_LINESTATE_J:
-
-                        break;
-
                     /* SE0, end of resume */
                     case XUD_LINESTATE_SE0:
                         if (g_curSpeed == XUD_SPEED_HS)
@@ -297,7 +287,17 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                             return 0;
                         }
                         break;
+
+                    /* J, unexpected, return to suspend.. */
+                    case XUD_LINESTATE_J:
+                    default: 
+                        break;
                 }
+                break;
+                
+            case XUD_LINESTATE_J:
+            default:
+                /* Do nothing */
                 break;
         }
     }

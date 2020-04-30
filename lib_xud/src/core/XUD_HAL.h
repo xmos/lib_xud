@@ -27,7 +27,6 @@ typedef enum XUD_LineState_t
     XUD_LINESTATE_SE1 = 3       /**< Invalid bus state both lines high **/
 } XUD_LineState_t;
 
-
 void XUD_HAL_EnterMode_PeripheralChirp();
 void XUD_HAL_EnterMode_PeripheralFullSpeed();
 void XUD_HAL_EnterMode_PeripheralHighSpeed();

@@ -91,19 +91,6 @@ typedef struct XUD_ep_info
 
 XUD_ep_info ep_info[USB_MAX_NUM_EP];
 
-#ifndef XUD_SIM_XSIM
-/* Sets the UIFM flags into a mode suitable for power signalling */
-void XUD_UIFM_PwrSigFlags()
-{
-#if defined(__XS2A__)
-    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM, ((1<<XS1_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
-        | ((1<<XS1_UIFM_IFM_FLAGS_K_SHIFT)<<8) | (1 << XS1_UIFM_IFM_FLAGS_J_SHIFT));
-#elif defined(__XS3A__)
-    // Done in in HAL
-#endif
-}
-#endif
-
 /* Tables storing if EP's are signed up to bus state updates */
 int epStatFlagTableIn[USB_MAX_NUM_EP_IN];
 int epStatFlagTableOut[USB_MAX_NUM_EP_OUT];
@@ -297,23 +284,17 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         t when timerafter(time):> void;
                     }
                 }
-#if defined(__XS2A__)
+                
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
-                write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, (1<<XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT) | (1<<XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
-#elif defined(__XS3A__)
                 XUD_HAL_EnterMode_PeripheralFullSpeed();
-#endif
 
 #if defined(XUD_SIM_XSIM) 
                 reset = 1;
 #else
 
-#if defined(__XS3A__)
+                /* Setup flags for power signalling - i.e. J/K/SE0 line state*/
                 XUD_HAL_Mode_PowerSig();
-#else
-                /* Setup flags for power signalling - J/K/SE0 line state*/
-                XUD_UIFM_PwrSigFlags();
-#endif
+                
                 if (one)
                 {
                     reset = XUD_Init();
@@ -429,33 +410,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 }
             }
 
-
-            /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
-            NOTE: Need to do this every iteration since CHKTOK would break power signaling */
-#ifndef SIMULATION
-    #if defined(__XS1B__) || defined(__XS2A__)
-            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, (1<<XS1_SU_UIFM_IFM_CONTROL_DOTOKENS_SHIFT)
-                | (1<< XS1_SU_UIFM_IFM_CONTROL_CHECKTOKENS_SHIFT)
-                | (1<< XS1_SU_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT)
-                | (1<< XS1_SU_UIFM_IFM_CONTROL_SOFISTOKEN_SHIFT));
-    #endif
-#endif
-
-#ifndef SIMULATION
-    #if defined(__XS1B__) || defined (__XS2A__)
-            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_MASK_NUM,
-                ((1<<XS1_SU_UIFM_IFM_FLAGS_RXERROR_SHIFT)
-                | ((1<<XS1_SU_UIFM_IFM_FLAGS_RXACTIVE_SHIFT)<<8)
-                | ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)<<16)));
-    #elif defined(__XS3A__)
             XUD_HAL_Mode_DataTransfer();
-    #endif
-#endif
-
-#ifdef __XS2A__
-            /* Flag 2 (VALID_TOKEN) port is inverted as an optimisation (having a zero is useful) */
-  	        set_port_inv(flag2_port);
-#endif
 
             set_thread_fast_mode_on();
             
@@ -467,10 +422,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             
             set_thread_fast_mode_off();
   	   
-#ifdef __XS2A__     
-  	        set_port_no_inv(flag2_port);
-#endif
-
             if(!noExit)
                 break;
         }

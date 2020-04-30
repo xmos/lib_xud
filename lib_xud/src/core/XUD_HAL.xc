@@ -238,7 +238,15 @@ void XUD_HAL_EnterMode_PeripheralTestJTestK()
 void XUD_HAL_Mode_PowerSig()
 {
 #ifndef XUD_SIM_XSIM
-#ifdef __XS3A__
+#ifdef __XS2A__
+    /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */
+  	set_port_no_inv(flag2_port);
+
+    write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM, 
+        ((1<<XS1_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
+        | ((1<<XS1_UIFM_IFM_FLAGS_K_SHIFT)<<8) 
+        | (1 << XS1_UIFM_IFM_FLAGS_J_SHIFT));
+#else
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 1);
     write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_SHIM_CFG_NUM, d); 
@@ -249,7 +257,23 @@ void XUD_HAL_Mode_PowerSig()
 void XUD_HAL_Mode_DataTransfer()
 {
 #ifndef XUD_SIM_XSIM
-#ifdef __XS3A__
+#ifdef __XS2A__
+    /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
+     * NOTE: Need to do this every iteration since CHKTOK would break power signaling */
+    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_CONTROL_NUM, 
+            (1<<XS1_SU_UIFM_IFM_CONTROL_DOTOKENS_SHIFT)
+            | (1<< XS1_SU_UIFM_IFM_CONTROL_CHECKTOKENS_SHIFT)
+            | (1<< XS1_SU_UIFM_IFM_CONTROL_DECODELINESTATE_SHIFT)
+            | (1<< XS1_SU_UIFM_IFM_CONTROL_SOFISTOKEN_SHIFT));
+
+    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_MASK_NUM,
+            ((1<<XS1_SU_UIFM_IFM_FLAGS_RXERROR_SHIFT)
+             | ((1<<XS1_SU_UIFM_IFM_FLAGS_RXACTIVE_SHIFT)<<8)
+             | ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)<<16)));
+
+    /* Flag 2 (VALID_TOKEN) port is inverted as an optimisation (having a zero is useful) */
+  	set_port_inv(flag2_port);
+#else
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 0);
     write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_SHIM_CFG_NUM, d); 

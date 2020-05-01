@@ -68,6 +68,7 @@ suspend_t_wtwrsths:
 .globl UsbTestModeHandler_asm
 .text
 .cc_top UsbTestModeHandler_asm.func, UsbTestModeHandler_asm
+.issue_mode dual
 UsbTestModeHandler_asm:
 	clrsr       0x18
 	clrsr       0x2
@@ -95,6 +96,7 @@ UsbTestModeHandler_asm:
 .globl ResetIntHandler
 .text
 .cc_top ResetIntHandler.func, ResetIntHandler
+.issue_mode dual
 ResetIntHandler:
     clrsr   0x18                                // Clear InInterrupt bit (and InKernel)
     clrsr   0x2
@@ -217,8 +219,6 @@ SetupUsbTestMode:
     setv        res[r10], r11
     eeu         res[r10]
 #endif
-
-
    
 CrcRxResidualsOnStack: 
     ldc        r11, 0x7000

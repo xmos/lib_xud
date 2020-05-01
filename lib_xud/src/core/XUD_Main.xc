@@ -352,7 +352,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
                     }
 
-
                     /* Reset in the ep structures */
                     for(int i = 0; i< noEpIn; i++)
                     {

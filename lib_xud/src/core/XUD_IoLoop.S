@@ -52,11 +52,11 @@ suspend_t_wtwrsths:
 
 // Params
 #define STACK_VTOK_PORT (STACK_EXTEND + 1)
-#define SP_EPTYPES_OUT  (STACK_EXTEND + 2)    // STACK_EXTEND + 6  : EP Type table (out)
+#define SP_EPTYPES_OUT  (STACK_EXTEND + 2)   // STACK_EXTEND + 6  : EP Type table (out)
 #define SP_EPTYPES_IN   (STACK_EXTEND + 3)   // EP Type table (in)
-#define STACK_EPCHANS      (STACK_EXTEND + 4)
+#define STACK_EPCHANS   (STACK_EXTEND + 4)
 #define SP_EPCOUNT      (STACK_EXTEND + 5)
-#define STACK_SOFCHAN      (STACK_EXTEND + 6)
+#define STACK_SOFCHAN   (STACK_EXTEND + 6)
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 //////////////////////////////////////////////////////////////////////////
@@ -68,11 +68,13 @@ suspend_t_wtwrsths:
 .globl UsbTestModeHandler_asm
 .text
 .cc_top UsbTestModeHandler_asm.func, UsbTestModeHandler_asm
-.issue_mode dual
+.issue_mode single
+.align 4
 UsbTestModeHandler_asm:
+    ENTSP_lu6 0
 	clrsr       0x18
 	clrsr       0x2
-	clre // clear all events
+	clre                                           // clear all events
 	get         r11, ed
     chkct       res[r11], XS1_CT_END
 	outct       res[r11], XS1_CT_END
@@ -80,8 +82,8 @@ UsbTestModeHandler_asm:
     chkct       res[r11], XS1_CT_END
 	outct       res[r11], XS1_CT_END
 	
-    bf          r0, Return                                  // Speical case for Exit
-
+    bf          r0, Return                         // Special case for Exit
+   
     bl          XUD_UsbTestModeHandler
 
     retsp       0
@@ -97,6 +99,7 @@ UsbTestModeHandler_asm:
 .text
 .cc_top ResetIntHandler.func, ResetIntHandler
 .issue_mode dual
+.align 4
 ResetIntHandler:
     clrsr   0x18                                // Clear InInterrupt bit (and InKernel)
     clrsr   0x2

@@ -4,7 +4,6 @@
 #include "xud.h"
 #include "XUD_TestMode.h"
 
-
 extern out buffered port:32 p_usb_txd;
 
 #define T_INTER_TEST_PACKET_us 2
@@ -30,10 +29,8 @@ unsigned int test_packet[] =
 };
 
 // Runs in XUD thread with interrupt on entering testmode.
-int XUD_UsbTestModeHandler()
+int XUD_UsbTestModeHandler(unsigned cmd)
 {
-    unsigned cmd = UsbTestModeHandler_asm();
-
     switch(cmd)
     {
         case USB_WINDEX_TEST_J:

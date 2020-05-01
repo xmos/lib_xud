@@ -700,7 +700,7 @@ NoOffset:
 XUD_SetTestMode:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-  ENTSP_lu6 0
+    ENTSP_lu6 0
 #endif
     ldw         r0, r0[2]                       // Load our chanend ID to use
     outct       res[r0], 1

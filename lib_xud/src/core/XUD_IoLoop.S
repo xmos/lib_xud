@@ -71,7 +71,7 @@ suspend_t_wtwrsths:
 .issue_mode single
 .align 4
 UsbTestModeHandler_asm:
-    ENTSP_lu6 0
+    ENTSP_lu6   0
 	clrsr       0x18
 	clrsr       0x2
 	clre                                           // clear all events
@@ -101,6 +101,7 @@ UsbTestModeHandler_asm:
 .issue_mode dual
 .align 4
 ResetIntHandler:
+    DUALENTSP_lu6   0
     clrsr   0x18                                // Clear InInterrupt bit (and InKernel)
     clrsr   0x2
 
@@ -179,29 +180,30 @@ SaveStackPointer:
     ldaw        r11, sp[0]
     stw         r11, dp[SavedSp]
 
+
     ldw         r11, cp[suspendTimeout]
     stw         r11, sp[STACK_SUSPEND_TIMEOUT]
 
 ConfigRxDEventVector:                         // Configure events
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
-    ldap         r11,  TxHandShakeReceived
-    setv         res[RXD], r11
+    ldap        r11,  TxHandShakeReceived
+    setv        res[RXD], r11
 
 ConfigRxA:
-    setc       res[RXA], XS1_SETC_COND_EQ
-    setc       res[RXA], XS1_SETC_IE_MODE_EVENT
-    ldc        r11, 0
-    setd       res[r1], r11
-    ldap       r11, RxALow
-    setv       res[r1], r11
-    eeu        res[RXA]
+    setc        res[RXA], XS1_SETC_COND_EQ
+    setc        res[RXA], XS1_SETC_IE_MODE_EVENT
+    ldc         r11, 0
+    setd        res[RXA], r11
+    ldap        r11, RxALow
+    setv        res[RXA], r11
+    eeu         res[RXA]
 
 #ifdef __XS2A__
 ConfigValidToken:
-    ldw        r10, sp[STACK_VTOK_PORT]               
-    setc       res[r10], XS1_SETC_COND_NONE
-    ldap       r11, TxHandshakeTimeOut           // ValidToken is used for timing timeout period when expecting an ack after tx
-    setv       res[r10], r11
+    ldw         r10, sp[STACK_VTOK_PORT]               
+    setc        res[r10], XS1_SETC_COND_NONE
+    ldap        r11, TxHandshakeTimeOut           // ValidToken is used for timing timeout period when expecting an ack after tx
+    setv        res[r10], r11
 #endif
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED

@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /*
  * \brief     User defines and functions for XMOS USB Device library
  */
@@ -31,6 +31,11 @@
 
 #if !defined(USB_TILE)
   #define USB_TILE tile[0]
+#endif
+
+#ifndef XUD_CORE_CLOCK
+#warning XUD_CORE_CLOCK not defined, using default (700MHz)
+#define XUD_CORE_CLOCK (700)
 #endif
 
 #if defined(PORT_USB_CLK)

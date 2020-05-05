@@ -184,6 +184,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #if defined(__XS3A__)
+    #ifndef XUD_CORE_CLOCK
+        #error XUD_CORE_CLOCK not defined (in MHz)
+    #endif
     #if (XUD_CORE_CLOCK > 500)
         #define RX_RISE_DELAY 2
         #define RX_FALL_DELAY 5

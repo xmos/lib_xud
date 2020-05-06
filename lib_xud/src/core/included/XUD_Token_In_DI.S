@@ -22,7 +22,7 @@
 // R0 : RXD
 .align 4
 InNotReady:
-    ldw         r11, sp[SP_EPTYPES_OUT]
+    ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
     bt          r11, XUD_IN_TxNak
     ldc         r11, 0xc3                           // Create 0-length packet
@@ -82,7 +82,7 @@ XUD_IN_TxCrc:
 
 // Wait for handshake... or timeout
 DoneTail:
-    ldw         r11, sp[SP_EPTYPES_OUT]
+    ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
     bt          r11, SetupReceiveHandShake
     bu          DoneTx

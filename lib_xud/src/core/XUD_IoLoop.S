@@ -51,12 +51,12 @@ suspend_t_wtwrsths:
 #define STACK_RXCRC_INIT        (21)
 
 // Params
-#define STACK_VTOK_PORT (STACK_EXTEND + 1)
-#define SP_EPTYPES_OUT  (STACK_EXTEND + 2)   // STACK_EXTEND + 6  : EP Type table (out)
-#define SP_EPTYPES_IN   (STACK_EXTEND + 3)   // EP Type table (in)
-#define STACK_EPCHANS   (STACK_EXTEND + 4)
-#define SP_EPCOUNT      (STACK_EXTEND + 5)
-#define STACK_SOFCHAN   (STACK_EXTEND + 6)
+#define STACK_VTOK_PORT     (STACK_EXTEND + 1)
+#define STACK_EPTYPES_OUT   (STACK_EXTEND + 2)   // STACK_EXTEND + 6  : EP Type table (out)
+#define STACK_EPTYPES_IN    (STACK_EXTEND + 3)   // EP Type table (in)
+#define STACK_EPCHANS       (STACK_EXTEND + 4)
+#define SP_EPCOUNT          (STACK_EXTEND + 5)
+#define STACK_SOFCHAN       (STACK_EXTEND + 6)
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 //////////////////////////////////////////////////////////////////////////

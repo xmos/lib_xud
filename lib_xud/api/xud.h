@@ -466,8 +466,8 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;
-    int wordlength;
-    int taillength;
+    int wordLength;
+    int tailLength;
 
     int reset;
 
@@ -478,29 +478,37 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
         return XUD_RES_RST;
     }
 
-    /* Knock off the tail bits */
-    wordlength = len >>2;
-    wordlength <<=2;
+    /* Tail length bytes to bits */
+    tailLength = zext((len << 3),5);
 
-    taillength = zext((len << 5),7);
+    /* Datalength (bytes) --> datalength (words) */
+    wordLength = len >> 2;
 
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    /* If tail-length is 0 and word-length not 0. Make tail-length 32 and word-length-- */
+    if ((tailLength == 0) && (wordLength != 0))
+    {
+        wordLength = wordLength - 1;
+        tailLength = 32;
+    }
+    
+    /* Get end off buffer address */
+    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
 
-    // Get end off buffer address
-    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordlength));
+    /* Produce negative offset from end of buffer */
+    asm ("neg %0, %1":"=r"(tmp2):"r"(wordLength));
 
-    asm ("neg %0, %1":"=r"(tmp2):"r"(len>>2));            // Produce negative offset from end off buffer
+    /* Store neg index */
+    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
 
-    // Store neg index
-    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));            // Store index
-
-    // Store buffer pointer
+    /* Store buffer pointer */
     asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));
 
-    // Store tail len
-    asm ("stw %0, %1[7]"::"r"(taillength),"r"(ep));
+    /*  Store tail len */
+    asm ("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
 
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));      // Mark ready
+    /* Finally, mark ready */
+    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
     return XUD_RES_OKAY;
 }

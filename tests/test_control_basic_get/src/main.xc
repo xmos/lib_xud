@@ -63,13 +63,7 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
             fail(FAIL_RX_BAD_RETURN_CODE);
         }
 
-        if(slength != 8)
-        {
-            printintln(length);
-            fail(FAIL_RX_DATAERROR);
-        }
-        
-        if(RxDataCheck(sbuffer, slength, epNum))
+        if(RxDataCheck(sbuffer, slength, epNum, 8))
         {
             fail(FAIL_RX_DATAERROR);
         }

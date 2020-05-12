@@ -37,7 +37,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
             fail(FAIL_RX_LENERROR);
         }
 
-        if(RxDataCheck(buffer, length, epNum))
+        if(RxDataCheck(buffer, length, epNum,i))
         {
             fail(FAIL_RX_DATAERROR);
         }
@@ -58,7 +58,7 @@ int main()
         
         XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                                XUD_SPEED_HS, XUD_PWR_BUS);
 
 
         TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1, c_ep_out[0]);

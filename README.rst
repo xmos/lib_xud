@@ -25,7 +25,8 @@ Features
 Known Issues
 ............
  
-  * Operation on xCORE-AI devices only supported at 700MHz
+  * Operation on XS3 based devices only supported at 700MHz
+  * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc)
 
 
 Typical Resource Usage

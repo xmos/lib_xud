@@ -37,7 +37,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0, chanend
         fail(FAIL_RX_LENERROR);
     }
 
-    if(RxDataCheck(buffer, length, epNum))
+    if(RxDataCheck(buffer, length, epNum, 10))
     {
         fail(FAIL_RX_DATAERROR);
     }
@@ -60,7 +60,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0, chanend
         fail(FAIL_RX_LENERROR);
     }
 
-    if(RxDataCheck(buffer, length, epNum))
+    if(RxDataCheck(buffer, length, epNum, 11))
     {
         fail(FAIL_RX_DATAERROR);
     }

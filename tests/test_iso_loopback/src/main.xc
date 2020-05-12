@@ -79,7 +79,7 @@ int main()
         
         XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                                XUD_SPEED_HS, XUD_PWR_BUS);
 
         TestEp_LoopbackForever(c_ep_out[3], c_ep_in[3]);
         TestEp_LoopbackOnce(c_ep_out[2], c_ep_in[2], c_ep_out[0]);

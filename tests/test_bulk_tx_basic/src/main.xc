@@ -59,7 +59,7 @@ int main()
             // TODO test is running at 400MHz 
             XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, speed, XUD_PWR_BUS);
+                                speed, XUD_PWR_BUS);
         }
 
 		{

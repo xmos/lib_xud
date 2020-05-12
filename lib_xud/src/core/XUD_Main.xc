@@ -361,10 +361,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         ep_info[USB_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
                     }
 
-#if !defined (XUD_SIM_XSIM)
-                    /* Set default device address */
+                    /* Set default device address - note, for normal operation this is 0, but can be other values for testing */
                     XUD_HAL_SetDeviceAddress(XUD_STARTUP_ADDRESS);
-#endif
 
 #ifdef XUD_BYPASS_RESET
     #if defined(XUD_TEST_SPEED_HS)

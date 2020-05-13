@@ -92,18 +92,18 @@ SetupReceiveHandShake:
     setpsc       res[RXD], r11		                // Set port shift count (expect 8 bit handshake)
     eeu		     res[RXD]                           // Events on RXD always enabled - Can;t be any more due to using events on channels
 
+SetupTimeout:				                        // Timeout done using another port we dont happen to already be using events on. Cunning.
 #ifdef __XS2A__
-SetupTimeout:				                        // Timeout done using another port off same clock block we dont happen to already be using events on. Cunning.
-    ldw 		r1, sp[STACK_VTOK_PORT]            // Load saved ValidToken port. Event vector already set.
+    ldw 		r1, sp[STACK_VTOK_PORT]             // Load saved ValidToken port. Event vector already set.
+#else
+    ldw         r1, dp[rx_rdy]                      // TODO load from stack
+#endif
     in          r11, res[r1]		                // Do input and get port time/timestamps
     getts	    r11, res[r1]
     ldw         r9, dp[g_txHandshakeTimeout]
     add         r11, r11, r9
     setpt	    res[r1], r11		                // Set port time and enable events
     eeu	        res[r1]
-#else
-#warning XS3 doesntnot have handshake timeout implemented
-#endif
 
 WaitForHandshake:			                        // Wait for timeout or handshake
     .xtabranch TxHandshakeTimeOut, TxHandShakeReceived

@@ -184,12 +184,12 @@ SaveStackPointer:
     ldw         r11, cp[suspendTimeout]
     stw         r11, sp[STACK_SUSPEND_TIMEOUT]
 
-ConfigRxDEventVector:                         // Configure events
+ConfigRxDEventVector:                           // Configure event on RXD port for receiveing a handshake after Tx
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
     ldap        r11,  TxHandShakeReceived
     setv        res[RXD], r11
 
-ConfigRxA:
+ConfigRxA:                                      // Configure a event on RXA going low, used during packet reception
     setc        res[RXA], XS1_SETC_COND_EQ
     setc        res[RXA], XS1_SETC_IE_MODE_EVENT
     ldc         r11, 0
@@ -198,13 +198,15 @@ ConfigRxA:
     setv        res[RXA], r11
     eeu         res[RXA]
 
-#ifdef __XS2A__
 ConfigValidToken:
-    ldw         r10, sp[STACK_VTOK_PORT]               
-    setc        res[r10], XS1_SETC_COND_NONE
-    ldap        r11, TxHandshakeTimeOut           // ValidToken is used for timing timeout period when expecting an ack after tx
-    setv        res[r10], r11
+#ifdef __XS2A__
+    ldw         r10, sp[STACK_VTOK_PORT]        // ValidToken is used for timing timeout period when expecting an ack after tx     
+#else
+    ldw         r10, dp[rx_rdy]                 // TODO use from stack
 #endif
+    setc        res[r10], XS1_SETC_COND_NONE
+    ldap        r11, TxHandshakeTimeOut           
+    setv        res[r10], r11
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:

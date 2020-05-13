@@ -38,48 +38,8 @@
 #define XUD_CORE_CLOCK (700)
 #endif
 
-#if defined(PORT_USB_CLK)
-  /* Ports declared in the .xn file. Automatically detect device series */
-  #if defined(PORT_USB_RX_READY)
-    #if !defined(XUD_SERIES_SUPPORT)
-      #define XUD_SERIES_SUPPORT XUD_U_SERIES
-    #endif
-
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
-      #error (XUD_SERIES_SUPPORT != XUD_U_SERIES) with PORT_USB_RX_READY defined
-    #endif
-
-  #else
-    #if !defined(XUD_SERIES_SUPPORT)
-      #define XUD_SERIES_SUPPORT XUD_L_SERIES
-    #endif
-
-#if (XUD_SERIES_SUPPORT != XUD_L_SERIES) && (XUD_SERIES_SUPPORT != XUD_G_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
-      #error (XUD_SERIES_SUPPORT != XUD_L_SERIES) when PORT_USB_RX_READY not defined
-    #endif
-
-  #endif
-
-#else // PORT_USB_CLK
-
-  #if !defined(XUD_SERIES_SUPPORT)
-    // Default to U-Series if no series is defined
-    #define XUD_SERIES_SUPPORT XUD_U_SERIES
-  #endif
-
-  /* Ports have not been defined in the .xn file */
-  #if defined (__XS1B__) 
-#error
-    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
-    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
-    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8C
-    #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K
-    #define PORT_USB_TX_READYIN  on USB_TILE: XS1_PORT_1H
-    #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1M
-    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
-    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
-  #else // __XS3A__ and __XS2A__
+#if !defined(PORT_USB_CLK)
+    /* Ports have not been defined in the .xn file */
     #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
@@ -88,8 +48,10 @@
     #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1I
     #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1E
     #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1F
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
-  #endif
+    #ifdef __XS2A__
+        /* XS2A has an additional flag port */
+        #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
+    #endif
 #endif // PORT_USB_CLK
 
 /**

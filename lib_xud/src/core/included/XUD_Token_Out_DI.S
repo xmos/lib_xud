@@ -53,7 +53,9 @@ StoreTailDataOut:
     bu        NextTokenAfterOut
 
 // Various Error handling functions -------------------------------------------------------------------
+.align 4
 Err_RxErr:                                      // RxError signal high during data packet receive:
+    DUALENTSP_lu6 0
     clrsr     3
     clre
     ldw       r10, sp[STACK_RXE_PORT]           // Read out data from RxE port

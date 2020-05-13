@@ -257,8 +257,6 @@ ConfigSofJump:
 #endif
 ConfigSofJump_Done:
 
-
-#if !defined (__XS3A__)
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ
     setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
@@ -267,7 +265,6 @@ ConfigRxErrEventVector:
     ldc        r11, 1
     setd       res[r3], r11                 // Set event cond data to 1
     eeu        res[r3]
-#endif
 
 #if 0
 SetupOutTimer:

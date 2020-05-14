@@ -121,10 +121,7 @@ TxHandshakeTimeOut:
 TxHandShakeReceived:
 XUD_IN_RxAck:
     in 		    r11, res[RXD]                       // Input data from RXD port
-#ifdef __XS2A__
-    #warning needs addressing for XS3A as part of the handshake timeout
     clrpt		res[r1]			                    // Clear port time on valid token port
-#endif
     
     {edu         res[RXD];  shr      r11, r11, 24}  // Shift off junk data to leave ACK
 #if defined(__XS2A__) || defined(__XS1B__)

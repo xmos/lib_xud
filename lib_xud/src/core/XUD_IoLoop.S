@@ -113,9 +113,6 @@ ResetIntHandler:
     ldw     r10, dp[SavedSp]                    // Restore stack pointer
     set     sp, r10
 
-    ldw     r11, sp[STACK_RXE_PORT]             // Put RxE back to events..
-    setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
-
     ldc        r0, 1                            // Load non-zero (zero is kill)
     bu         Return                        
 
@@ -340,23 +337,32 @@ Pid_MData:
 Pid_Datam:
 Pid_Data0:
 Pid_Data1:
-Pid_Bad:                                        // Bad PID received, ignore
+Pid_Bad:                                            // Bad PID received, ignore
 
 XUD_InvalidToken:
-    ldw        r10, sp[STACK_RXA_PORT]           		    // Load RxA Port ID (r1)
+    ldw        r10, sp[STACK_RXA_PORT]              // Load RxA Port ID (r1)
 XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]
     bt         r11, XUD_InvalidTok_waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
-    bu         Loop_BadPid                      // Invalid token received Ignore unknown toks
+    bu         Loop_BadPid                          // Invalid token received Ignore unknown toks
 
 .align 4
 Return:
-    ldw        r11, sp[14]                      // Free suspend/reset timer
+    clre
+    ldw        r11, sp[STACK_SUSPEND_TIMER]         // Free suspend/reset timer
     edu        res[r11]
     freer      res[r11]
 
-    ldw        r4, sp[1]                        // Register restore
+    ldw        r11, sp[STACK_RXE_PORT]              // Put RxE IE mode back to events..
+    setc       res[r11], XS1_SETC_COND_NONE
+    edu        res[r11]
+    setc       res[r11], XS1_SETC_IE_MODE_EVENT
+
+    ldw        r11, sp[STACK_RXA_PORT]              
+    edu        res[r11]
+
+    ldw        r4, sp[1]                            // Register restore
     ldw        r5, sp[2]
     ldw        r6, sp[3]
     ldw        r7, sp[4]

@@ -1,18 +1,4 @@
-// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
-/*
- * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
- * in both directions between the ports.
- *
- * NOTE: The src/testbenches/ExampleTestbench must have been compiled for this to run without error.
- *
- */
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
-#include "xc_ptr.h"
-
+// Copyright (c) 2016-2020, XMOS Ltd, All rights reserved
 #include "shared.h"
 
 #define XUD_EP_COUNT_OUT   5
@@ -22,13 +8,9 @@
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
-
-int TestEp_PingTest(chanend c_out[], int epNum1, int epNum2)
+int TestEp_PingTest(XUD_ep ep_out1, XUD_ep ep_out2, int epNum1, int epNum2)
 {
     unsigned int length;
-
-    XUD_ep ep_out1 = XUD_InitEp(c_out[epNum1]);
-    XUD_ep ep_out2 = XUD_InitEp(c_out[epNum2]);
 
     /* Buffer for Setup data */
     unsigned char buffer[1024];
@@ -39,7 +21,7 @@ int TestEp_PingTest(chanend c_out[], int epNum1, int epNum2)
 
         if(RxDataCheck(buffer, length, epNum1, i))
         {
-            fail(FAIL_RX_DATAERROR);
+            return FAIL_RX_DATAERROR;
         }
 
     }
@@ -48,7 +30,7 @@ int TestEp_PingTest(chanend c_out[], int epNum1, int epNum2)
 
 	if(RxDataCheck(buffer, length, epNum2, i))
 	{
-		fail(FAIL_RX_DATAERROR);
+		return FAIL_RX_DATAERROR;
 	}
 
     // Another packet to EP 1 means we can exit
@@ -56,12 +38,14 @@ int TestEp_PingTest(chanend c_out[], int epNum1, int epNum2)
 
     if(RxDataCheck(buffer, length, epNum1, i))
     {
-        fail(FAIL_RX_DATAERROR);
+        return FAIL_RX_DATAERROR;
     }
 	
 	return 0;
 }
 
+#define TEST_EP1 1
+#define TEST_EP2 2
 
 int main()
 {
@@ -74,10 +58,18 @@ int main()
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
         {
-			TestEp_PingTest(c_ep_out, 1, 2);
-    		XUD_ep ep_out_0 = XUD_InitEp(c_ep_out[0]);
-			XUD_Kill(ep_out_0);
-			exit(0);
+            XUD_ep ep_out1 = XUD_InitEp(c_ep_out[TEST_EP1]);
+            XUD_ep ep_out2 = XUD_InitEp(c_ep_out[TEST_EP2]);
+			
+            unsigned fail = TestEp_PingTest(ep_out1, ep_out2, TEST_EP1, TEST_EP2);
+            
+            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
+            XUD_Kill(ep0);
+    		
+            if(fail)
+                TerminateFail(fail);
+            else
+                TerminatePass(fail);    
 		}
 
     }

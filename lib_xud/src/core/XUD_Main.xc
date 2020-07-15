@@ -30,7 +30,6 @@ void XUD_Error_hex(char errString[], int i_err);
 #if (USB_MAX_NUM_EP_IN != 16)
 #error USB_MAX_NUM_EP_IN must be 16!
 #endif
-
 #if (USB_MAX_NUM_EP_OUT != 16)
 #error USB_MAX_NUM_EP_OUT must be 16!
 #endif
@@ -184,6 +183,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #if defined(__XS3A__)
+    #ifndef XUD_CORE_CLOCK
+        #error XUD_CORE_CLOCK not defined (in MHz)
+    #endif
     #if (XUD_CORE_CLOCK > 500)
         #define RX_RISE_DELAY 2
         #define RX_FALL_DELAY 5
@@ -213,8 +215,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     // Xevious needed asm as non-standard usage (to avoid clogging 1-bit ports)
     // GLX uses 1bit ports so shouldn't be needed.
     // Handshaken ports need USB clock
-    configure_clock_src (tx_usb_clk, p_usb_clk);
-    configure_clock_src (rx_usb_clk, p_usb_clk);
+    configure_clock_src(tx_usb_clk, p_usb_clk);
+    configure_clock_src(rx_usb_clk, p_usb_clk);
 
     //this along with the following delays forces the clock
     //to the ports to be effectively controlled by the
@@ -248,6 +250,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
  	configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
   	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
 
+    /* Clock RxA port from USB clock - helps fall event */
     configure_in_port(flag1_port, rx_usb_clk);
 
     unsigned noExit = 1;
@@ -358,10 +361,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         ep_info[USB_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
                     }
 
-#if !defined (XUD_SIM_XSIM)
-                    /* Set default device address */
+                    /* Set default device address - note, for normal operation this is 0, but can be other values for testing */
                     XUD_HAL_SetDeviceAddress(XUD_STARTUP_ADDRESS);
-#endif
 
 #ifdef XUD_BYPASS_RESET
     #if defined(XUD_TEST_SPEED_HS)

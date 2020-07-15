@@ -1,4 +1,9 @@
-// Copyright (c) 2016-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2016-2020, XMOS Ltd, All rights reserved
+#include <xs1.h>
+#include <print.h>
+#include <stdio.h>
+#include <platform.h>
+#include "xud.h
 
 unsigned char g_rxDataCheck_[16] = {0};
 unsigned char g_txDataCheck_[16] = {0};
@@ -12,13 +17,43 @@ unsafe
 
 void exit(int);
 
+#define FAIL_RX_DATAERROR        1
+#define FAIL_RX_LENERROR         2
+#define FAIL_RX_EXPECTED_CTL     3   
+#define FAIL_RX_BAD_RETURN_CODE  4
+#define FAIL_RX_FRAMENUMBER      5
+
 #ifdef XUD_SIM_XSIM
+/* Alternatives to the RTL sim testbench functions */
 void TerminateFail(unsigned x)
 {
-    printstr("FAIL\n");
+    switch(x)
+    {
+        case FAIL_RX_DATAERROR:
+		    printstr("\nXCORE: ### FAIL ### : XCORE RX Data Error\n");
+            break;
+
+        case FAIL_RX_LENERROR:
+		    printstr("\nXCORE: ### FAIL ### : XCORE RX Length Error\n");
+            break;
+
+        case FAIL_RX_EXPECTED_CTL:
+            printstr("\nXCORE: ### FAIL ### : Expected a setup\n");
+            break;
+        
+        case FAIL_RX_BAD_RETURN_CODE:
+            printstr("\nXCORE: ### FAIL ### : Unexpected return code\n");
+            break;
+
+        case FAIL_RX_FRAMENUMBER:
+            printstr("\nXCORE: ### FAIL ### : Received bad frame number\n");
+            break;
+    }
+    exit(x);
 }
 void TerminatePass(unsigned x)
 {
+    exit(0);
 }
 #endif
 
@@ -91,41 +126,6 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
         while(1);
 }
 
-
-#define FAIL_RX_DATAERROR   0
-#define FAIL_RX_LENERROR    1
-#define FAIL_RX_EXPECTED_CTL 2
-#define FAIL_RX_BAD_RETURN_CODE 3
-#define FAIL_RX_FRAMENUMBER 4
-
-unsigned fail(int x)
-{
-    switch(x)
-    {
-        case FAIL_RX_DATAERROR:
-		    printstr("\nXCORE: ### FAIL ### : XCORE RX Data Error\n");
-            break;
-
-        case FAIL_RX_LENERROR:
-		    printstr("\nXCORE: ### FAIL ### : XCORE RX Length Error\n");
-            break;
-
-        case FAIL_RX_EXPECTED_CTL:
-            printstr("\nXCORE: ### FAIL ### : Expected a setup\n");
-            break;
-        
-        case FAIL_RX_BAD_RETURN_CODE:
-            printstr("\nXCORE: ### FAIL ### : Unexpcected return code\n");
-            break;
-
-        case FAIL_RX_FRAMENUMBER:
-            printstr("\nXCORE: ### FAIL ### : Received bad frame number\n");
-            break;
-    }
-
-    exit(1);
-}
-
 #pragma unsafe arrays
 int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
 {
@@ -192,36 +192,3 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     return 0;
 }
 
-#if 0
-int TestEp_Rx(chanend c_out[], int epNum, unsigned start, unsigned end)
-{
-    unsigned int length;
-    XUD_Result_t res;
-
-    XUD_ep ep_out_0 = XUD_InitEp(c_out[0]);
-    XUD_ep ep_out = XUD_InitEp(c_out[epNum]);
-
-    /* Buffer for Setup data */
-    unsigned char buffer[1024];
-
-    for(int i = start; i <= end; i++)
-    {    
-        XUD_GetBuffer(ep_out, buffer, length);
-
-        if(length != i)
-        {
-            printintln(length);
-            fail(FAIL_RX_LENERROR);
-        }
-
-        if(RxDataCheck(buffer, length, epNum))
-        {
-            fail(FAIL_RX_DATAERROR);
-        }
-
-    }
-
-    XUD_Kill(ep_out_0);
-    exit(0);
-}
-#endif

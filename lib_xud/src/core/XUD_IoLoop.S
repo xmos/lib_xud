@@ -51,12 +51,12 @@ suspend_t_wtwrsths:
 #define STACK_RXCRC_INIT        (21)
 
 // Params
-#define STACK_VTOK_PORT (STACK_EXTEND + 1)
-#define SP_EPTYPES_OUT  (STACK_EXTEND + 2)   // STACK_EXTEND + 6  : EP Type table (out)
-#define SP_EPTYPES_IN   (STACK_EXTEND + 3)   // EP Type table (in)
-#define STACK_EPCHANS   (STACK_EXTEND + 4)
-#define SP_EPCOUNT      (STACK_EXTEND + 5)
-#define STACK_SOFCHAN   (STACK_EXTEND + 6)
+#define STACK_VTOK_PORT     (STACK_EXTEND + 1)
+#define STACK_EPTYPES_OUT   (STACK_EXTEND + 2)   // STACK_EXTEND + 6  : EP Type table (out)
+#define STACK_EPTYPES_IN    (STACK_EXTEND + 3)   // EP Type table (in)
+#define STACK_EPCHANS       (STACK_EXTEND + 4)
+#define SP_EPCOUNT          (STACK_EXTEND + 5)
+#define STACK_SOFCHAN       (STACK_EXTEND + 6)
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 //////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ suspend_t_wtwrsths:
 .issue_mode single
 .align 4
 UsbTestModeHandler_asm:
-    ENTSP_lu6 0
+    ENTSP_lu6   0
 	clrsr       0x18
 	clrsr       0x2
 	clre                                           // clear all events
@@ -101,6 +101,7 @@ UsbTestModeHandler_asm:
 .issue_mode dual
 .align 4
 ResetIntHandler:
+    DUALENTSP_lu6   0
     clrsr   0x18                                // Clear InInterrupt bit (and InKernel)
     clrsr   0x2
 
@@ -111,9 +112,6 @@ ResetIntHandler:
 
     ldw     r10, dp[SavedSp]                    // Restore stack pointer
     set     sp, r10
-
-    ldw     r11, sp[STACK_RXE_PORT]             // Put RxE back to events..
-    setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
 
     ldc        r0, 1                            // Load non-zero (zero is kill)
     bu         Return                        
@@ -179,30 +177,33 @@ SaveStackPointer:
     ldaw        r11, sp[0]
     stw         r11, dp[SavedSp]
 
+
     ldw         r11, cp[suspendTimeout]
     stw         r11, sp[STACK_SUSPEND_TIMEOUT]
 
-ConfigRxDEventVector:                         // Configure events
+ConfigRxDEventVector:                           // Configure event on RXD port for receiveing a handshake after Tx
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
-    ldap         r11,  TxHandShakeReceived
-    setv         res[RXD], r11
+    ldap        r11,  TxHandShakeReceived
+    setv        res[RXD], r11
 
-ConfigRxA:
-    setc       res[RXA], XS1_SETC_COND_EQ
-    setc       res[RXA], XS1_SETC_IE_MODE_EVENT
-    ldc        r11, 0
-    setd       res[r1], r11
-    ldap       r11, RxALow
-    setv       res[r1], r11
-    eeu        res[RXA]
+ConfigRxA:                                      // Configure a event on RXA going low, used during packet reception
+    setc        res[RXA], XS1_SETC_COND_EQ
+    setc        res[RXA], XS1_SETC_IE_MODE_EVENT
+    ldc         r11, 0
+    setd        res[RXA], r11
+    ldap        r11, RxALow
+    setv        res[RXA], r11
+    eeu         res[RXA]
 
-#ifdef __XS2A__
 ConfigValidToken:
-    ldw        r10, sp[STACK_VTOK_PORT]               
-    setc       res[r10], XS1_SETC_COND_NONE
-    ldap       r11, TxHandshakeTimeOut           // ValidToken is used for timing timeout period when expecting an ack after tx
-    setv       res[r10], r11
+#ifdef __XS2A__
+    ldw         r10, sp[STACK_VTOK_PORT]        // ValidToken is used for timing timeout period when expecting an ack after tx     
+#else
+    ldw         r10, dp[rx_rdy]                 // TODO use from stack
 #endif
+    setc        res[r10], XS1_SETC_COND_NONE
+    ldap        r11, TxHandshakeTimeOut           
+    setv        res[r10], r11
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 SetupUsbTestMode:
@@ -255,8 +256,6 @@ ConfigSofJump:
 #endif
 ConfigSofJump_Done:
 
-
-#if !defined (__XS3A__)
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ
     setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
@@ -265,7 +264,6 @@ ConfigRxErrEventVector:
     ldc        r11, 1
     setd       res[r3], r11                 // Set event cond data to 1
     eeu        res[r3]
-#endif
 
 #if 0
 SetupOutTimer:
@@ -339,23 +337,32 @@ Pid_MData:
 Pid_Datam:
 Pid_Data0:
 Pid_Data1:
-Pid_Bad:                                        // Bad PID received, ignore
+Pid_Bad:                                            // Bad PID received, ignore
 
 XUD_InvalidToken:
-    ldw        r10, sp[STACK_RXA_PORT]           		    // Load RxA Port ID (r1)
+    ldw        r10, sp[STACK_RXA_PORT]              // Load RxA Port ID (r1)
 XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]
     bt         r11, XUD_InvalidTok_waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
-    bu         Loop_BadPid                      // Invalid token received Ignore unknown toks
+    bu         Loop_BadPid                          // Invalid token received Ignore unknown toks
 
 .align 4
 Return:
-    ldw        r11, sp[14]                      // Free suspend/reset timer
+    clre
+    ldw        r11, sp[STACK_SUSPEND_TIMER]         // Free suspend/reset timer
     edu        res[r11]
     freer      res[r11]
 
-    ldw        r4, sp[1]                        // Register restore
+    ldw        r11, sp[STACK_RXE_PORT]              // Put RxE IE mode back to events..
+    setc       res[r11], XS1_SETC_COND_NONE
+    edu        res[r11]
+    setc       res[r11], XS1_SETC_IE_MODE_EVENT
+
+    ldw        r11, sp[STACK_RXA_PORT]              
+    edu        res[r11]
+
+    ldw        r4, sp[1]                            // Register restore
     ldw        r5, sp[2]
     ldw        r6, sp[3]
     ldw        r7, sp[4]

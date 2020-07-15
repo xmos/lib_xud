@@ -29,15 +29,13 @@ XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, X
 /* Out EP Should receive some data, perform some test process (crc or similar) to check okay */
 /* Answers should be responded to in the IN ep */
 
-int TestEp_Control(chanend c_out, chanend c_in, int epNum)
+
+int TestEp_Control(XUD_ep c_ep0_out, XUD_ep c_ep0_in, int epNum)
 {
     unsigned int slength;
     unsigned int length;
     XUD_Result_t sres;
     XUD_Result_t res;
-
-    XUD_ep c_ep0_out = XUD_InitEp(c_out);
-    XUD_ep c_ep0_in  = XUD_InitEp(c_in);
 
     /* Buffer for Setup data */
     unsigned char sbuffer[120];
@@ -54,27 +52,19 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
 
         if(length != 0)
         {
-            fail(FAIL_RX_DATAERROR);
+            return FAIL_RX_DATAERROR;
         }
       
         /* Do some checking */ 
         if(res != XUD_RES_OKAY)
         {
-            fail(FAIL_RX_BAD_RETURN_CODE);
+            return FAIL_RX_BAD_RETURN_CODE;
         }
 
-        if(slength != 8)
+        if(RxDataCheck(sbuffer, slength, epNum, 8))
         {
-            printintln(length);
-            fail(FAIL_RX_DATAERROR);
+            return FAIL_RX_DATAERROR;
         }
-        
-        if(RxDataCheck(sbuffer, slength, epNum))
-        {
-            fail(FAIL_RX_DATAERROR);
-        }
-        
-        XUD_Kill(c_ep0_out);
 
         return 0;
     }
@@ -87,19 +77,22 @@ int main()
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Manager(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                                XUD_SPEED_HS, XUD_PWR_BUS);
        
         {
-            int fail = TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
+            XUD_ep c_ep0_out = XUD_InitEp(c_ep_out[0]);
+            XUD_ep c_ep0_in  = XUD_InitEp(c_ep_in[0]);
+           
+            int fail = TestEp_Control(c_ep0_out, c_ep0_in, 0);
        
+            XUD_Kill(c_ep0_out);
+            
             if(fail)
                 TerminateFail(fail);
             else
                 TerminatePass(fail);    
-            
-            exit(0);
         }
     }
 

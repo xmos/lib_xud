@@ -193,7 +193,7 @@ int main()
         
         XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                                XUD_SPEED_HS, XUD_PWR_BUS);
 
         TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
     }

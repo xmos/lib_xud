@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /*
  * \brief     User defines and functions for XMOS USB Device library
  */
@@ -33,48 +33,13 @@
   #define USB_TILE tile[0]
 #endif
 
-#if defined(PORT_USB_CLK)
-  /* Ports declared in the .xn file. Automatically detect device series */
-  #if defined(PORT_USB_RX_READY)
-    #if !defined(XUD_SERIES_SUPPORT)
-      #define XUD_SERIES_SUPPORT XUD_U_SERIES
-    #endif
+#ifndef XUD_CORE_CLOCK
+#warning XUD_CORE_CLOCK not defined, using default (700MHz)
+#define XUD_CORE_CLOCK (700)
+#endif
 
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
-      #error (XUD_SERIES_SUPPORT != XUD_U_SERIES) with PORT_USB_RX_READY defined
-    #endif
-
-  #else
-    #if !defined(XUD_SERIES_SUPPORT)
-      #define XUD_SERIES_SUPPORT XUD_L_SERIES
-    #endif
-
-#if (XUD_SERIES_SUPPORT != XUD_L_SERIES) && (XUD_SERIES_SUPPORT != XUD_G_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
-      #error (XUD_SERIES_SUPPORT != XUD_L_SERIES) when PORT_USB_RX_READY not defined
-    #endif
-
-  #endif
-
-#else // PORT_USB_CLK
-
-  #if !defined(XUD_SERIES_SUPPORT)
-    // Default to U-Series if no series is defined
-    #define XUD_SERIES_SUPPORT XUD_U_SERIES
-  #endif
-
-  /* Ports have not been defined in the .xn file */
-  #if defined (__XS1B__) 
-#error
-    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
-    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
-    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8C
-    #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K
-    #define PORT_USB_TX_READYIN  on USB_TILE: XS1_PORT_1H
-    #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1M
-    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
-    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
-  #else // __XS3A__ and __XS2A__
+#if !defined(PORT_USB_CLK)
+    /* Ports have not been defined in the .xn file */
     #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
@@ -83,8 +48,10 @@
     #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1I
     #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1E
     #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1F
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
-  #endif
+    #ifdef __XS2A__
+        /* XS2A has an additional flag port */
+        #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
+    #endif
 #endif // PORT_USB_CLK
 
 /**
@@ -461,8 +428,8 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;
-    int wordlength;
-    int taillength;
+    int wordLength;
+    int tailLength;
 
     int reset;
 
@@ -473,29 +440,37 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
         return XUD_RES_RST;
     }
 
-    /* Knock off the tail bits */
-    wordlength = len >>2;
-    wordlength <<=2;
+    /* Tail length bytes to bits */
+    tailLength = zext((len << 3),5);
 
-    taillength = zext((len << 5),7);
+    /* Datalength (bytes) --> datalength (words) */
+    wordLength = len >> 2;
 
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    /* If tail-length is 0 and word-length not 0. Make tail-length 32 and word-length-- */
+    if ((tailLength == 0) && (wordLength != 0))
+    {
+        wordLength = wordLength - 1;
+        tailLength = 32;
+    }
+    
+    /* Get end off buffer address */
+    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
 
-    // Get end off buffer address
-    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordlength));
+    /* Produce negative offset from end of buffer */
+    asm ("neg %0, %1":"=r"(tmp2):"r"(wordLength));
 
-    asm ("neg %0, %1":"=r"(tmp2):"r"(len>>2));            // Produce negative offset from end off buffer
+    /* Store neg index */
+    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
 
-    // Store neg index
-    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));            // Store index
-
-    // Store buffer pointer
+    /* Store buffer pointer */
     asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));
 
-    // Store tail len
-    asm ("stw %0, %1[7]"::"r"(taillength),"r"(ep));
+    /*  Store tail len */
+    asm ("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
 
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));      // Mark ready
+    /* Finally, mark ready */
+    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
     return XUD_RES_OKAY;
 }

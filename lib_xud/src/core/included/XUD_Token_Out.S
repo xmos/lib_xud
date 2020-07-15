@@ -32,7 +32,7 @@ InformEP_Iso:                                   // Iso EP - no handshake
 #ifndef __XS3A__
     ldw        r1, sp[STACK_FLAG0_PORT]
 #endif
-    //ldc        r4, XUD_MAX_NUM_EP_OUT           // This could be shaved if XUD_MAX_NUM_EP's < 12. Now use an LDAW to at 16.
+    //ldc        r4, XUD_MAX_NUM_EP_OUT         // This could be shaved if XUD_MAX_NUM_EP's < 12. Now use an LDAW to at 16.
 
 //------------------------------------------------------------------------------------------------
 #if defined(__XS2A__) || defined(__XS1B__)
@@ -96,7 +96,9 @@ StoreTailDataOut:
     bu        NextTokenAfterOut
 
 // Various Error handling functions -------------------------------------------------------------------
+.align 4
 Err_RxErr:                                      // RxError signal high during data packet receive:
+    DUALENTSP_lu   0
     clrsr     3
     clre
     ldw       r10, sp[15]                       // Read out data from RxE port

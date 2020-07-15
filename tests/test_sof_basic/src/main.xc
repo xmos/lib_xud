@@ -15,12 +15,11 @@ XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, X
 
 void exit(int);
 
-int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0, chanend c_sof)
+unsigned TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_sof)
 {
     unsigned int length;
     XUD_Result_t res;
 
-    XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
     XUD_ep ep_out = XUD_InitEp(c_out);
     XUD_ep ep_in  = XUD_InitEp(c_in);
 
@@ -34,12 +33,12 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0, chanend
     if(length != 10)
     {
         printintln(length);
-        fail(FAIL_RX_LENERROR);
+        return FAIL_RX_LENERROR;
     }
 
-    if(RxDataCheck(buffer, length, epNum))
+    if(RxDataCheck(buffer, length, epNum, 10))
     {
-        fail(FAIL_RX_DATAERROR);
+        return FAIL_RX_DATAERROR;
     }
 
     /* Receive SOFs */
@@ -51,12 +50,12 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0, chanend
     if(length != 11)
     {
         printintln(length);
-        fail(FAIL_RX_LENERROR);
+        return FAIL_RX_LENERROR;
     }
 
-    if(RxDataCheck(buffer, length, epNum))
+    if(RxDataCheck(buffer, length, epNum, 11))
     {
-        fail(FAIL_RX_DATAERROR);
+        return FAIL_RX_DATAERROR;
     }
 
     unsigned expectedFrame = 52;
@@ -68,14 +67,12 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0, chanend
         {
             printhexln(i);
             printhexln(frames[i]);
-            fail(FAIL_RX_FRAMENUMBER);
+            return FAIL_RX_FRAMENUMBER;
         }
     }
 
-    XUD_Kill(ep_out_0);
-    exit(0);
+    return 0;
 }
-
 
 int main()
 {
@@ -87,10 +84,21 @@ int main()
         
         XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 c_sof, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                                XUD_SPEED_HS, XUD_PWR_BUS);
 
+        {
+            unsigned fail = TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1, c_sof);
+            
+            if(fail)
+                TerminateFail(fail);
+            else
+                TerminatePass(fail);    
+            
+            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
+            XUD_Kill(ep0);
+            exit(0);
 
-        TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1, c_ep_out[0], c_sof);
+        }
     }
 
     return 0;

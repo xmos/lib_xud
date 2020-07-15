@@ -53,13 +53,8 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
         {
             return 1;
         }
-        
-        if(slength != 8)
-        {
-            return 1;
-        }
 
-        if(RxDataCheck(sbuffer, slength, epNum))
+        if(RxDataCheck(sbuffer, slength, epNum, 8))
         {
             return 1;
         }
@@ -69,13 +64,8 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
         {
             return 1;
         }
-
-        if(length != 10)
-        {
-            return 1;
-        }
        
-        if(RxDataCheck(buffer, length, epNum))
+        if(RxDataCheck(buffer, length, epNum, 10))
         {
             return 1;
         }
@@ -95,7 +85,7 @@ int main()
         
         XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                                XUD_SPEED_HS, XUD_PWR_BUS);
 
         {
             int fail = TestEp_Control(c_ep_out[0], c_ep_in[0], 0);

@@ -40,7 +40,7 @@ def do_test(arch, clk, phy, seed):
     dataval += 11
     AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, length=12, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket(timeout=9))
+    packets.append(RxHandshakePacket())
 
     dataval += 12
     AppendOutToken(packets, ep, address, inter_pkt_gap=6000)

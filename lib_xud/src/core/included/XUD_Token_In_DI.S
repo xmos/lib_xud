@@ -22,7 +22,7 @@
 // R0 : RXD
 .align 4
 InNotReady:
-    ldw         r11, sp[SP_EPTYPES_OUT]
+    ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
     bt          r11, XUD_IN_TxNak
     ldc         r11, 0xc3                           // Create 0-length packet
@@ -82,7 +82,7 @@ XUD_IN_TxCrc:
 
 // Wait for handshake... or timeout
 DoneTail:
-    ldw         r11, sp[SP_EPTYPES_OUT]
+    ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
     bt          r11, SetupReceiveHandShake
     bu          DoneTx
@@ -92,18 +92,18 @@ SetupReceiveHandShake:
     setpsc       res[RXD], r11		                // Set port shift count (expect 8 bit handshake)
     eeu		     res[RXD]                           // Events on RXD always enabled - Can;t be any more due to using events on channels
 
+SetupTimeout:				                        // Timeout done using another port we dont happen to already be using events on. Cunning.
 #ifdef __XS2A__
-SetupTimeout:				                        // Timeout done using another port off same clock block we dont happen to already be using events on. Cunning.
-    ldw 		r1, sp[STACK_VTOK_PORT]            // Load saved ValidToken port. Event vector already set.
+    ldw 		r1, sp[STACK_VTOK_PORT]             // Load saved ValidToken port. Event vector already set.
+#else
+    ldw         r1, dp[rx_rdy]                      // TODO load from stack
+#endif
     in          r11, res[r1]		                // Do input and get port time/timestamps
     getts	    r11, res[r1]
     ldw         r9, dp[g_txHandshakeTimeout]
     add         r11, r11, r9
     setpt	    res[r1], r11		                // Set port time and enable events
     eeu	        res[r1]
-#else
-#warning XS3 doesntnot have handshake timeout implemented
-#endif
 
 WaitForHandshake:			                        // Wait for timeout or handshake
     .xtabranch TxHandshakeTimeOut, TxHandShakeReceived
@@ -121,10 +121,7 @@ TxHandshakeTimeOut:
 TxHandShakeReceived:
 XUD_IN_RxAck:
     in 		    r11, res[RXD]                       // Input data from RXD port
-#ifdef __XS2A__
-    #warning needs addressing for XS3A as part of the handshake timeout
     clrpt		res[r1]			                    // Clear port time on valid token port
-#endif
     
     {edu         res[RXD];  shr      r11, r11, 24}  // Shift off junk data to leave ACK
 #if defined(__XS2A__) || defined(__XS1B__)

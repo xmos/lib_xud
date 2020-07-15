@@ -289,7 +289,7 @@ XUD_SetData_NoReq:
     add         r1, r1, r3                      // Add start index to buffer address
 
 CalcTailLength:
-    shl         r3, r2, 3                       // Taillength: bytes to bits
+    shl         r3, r2, 3                       // Tail length: bytes to bits
     zext        r3, 5
 
 SetupLoopTerm:

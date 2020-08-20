@@ -311,7 +311,7 @@ ConfigSofJump:
 #endif
 ConfigSofJump_Done:
 
-
+#if 0
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ
     setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
@@ -321,7 +321,7 @@ ConfigRxErrEventVector:
     setd       res[r3], r11                 // Set event cond data to 1
     stw        r3, sp[15]                   // Store flag port to stack
     eeu        res[r3]
-
+#endif
 
 
 SetupSuspendResetTimer:

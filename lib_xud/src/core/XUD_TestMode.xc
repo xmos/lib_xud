@@ -54,13 +54,17 @@ int XUD_UsbTestModeHandler(unsigned cmd)
             break;
 
         case USB_WINDEX_TEST_SE0_NAK:
-
-            /* Drop into asm to deal with this mode */
+			
+			XUD_HAL_EnterMode_PeripheralHighSpeed();
+            
+			/* Drop into asm to deal with this mode */
             XUD_UsbTestSE0();
             break;
 
         case USB_WINDEX_TEST_PACKET:
             {
+				XUD_HAL_EnterMode_PeripheralHighSpeed();
+
                 // Repetitively transmit specific test packet forever.
                 // Timings must still meet minimum interpacket gap
                 // Have to relate KJ pairings to data.

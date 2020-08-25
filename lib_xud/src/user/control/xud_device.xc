@@ -190,6 +190,7 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                     break;
 
                  /* Standard Device Request: SetFeature (USB Spec 9.4.9) */
+				 /* TODO only accept these requests in HS? */
                  case USB_SET_FEATURE:
 
                     if((sp.wValue == USB_TEST_MODE) && (sp.wLength == 0))

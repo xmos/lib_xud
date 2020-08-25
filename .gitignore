@@ -28,3 +28,4 @@ Installs/
 .settings
 tests/bin.txt
 tests/log
+__app_test_mode/xscope.xmt.gtkw

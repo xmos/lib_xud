@@ -291,7 +291,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 XUD_HAL_EnterMode_PeripheralFullSpeed();
 
-#if defined(XUD_SIM_XSIM) 
+#if defined(XUD_SIM_XSIM) || defined(XUD_BYPASS_CONNECT) 
                 reset = 1;
 #else
 

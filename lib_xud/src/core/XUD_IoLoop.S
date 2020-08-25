@@ -103,7 +103,7 @@ UsbTestModeHandler_asm:
 ResetIntHandler:
     DUALENTSP_lu6   0
     clrsr   0x18                                // Clear InInterrupt bit (and InKernel)
-    clrsr   0x2
+    clrsr   0x3									// Clear thread events and interrupts
 
     get     r11, ed                             // Get timer resource ID
     setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events

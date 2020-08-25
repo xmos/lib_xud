@@ -201,7 +201,6 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                             case USB_WINDEX_TEST_K:
                             case USB_WINDEX_TEST_SE0_NAK:
                             case USB_WINDEX_TEST_PACKET:
-                            case USB_WINDEX_TEST_FORCE_ENABLE:
                             {
                                 XUD_Result_t result;
                                 if((result = XUD_DoSetRequestStatus(ep_in)) != XUD_RES_OKAY)

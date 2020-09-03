@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+1.1.0
+-----
+  
+  * RESOLVED:   Disabled erroneous handling of Rx Error line
+
 1.0.0
 -----
 

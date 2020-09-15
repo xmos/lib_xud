@@ -136,6 +136,16 @@ void XUD_ClearStall(XUD_ep ep)
     XUD_ClearStallByAddr(epAddress);
 }
 
+void XUD_CloseEndpoint(XUD_ep one)
+{
+    unsigned c1;
+
+    /* Input rst control token */
+    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));             // Load our chanend
+    asm volatile ("outct res[%0], 1":: "r"(c1)); // Close channel to other side
+    asm volatile ("chkct res[%0], 1":: "r"(c1)); // Close channel to this side
+}
+
 XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
 {
     int busStateCt;

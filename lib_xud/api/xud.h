@@ -85,7 +85,8 @@ typedef unsigned int XUD_ep;
 typedef enum XUD_BusSpeed
 {
     XUD_SPEED_FS = 1,
-    XUD_SPEED_HS = 2
+    XUD_SPEED_HS = 2,
+    XUD_SPEED_KILL = 3
 } XUD_BusSpeed_t;
 
 typedef enum XUD_PwrConfig
@@ -250,10 +251,21 @@ XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
  * \param   one      IN or OUT endpoint identifier to perform the reset on.
  * \param   two      Optional second IN or OUT endpoint structure to perform a reset on.
  * \return  Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
- *          at high speed, or ``XUD_SPEED_FS`` - the device is runnig at full speed.
+ *          at high speed, ``XUD_SPEED_FS`` - the device is runnig at full speed,
+ *          or ``XUD_SPEED_KILL`` to indicate that the USB stack has been shut down
+ *          by another part of the user code (using XUD_Kill). If the last value is
+ *          returned, the endpoint code should call XUD_CloseEndpoint and then
+ *          terminate.
  */
 XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
 
+/**
+ * \brief   This function closes an endpoint. It should be called when the USB stack
+ *          is shutting down. It should be called on all endpoints, either in parallel
+ *          or in numerical order, first all OUT and then all IN endpoints
+ * \param   one      endpoint to close.
+ */
+void XUD_CloseEndpoint(XUD_ep one);
 
 /**
  * \brief      Initialises an XUD_ep

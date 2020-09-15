@@ -450,12 +450,12 @@ static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[]) {
             switch(op) {
             case 0:
                 outct(chans[i], XS1_CT_END);
+                outuint(chans[i], XUD_SPEED_KILL);
                 break;
             case 1:
+                outct(chans[i], XS1_CT_END);
                 while (!testct(chans[i]))
                     inuchar(chans[i]);
-                break;
-            case 2:
                 chkct(chans[i], XS1_CT_END);
                 break;
             }
@@ -584,13 +584,12 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, pwrConfig);
 
     // Need to close, drain, and check - three stages.
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 2; i++)
     {
         drain(c_ep_out, noEpOut, i, epTypeTableOut);  // On all inputs
         drain(c_ep_in, noEpIn, i, epTypeTableIn);     // On all output
     }
 
-    /* Don't hit */
     return 0;
 }
 

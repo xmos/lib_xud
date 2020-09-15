@@ -5,6 +5,8 @@ lib_xud Change Log
 -----
 
   * RESOLVED:   Cases where disabling RxError caused firmware to crash
+  * RESOLVED:   USB Disconnect on self-powered devices intermittently causing 
+    EP set to not-ready indefinitely
 
 1.1.0
 -----

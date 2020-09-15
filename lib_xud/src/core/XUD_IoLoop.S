@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 
 // XUD_LLD_IoLoop.S
 // Main USB interfacing loop
@@ -157,8 +157,10 @@ ResetIntHandler:
     ldw     r10, dp[SavedSp]                    // Restore stack pointer
     set     sp, r10
 
+#if 0 // RxError Interrupts Disabled
     ldw     r11, sp[15]                         // Put RxE back to events..
     setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
+#endif
 
 
 ResetDetect:
@@ -311,17 +313,17 @@ ConfigSofJump:
 #endif
 ConfigSofJump_Done:
 
-
 ConfigRxErrEventVector:
+    stw        r3, sp[15]                   // Store flag port to stack
+#if 0 // RxError Interrupts Disabled
     setc       res[r3], XS1_SETC_COND_EQ
     setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
     ldap       r11, Err_RxErr
     setv       res[r3], r11
     ldc        r11, 1
     setd       res[r3], r11                 // Set event cond data to 1
-    stw        r3, sp[15]                   // Store flag port to stack
     eeu        res[r3]
-
+#endif
 
 
 SetupSuspendResetTimer:

@@ -33,6 +33,10 @@
   #define USB_TILE tile[0]
 #endif
 
+#ifndef REF_CLK_FREQ
+#define REF_CLK_FREQ 100
+#endif
+
 #ifndef XUD_CORE_CLOCK
 #warning XUD_CORE_CLOCK not defined, using default (700MHz)
 #define XUD_CORE_CLOCK (700)

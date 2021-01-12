@@ -31,8 +31,10 @@ PrimaryBufferFull_PING:                         // Send NAK
     nop
     nop
     nop
-    nop
-    ldc          r11, USB_PIDn_NAK
+    // ldc          r11, USB_PIDn_NA
+    // Load handshake (ACK or STALL)
+    ldaw         r11, dp[handshakeTable_OUT]         // Load handshake table
+    ldw          r11, r11[r10]
     outpw        res[TXD], r11, 8
     bu           NextTokenAfterPing
 .scheduling default

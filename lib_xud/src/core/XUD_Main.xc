@@ -498,37 +498,40 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     /* Populate arrays of channels and status flag tabes */
     for(int i = 0; i < noEpOut; i++)
     {
-      unsigned x;
-      epChans0[i] = XUD_Sup_GetResourceId(c_ep_out[i]);
+      if(epTypeTableOut[i] != XUD_EPTYPE_DIS)
+      {
+        unsigned x;
+        epChans0[i] = XUD_Sup_GetResourceId(c_ep_out[i]);
 
-      asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(i));
-      ep_info[i].chan_array_ptr = x;
+        asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(i));
+        ep_info[i].chan_array_ptr = x;
 
-      asm("mov %0, %1":"=r"(x):"r"(c_ep_out[i]));
-      ep_info[i].ep_xud_chanend = x;
+        asm("mov %0, %1":"=r"(x):"r"(c_ep_out[i]));
+        ep_info[i].ep_xud_chanend = x;
 
-	  asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_out[i]));
-      ep_info[i].ep_client_chanend = x;
+        asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_out[i]));
+        ep_info[i].ep_client_chanend = x;
 
-	  asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"(i*sizeof(XUD_ep_info)/sizeof(unsigned)));
-      outuint(c_ep_out[i], x);
+        asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"(i*sizeof(XUD_ep_info)/sizeof(unsigned)));
+        outuint(c_ep_out[i], x);
 
-      epStatFlagTableOut[i] = epTypeTableOut[i] & XUD_STATUS_ENABLE;
-      epTypeTableOut[i] = epTypeTableOut[i] & 0x7FFFFFFF;
+        epStatFlagTableOut[i] = epTypeTableOut[i] & XUD_STATUS_ENABLE;
+        epTypeTableOut[i] = epTypeTableOut[i] & 0x7FFFFFFF;
 
-      ep_info[i].epType = epTypeTableOut[i];
+        ep_info[i].epType = epTypeTableOut[i];
 
 #ifdef __XS3A__
-      ep_info[i].pid = USB_PIDn_DATA0;
+        ep_info[i].pid = USB_PIDn_DATA0;
 #else
-      ep_info[i].pid = USB_PID_DATA0;
+        ep_info[i].pid = USB_PID_DATA0;
 #endif
-     // ep_info[i].epAddress = i;
-
+      }
     }
 
     for(int i = 0; i< noEpIn; i++)
     {
+      if(epTypeTableIn[i] != XUD_EPTYPE_DIS)
+      {
         int x;
         epChans0[i+USB_MAX_NUM_EP_OUT] = XUD_Sup_GetResourceId(c_ep_in[i]);
 
@@ -538,10 +541,10 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         asm("mov %0, %1":"=r"(x):"r"(c_ep_in[i]));
         ep_info[USB_MAX_NUM_EP_OUT+i].ep_xud_chanend = x;
 
-	    asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_in[i]));
+        asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_in[i]));
         ep_info[USB_MAX_NUM_EP_OUT+i].ep_client_chanend = x;
 
-	    asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
+        asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
 
         outuint(c_ep_in[i], x);
 
@@ -551,9 +554,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;
 
         ep_info[USB_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
-
-        //ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = 0x80; // OR in the IN bit
-
+      }
     }
 
     /* EpTypeTable Checks.  Note, currently this is not too crucial since we only really care if the EP is ISO or not */
@@ -565,7 +566,6 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     }
 
 #if 0
-
     /* Check that if the required channel has a destination if the EP is marked as in use */
     for( int i = 0; i < noEpOut + noEpIn; i++ )
     {

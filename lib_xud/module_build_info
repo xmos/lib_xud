@@ -19,8 +19,6 @@ OPTIONAL_HEADERS += xud_conf.h
 
 VERSION = 0.1.1
 
-# DEPENDENT_MODULES = 
-
 XCC_FLAGS_endpoint0.xc = $(MODULE_XCC_FLAGS) -Os
 XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os
 XCC_FLAGS_dfu_flash.xc = $(MODULE_XCC_FLAGS) -Os
@@ -34,7 +32,6 @@ XCC_FLAGS_XUD_Support.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_IOLoopCall.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_PowerSig.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue -Wno-return-type
 XCC_FLAGS_XUD_TestMode.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
-XCC_FLAGS_XUD_GetDone.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_SetCrcTableAddr.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_User.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
 

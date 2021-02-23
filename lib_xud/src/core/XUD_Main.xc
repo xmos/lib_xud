@@ -114,7 +114,7 @@ unsigned chanArray;
 
 #if (XUD_OPT_SOFTCRC5 == 1)
 extern unsigned char crc5Table[2048];
-unsigned char crc5Table_Addr[2048];
+extern unsigned char crc5Table_Addr[2048];
 
 void XUD_SetCrcTableAddr(unsigned addr);
 #endif

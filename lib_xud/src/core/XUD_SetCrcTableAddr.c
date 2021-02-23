@@ -5,10 +5,9 @@
 
 
 /* Global table used to store complete valid CRC5 table */
-/* TODO Should be char */
 extern unsigned char crc5Table[2048];
 
-/* Glocal table used to store valid CRCs for current address, all other address is this table are invalidated */
+/* Global table used to store valid CRCs for current address, all other address is this table are invalidated */
 extern unsigned char crc5Table_Addr[2048];
 
 /** XUD_SetCrcTableAddress

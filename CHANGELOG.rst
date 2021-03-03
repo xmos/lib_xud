@@ -4,7 +4,8 @@ lib_xud Change Log
 1.1.2
 -----
 
-  * CHANGE:     Python package versions pinned
+   * CHANGED: Pin Python package versions
+   * REMOVED: not necessary cpanfile
 
 1.1.1
 -----

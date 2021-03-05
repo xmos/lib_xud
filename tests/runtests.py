@@ -4,6 +4,18 @@ import argparse
 
 import helpers
 
+def copy_common_xn_files(args):
+    pass
+
+def delete_test_specific_xn_files(args):
+    pass
+
+def prologue(args):
+    pass
+
+def epilogue(args):
+    pass
+
 if __name__ == "__main__":
     global trace
     argparser = argparse.ArgumentParser(description="XMOS lib_xud tests")
@@ -13,6 +25,8 @@ if __name__ == "__main__":
     argparser.add_argument('--verbose', action='store_true', help='Enable verbose tracing in the phys')
     
     helpers.args = xmostest.init(argparser)
+
+    prologue(helpers.args)
 
     xmostest.register_group("lib_xud",
                             "xud_sim_tests",
@@ -37,3 +51,5 @@ if __name__ == "__main__":
     xmostest.runtests()
 
     xmostest.finish()
+
+    epilogue(helpers.args)

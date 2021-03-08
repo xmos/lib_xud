@@ -1,20 +1,40 @@
 #!/usr/bin/env python
 import xmostest
 import argparse
+import os
+import re
+import shutil
 
 import helpers
 
-def copy_common_xn_files(args):
-    pass
+XN_FILES = ["test_xs1.xn", "test_xs2.xn", "test_xs3.xn"]
 
-def delete_test_specific_xn_files(args):
-    pass
+def list_test_dirs(args, path = ".", pattern = '^test_*'):
+    dirs = os.listdir(path)
+    test_dirs = [dir for dir in dirs if os.path.isdir(dir) and re.match(pattern, dir)]
+    return test_dirs
+
+def copy_common_xn_files(args, path = ".", common_dir = "shared_src", source_dir = "src", xn_files = XN_FILES):
+    test_dirs = list_test_dirs(args, path)
+    for test_dir in test_dirs:
+        src_dir = os.path.join(test_dir, source_dir)
+        for xn_file in xn_files:
+            xn = os.path.join(common_dir, xn_file)
+            shutil.copy(xn, src_dir)
+
+def delete_test_specific_xn_files(args, path = ".", source_dir = "src", xn_files = XN_FILES):
+    test_dirs = list_test_dirs(args, path)
+    for test_dir in test_dirs:
+        src_dir = os.path.join(test_dir, source_dir)
+        for xn_file in xn_files:
+            xn = os.path.join(src_dir, xn_file)
+            os.remove(xn)
 
 def prologue(args):
-    pass
+    copy_common_xn_files(args)
 
 def epilogue(args):
-    pass
+    delete_test_specific_xn_files(args)
 
 if __name__ == "__main__":
     global trace
@@ -28,10 +48,11 @@ if __name__ == "__main__":
 
     prologue(helpers.args)
 
-    xmostest.register_group("lib_xud",
-                            "xud_sim_tests",
-                            "XUD simulator tests",
-    """
+    try:
+        xmostest.register_group("lib_xud",
+                                "xud_sim_tests",
+                                "XUD simulator tests",
+        """
 #Tests are performed by running the GPIO library connected to a simulator model
 #(written as a python plugin to xsim). The simulator model checks that the pins
 #are driven and read by the ports as expected. Tests are run to test the
@@ -48,8 +69,8 @@ if __name__ == "__main__":
 #    * Outputting with timestamps
 #""")
 #'''
-    xmostest.runtests()
+        xmostest.runtests()
+        xmostest.finish()
 
-    xmostest.finish()
-
-    epilogue(helpers.args)
+    finally:
+        epilogue(helpers.args)

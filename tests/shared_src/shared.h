@@ -3,7 +3,7 @@
 #include <print.h>
 #include <stdio.h>
 #include <platform.h>
-#include "xud.h
+#include "xud.h"
 
 unsigned char g_rxDataCheck_[16] = {0};
 unsigned char g_txDataCheck_[16] = {0};

@@ -7,7 +7,7 @@ import shutil
 
 import helpers
 
-XN_FILES = ["test_xs1.xn", "test_xs2.xn", "test_xs3.xn"]
+XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 
 def list_test_dirs(args, path = ".", pattern = '^test_*'):
     dirs = os.listdir(path)

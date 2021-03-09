@@ -89,14 +89,13 @@ int main()
         {
             unsigned fail = TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1, c_sof);
             
+            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
+            XUD_Kill(ep0);
+
             if(fail)
                 TerminateFail(fail);
             else
-                TerminatePass(fail);    
-            
-            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
-            XUD_Kill(ep0);
-            exit(0);
+                TerminatePass(fail);  
 
         }
     }

@@ -17,7 +17,7 @@
             <Port Location="XS1_PORT_1B" Name="PORT_SQI_CS"/>
             <Port Location="XS1_PORT_1C" Name="PORT_SQI_SCLK"/>
             <Port Location="XS1_PORT_4B" Name="PORT_SQI_SIO"/>
-            
+
             <Port Location="XS1_PORT_1H"  Name="PORT_USB_TX_READYIN"/>
             <Port Location="XS1_PORT_1J"  Name="PORT_USB_CLK"/>
             <Port Location="XS1_PORT_1K"  Name="PORT_USB_TX_READYOUT"/>
@@ -29,7 +29,7 @@
             <Port Location="XS1_PORT_8B"  Name="PORT_USB_RXD"/>
 
 
-            <!-- Audio Ports -->         
+            <!-- Audio Ports -->
           </Tile>
           <Tile Number="1" Reference="tile[1]">
           </Tile>

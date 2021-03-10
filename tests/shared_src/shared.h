@@ -69,7 +69,6 @@ void TerminatePass(unsigned x)
 #define MAX_PKT_COUNT (10)
 #endif
 
-
 #define XUD_Manager XUD_Main
 
 typedef enum t_runMode

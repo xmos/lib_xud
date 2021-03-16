@@ -74,6 +74,8 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          do_timeout=do_timeout, complete_fn=complete_fn,
                          expect_loopback=expect_loopback,
                          dut_exit_time=dut_exit_time)
+    else:
+        raise ValueError("Invalid arhictecture: " + arch)
         
     return (clk, phy)
 

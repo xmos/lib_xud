@@ -25,7 +25,7 @@ COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -X
 XCC_FLAGS_xs2       = $(COMMON_FLAGS) -DARCH_X200 -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
 
 ifeq ($(CONFIG),$(filter $(CONFIG),xs2))
-	TARGET = test.xn
+	TARGET = test_xs2.xn
 endif
 
 

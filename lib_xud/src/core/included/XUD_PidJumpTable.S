@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
-#if defined (__XS2A__) || defined(__XS1B__)
+#if defined (__XS2A__)
 
 //  PID jump table
 .section .dp.data, "adw", @progbits
@@ -282,7 +282,7 @@ PidJumpTable:
 
 #endif
 
-#if defined(__XS1A__) || defined(__XS3A__)
+#if defined(__XS3A__)
 // Generated using genpidtable.c
 .section .dp.data, "adw", @progbits
 .globl PidJumpTable

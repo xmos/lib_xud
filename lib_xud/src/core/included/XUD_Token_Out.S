@@ -35,7 +35,7 @@ InformEP_Iso:                                   // Iso EP - no handshake
     //ldc        r4, XUD_MAX_NUM_EP_OUT         // This could be shaved if XUD_MAX_NUM_EP's < 12. Now use an LDAW to at 16.
 
 //------------------------------------------------------------------------------------------------
-#if defined(__XS2A__) || defined(__XS1B__)
+#if defined(__XS2A__)
     ldaw        r10, dp[PidJumpTable]
                                                 // Original USB Token: | CRC | EP | ADDR | PID | junk
                                                 // Received token is address and CRC checked.

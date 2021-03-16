@@ -124,7 +124,7 @@ XUD_IN_RxAck:
     clrpt		res[r1]			                    // Clear port time on valid token port
     
     {edu         res[RXD];  shr      r11, r11, 24}  // Shift off junk data to leave ACK
-#if defined(__XS2A__) || defined(__XS1B__)
+#if defined(__XS2A__)
     ldc         r9, USB_PID_ACK                     // Check for good ACK (L series strips of negated bits from PID)
 #else
     ldc         r9, USB_PIDn_ACK

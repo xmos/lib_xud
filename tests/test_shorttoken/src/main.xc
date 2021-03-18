@@ -34,12 +34,12 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
         if(length != i)
         {
             printintln(length);
-            fail(FAIL_RX_LENERROR);
+            TerminateFail(FAIL_RX_LENERROR);
         }
 
         if(RxDataCheck(buffer, length, epNum,i))
         {
-            fail(FAIL_RX_DATAERROR);
+            TerminateFail(FAIL_RX_DATAERROR);
         }
 
     }

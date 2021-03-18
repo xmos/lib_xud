@@ -11,7 +11,7 @@ from helpers import do_usb_test, runall_rx
 
 # Single, setup transaction to EP 0
 
-def do_test(arch, clk, phy, seed):
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     rand = random.Random()
     rand.seed(seed)
 
@@ -26,13 +26,13 @@ def do_test(arch, clk, phy, seed):
     ipg = 500
 
     AppendOutToken(packets, ep, address)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=10, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=0x3)) #DATA0
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
     
     dataval += 10
     AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=11, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket())
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb)) #DATA1
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
     # MISSING DATA PAYLOAD
@@ -40,20 +40,20 @@ def do_test(arch, clk, phy, seed):
 
     dataval += 11
     AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=12, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=12, pid=0x3)) #DATA0
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 12
     AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=13, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket())
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=13, pid=0xb)) #DATA1
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 13
     AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=14, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=14, pid=0x3)) #DATA0
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-    do_usb_test(arch, clk, phy, packets, __file__, seed, level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def runtest():
     random.seed(1)

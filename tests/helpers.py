@@ -63,6 +63,18 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
         
     return (clk, phy)
 
+def get_usb_data_valid_count(usb_speed='HS'):
+    return_value = 0
+
+    if usb_speed == 'HS':
+        return_value = 0
+    elif usb_speed == 'FS':
+        return_value = 39
+    else:
+        raise ValueError("Unsupported USB speed: {}".format(usb_speed))
+
+    return return_value
+
 def run_on(**kwargs):
     if not args:
         return True
@@ -74,20 +86,25 @@ def run_on(**kwargs):
 
     return True
 
+SUPPORTED_USB_SPEEDS = ['FS', 'HS']
+
 def runall_rx(test_fn):
    
     if run_on(arch='xs3'):
-        (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
-        seed = args.seed if args.seed else random.randint(0, sys.maxint)
-        test_fn('xs3', clk_60, usb_phy, seed)
+        test_arch = 'xs3'
     
     if run_on(arch='xs2'):
-        (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
-        seed = args.seed if args.seed else random.randint(0, sys.maxint)
-        test_fn('xs2', clk_60, usb_phy, seed)
+        test_arch = 'xs2'
+
+    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=test_arch)
+    seed = args.seed if args.seed else random.randint(0, sys.maxint)
+
+    for speed in SUPPORTED_USB_SPEEDS:
+        data_valid_count = get_usb_data_valid_count(usb_speed=speed)
+        test_fn(test_arch, clk_60, usb_phy, data_valid_count, speed, seed)
 
 
-def do_usb_test(arch, clk, phy, packets, test_file, seed,
+def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
                level='nightly', extra_tasks=[]):
 
     """ Shared test code for all RX tests using the test_rx application.
@@ -101,9 +118,9 @@ def do_usb_test(arch, clk, phy, packets, test_file, seed,
     print binary
 
     if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-        print "Running {test}: {arch} arch sending {n} packets at {clk} (seed {seed})".format(
+        print "Running {test}: {arch} arch sending {n} packets at {clk} using {speed} (seed {seed})".format(
             test=testname, n=len(packets),
-            arch=arch, clk=clk.get_name(), seed=seed)
+            arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed)
 
     phy.set_packets(packets)
 
@@ -114,7 +131,7 @@ def do_usb_test(arch, clk, phy, packets, test_file, seed,
 
     tester = xmostest.ComparisonTester(open(expect_filename),
                                       'lib_xud', 'xud_sim_tests', testname,
-                                     {'clk':clk.get_name(), 'arch':arch})
+                                     {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
 
     tester.set_min_testlevel(level)
 

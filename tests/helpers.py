@@ -109,7 +109,7 @@ def do_usb_test(arch, clk, phy, packets, test_file, seed,
 
     expect_folder = create_if_needed("expect")
     expect_filename = '{folder}/{test}_{arch}.expect'.format(
-        folder=expect_folder, test=testname, phy=phy.get_name(), clk=clk.get_name(), arch=arch)
+        folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
     create_expect(arch, packets, expect_filename)
 
     tester = xmostest.ComparisonTester(open(expect_filename),
@@ -151,7 +151,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(
             log=log_folder, test=testname,
-            clk=clk.get_name(), phy=phy.get_name(), arch=arch)
+            clk=clk.get_name(), phy=phy.name, arch=arch)
 
         sim_args += ['--trace-to', '{0}.txt'.format(filename), '--enable-fnop-tracing']
 
@@ -167,7 +167,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
 def packet_processing_time(phy, data_bytes):
     """ Returns the time it takes the DUT to process a given frame
     """
-    return 6000 * phy.get_clock().get_bit_time()
+    return 6000 * phy.clock.get_bit_time()
 
 #def get_dut_address():
 #    """ Returns the busaddress of the DUT

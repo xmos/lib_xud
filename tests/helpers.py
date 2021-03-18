@@ -58,22 +58,8 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          expect_loopback=expect_loopback,
                          dut_exit_time=dut_exit_time)
 
-
-    elif arch=='xs1':
-        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-        phy = UsbPhyShim('tile[0]:XS1_PORT_8C',
-                         'tile[0]:XS1_PORT_1O', #rxa
-                         'tile[0]:XS1_PORT_1M', #rxv
-                         'tile[0]:XS1_PORT_1P', #rxe
-                         'tile[0]:XS1_PORT_1N', #vld
-                         'tile[0]:XS1_PORT_8A', #txd
-                         'tile[0]:XS1_PORT_1K', #txv
-                         'tile[0]:XS1_PORT_1H', #txrdy
-                         clk,
-                         verbose=verbose, test_ctrl=test_ctrl,
-                         do_timeout=do_timeout, complete_fn=complete_fn,
-                         expect_loopback=expect_loopback,
-                         dut_exit_time=dut_exit_time)
+    else:
+        raise ValueError("Invalid architecture: " + arch)
         
     return (clk, phy)
 

@@ -69,7 +69,11 @@ suspend_t_wtwrsths:
 .text
 .cc_top UsbTestModeHandler_asm.func, UsbTestModeHandler_asm
 .issue_mode single
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 UsbTestModeHandler_asm:
     ENTSP_lu6   0
 	clrsr       0x18
@@ -99,7 +103,11 @@ UsbTestModeHandler_asm:
 .text
 .cc_top ResetIntHandler.func, ResetIntHandler
 .issue_mode dual
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 ResetIntHandler:
     DUALENTSP_lu6   0
     clrsr   0x18                                // Clear InInterrupt bit (and InKernel)
@@ -159,7 +167,11 @@ waitforRXALow0:
     setc        res[RXD], XS1_SETC_RUN_CLRBUF
     bu          Loop_BadPid
 
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 XUD_LLD_IoLoop:
     DUALENTSP_lu6  STACK_EXTEND
     stw         r4, sp[1]
@@ -303,7 +315,11 @@ SetupSuspendResetTimer:
     bu         NextToken
 
 // Main IO Loop
+#if defined(__XS3A__)
+.align 16
+#else
 .align 8
+#endif
 .skip 0
 NextToken:
     ldc         r9, 0xa001                      // CRC16 poly, used in doRxData
@@ -347,7 +363,11 @@ XUD_InvalidTok_waitforRXALow:
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     bu         Loop_BadPid                          // Invalid token received Ignore unknown toks
 
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 Return:
     clre
     ldw        r11, sp[STACK_SUSPEND_TIMER]         // Free suspend/reset timer

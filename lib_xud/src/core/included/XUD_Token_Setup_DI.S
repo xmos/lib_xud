@@ -4,7 +4,11 @@
 // - Can't NAK a setup
 // - Data PID will always be DATA0
 // - Payload will always be 8 bytes
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 Pid_Setup:
     #include "XUD_CrcAddrCheck.S"
     ldw        r3, r5[r10]                      // Load relevant EP pointer

@@ -1,5 +1,9 @@
 // Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 Pid_Ping:
     #include "XUD_CrcAddrCheck.S"
 

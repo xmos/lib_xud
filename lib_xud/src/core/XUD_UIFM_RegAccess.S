@@ -17,7 +17,11 @@
 .globl XUD_UIFM_Enable, "f{ui}(ui)"
 .type  XUD_UIFM_Enable, @function
 .cc_top XUD_UIFM_Enable.function
-.align    4
+#if defined(__XS3A__)
+.align 16
+#else
+.align 4
+#endif
 // void XUD_UIFM_Enable (unsigned mode);
 XUD_UIFM_Enable:
   ldc       r1, XS1_PS_XCORE_CTRL0

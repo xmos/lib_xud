@@ -5,7 +5,11 @@
 #define RXD r0
 #define TXD r2
 
+#if defined(__XS3A__)
+.align 16
+#else
 .align 8
+#endif
 .skip 0
 Pid_Out:
     #include "XUD_CrcAddrCheck.S"
@@ -64,7 +68,11 @@ JumpOnPid_:
     bau         r11
 #endif
 
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 .skip 0
 DoOutNonIso:
     bl         doRXData
@@ -96,7 +104,11 @@ StoreTailDataOut:
     bu        NextTokenAfterOut
 
 // Various Error handling functions -------------------------------------------------------------------
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 Err_RxErr:                                      // RxError signal high during data packet receive:
     DUALENTSP_lu   0
     clrsr     3

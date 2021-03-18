@@ -2,7 +2,11 @@
 // r10: EP number
 // OUT Token Packet -----------------------------------------------------------------------------
 
+#if defined(__XS3A__)
+.align 16
+#else
 .align 8
+#endif
 .skip 0
 Pid_Out:
     #include "XUD_CrcAddrCheck.S"
@@ -25,7 +29,11 @@ InformEP_Iso:                                   // Iso EP - no handshake
     {outt       res[r11], r8;   ldw    r6, sp[STACK_RXCRC_INIT]} // CRC16 init (out) - Needs reseting after an out & Send tail length
     #include "XUD_TokenJmp.S"
 
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 .skip 0
 DoOutNonIso:
     bl         doRXData
@@ -53,7 +61,11 @@ StoreTailDataOut:
     bu        NextTokenAfterOut
 
 // Various Error handling functions -------------------------------------------------------------------
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 Err_RxErr:                                      // RxError signal high during data packet receive:
     DUALENTSP_lu6 0
     clrsr     3

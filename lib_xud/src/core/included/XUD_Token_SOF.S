@@ -1,7 +1,11 @@
 // Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 
 // Received SOF token: Reset suspend/reset detection timer
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 Pid_Sof:
 #ifdef __XS2A__
     inpw        r10, res[RXD], 8                // Read EP Number
@@ -37,7 +41,11 @@ Pid_Sof:
 	bu          Loop_BadPid
 
 // Received SOF token: Reset suspend/reset detection timer
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 Pid_Sof_NoChan:
 #ifdef __XS2A__
     inpw      r10, res[RXD], 8;                        /* Read EP Number */

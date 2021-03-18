@@ -20,7 +20,11 @@
 // R2 : TXD
 // R1 : Valid Token Port
 // R0 : RXD
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 InNotReady:
     ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
@@ -35,7 +39,11 @@ XUD_IN_TxNak:                                       // Non-Iso
     outpw     res[TXD], r11, 8
     #include "XUD_TokenJmp.S"
 
+#if defined(__XS3A__)
+.align 16
+#else
 .align 8
+#endif
 Pid_In:
     #include "XUD_CrcAddrCheck.S"
     ldaw       r3, r10[4]                           // R3 = R10 + 16
@@ -110,14 +118,22 @@ WaitForHandshake:			                        // Wait for timeout or handshake
     waiteu
 
 // We sent some data but the host didn't handshake in time.  Needs a re-send.
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 TxHandshakeTimeOut:
     in 	    	r11, res[r1]                        // This will clear port time
     edu         res[r1]
     {edu         res[RXD]; bu          BadHandshake}
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
+#if defined(__XS3A__)
+.align 16
+#else
 .align 4
+#endif
 TxHandShakeReceived:
 XUD_IN_RxAck:
     in 		    r11, res[RXD]                       // Input data from RXD port

@@ -12,6 +12,7 @@
 #include "xud.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_TimingDefines.h"
+#include "XUD_AlignmentDefines.h"
 
 .section        .cp.const4,"aMc",@progbits,4
 .cc_top suspendTimeout.data
@@ -69,7 +70,7 @@ suspend_t_wtwrsths:
 .text
 .cc_top UsbTestModeHandler_asm.func, UsbTestModeHandler_asm
 .issue_mode single
-.align 4
+.align FUNC_ALIGN4
 UsbTestModeHandler_asm:
     ENTSP_lu6   0
 	clrsr       0x18
@@ -99,7 +100,7 @@ UsbTestModeHandler_asm:
 .text
 .cc_top ResetIntHandler.func, ResetIntHandler
 .issue_mode dual
-.align 4
+.align FUNC_ALIGN4
 ResetIntHandler:
     DUALENTSP_lu6   0
     clrsr   0x18                                // Clear InInterrupt bit (and InKernel)
@@ -159,7 +160,7 @@ waitforRXALow0:
     setc        res[RXD], XS1_SETC_RUN_CLRBUF
     bu          Loop_BadPid
 
-.align 4
+.align FUNC_ALIGN4
 XUD_LLD_IoLoop:
     DUALENTSP_lu6  STACK_EXTEND
     stw         r4, sp[1]
@@ -303,7 +304,7 @@ SetupSuspendResetTimer:
     bu         NextToken
 
 // Main IO Loop
-.align 8
+.align FUNC_ALIGN8
 .skip 0
 NextToken:
     ldc         r9, 0xa001                      // CRC16 poly, used in doRxData
@@ -347,7 +348,7 @@ XUD_InvalidTok_waitforRXALow:
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     bu         Loop_BadPid                          // Invalid token received Ignore unknown toks
 
-.align 4
+.align FUNC_ALIGN4
 Return:
     clre
     ldw        r11, sp[STACK_SUSPEND_TIMER]         // Free suspend/reset timer

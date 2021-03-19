@@ -12,12 +12,13 @@
 #ifndef XS1_PS_XCORE_CTRL0
 #define XS1_PS_XCORE_CTRL0 0x20b
 #endif
+#include "XUD_AlignmentDefines.h"
 
 .text
 .globl XUD_UIFM_Enable, "f{ui}(ui)"
 .type  XUD_UIFM_Enable, @function
 .cc_top XUD_UIFM_Enable.function
-.align    4
+.align FUNC_ALIGN4
 // void XUD_UIFM_Enable (unsigned mode);
 XUD_UIFM_Enable:
   ldc       r1, XS1_PS_XCORE_CTRL0

@@ -1,8 +1,9 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 // r10: EP number
 // OUT Token Packet -----------------------------------------------------------------------------
+#include "XUD_AlignmentDefines.h"
 
-.align 8
+.align FUNC_ALIGN8
 .skip 0
 Pid_Out:
     #include "XUD_CrcAddrCheck.S"
@@ -25,7 +26,7 @@ InformEP_Iso:                                   // Iso EP - no handshake
     {outt       res[r11], r8;   ldw    r6, sp[STACK_RXCRC_INIT]} // CRC16 init (out) - Needs reseting after an out & Send tail length
     #include "XUD_TokenJmp.S"
 
-.align 4
+.align FUNC_ALIGN4
 .skip 0
 DoOutNonIso:
     bl         doRXData
@@ -53,7 +54,7 @@ StoreTailDataOut:
     bu        NextTokenAfterOut
 
 // Various Error handling functions -------------------------------------------------------------------
-.align 4
+.align FUNC_ALIGN4
 Err_RxErr:                                      // RxError signal high during data packet receive:
     DUALENTSP_lu6 0
     clrsr     3

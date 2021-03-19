@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+#include "XUD_AlignmentDefines.h"
 
 .text
 
@@ -16,7 +17,7 @@ WaitForEndDataPacket:
 // - Data PID will always be DATA0
 // - Payload will always be 8 bytes
 
-.align 4
+.align FUNC_ALIGN4
 Pid_Setup:
 #ifdef ARCH_L
     inpw      r10, res[RXD], 8;                 // Read EP Number 

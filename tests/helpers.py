@@ -25,15 +25,28 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                        dut_exit_time=350000, arch='xs2'):
 
     if arch=='xs2':
-        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-        phy = UsbPhyShim('tile[0]:XS1_PORT_8B',
-                         'tile[0]:XS1_PORT_1F', #rxa
-                         'tile[0]:XS1_PORT_1I', #rxv
-                         'tile[0]:XS1_PORT_1G', #rxe
-                         'tile[0]:XS1_PORT_1E', #vld
+        #clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
+        clk = Clock('XS1_USB_CLK', Clock.CLK_60MHz)
+       # phy = UsbPhyUtmi('tile[0]:XS1_PORT_8B',
+       #                  'tile[0]:XS1_PORT_1F', #rxa
+       #                  'tile[0]:XS1_PORT_1I', #rxv
+       #                  'tile[0]:XS1_PORT_1G', #rxe
+       #                  'tile[0]:XS1_PORT_1E', #vld
+       #                  'tile[0]:XS1_PORT_8A', #txd
+       #                  'tile[0]:XS1_PORT_1K', #txv
+       #                  'tile[0]:XS1_PORT_1H', #txrdy
+        phy = UsbPhyUtmi('XS1_USB_RXD',
+                         'XS1_USB_RXA', #rxa
+                         'XS1_USB_RXV', #rxv
+                         'XS1_USB_RXE', #rxe
                          'tile[0]:XS1_PORT_8A', #txd
                          'tile[0]:XS1_PORT_1K', #txv
                          'tile[0]:XS1_PORT_1H', #txrdy
+                         'XS1_USB_LS0', 
+                         'XS1_USB_LS1',
+
+
+
                          clk,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,

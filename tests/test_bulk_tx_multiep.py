@@ -30,19 +30,19 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
         
         #Multi EP:
         #177 lowest for valid data (DI)
-        AppendInToken(packets, start_ep, address, inter_pkt_gap=ipg)
+        AppendInToken(packets, start_ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
         packets.append(RxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid))
         packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
 
-        AppendInToken(packets, start_ep+1, address, inter_pkt_gap=ipg)
+        AppendInToken(packets, start_ep+1, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
         packets.append(RxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid))
         packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
        
-        AppendInToken(packets, start_ep+2, address, inter_pkt_gap=ipg)
+        AppendInToken(packets, start_ep+2, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
         packets.append(RxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid))
         packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
       
-        AppendInToken(packets, start_ep+3, address, inter_pkt_gap=ipg)
+        AppendInToken(packets, start_ep+3, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
         packets.append(RxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid))
         packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
        

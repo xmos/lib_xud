@@ -23,7 +23,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
 
 
     # Start with a valid transaction */
-    AppendOutToken(packets, ep, address)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=0x3)) #DATA0
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
@@ -36,7 +36,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
 
     #Finish with valid transaction 
     dataval += 10
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb)) #DATA1
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 

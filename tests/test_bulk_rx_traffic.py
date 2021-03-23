@@ -29,14 +29,14 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
 
     for pktlength in range(10, 20):
 
-        AppendOutToken(packets, trafficEp1, trafficAddress1, inter_pkt_gap=500)
+        AppendOutToken(packets, trafficEp1, trafficAddress1, data_valid_count=data_valid_count, inter_pkt_gap=500)
         packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) 
 
-        AppendOutToken(packets, ep, address, inter_pkt_gap=500)
+        AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=500)
         packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) 
         packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
   
-        AppendOutToken(packets, trafficEp2, trafficAddress2, inter_pkt_gap=500)
+        AppendOutToken(packets, trafficEp2, trafficAddress2, data_valid_count=data_valid_count, inter_pkt_gap=500)
         packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) 
 
         if(pid == usb_packet.PID_DATA1):

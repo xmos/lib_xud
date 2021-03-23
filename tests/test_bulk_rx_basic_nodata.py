@@ -25,31 +25,31 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
 
     ipg = 500
 
-    AppendOutToken(packets, ep, address)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=0x3)) #DATA0
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
     
     dataval += 10
-    AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb)) #DATA1
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-    AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
     # MISSING DATA PAYLOAD
 
 
     dataval += 11
-    AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=12, pid=0x3)) #DATA0
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 12
-    AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=13, pid=0xb)) #DATA1
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 13
-    AppendOutToken(packets, ep, address, inter_pkt_gap=ipg)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=14, pid=0x3)) #DATA0
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 

@@ -23,7 +23,7 @@ def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
 
     for pktlength in range(10, 20):
 
-        AppendInToken(packets, ep, address, inter_pkt_gap=4000)
+        AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=4000)
         
         packets.append(RxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) #DATA1
         packets.append(TxHandshakePacket(data_valid_count=data_valid_count))

@@ -22,10 +22,10 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     for pkt_length in range(10, 20):
 
         # < 17 fails
-        AppendOutToken(packets, ep, address, inter_pkt_gap=20)
+        AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=20)
         packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
 
-        AppendInToken(packets, ep, address, inter_pkt_gap=58)
+        AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=58)
         packets.append(RxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid))
 
         data_val = data_val + pkt_length

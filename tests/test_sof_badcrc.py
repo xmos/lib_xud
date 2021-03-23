@@ -23,19 +23,19 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     dataval = 0;
 
     # Start with a valid transaction */
-    AppendOutToken(packets, ep, address)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=0x3)) #DATA0
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-    AppendSofToken(packets, framenumber)
-    AppendSofToken(packets, framenumber+1) 
-    AppendSofToken(packets, framenumber+2)
-    AppendSofToken(packets, framenumber+3, crc5=0xff) # Invalidate the CRC
-    AppendSofToken(packets, framenumber+4)
+    AppendSofToken(packets, framenumber, data_valid_count=data_valid_count)
+    AppendSofToken(packets, framenumber+1, data_valid_count=data_valid_count) 
+    AppendSofToken(packets, framenumber+2, data_valid_count=data_valid_count)
+    AppendSofToken(packets, framenumber+3, crc5=0xff, data_valid_count=data_valid_count) # Invalidate the CRC
+    AppendSofToken(packets, framenumber+4, data_valid_count=data_valid_count)
 
     #Finish with valid transaction 
     dataval += 10
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb)) #DATA1
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 

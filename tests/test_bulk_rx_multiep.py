@@ -21,19 +21,19 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     for pkt_length in range(10, 20):
     
         #min 237
-        AppendOutToken(packets, 3, address, inter_pkt_gap=1)
+        AppendOutToken(packets, 3, address, data_valid_count=data_valid_count, inter_pkt_gap=1)
         packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
         packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-        AppendOutToken(packets, 4, address, inter_pkt_gap=1)
+        AppendOutToken(packets, 4, address, data_valid_count=data_valid_count, inter_pkt_gap=1)
         packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
         packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-        AppendOutToken(packets, 5, address, inter_pkt_gap=0)
+        AppendOutToken(packets, 5, address, data_valid_count=data_valid_count, inter_pkt_gap=0)
         packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
         packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-        AppendOutToken(packets, 6, address, inter_pkt_gap=0)
+        AppendOutToken(packets, 6, address, data_valid_count=data_valid_count, inter_pkt_gap=0)
         packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
         packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 

@@ -20,40 +20,40 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
 
     dataval = 0;
 
-    AppendOutToken(packets, ep, address)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=0x3)) #DATA0
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     # Assert RxError during packet
     dataval += 10
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb, rxe_assert_time=5)) #DATA1
     
     # xCORE should ignore the packet and not handshake...
     #packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     # Re-send..
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb, rxe_assert_time=0)) #DATA1
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 11
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=12, pid=0x3)) #DATA0
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 12
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=13, pid=0xb, rxe_assert_time=1)) #DATA1
     #packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     #resend
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=13, pid=0xb)) #DATA1
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 13
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
     packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=14, pid=0x3)) #DATA0
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 

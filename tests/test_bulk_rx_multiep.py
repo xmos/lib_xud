@@ -6,7 +6,7 @@ from  usb_packet import *
 from usb_clock import Clock
 from helpers import do_usb_test, runall_rx
 
-def do_test(arch, clk, phy, seed):
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     rand = random.Random()
     rand.seed(seed)
 
@@ -21,26 +21,26 @@ def do_test(arch, clk, phy, seed):
     for pkt_length in range(10, 20):
     
         #min 237
-        AppendOutToken(packets, 3, address, inter_pkt_gap=1)
-        packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket())
+        AppendOutToken(packets, 3, address, data_valid_count=data_valid_count, inter_pkt_gap=1)
+        packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
+        packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-        AppendOutToken(packets, 4, address, inter_pkt_gap=1)
-        packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket())
+        AppendOutToken(packets, 4, address, data_valid_count=data_valid_count, inter_pkt_gap=1)
+        packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
+        packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-        AppendOutToken(packets, 5, address, inter_pkt_gap=0)
-        packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket())
+        AppendOutToken(packets, 5, address, data_valid_count=data_valid_count, inter_pkt_gap=0)
+        packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
+        packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-        AppendOutToken(packets, 6, address, inter_pkt_gap=0)
-        packets.append(TxDataPacket(rand, data_start_val=data_val, length=pkt_length, pid=data_pid)) #DATA0
-        packets.append(RxHandshakePacket())
+        AppendOutToken(packets, 6, address, data_valid_count=data_valid_count, inter_pkt_gap=0)
+        packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
+        packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
         data_val = data_val + pkt_length
         data_pid = data_pid ^ 8
 
-    do_usb_test(arch, clk, phy, packets, __file__, seed,
+    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed,
                level='smoke', extra_tasks=[])
 
 def runtest():

@@ -41,7 +41,6 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          dut_exit_time=dut_exit_time)
  
     elif arch=='xs3':
-        #clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
         clk = Clock('XS1_USB_CLK', Clock.CLK_60MHz)
         phy = UsbPhyUtmi('XS1_USB_RXD',
                          'XS1_USB_RXA', #rxa

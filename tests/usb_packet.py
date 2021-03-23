@@ -73,21 +73,21 @@ PID_DATA0 = 0x3
 
 def AppendSetupToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500)
-    AppendTokenPacket(packets, 0x2d, ep, ipg, address)
+    AppendTokenPacket(packets, 0x2d, ep, ipg, address, **kwargs)
 
 def AppendOutToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
-    AppendTokenPacket(packets, 0xe1, ep, ipg, address)
+    AppendTokenPacket(packets, 0xe1, ep, ipg, address, **kwargs)
 
 def AppendPingToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
-    AppendTokenPacket(packets, 0xb4, ep, ipg, address)
+    AppendTokenPacket(packets, 0xb4, ep, ipg, address, **kwargs)
 
 def AppendInToken(packets, ep, address, **kwargs):
     #357 was min IPG supported on bulk loopback to not nak
     #lower values mean the loopback NAKs
     ipg = kwargs.pop('inter_pkt_gap', 10) 
-    AppendTokenPacket(packets, 0x69, ep, ipg, address)
+    AppendTokenPacket(packets, 0x69, ep, ipg, address, **kwargs)
 
 def AppendSofToken(packets, framenumber, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
@@ -95,15 +95,17 @@ def AppendSofToken(packets, framenumber, **kwargs):
     # Override EP and Address 
     ep = (framenumber >> 7) & 0xf
     address = (framenumber) & 0x7f
-    AppendTokenPacket(packets, 0xa5, ep, ipg, address)
+    AppendTokenPacket(packets, 0xa5, ep, ipg, address, **kwargs)
 
-def AppendTokenPacket(packets, _pid, ep, ipg, addr=0):
+def AppendTokenPacket(packets, _pid, ep, ipg, addr=0, **kwargs):
     
+    data_valid_count = kwargs.pop('data_valid_count', 0)
     packets.append(TokenPacket( 
         inter_pkt_gap=ipg, 
         pid=_pid,
         address=addr, 
-        endpoint=ep))
+        endpoint=ep,
+        data_valid_count=data_valid_count))
 
 def reflect(val, numBits):
 

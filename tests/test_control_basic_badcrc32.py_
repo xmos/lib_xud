@@ -10,7 +10,7 @@ from helpers import choose_small_frame_size, check_received_packet, runall_rx
 
 # Single, setup transaction to EP 0
 
-def do_test(arch, tx_clk, tx_phy, seed):
+def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
     rand = random.Random()
     rand.seed(seed)
 
@@ -23,33 +23,33 @@ def do_test(arch, tx_clk, tx_phy, seed):
     AppendSetupToken(packets, ep)
 
     # DATA0 data packet with bad CRC
-    packets.append(TxDataPacket(rand, length=8, pid=3, bad_crc=True))
+    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=8, pid=3, bad_crc=True))
  
     # Dont expect an ACK due to bad CRC
     #packets.append(RxHandshakePacket())
 
     AppendSetupToken(packets, ep, inter_pkt_gap=400)
-    packets.append(TxDataPacket(rand, length=8, pid=3, bad_crc=False ))
-    packets.append(RxHandshakePacket(timeout=11))
+    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=8, pid=3, bad_crc=False ))
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count, timeout=11))
 
     # Note, quite big gap to allow checking.
 
     AppendOutToken(packets, ep, inter_pkt_gap=2000)
     
-    packets.append(TxDataPacket(rand, length=10, pid=0xb))
+    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=10, pid=0xb))
     
-    packets.append(RxHandshakePacket())
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     #IN
     AppendInToken(packets, ep, inter_pkt_gap=500)
 
     #Expect 0-length
-    packets.append(RxDataPacket(rand, length=0, pid=0x4b))
+    packets.append(RxDataPacket(rand, data_valid_count=data_valid_count, length=0, pid=0x4b))
 
     # Send ACK
-    packets.append(TxHandshakePacket())
+    packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
 
-    do_rx_test(arch, tx_clk, tx_phy, packets, __file__, seed,
+    do_rx_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed,
                level='smoke', extra_tasks=[])
 
 def runtest():

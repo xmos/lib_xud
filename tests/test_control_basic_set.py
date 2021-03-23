@@ -7,7 +7,7 @@ import usb_packet
 from usb_clock import Clock
 from helpers import do_usb_test, runall_rx
 
-def do_test(arch, tx_clk, tx_phy, seed):
+def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
     rand = random.Random()
     rand.seed(seed)
 
@@ -16,21 +16,21 @@ def do_test(arch, tx_clk, tx_phy, seed):
 
     packets = []
 
-    AppendSetupToken(packets, ep, address)
-    packets.append(TxDataPacket(rand, length=8, pid=3))
-    packets.append(RxHandshakePacket(timeout=11))
+    AppendSetupToken(packets, ep, address, data_valid_count=data_valid_count)
+    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=8, pid=3))
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count, timeout=11))
 
     # Note, quite big gap to avoid NAL
-    AppendOutToken(packets, ep, address, inter_pkt_gap = 10000)
-    packets.append(TxDataPacket(rand, length=10, pid=0xb, data_start_val=8))
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap = 10000)
+    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=10, pid=0xb, data_start_val=8))
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     #Expect 0-length
-    AppendInToken(packets, ep, address, inter_pkt_gap = 10000)
-    packets.append(RxDataPacket(rand, length=0, pid=0xb))
-    packets.append(TxHandshakePacket())
+    AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap = 10000)
+    packets.append(RxDataPacket(rand, data_valid_count=data_valid_count, length=0, pid=0xb))
+    packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
 
-    do_usb_test(arch, tx_clk, tx_phy, packets, __file__, seed, level='smoke', extra_tasks=[])
+    do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def runtest():
     random.seed(1)

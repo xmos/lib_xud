@@ -6,7 +6,7 @@ from  usb_packet import *
 from usb_clock import Clock
 from helpers import do_usb_test, runall_rx
 
-def do_test(arch, clk, phy, seed):
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     
     rand = random.Random()
     rand.seed(seed)
@@ -26,31 +26,31 @@ def do_test(arch, clk, phy, seed):
 
     for pkt_length in range(200, 204):
         
-        AppendOutToken(packets, ep_loopback, address)
-        packets.append(TxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid)) #DATA0
+        AppendOutToken(packets, ep_loopback, address, data_valid_count=data_valid_count)
+        packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
    
         #XXwas min IPG supported on iso loopback to not nak
         #This was 420, had to increase when moved to lib_xud (14.1.2 tools)
         # increased again from 437 when SETUP/OUT checking added
         # increaed from 477 when adding xs3
-        AppendInToken(packets, ep_loopback, address, inter_pkt_gap=498)
-        packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid)) #DATA0
+        AppendInToken(packets, ep_loopback, address, data_valid_count=data_valid_count, inter_pkt_gap=498)
+        packets.append(RxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
 
         #No toggle for Iso
 
     pkt_length = 10
 
     #Loopback and die..
-    AppendOutToken(packets, ep_loopback_kill, address)
-    packets.append(TxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep_loopback_kill, address, data_valid_count=data_valid_count)
+    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=pkt_length, pid=3)) #DATA0
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
    
-    AppendInToken(packets, ep_loopback_kill, address, inter_pkt_gap=ipg)
-    packets.append(RxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
-    packets.append(TxHandshakePacket())
+    AppendInToken(packets, ep_loopback_kill, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
+    packets.append(RxDataPacket(rand, data_valid_count=data_valid_count, length=pkt_length, pid=3)) #DATA0
+    packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
 
 
-    do_usb_test(arch, clk, phy, packets, __file__, seed,
+    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed,
                level='smoke', extra_tasks=[])
 
 def runtest():

@@ -191,8 +191,6 @@ class UsbPhy(xmostest.SimThread):
                     self.wait(lambda x: self._clock.is_low())
                     rxa_start_delay = rxa_start_delay- 1;
 
-                self._tx_packet_init()
-
                 for (i, byte) in enumerate(packet.get_bytes(do_tokens = self._do_tokens)):
                 
                     # xCore should not be trying to send if we are trying to send..

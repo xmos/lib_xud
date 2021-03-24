@@ -98,22 +98,31 @@ def run_on(**kwargs):
 
     return True
 
-SUPPORTED_USB_SPEEDS = ['FS', 'HS']
-
 def runall_rx(test_fn):
    
-    if run_on(arch='xs3'):
-        test_arch = 'xs3'
-    
-    if run_on(arch='xs2'):
-        test_arch = 'xs2'
-
-    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=test_arch)
     seed = args.seed if args.seed else random.randint(0, sys.maxint)
 
-    for speed in SUPPORTED_USB_SPEEDS:
-        data_valid_count = get_usb_data_valid_count(usb_speed=speed)
-        test_fn(test_arch, clk_60, usb_phy, data_valid_count, speed, seed)
+    data_valid_count = {'FS': 30, "HS": 0}
+    
+    if run_on(busspeed='FS'):
+       
+        if run_on(arch='xs2'):
+            (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
+            test_fn('xs2', clk_60, usb_phy, data_valid_count['FS'], 'FS', seed)
+
+        if run_on(arch='xs3'):
+            (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
+            test_fn('xs3', clk_60, usb_phy, data_valid_count['FS'], 'FS', seed)
+
+    if run_on(busspeed='HS'):
+
+        if run_on(arch='xs2'):
+            (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
+            test_fn('xs2', clk_60, usb_phy, data_valid_count['HS'], 'HS', seed)
+
+        if run_on(arch='xs3'):
+            (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
+            test_fn('xs3', clk_60, usb_phy, data_valid_count['HS'], 'HS', seed)
 
 
 def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,

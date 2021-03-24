@@ -17,24 +17,12 @@ def create_if_needed(folder):
         os.makedirs(folder)
     return folder
 
-#todo
-dut_address = 1
-
 def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                        complete_fn=None, expect_loopback=False,
                        dut_exit_time=350000, arch='xs2'):
 
     if arch=='xs2':
-        #clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
         clk = Clock('XS1_USB_CLK', Clock.CLK_60MHz)
-       # phy = UsbPhyUtmi('tile[0]:XS1_PORT_8B',
-       #                  'tile[0]:XS1_PORT_1F', #rxa
-       #                  'tile[0]:XS1_PORT_1I', #rxv
-       #                  'tile[0]:XS1_PORT_1G', #rxe
-       #                  'tile[0]:XS1_PORT_1E', #vld
-       #                  'tile[0]:XS1_PORT_8A', #txd
-       #                  'tile[0]:XS1_PORT_1K', #txv
-       #                  'tile[0]:XS1_PORT_1H', #txrdy
         phy = UsbPhyUtmi('XS1_USB_RXD',
                          'XS1_USB_RXA', #rxa
                          'XS1_USB_RXV', #rxv
@@ -194,12 +182,6 @@ def packet_processing_time(phy, data_bytes):
     """ Returns the time it takes the DUT to process a given frame
     """
     return 6000 * phy.clock.get_bit_time()
-
-#def get_dut_address():
-#    """ Returns the busaddress of the DUT
-#    """
-#    #TODO, we need the ability to config this
-#    return 1
 
 def choose_small_frame_size(rand):
     """ Choose the size of a frame near the minimum size frame (46 data bytes)

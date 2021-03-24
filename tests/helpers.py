@@ -75,18 +75,6 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
         
     return (clk, phy)
 
-def get_usb_data_valid_count(usb_speed='HS'):
-    return_value = 0
-
-    if usb_speed == 'HS':
-        return_value = 0
-    elif usb_speed == 'FS':
-        return_value = 39
-    else:
-        raise ValueError("Unsupported USB speed: {}".format(usb_speed))
-
-    return return_value
-
 def run_on(**kwargs):
     if not args:
         return True
@@ -102,7 +90,7 @@ def runall_rx(test_fn):
    
     seed = args.seed if args.seed else random.randint(0, sys.maxint)
 
-    data_valid_count = {'FS': 30, "HS": 0}
+    data_valid_count = {'FS': 39, "HS": 0}
     
     if run_on(busspeed='FS'):
        

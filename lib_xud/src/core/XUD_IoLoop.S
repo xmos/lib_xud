@@ -257,8 +257,6 @@ ConfigSofJump:
 ConfigSofJump_Done:
 
 ConfigRxErrEventVector:
-    stw        r3, sp[15]                   // Store flag port to stack
-#if 0 // RxError Interrupts Disabled
     setc       res[r3], XS1_SETC_COND_EQ
     setc       res[r3], XS1_SETC_IE_MODE_INTERRUPT
     ldap       r11, Err_RxErr
@@ -266,7 +264,6 @@ ConfigRxErrEventVector:
     ldc        r11, 1
     setd       res[r3], r11                 // Set event cond data to 1
     eeu        res[r3]
-#endif
 
 #if 0
 SetupOutTimer:

@@ -12,6 +12,9 @@ from usb_packet import BusReset
 
 args = None
 
+ARCHITECTURE_CHOICES = ['xs2', 'xs3']
+BUSSPEED_CHOICES = ['FS', 'HS']
+
 def create_if_needed(folder):
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -32,9 +35,6 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          'tile[0]:XS1_PORT_1H', #txrdy
                          'XS1_USB_LS0', 
                          'XS1_USB_LS1',
-
-
-
                          clk,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,
@@ -79,28 +79,13 @@ def runall_rx(test_fn):
     seed = args.seed if args.seed else random.randint(0, sys.maxint)
 
     data_valid_count = {'FS': 39, "HS": 0}
-    
-    if run_on(busspeed='FS'):
-       
-        if run_on(arch='xs2'):
-            (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
-            test_fn('xs2', clk_60, usb_phy, data_valid_count['FS'], 'FS', seed)
 
-        if run_on(arch='xs3'):
-            (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
-            test_fn('xs3', clk_60, usb_phy, data_valid_count['FS'], 'FS', seed)
-
-    if run_on(busspeed='HS'):
-
-        if run_on(arch='xs2'):
-            (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
-            test_fn('xs2', clk_60, usb_phy, data_valid_count['HS'], 'HS', seed)
-
-        if run_on(arch='xs3'):
-            (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
-            test_fn('xs3', clk_60, usb_phy, data_valid_count['HS'], 'HS', seed)
-
-    
+    for _arch in ARCHITECTURE_CHOICES:
+        for _busspeed in BUSSPEED_CHOICES:
+            if run_on(arch=_arch):
+                if run_on(busspeed=_busspeed):
+                    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
+                    test_fn(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed)
 
 def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
                level='nightly', extra_tasks=[], verbose=False):

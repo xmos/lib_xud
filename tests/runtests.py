@@ -42,7 +42,7 @@ if __name__ == "__main__":
     argparser.add_argument('--trace', action='store_true', help='Run tests with simulator and VCD traces')
     argparser.add_argument('--arch', choices=['xs2', 'xs3'], type=str, help='Run tests only on specified xcore architecture')
     argparser.add_argument('--seed', type=int, help='The seed', default=None)
-    argparser.add_argument('--verbose', action='store_true', help='Enable verbose tracing in the phys')
+    argparser.add_argument('--verbose', action='store_true', help='Enable verbose tracing in the phy')
     argparser.add_argument('--busspeed', choices=['FS', 'HS'], help='Speed of USB to run test at')
 
     

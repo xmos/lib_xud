@@ -1,3 +1,4 @@
+# Copyright (c) 2016-2021, XMOS Ltd, All rights reserved
 """ Define packet types
 
 Packet Class Hierarchy

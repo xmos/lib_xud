@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 // r10: EP number
 // OUT Token Packet -----------------------------------------------------------------------------
 // Ports
@@ -18,9 +18,10 @@ CheckEpTypeOut:
     BRFT_ru6   r11, DoOutNonIso           // ISO endpoint
 
 OutReady:
-    stw        r11, r5[r10]                     // Clear ready straight away - we don't to CRC checking on Iso - else we would have to wait for end of packet
     bl         doRXData
     clre
+    ldc        r11, 0
+    stw        r11, r5[r10]                     // Clear ready after receiving packet - avoids EP getting stuck in not-ready state if interrupted
 
 InformEP_Iso:                                   // Iso EP - no handshake
     ldw        r11, r3[1]                       // Load EP chanend

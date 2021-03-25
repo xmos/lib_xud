@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 /** @file      XUD_EPFunctions.xc
   * @brief     Implementation of user API functions.  See xud.h for documentation.
   * @author    Ross Owen, XMOS Limited

@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-#include "xc_ptr.h"
 #include "shared.h"
 
 #define XUD_EP_COUNT_OUT   5
@@ -55,14 +54,14 @@ int main()
         {
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
 
+            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
+            XUD_Kill(ep0);
+           
             if(fail)
                 TerminateFail(fail);
             else
                 TerminatePass(fail);    
             
-            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
-            XUD_Kill(ep0);
-            exit(0);
         }
     }
 

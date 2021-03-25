@@ -49,10 +49,11 @@ unsigned int XUD_EnableUsbPortMux();
 
 void XUD_HAL_EnableUsb(unsigned pwrConfig)
 {
-#ifndef XUD_SIM_XSIM
     /* For xCORE-200 enable USB port muxing before enabling phy etc */
     // TODO inline ASM here
     XUD_EnableUsbPortMux(); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
+
+#ifndef XUD_SIM_XSIM
 
 #ifdef __XS2A__
     /* Enable the USB clock */

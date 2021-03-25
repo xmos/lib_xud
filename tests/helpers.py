@@ -100,9 +100,10 @@ def runall_rx(test_fn):
             (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
             test_fn('xs3', clk_60, usb_phy, data_valid_count['HS'], 'HS', seed)
 
+    
 
-def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
-               level='nightly', extra_tasks=[]):
+def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
+               level='nightly', extra_tasks=[], verbose=False):
 
     """ Shared test code for all RX tests using the test_rx application.
     """
@@ -114,26 +115,36 @@ def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
 
     print binary
 
-    if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-        print "Running {test}: {arch} arch sending {n} packets at {clk} using {speed} (seed {seed})".format(
-            test=testname, n=len(packets),
-            arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed)
+    assert len(sessions) == 1, "Multiple sessions not yet supported"
 
-    phy.set_packets(packets)
+    for session in sessions:
+       
+        events = session.events
 
-    expect_folder = create_if_needed("expect")
-    expect_filename = '{folder}/{test}_{arch}.expect'.format(
-        folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
-    create_expect(arch, packets, expect_filename)
+        if verbose:
+            print "Session " + str(sessions.index(session))
+            print str(session)
 
-    tester = xmostest.ComparisonTester(open(expect_filename),
+        if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
+            print "Running {test}: {arch} arch sending {n} events at {clk} using {speed} (seed {seed})".format(
+                test=testname, n=len(events),
+                arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed)
+
+        phy.set_packets(session.events)
+
+        expect_folder = create_if_needed("expect")
+        expect_filename = '{folder}/{test}_{arch}.expect'.format(
+            folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
+        create_expect(arch, session.events, expect_filename)
+
+        tester = xmostest.ComparisonTester(open(expect_filename),
                                       'lib_xud', 'xud_sim_tests', testname,
                                      {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
 
-    tester.set_min_testlevel(level)
+        tester.set_min_testlevel(level)
 
-    simargs = get_sim_args(testname, clk, phy, arch)
-    xmostest.run_on_simulator(resources['xsim'], binary,
+        simargs = get_sim_args(testname, clk, phy, arch)
+        xmostest.run_on_simulator(resources['xsim'], binary,
                               simthreads=[clk, phy] + extra_tasks,
                               tester=tester,
                               simargs=simargs)

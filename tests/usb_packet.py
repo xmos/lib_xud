@@ -56,6 +56,7 @@ Packet Class Hierarchy
   +-------------------+   +-------------------+
 """
 
+from usb_event import UsbEvent
 import sys
 import zlib
 import random
@@ -222,8 +223,13 @@ class UsbPacket(object):
         self.data_valid_count = kwargs.pop('data_valid_count', 0)
         self.bad_crc = kwargs.pop('bad_crc', False)
 
+        #super().__init__(time = 0) #TODO
+
     def get_data_valid_count(self):
         return self.data_valid_count
+
+    def __str__(self):
+        return "USBPacket: " + self.get_pid_pretty()
 
     def get_pid_pretty(self):
 

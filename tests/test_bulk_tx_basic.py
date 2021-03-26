@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) 2016-2021, XMOS Ltd, All rights reserved
+
 import random
 import xmostest
 from  usb_packet import *

@@ -32,7 +32,7 @@ class UsbSession(object):
 
     def __str__(self):
         
-        s = "USB Session\n"
+        s = ""
 
         for e in self._events:
             s += str(self._events.index(e)) + ": " 

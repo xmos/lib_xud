@@ -23,9 +23,6 @@ class UsbTransaction(UsbEvent):
         self._direction = direction
         self._datalength = dataLength
         self._bus_speed = bus_speed
-        
-
-        dataValidCount = USB_DATA_VALID_COUNT[self.bus_speed]
 
         # Populate packet list for a (valid) transaction 
         self._packets = []
@@ -33,7 +30,7 @@ class UsbTransaction(UsbEvent):
                                         pid = USB_PID["OUT"], 
                                         address = self._deviceAddress, 
                                         endpoint = self._endpointNumber,
-                                        data_valid_count = dataValidCount))
+                                        data_valid_count = self.data_valid_count))
 
         # Generate packet data payload
         packetPayload = [x for x in data_fn(dataLength)]
@@ -48,7 +45,11 @@ class UsbTransaction(UsbEvent):
         self._packets.append(RxHandshakePacket())
         
         super(UsbTransaction, self).__init__(time = eventTime)
-        
+    
+    # TODO ideally USBTransaction doesnt know about data_valid_count
+    @property
+    def data_valid_count(self):
+        return USB_DATA_VALID_COUNT[self.bus_speed]
 
     @property
     def endpointAddress(self):
@@ -83,7 +84,7 @@ class UsbTransaction(UsbEvent):
 
         return eventCount
     
-    def expected_output(self, offset):
+    def expected_output(self, offset=0):
         expected_output = ""
         
         for i, p in enumerate(self.packets):

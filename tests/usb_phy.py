@@ -25,7 +25,7 @@ class UsbPhy(xmostest.SimThread):
         self._txrdy = txrdy
         self.ls0 = ls0
         self.ls1 = ls1
-        self._packets = []
+        self._events = []
         self._clock = clock
         self._initial_delay = initial_delay
         self._verbose = verbose
@@ -41,7 +41,15 @@ class UsbPhy(xmostest.SimThread):
     @property
     def clock(self):
         return self._clock
+    
+    @property
+    def events(self):
+        return self._events
 
+    @events.setter
+    def events(self, events):
+        self._events = events
+   
     def start_test(self):
         self.wait_until(self.xsi.get_time() + self._initial_delay)
         self.wait(lambda x: self._clock.is_high())
@@ -49,7 +57,7 @@ class UsbPhy(xmostest.SimThread):
 
     def end_test(self):
         if self._verbose:
-            print "All packets sent"
+            print "All events sent"
 
         if self._complete_fn:
             self._complete_fn(self)
@@ -63,7 +71,7 @@ class UsbPhy(xmostest.SimThread):
 
             if self._expect_loopback:
                 # If looping back then take into account all the data
-                total_packet_bytes = sum([len(packet.get_bytes()) for packet in self._packets])
+                total_packet_bytes = sum([len(packet.get_bytes()) for packet in self.events])
                 total_data_bits = total_packet_bytes * 8
 
                 # Allow 2 cycles per bit
@@ -72,7 +80,7 @@ class UsbPhy(xmostest.SimThread):
                 # The clock ticks are 2ns long
                 timeout_time *= 2
 
-                # The packets are copied to and from the user application
+                # The events are copied to and from the user application
                 timeout_time *= 2
 
             self.wait_until(self.xsi.get_time() + timeout_time)
@@ -90,8 +98,6 @@ class UsbPhy(xmostest.SimThread):
     def set_clock(self, clock):
         self._clock = clock
 
-    def set_packets(self, packets):
-        self._packets = packets
     
     def drive_error(self, value):
         self.xsi.drive_port_pins(self._rxer, value)
@@ -102,7 +108,7 @@ class UsbPhy(xmostest.SimThread):
 
         self.start_test()
 
-        for i,packet in enumerate(self._packets):
+        for i,packet in enumerate(self.events):
             
             if isinstance(packet, RxPacket):
  
@@ -172,7 +178,7 @@ class UsbPhy(xmostest.SimThread):
                 if xsi.sample_port_pins(self._txv) == 1:
                     print "ERROR: Unexpected packet from xCORE"
 
-                rxv_count = packet.get_data_valid_count();
+                rxv_count = packet.data_valid_count
 
                 #print "Waiting for inter_pkt_gap: {i}".format(i=packet.inter_frame_gap)
                 self.wait_until(xsi.get_time() + packet.inter_pkt_gap)

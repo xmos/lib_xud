@@ -83,7 +83,7 @@ def runall_rx(test_fn):
             if run_on(arch=_arch):
                 if run_on(busspeed=_busspeed):
                     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
-                    test_fn(_arch, clk_60, usb_phy, USB_DATA_VALID_COUNT[_busspeed], _busspeed, seed)
+                    test_fn(_arch, clk_60, usb_phy, USB_DATA_VALID_COUNT[_busspeed], _busspeed, seed, verbose=args.verbose)
 
 def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
                level='nightly', extra_tasks=[], verbose=False):
@@ -113,13 +113,13 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
                 test=testname, n=len(events),
                 arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed)
 
-        phy.set_packets(session.events)
+        phy.events = session.events
 
         expect_folder = create_if_needed("expect")
         expect_filename = '{folder}/{test}_{arch}.expect'.format(
             folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
 
-        create_expect(arch, session.events, expect_filename)
+        create_expect(arch, session.events, expect_filename, verbose=verbose)
 
         tester = xmostest.ComparisonTester(open(expect_filename),
                                       'lib_xud', 'xud_sim_tests', testname,
@@ -133,32 +133,24 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
                               tester=tester,
                               simargs=simargs)
 
-def create_expect(arch, events, filename):
+def create_expect(arch, events, filename, verbose = False):
     
     """ Create the expect file for what packets should be reported by the DUT
     """
     with open(filename, 'w') as f:
+        
+        packet_offset = 0
+        
         for i, event in enumerate(events):
            
-            packet_offset = 0
-            expect_str = event.expected_output(0)
-            expect_str += "\n"
-
+            expect_str = event.expected_output(offset = packet_offset)
             packet_offset += event.event_count
-
-            print str(expect_str) 
-            f.write(str(expect_str))
-            #print str(expect)
-            #if isinstance(event, RxPacket):
-            #    print "Rx Packet"
-            #    f.write("Receiving packet {}\n".format(i))
-            #    
-
-            # for (i, byte) in enumerate(packet.get_bytes(do_tokens=do_tokens)):
-            #       f.write("Received byte: {0:#x}\n".format(byte))
             
-            #else:  
-            #   f.write("Phy transmitting packet {} PID: {} ({})\n".format(i, event.get_pid_pretty(), event.pid))
+            if verbose:
+                print "EXPECTED:"
+                print str(expect_str) 
+            
+            f.write(str(expect_str))
         
         f.write("Test done\n")
 

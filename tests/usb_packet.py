@@ -266,7 +266,11 @@ class RxPacket(UsbPacket):
 
     @property
     def expected_output(self):
-        expected_output = "DEVICE -> HOST"
+        expected_output = "DEVICE -> HOST\n"
+        
+        for (i, byte) in enumerate(self.get_bytes()):
+            expected_output += "\tRX byte: {0:#x}\n".format(byte) + "\n"
+
         return expected_output
 
 
@@ -286,7 +290,9 @@ class TxPacket(UsbPacket):
 
     @property
     def expected_output(self):
-        expected_output = "HOST -> DEVICE"
+        expected_output = "HOST -> DEVICE\n"
+        expected_output += "PID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
+
         return expected_output
 
 # Implemented such that we can generate malformed packets

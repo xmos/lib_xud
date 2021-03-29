@@ -1,4 +1,7 @@
 
+from usb_phy import USB_DATA_VALID_COUNT
+import usb_transaction
+
 class UsbSession(object):
 
     def __init__(self, bus_speed = "HS", run_enumeration = False, device_address = 0, **kwargs):
@@ -23,19 +26,25 @@ class UsbSession(object):
     def enumerate(self):
         return self._enumerate
 
+    @property
+    def data_valid_count(self):
+        return USB_DATA_VALID_COUNT[self._bus_speed] 
+
     def __str__(self):
         
         s = "USB Session\n"
 
         for e in self._events:
-            s += str(self._events.index(e)) + ":" 
+            s += str(self._events.index(e)) + ": " 
             s += str(e) + "\n"
 
         return s
 
     def add_event(self, e):
+        
+        e.bus_speed = self.bus_speed #TODO ideally dont need transction to know bus speed
         self._events.append(e)
-        self._events = _sort_events_by_time(self._events)
+        #self._events = _sort_events_by_time(self._events)
 
     def pop_event(self, e):
         self.events.pop(0)

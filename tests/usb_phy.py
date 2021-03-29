@@ -5,6 +5,8 @@ import zlib
 from usb_packet import RxPacket, TokenPacket
 import usb_packet
 
+USB_DATA_VALID_COUNT = {'FS': 39, "HS": 0}
+
 class UsbPhy(xmostest.SimThread):
 
     # Time in ns from the last packet being sent until the end of test is signalled to the DUT
@@ -90,7 +92,7 @@ class UsbPhy(xmostest.SimThread):
 
     def set_packets(self, packets):
         self._packets = packets
-
+    
     def drive_error(self, value):
         self.xsi.drive_port_pins(self._rxer, value)
 

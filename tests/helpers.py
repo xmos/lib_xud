@@ -4,7 +4,7 @@ import os
 import random
 import sys
 from usb_clock import Clock
-from usb_phy import UsbPhy
+from usb_phy import UsbPhy, USB_DATA_VALID_COUNT
 from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
 from usb_packet import RxPacket
@@ -78,14 +78,12 @@ def runall_rx(test_fn):
    
     seed = args.seed if args.seed else random.randint(0, sys.maxint)
 
-    data_valid_count = {'FS': 39, "HS": 0}
-
     for _arch in ARCHITECTURE_CHOICES:
         for _busspeed in BUSSPEED_CHOICES:
             if run_on(arch=_arch):
                 if run_on(busspeed=_busspeed):
                     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
-                    test_fn(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed)
+                    test_fn(_arch, clk_60, usb_phy, USB_DATA_VALID_COUNT[_busspeed], _busspeed, seed)
 
 def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
                level='nightly', extra_tasks=[], verbose=False):
@@ -106,12 +104,12 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
        
         events = session.events
 
-        if verbose:
+        if args.verbose:
             print "Session " + str(sessions.index(session))
             print str(session)
 
         if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-            print "Running {test}: {arch} arch sending {n} events at {clk} using {speed} (seed {seed})".format(
+            print "Running {test}: {arch} arch sending {n} event(s) at {clk} using {speed} (seed {seed})".format(
                 test=testname, n=len(events),
                 arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed)
 
@@ -120,6 +118,7 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
         expect_folder = create_if_needed("expect")
         expect_filename = '{folder}/{test}_{arch}.expect'.format(
             folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
+
         create_expect(arch, session.events, expect_filename)
 
         tester = xmostest.ComparisonTester(open(expect_filename),
@@ -134,22 +133,32 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
                               tester=tester,
                               simargs=simargs)
 
-def create_expect(arch, packets, filename):
-    do_tokens = (arch == "xs2")
-   
+def create_expect(arch, events, filename):
+    
     """ Create the expect file for what packets should be reported by the DUT
     """
     with open(filename, 'w') as f:
-        for i,packet in enumerate(packets):
-            #if not packet.dropped:
-            if isinstance(packet, RxPacket):
-                f.write("Receiving packet {}\n".format(i))
+        for i, event in enumerate(events):
+           
+            packet_offset = 0
+            expect_str = event.expected_output(0)
+            expect_str += "\n"
 
-                for (i, byte) in enumerate(packet.get_bytes(do_tokens=do_tokens)):
-                    f.write("Received byte: {0:#x}\n".format(byte))
+            packet_offset += event.event_count
+
+            print str(expect_str) 
+            f.write(str(expect_str))
+            #print str(expect)
+            #if isinstance(event, RxPacket):
+            #    print "Rx Packet"
+            #    f.write("Receiving packet {}\n".format(i))
+            #    
+
+            # for (i, byte) in enumerate(packet.get_bytes(do_tokens=do_tokens)):
+            #       f.write("Received byte: {0:#x}\n".format(byte))
             
-            else:  
-                f.write("Phy transmitting packet {} PID: {} ({})\n".format(i, packet.get_pid_pretty(), packet.pid))
+            #else:  
+            #   f.write("Phy transmitting packet {} PID: {} ({})\n".format(i, event.get_pid_pretty(), event.pid))
         
         f.write("Test done\n")
 

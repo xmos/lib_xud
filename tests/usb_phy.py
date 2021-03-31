@@ -181,7 +181,7 @@ class UsbPhy(xmostest.SimThread):
                 rxv_count = packet.data_valid_count
 
                 #print "Waiting for inter_pkt_gap: {i}".format(i=packet.inter_frame_gap)
-                self.wait_until(xsi.get_time() + packet.inter_pkt_gap)
+                self.wait_until(xsi.get_time() + packet.interEventDelay)
 
                 print "Phy transmitting packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid)
                 if self._verbose:

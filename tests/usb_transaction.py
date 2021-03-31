@@ -15,7 +15,7 @@ def CounterByte(length = 0):
 class UsbTransaction(UsbEvent):
 
     def __init__(self, deviceAddress = 0, endpointNumber = 0, endpointType = "BULK", 
-            direction="OUT", bus_speed="HS", eventTime = 0, dataLength = 0, data_fn = CounterByte): # TODO Enums when we move to py3
+            direction="OUT", bus_speed="HS", eventTime = 0, dataLength = 0, data_fn = CounterByte, interEventDelay=500): # TODO Enums when we move to py3
         
         self._deviceAddress = deviceAddress
         self._endpointNumber = endpointNumber
@@ -44,7 +44,7 @@ class UsbTransaction(UsbEvent):
         # Add handshake packet to packets list
         self._packets.append(RxHandshakePacket())
         
-        super(UsbTransaction, self).__init__(time = eventTime)
+        super(UsbTransaction, self).__init__(time = eventTime, interEventDelay = interEventDelay)
     
     # TODO ideally USBTransaction doesnt know about data_valid_count
     @property

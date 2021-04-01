@@ -7,7 +7,7 @@
 #define _XUD_ALIGNMENT_DEFINES_
 #if defined(__XS3A__)
 #define IBUFFER_FETCH_CORRECTION 1
-#elif defined(__XS2A__)
+#else
 #define IBUFFER_FETCH_CORRECTION 0
 #else
 #error No architecture defined

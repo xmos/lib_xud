@@ -21,7 +21,7 @@
 // R2 : TXD
 // R1 : Valid Token Port
 // R0 : RXD
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 InNotReady:
     ldw         r11, sp[SP_EPTYPES_OUT]
     ldw         r11, r11[r10]                       // Load EP Type
@@ -220,7 +220,7 @@ WaitForHandshake:			                    // Wait for timeout or handshake
 
 
 // We sent some data but the host didn't handshake in time.  Needs a re-send.
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 TxHandshakeTimeOut:
     in 	    	r11, res[r1]                    // This will clear port time
     edu         res[r1]
@@ -228,7 +228,7 @@ TxHandshakeTimeOut:
     bu          BadHandShake
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 TxHandShakeReceived:
 XUD_IN_RxAck:
     in 		    r11, res[RXD]                   // Input data from RXD port

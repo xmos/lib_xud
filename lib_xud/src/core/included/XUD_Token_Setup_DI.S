@@ -5,7 +5,7 @@
 // - Can't NAK a setup
 // - Data PID will always be DATA0
 // - Payload will always be 8 bytes
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 Pid_Setup:
     #include "XUD_CrcAddrCheck.S"
     ldw        r3, r5[r10]                      // Load relevant EP pointer

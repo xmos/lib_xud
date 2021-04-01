@@ -17,7 +17,7 @@ WaitForEndDataPacket:
 // - Data PID will always be DATA0
 // - Payload will always be 8 bytes
 
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 Pid_Setup:
 #ifdef ARCH_L
     inpw      r10, res[RXD], 8;                 // Read EP Number 

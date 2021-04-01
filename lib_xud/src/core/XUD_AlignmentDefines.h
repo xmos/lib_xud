@@ -14,11 +14,9 @@
 #endif
 
 #if IBUFFER_FETCH_CORRECTION == 1
-#define FUNC_ALIGN4 16
-#define FUNC_ALIGN8 16
+#define FUNCTION_ALIGNMENT 16
 #elif IBUFFER_FETCH_CORRECTION == 0
-#define FUNC_ALIGN4 4
-#define FUNC_ALIGN8 8
+#define FUNCTION_ALIGNMENT 4
 #else
 #error IBUFFER_FETCH_CORRECTION not defined
 #endif

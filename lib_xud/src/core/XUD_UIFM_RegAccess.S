@@ -18,7 +18,7 @@
 .globl XUD_UIFM_Enable, "f{ui}(ui)"
 .type  XUD_UIFM_Enable, @function
 .cc_top XUD_UIFM_Enable.function
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 // void XUD_UIFM_Enable (unsigned mode);
 XUD_UIFM_Enable:
   ldc       r1, XS1_PS_XCORE_CTRL0

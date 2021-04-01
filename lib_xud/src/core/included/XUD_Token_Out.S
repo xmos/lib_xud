@@ -7,7 +7,7 @@
 #define RXD r0
 #define TXD r2
 
-.align FUNC_ALIGN8
+.align FUNCTION_ALIGNMENT
 .skip 0
 Pid_Out:
     #include "XUD_CrcAddrCheck.S"
@@ -66,7 +66,7 @@ JumpOnPid_:
     bau         r11
 #endif
 
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 .skip 0
 DoOutNonIso:
     bl         doRXData
@@ -98,7 +98,7 @@ StoreTailDataOut:
     bu        NextTokenAfterOut
 
 // Various Error handling functions -------------------------------------------------------------------
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 Err_RxErr:                                      // RxError signal high during data packet receive:
     DUALENTSP_lu   0
     clrsr     3

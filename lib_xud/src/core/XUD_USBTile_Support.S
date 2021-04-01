@@ -16,7 +16,7 @@
 .globl XUD_EnableUsbPortMux, "f{ui}()"
 .type  XUD_EnableUsbPortMux, @function
 .cc_top XUD_EnableUsbPortMux.function
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 // void XUD_EnableUsbPortMux (unsigned mode);
 XUD_EnableUsbPortMux:
 .issue_mode single
@@ -48,7 +48,7 @@ XUD_EnableUsbPortMux:
 .globl XUD_DisableUsbPortMux, "f{ui}()"
 .type  XUD_DisableUsbPortMux, @function
 .cc_top XUD_DisableUsbPortMux.function
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 // void XUD_DisableUsbPortMux (unsigned mode);
 XUD_DisableUsbPortMux:
   ldc       r1, XS1_PS_XCORE_CTRL0

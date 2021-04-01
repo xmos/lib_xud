@@ -3,7 +3,7 @@
 // OUT Token Packet -----------------------------------------------------------------------------
 #include "XUD_AlignmentDefines.h"
 
-.align FUNC_ALIGN8
+.align FUNCTION_ALIGNMENT
 .skip 0
 Pid_Out:
     #include "XUD_CrcAddrCheck.S"
@@ -26,7 +26,7 @@ InformEP_Iso:                                   // Iso EP - no handshake
     {outt       res[r11], r8;   ldw    r6, sp[STACK_RXCRC_INIT]} // CRC16 init (out) - Needs reseting after an out & Send tail length
     #include "XUD_TokenJmp.S"
 
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 .skip 0
 DoOutNonIso:
     bl         doRXData
@@ -54,7 +54,7 @@ StoreTailDataOut:
     bu        NextTokenAfterOut
 
 // Various Error handling functions -------------------------------------------------------------------
-.align FUNC_ALIGN4
+.align FUNCTION_ALIGNMENT
 Err_RxErr:                                      // RxError signal high during data packet receive:
     DUALENTSP_lu6 0
     clrsr     3

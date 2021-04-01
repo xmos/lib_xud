@@ -67,9 +67,7 @@ RXA_END_DELAY = 2 # Pad delay not currently simulated in xsim for USB or OTP, so
 RXA_START_DELAY = 5 #Taken from RTL sim
 RX_RX_DELAY = 40
 
-#PID_DATA1 = 0xb
-#PID_DATA0 = 0x3
-
+#TODO shoud we have a PID class?
 USB_PID = {
             "OUT": 0xE1,
             "IN" : 0x69,
@@ -80,9 +78,6 @@ USB_PID = {
             "SOF" : 165,
             "ACK" : 0xD2
         }
-
-
-
 
 def AppendSetupToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500)
@@ -226,33 +221,34 @@ class BusReset(object):
 # Lowest base class for all packets. All USB packets have:
 # - a PID
 # - some (or none) data bytes
-class UsbPacket(object):
+class UsbPacket(UsbEvent):
 
     def __init__(self, **kwargs):
         self.pid = kwargs.pop('pid', 0xc3) 
         self.data_bytes = kwargs.pop('data_bytes', None)
         self.num_data_bytes = kwargs.pop('length', 0)
-        self.data_valid_count = kwargs.pop('data_valid_count', 0)
+        self._data_valid_count = kwargs.pop('data_valid_count', 0)
         self.bad_crc = kwargs.pop('bad_crc', False)
+        ied = kwargs.pop('interEventDelay', 500) #TODO RM magic number
+        super(UsbPacket, self).__init__(interEventDelay = ied)
 
-    def get_data_valid_count(self):
-        return self.data_valid_count
-
-    def __str__(self):
-
-        return "USBPacket"
-
-    def get_pid_str(self):
-
-        for key, value in USB_PID.iteritems():
-            if value == self.pid:
-                return key
-
-        return "UNKNOWN"
-
+    #@property
+    #def data_valid_count(self):
+    #    return self._data_valid_count
+    
     @property
     def event_count(self):
         return 1
+
+    def __str__(self):
+        return "USBPacket"
+
+    def get_pid_str(self):
+        for key, value in USB_PID.iteritems():
+            if value == self.pid:
+                return key
+        return "UNKNOWN"
+
 
 #Rx to host i.e. xCORE Tx
 class RxPacket(UsbPacket):
@@ -269,31 +265,111 @@ class RxPacket(UsbPacket):
         expected_output = "DEVICE -> HOST\n"
         
         for (i, byte) in enumerate(self.get_bytes()):
-            expected_output += "\tRX byte: {0:#x}\n".format(byte) + "\n"
+            expected_output += "\tRX byte: {0:#x}\n".format(byte)
 
         return expected_output
+
+    def drive(self, xsi):
+        print "RxPacket:Drive()"
 
 
 #Tx from host i.e. xCORE Rx
 class TxPacket(UsbPacket):
 
     def __init__(self, **kwargs):
-        self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', RX_RX_DELAY) #13 lowest working for single issue loopback
+        #self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', RX_RX_DELAY) #13 lowest working for single issue loopback
         self.rxa_start_delay = kwargs.pop('rxa_start_delay', 2)
         self.rxa_end_delay = kwargs.pop('rxa_end_delay', RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop('rxe_assert_time', 0)
         self.rxe_assert_length = kwargs.pop('rxe_assert_length', 1)
         super(TxPacket, self).__init__(**kwargs)
 
-    def get_inter_pkt_gap(self):
-        return self.inter_pkt_gap
-
     @property
     def expected_output(self):
         expected_output = "HOST -> DEVICE\n"
-        expected_output += "PID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
-
+        expected_output += "\tPID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
         return expected_output
+
+    def drive(self, usb_phy, verbose = True):
+        print "TxPacket:Drive()"
+
+        xsi = usb_phy.xsi
+        wait = usb_phy.wait
+
+         # xCore should not be trying to send if we are trying to send..
+        if xsi.sample_port_pins(usb_phy._txv) == 1:
+            print "ERROR: Unexpected packet from xCORE"
+
+        print "X"
+        rxv_count = self.data_valid_count
+
+        print "Waiting for interEventDelay {i}".format(i=self.interEventDelay)
+        usb_phy.wait_until(xsi.get_time() + self.interEventDelay)
+
+        print str(self.pid)
+        print "Phy transmitting packet PID: {} ({})".format(self.get_pid_str(), self.pid)
+        
+        # Set RXA high to USB shim
+        xsi.drive_periph_pin(usb_phy._rxa, 1)
+
+        # Wait for RXA start delay
+        rxa_start_delay = RXA_START_DELAY;
+
+        while rxa_start_delay != 0:
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+            rxa_start_delay = rxa_start_delay- 1;
+
+        for (i, byte) in enumerate(self.get_bytes(do_tokens = False)):
+
+            # xCore should not be trying to send if we are trying to send..
+            if xsi.sample_port_pins(usb_phy._txv) == 1:
+                print "ERROR: Unexpected packet from xCORE"
+
+            wait(lambda x: usb_phy._clock.is_low())
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+            xsi.drive_periph_pin(self._rxdv, 1)
+            xsi.drive_periph_pin(self._rxd, byte)
+
+            if (self.rxe_assert_time != 0) and (self.rxe_assert_time == i):
+                xsi.drive_periph_pin(self._rxer, 1)
+
+            while rxv_count != 0:
+                wait(lambda x: self._clock.is_high())
+                wait(lambda x: self._clock.is_low())
+                xsi.drive_periph_pin(self._rxdv, 0)
+                rxv_count = rxv_count - 1
+
+                # xCore should not be trying to send if we are trying to send..
+                if xsi.sample_port_pins(self._txv) == 1:
+                    print "ERROR: Unexpected packet from xCORE"
+
+            #print "Sending byte {0:#x}".format(byte)
+
+            rxv_count = self.data_valid_count;
+
+        # Wait for last byte
+        wait(lambda x: usb_phy._clock.is_high())
+        wait(lambda x: usb_phy._clock.is_low())
+
+        xsi.drive_periph_pin(usb_phy._rxdv, 0)
+        xsi.drive_periph_pin(usb_phy._rxer, 0)
+
+        rxa_end_delay = self.rxa_end_delay
+        
+        while rxa_end_delay != 0:
+            # Wait for RXA fall delay TODO, this should be configurable
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+            rxa_end_delay = rxa_end_delay - 1
+
+            # xCore should not be trying to send if we are trying to send..
+            if xsi.sample_port_pins(self._txv) == 1:
+                print "ERROR: Unexpected packet from xCORE"
+
+        xsi.drive_periph_pin(usb_phy._rxa, 0)
+
 
 # Implemented such that we can generate malformed packets
     def get_bytes(self, do_tokens=False):

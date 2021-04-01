@@ -2,7 +2,7 @@ import random
 import xmostest
 import sys
 import zlib
-from usb_packet import RxPacket, TokenPacket
+from usb_packet import RxPacket, TokenPacket, USB_PID
 import usb_packet
 
 USB_DATA_VALID_COUNT = {'FS': 39, "HS": 0}
@@ -109,6 +109,8 @@ class UsbPhy(xmostest.SimThread):
         self.start_test()
 
         for i,packet in enumerate(self.events):
+
+            event = packet #TODO RM ME
             
             if isinstance(packet, RxPacket):
  
@@ -173,7 +175,9 @@ class UsbPhy(xmostest.SimThread):
             else:
 
                 #TxPacket (which could be a TxToken or TxDataPacket)
-                
+               
+                event.drive(self)
+                '''
                 # xCore should not be trying to send if we are trying to send..
                 if xsi.sample_port_pins(self._txv) == 1:
                     print "ERROR: Unexpected packet from xCORE"
@@ -183,7 +187,7 @@ class UsbPhy(xmostest.SimThread):
                 #print "Waiting for inter_pkt_gap: {i}".format(i=packet.inter_frame_gap)
                 self.wait_until(xsi.get_time() + packet.interEventDelay)
 
-                print "Phy transmitting packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid)
+                print "Phy transmitting packet {} PID: {} ({})".format(i, USB_PID[packet.pid], packet.pid)
                 if self._verbose:
                     sys.stdout.write(packet.dump())
 
@@ -253,6 +257,7 @@ class UsbPhy(xmostest.SimThread):
 
                 #if self._verbose:
                     #print "Sent"
+                    '''
 
         print "Test done"
         self.end_test()

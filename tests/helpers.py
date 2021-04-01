@@ -147,8 +147,7 @@ def create_expect(arch, events, filename, verbose = False):
             packet_offset += event.event_count
             
             if verbose:
-                print "EXPECTED:"
-                print str(expect_str) 
+                print str(expect_str), 
             
             f.write(str(expect_str))
         

@@ -24,9 +24,10 @@ class UsbTransaction(UsbEvent):
         self._datalength = dataLength
         self._bus_speed = bus_speed
 
+        # TODO IN TRANSACTION 
         # Populate packet list for a (valid) transaction 
         self._packets = []
-        self._packets.append(TokenPacket(interPktGap = INTER_TRANSACTION_DELAY, 
+        self._packets.append(TokenPacket(interEventDelay = INTER_TRANSACTION_DELAY, 
                                         pid = USB_PID["OUT"], 
                                         address = self._deviceAddress, 
                                         endpoint = self._endpointNumber,
@@ -89,8 +90,8 @@ class UsbTransaction(UsbEvent):
         
         for i, p in enumerate(self.packets):
             expected_output += "Packet {}: ".format(i+offset) 
-            expected_output += p.expected_output
-            expected_output += "\n"
+            expected_output += "\t" + p.expected_output
+            #expected_output += "\n"
 
         return expected_output        
 
@@ -100,4 +101,7 @@ class UsbTransaction(UsbEvent):
            s += "\t" + str(p) + "\n"
         return s
 
-    # PID: Packet ID
+    def drive(self, xsi):
+        for i, p in enumerate(self.packets):
+            p.drive(xsi)
+

@@ -9,8 +9,6 @@
 #define IBUFFER_FETCH_CORRECTION 1
 #else
 #define IBUFFER_FETCH_CORRECTION 0
-#else
-#error No architecture defined
 #endif
 
 #if IBUFFER_FETCH_CORRECTION == 1

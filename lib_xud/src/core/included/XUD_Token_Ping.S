@@ -1,5 +1,7 @@
 // Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
-.align 4
+#include "XUD_AlignmentDefines.h"
+
+.align FUNCTION_ALIGNMENT
 Pid_Ping:
     #include "XUD_CrcAddrCheck.S"
 

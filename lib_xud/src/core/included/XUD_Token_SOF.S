@@ -1,7 +1,8 @@
 // Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
+#include "XUD_AlignmentDefines.h"
 
 // Received SOF token: Reset suspend/reset detection timer
-.align 4
+.align FUNCTION_ALIGNMENT
 Pid_Sof:
 #ifdef __XS2A__
     inpw        r10, res[RXD], 8                // Read EP Number
@@ -37,7 +38,7 @@ Pid_Sof:
 	bu          Loop_BadPid
 
 // Received SOF token: Reset suspend/reset detection timer
-.align 4
+.align FUNCTION_ALIGNMENT
 Pid_Sof_NoChan:
 #ifdef __XS2A__
     inpw      r10, res[RXD], 8;                        /* Read EP Number */

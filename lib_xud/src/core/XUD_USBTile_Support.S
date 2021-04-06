@@ -10,12 +10,13 @@
 #ifdef __XS3A__
 #include <xs3a_registers.h>
 #endif
+#include <XUD_AlignmentDefines.h>
 
 .text
 .globl XUD_EnableUsbPortMux, "f{ui}()"
 .type  XUD_EnableUsbPortMux, @function
 .cc_top XUD_EnableUsbPortMux.function
-.align    4
+.align FUNCTION_ALIGNMENT
 // void XUD_EnableUsbPortMux (unsigned mode);
 XUD_EnableUsbPortMux:
 .issue_mode single
@@ -47,7 +48,7 @@ XUD_EnableUsbPortMux:
 .globl XUD_DisableUsbPortMux, "f{ui}()"
 .type  XUD_DisableUsbPortMux, @function
 .cc_top XUD_DisableUsbPortMux.function
-.align    4
+.align FUNCTION_ALIGNMENT
 // void XUD_DisableUsbPortMux (unsigned mode);
 XUD_DisableUsbPortMux:
   ldc       r1, XS1_PS_XCORE_CTRL0

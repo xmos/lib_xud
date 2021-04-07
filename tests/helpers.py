@@ -141,6 +141,8 @@ def create_expect(arch, events, filename, verbose = False):
         
         packet_offset = 0
         
+        if verbose:
+            print "EXPECTED OUTPUT:"
         for i, event in enumerate(events):
            
             expect_str = event.expected_output(offset = packet_offset)
@@ -152,6 +154,9 @@ def create_expect(arch, events, filename, verbose = False):
             f.write(str(expect_str))
         
         f.write("Test done\n")
+
+        if verbose:
+            print "Test done\n"
 
 def get_sim_args(testname, clk, phy, arch='xs2'):
     sim_args = []

@@ -1,6 +1,13 @@
 
 from usb_phy import USB_DATA_VALID_COUNT
 import usb_transaction
+import usb_packet
+
+def CounterByte(startVal = 0, length = 0):
+    l = startVal
+    while l < length:
+        yield l % 256
+        l += 1
 
 class UsbSession(object):
 
@@ -9,7 +16,12 @@ class UsbSession(object):
         self._events = []
         self._enumerate = run_enumeration
         self._device_address = device_address
-    
+        self._pidTable_out = [usb_packet.USB_PID["DATA0"]] * 16
+        self._pidTable_in = [usb_packet.USB_PID["DATA0"]] * 16
+
+        self._dataGen_in = [0] * 16
+        self._dataGen_out = [0] * 16
+
     @property
     def bus_speed(self):
         return self._bus_speed
@@ -30,21 +42,45 @@ class UsbSession(object):
     def data_valid_count(self):
         return USB_DATA_VALID_COUNT[self._bus_speed] 
 
-    def __str__(self):
-        
-        s = ""
+    def getPayload_out(self, n, length):
+    
+        payload = [x for x in range(self._dataGen_out[n], self._dataGen_out[n] + length)]
+        self._dataGen_out[n] += length
+        return payload
 
+    def getPayload_in(self, n, length):
+    
+        payload = [x for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)]
+        self._dataGen_in[n] += length
+        return payload
+    
+    def _pid_toggle(self, pid_table, n):
+
+        if pid_table[n] == usb_packet.USB_PID["DATA0"]:
+            pid_table[n] = usb_packet.USB_PID["DATA1"]
+        else:
+            pid_table[n] = usb_packet.USB_PID["DATA0"]
+
+    def data_pid_in(self, n):
+        pid = self._pidTable_in[n]
+        self._pid_toggle(self._pidTable_in, n)
+        return pid
+    
+    def data_pid_out(self, n):
+        pid = self._pidTable_out[n]
+        self._pid_toggle(self._pidTable_out, n)
+        return pid
+
+    def __str__(self):
+        s = ""
         for e in self._events:
             s += str(self._events.index(e)) + ": " 
             s += str(e) + "\n"
-
         return s
 
     def add_event(self, e):
-        
         e.bus_speed = self.bus_speed #TODO ideally dont need transction to know bus speed
         self._events.append(e)
-        #self._events = _sort_events_by_time(self._events)
 
     def pop_event(self, e):
         self.events.pop(0)

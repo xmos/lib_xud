@@ -1,57 +1,32 @@
 #!/usr/bin/env python
-
-import random
 import xmostest
 from  usb_packet import *
 import usb_packet
-from usb_clock import Clock
 from helpers import do_usb_test, runall_rx
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
     
-    rand = random.Random()
-    rand.seed(seed)
-
     ep_loopback = 3
     ep_loopback_kill = 2
     address = 1
-
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
-
-    dataval = 0;
-    data_pid = usb_packet.PID_DATA0 
+    start_length = 10
+    end_length = 20
+    session = UsbSession(bus_speed = usb_speed, run_enumeration = False, device_address = address)
 
     # TODO randomise packet lengths and data
-    for pkt_length in range(0, 20):
-        
-        AppendOutToken(packets, ep_loopback, address, data_valid_count=data_valid_count)
-        packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) 
-        packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
-   
-        # 357 was min IPG supported on bulk loopback to not nak
-        # For move from sc_xud to lib_xud (14.1.2 tools) had to increase this to 377 
-        # Increased again due to setup/out checking 
-        AppendInToken(packets, ep_loopback, address, data_valid_count=data_valid_count, inter_pkt_gap=417)
-        packets.append(RxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) 
-        packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
+    for pktLength in range(start_length, end_length+1):
+        session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep_loopback, endpointType="BULK", direction= "OUT", dataLength=pktLength))
+        session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep_loopback, endpointType="BULK", direction= "IN", dataLength=pktLength))
 
-        data_pid = data_pid ^ 8
-
-    pkt_length = 10
+    pktLength = start_length
 
     #Loopback and die..
-    AppendOutToken(packets, ep_loopback_kill, address, data_valid_count=data_valid_count)
-    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=pkt_length, pid=3)) #DATA0
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
-   
-    AppendInToken(packets, ep_loopback_kill, address, data_valid_count=data_valid_count, inter_pkt_gap=400)
-    packets.append(RxDataPacket(rand, data_valid_count=data_valid_count, length=pkt_length, pid=3)) #DATA0
-    packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
+    session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep_loopback_kill, endpointType="BULK", direction= "OUT", dataLength=pktLength))
+    session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep_loopback_kill, endpointType="BULK", direction= "IN", dataLength=pktLength))
 
-    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 
 def runtest():
-    random.seed(1)
     runall_rx(do_test)

@@ -129,7 +129,10 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
 int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
 {
     if (l != expectedLength)
-        return 2;
+    {
+        printf("%d %d", (unsigned) l, expectedLength); 
+        return FAIL_RX_LENERROR;
+    }
 
     for (int i = 0; i < l; i++)
     {

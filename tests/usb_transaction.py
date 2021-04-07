@@ -1,21 +1,17 @@
 
 from usb_event import UsbEvent
-from usb_packet import USB_PID, TokenPacket, TxDataPacket, RxHandshakePacket
+from usb_packet import USB_PID, TokenPacket, TxDataPacket, RxHandshakePacket, RxDataPacket, TxHandshakePacket
 from usb_phy import USB_DATA_VALID_COUNT
 
 INTER_TRANSACTION_DELAY = 500
 
-
-def CounterByte(length = 0):
-    l = 0
-    while l < length:
-        yield l % 256
-        l += 1
+USB_DIRECTIONS=["OUT", "IN"]
+USB_EP_TYPES=["CONTROL", "BULK", "ISO", "INTERRUPT"]
 
 class UsbTransaction(UsbEvent):
 
-    def __init__(self, deviceAddress = 0, endpointNumber = 0, endpointType = "BULK", 
-            direction="OUT", bus_speed="HS", eventTime = 0, dataLength = 0, data_fn = CounterByte, interEventDelay=500): # TODO Enums when we move to py3
+    def __init__(self, session, deviceAddress = 0, endpointNumber = 0, endpointType = "BULK", 
+            direction="OUT", bus_speed="HS", eventTime = 0, dataLength = 0, interEventDelay=500): # TODO Enums when we move to py3
         
         self._deviceAddress = deviceAddress
         self._endpointNumber = endpointNumber
@@ -24,27 +20,51 @@ class UsbTransaction(UsbEvent):
         self._datalength = dataLength
         self._bus_speed = bus_speed
 
-        # TODO IN TRANSACTION 
+        assert endpointType in USB_EP_TYPES
+        assert direction in USB_DIRECTIONS
+
         # Populate packet list for a (valid) transaction 
         self._packets = []
-        self._packets.append(TokenPacket(interEventDelay = INTER_TRANSACTION_DELAY, 
+       
+        if direction == "OUT":
+            self._packets.append(TokenPacket(interEventDelay = INTER_TRANSACTION_DELAY, 
                                         pid = USB_PID["OUT"], 
                                         address = self._deviceAddress, 
                                         endpoint = self._endpointNumber,
                                         data_valid_count = self.data_valid_count))
 
-        # Generate packet data payload
-        packetPayload = [x for x in data_fn(dataLength)]
+            # Generate packet data payload
+            packetPayload = session.getPayload_out(endpointNumber, dataLength);
 
-        # TODO FIXME
-        pid = USB_PID["DATA0"];
+            pid = session.data_pid_out(endpointNumber);
 
-        # Add data packet to packets list 
-        self._packets.append(TxDataPacket(pid=pid, dataPayload = packetPayload))
+            # Add data packet to packets list 
+            self._packets.append(TxDataPacket(pid=pid, dataPayload = packetPayload))
         
-        # Add handshake packet to packets list
-        self._packets.append(RxHandshakePacket())
+            # Add handshake packet to packets list
+            self._packets.append(RxHandshakePacket())
         
+        else: 
+            self._packets.append(TokenPacket(interEventDelay = INTER_TRANSACTION_DELAY, 
+                                        pid = USB_PID["IN"], 
+                                        address = self._deviceAddress, 
+                                        endpoint = self._endpointNumber,
+                                        data_valid_count = self.data_valid_count))
+
+            # Generate packet data payload
+            packetPayload = session.getPayload_in(endpointNumber, dataLength);
+
+            pid = session.data_pid_in(endpointNumber);
+
+            # Add data packet to packets list 
+            self._packets.append(RxDataPacket(pid=pid, dataPayload = packetPayload))
+        
+            self._packets.append(TxHandshakePacket())
+
+
+        
+
+
         super(UsbTransaction, self).__init__(time = eventTime, interEventDelay = interEventDelay)
     
     # TODO ideally USBTransaction doesnt know about data_valid_count
@@ -89,7 +109,8 @@ class UsbTransaction(UsbEvent):
         expected_output = ""
         
         for i, p in enumerate(self.packets):
-            expected_output += "Packet {}: ".format(i+offset) 
+            #expected_output += "Packet {}: ".format(i+offset) 
+            expected_output += "Packet:"
             expected_output += "\t" + p.expected_output
             #expected_output += "\n"
 

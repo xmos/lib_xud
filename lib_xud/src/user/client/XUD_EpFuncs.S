@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /** XUD_EpFuncs.S
   * @brief     Functions for data transfer to/from XUD
   * @author    Ross Owen, XMOS Limited

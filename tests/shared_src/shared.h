@@ -1,4 +1,5 @@
-// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
+// Copyright 2016-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 unsigned char g_rxDataCheck[7] = {0, 0, 0, 0, 0, 0, 0};
 unsigned char g_txDataCheck[5] = {0,0,0,0,0,};

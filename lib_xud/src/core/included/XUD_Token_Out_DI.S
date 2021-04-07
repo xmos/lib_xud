@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 // r10: EP number
 // OUT Token Packet -----------------------------------------------------------------------------
 #include "XUD_AlignmentDefines.h"

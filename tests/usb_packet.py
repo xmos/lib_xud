@@ -266,9 +266,8 @@ class RxPacket(UsbPacket):
     def timeout(self):
         return self._timeout
 
-    @property
-    def expected_output(self):
-        expected_output = "DEVICE -> HOST\n"
+    def expected_output(self, offeet=0):
+        expected_output = "Packet:\tDEVICE -> HOST\n"
         
         for (i, byte) in enumerate(self.get_bytes()):
             expected_output += "\tRX byte: {0:#x}\n".format(byte)
@@ -347,9 +346,8 @@ class TxPacket(UsbPacket):
         self.rxe_assert_length = kwargs.pop('rxe_assert_length', 1)
         super(TxPacket, self).__init__(**kwargs)
 
-    @property
-    def expected_output(self):
-        expected_output = "HOST -> DEVICE\n"
+    def expected_output(self, offset=0):
+        expected_output = "Packet:\tHOST -> DEVICE\n"
         expected_output += "\tPID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
         return expected_output
 

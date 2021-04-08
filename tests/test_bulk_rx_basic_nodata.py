@@ -1,60 +1,29 @@
 #!/usr/bin/env python
-
-# Rx out of seq (but valid.. ) data PID
-
-import random
 import xmostest
-from  usb_packet import *
-from usb_clock import Clock
-from helpers import do_usb_test, runall_rx
+from  usb_packet import TokenPacket, USB_PID
+from helpers import do_usb_test, RunUsbTest
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
-
-# Single, setup transaction to EP 0
-
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
-    rand = random.Random()
-    rand.seed(seed)
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
     address = 1
     ep = 1
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
+    # The large inter-event delay is to give the DUT time to perform checking
+    ied = 500
 
-    dataval = 0;
+    session = UsbSession(bus_speed = usb_speed, run_enumeration = False, device_address = address)
 
-    ipg = 500
+    for length in range(10, 15):
 
-    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
-    
-    dataval += 10
-    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
+        session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "OUT", dataLength=length, interEventDelay=ied))
+        
+        # Simulate missing data payload 
+        if length == 11:
+            session.add_event(TokenPacket(endpoint=ep, address = address, pid=USB_PID["OUT"]))
 
-    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
-    # MISSING DATA PAYLOAD
-
-
-    dataval += 11
-    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=12, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
-
-    dataval += 12
-    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=13, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
-
-    dataval += 13
-    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=ipg)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=14, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
-
-    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 
 def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    RunUsbTest(do_test)

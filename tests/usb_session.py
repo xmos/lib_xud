@@ -44,23 +44,14 @@ class UsbSession(object):
     def data_valid_count(self):
         return USB_DATA_VALID_COUNT[self._bus_speed] 
 
-    def getPayload_out(self, n, length, updateCounter = True):
-   
+    def getPayload_out(self, n, length):
         payload = [x for x in range(self._dataGen_out[n], self._dataGen_out[n] + length)]
-  
-        # We might not want to update the counter if we are expected a re-transmitted packet
-        if updateCounter:
-            self._dataGen_out[n] += length
-        
+        self._dataGen_out[n] += length
         return payload
 
-    def getPayload_in(self, n, length, updateCounter = True):
-    
+    def getPayload_in(self, n, length):
         payload = [x for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)]
-        
-        if updateCounter:
-            self._dataGen_out[n] += length
-        
+        self._dataGen_in[n] += length
         return payload
     
     def _pid_toggle(self, pid_table, n):

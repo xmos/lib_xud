@@ -17,7 +17,7 @@ class UsbEvent(object):
         return self._interEventDelay       
 
     @abc.abstractmethod
-    def expected_output(self):
+    def expected_output(self, offset = 0):
         pass
 
     # Drive event to simulator

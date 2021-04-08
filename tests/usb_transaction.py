@@ -26,7 +26,8 @@ class UsbTransaction(UsbEvent):
 
         # Populate packet list for a (valid) transaction 
         self._packets = []
-       
+      
+        # TODO would it be better to generate packets on the fly in drive() rather than create a packet list?
         if direction == "OUT":
 
             packets = []
@@ -123,10 +124,7 @@ class UsbTransaction(UsbEvent):
         expected_output = ""
         
         for i, p in enumerate(self.packets):
-            #expected_output += "Packet {}: ".format(i+offset) 
-            expected_output += "Packet:"
-            expected_output += "\t" + p.expected_output
-            #expected_output += "\n"
+            expected_output +=  p.expected_output()
 
         return expected_output        
 

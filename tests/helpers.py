@@ -74,7 +74,7 @@ def run_on(**kwargs):
 
     return True
 
-def runall_rx(test_fn):
+def RunUsbTest(test_fn):
    
     seed = args.seed if args.seed else random.randint(0, sys.maxint)
 

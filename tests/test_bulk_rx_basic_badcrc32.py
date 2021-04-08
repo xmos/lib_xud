@@ -1,62 +1,38 @@
 #!/usr/bin/env python
-
-import random
 import xmostest
 from  usb_packet import *
 import usb_packet
-from usb_clock import Clock
-from helpers import do_usb_test, runall_rx
+from helpers import do_usb_test, RunUsbTest
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
-
-# Single, setup transaction to EP 0
-
-def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
-    rand = random.Random()
-    rand.seed(seed)
-
-    dev_address = 1
+def test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+    
+    address = 1
     ep = 1
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
-
-    dataval = 0;
+    # The large inter-event delays are to give the DUT time to do checking on the fly
     
-    # Good OUT transaction
-    AppendOutToken(packets, ep, dev_address, data_valid_count=data_valid_count)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=usb_packet.PID_DATA0)) 
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
+    session = UsbSession(bus_speed = usb_speed, run_enumeration = False, device_address = address)
+   
+    # Valid OUT transaction
+    session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "OUT", eventTime=10, dataLength=10))
 
-    # Note, quite big gap to allow checking.
-    
-    # Another good OUT transaction
-    dataval += 10
-    AppendOutToken(packets, ep, dev_address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=usb_packet.PID_DATA1)) 
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
+    # Another valid OUT transaction
+    session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "OUT", eventTime=10, dataLength=11, interEventDelay=6000))
 
-    dataval += 11
-    AppendOutToken(packets, ep, dev_address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=12, bad_crc=True, pid=usb_packet.PID_DATA0))
-    # Bad CRC - dont expect ACK
-    #packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
+    # OUT transaction with bad data CRC
+    session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "OUT", eventTime=10, dataLength=12, 
+        interEventDelay=6000, badDataCrc=True))
 
-    #Due to bad CRC, XUD will not ACK and expect a resend of the same packet - so dont change PID
-    dataval += 12
-    AppendOutToken(packets, ep, dev_address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=13, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
+    # Due to bad CRC, XUD will not ACK and expect a resend of the same packet - DATA PID won't be toggled
+    # For ease of checking we dont resend the same packet..
+    session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "OUT", eventTime=10, dataLength=13, interEventDelay=6000))
 
-    # PID toggle as normal
-    dataval += 13
-    AppendOutToken(packets, ep, dev_address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=14, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
+    # PID will be toggled as normal
+    session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "OUT", eventTime=10, interEventDelay=6000, dataLength=14))
 
-
-    do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 
 def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    RunUsbTest(test)

@@ -11,7 +11,7 @@ USB_EP_TYPES=["CONTROL", "BULK", "ISO", "INTERRUPT"]
 class UsbTransaction(UsbEvent):
 
     def __init__(self, session, deviceAddress = 0, endpointNumber = 0, endpointType = "BULK", 
-            direction="OUT", bus_speed="HS", eventTime = 0, dataLength = 0, interEventDelay=500): # TODO Enums when we move to py3
+            direction="OUT", bus_speed="HS", eventTime = 0, dataLength = 0, interEventDelay=INTER_TRANSACTION_DELAY, badDataCrc = False, resend=False): # TODO Enums when we move to py3
         
         self._deviceAddress = deviceAddress
         self._endpointNumber = endpointNumber
@@ -19,6 +19,7 @@ class UsbTransaction(UsbEvent):
         self._direction = direction
         self._datalength = dataLength
         self._bus_speed = bus_speed
+        self._badDataCrc = badDataCrc
 
         assert endpointType in USB_EP_TYPES
         assert direction in USB_DIRECTIONS
@@ -27,25 +28,42 @@ class UsbTransaction(UsbEvent):
         self._packets = []
        
         if direction == "OUT":
-            self._packets.append(TokenPacket(interEventDelay = INTER_TRANSACTION_DELAY, 
+
+            packets = []
+            packets.append(TokenPacket(interEventDelay = interEventDelay, 
                                         pid = USB_PID["OUT"], 
                                         address = self._deviceAddress, 
                                         endpoint = self._endpointNumber,
                                         data_valid_count = self.data_valid_count))
 
+
+            # Don't toggle data pid if we had a bad data crc 
+            if self._badDataCrc == True:
+                togglePid = False
+            else:
+                togglePid = True
+            
             # Generate packet data payload
             packetPayload = session.getPayload_out(endpointNumber, dataLength);
 
-            pid = session.data_pid_out(endpointNumber);
+            pid = session.data_pid_out(endpointNumber, togglePid = togglePid)
 
             # Add data packet to packets list 
-            self._packets.append(TxDataPacket(pid=pid, dataPayload = packetPayload))
-        
-            # Add handshake packet to packets list
-            self._packets.append(RxHandshakePacket())
-        
+            packets.append(TxDataPacket(pid=pid, dataPayload = packetPayload, bad_crc=self._badDataCrc))
+       
+            if not self._badDataCrc:
+                # Add handshake packet to packets list
+                packets.append(RxHandshakePacket())
+       
+            self._packets.extend(packets)
+
+            if resend:
+                # Add again..
+                self._packets.extend(packets)
+
         else: 
-            self._packets.append(TokenPacket(interEventDelay = INTER_TRANSACTION_DELAY, 
+            
+            self._packets.append(TokenPacket(interEventDelay = interEventDelay, 
                                         pid = USB_PID["IN"], 
                                         address = self._deviceAddress, 
                                         endpoint = self._endpointNumber,
@@ -60,10 +78,6 @@ class UsbTransaction(UsbEvent):
             self._packets.append(RxDataPacket(pid=pid, dataPayload = packetPayload))
         
             self._packets.append(TxHandshakePacket())
-
-
-        
-
 
         super(UsbTransaction, self).__init__(time = eventTime, interEventDelay = interEventDelay)
     

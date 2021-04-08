@@ -1,11 +1,8 @@
 #!/usr/bin/env python
-
-import random
 import xmostest
 from  usb_packet import *
 import usb_packet
-from usb_clock import Clock
-from helpers import do_usb_test, runall_rx
+from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 
@@ -24,5 +21,4 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
     do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 
 def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    RunUsbTest(do_test)

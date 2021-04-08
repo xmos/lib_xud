@@ -1,5 +1,6 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 #include <xs1.h>
+#include "XUD_AlignmentDefines.h"
 
 // Ports
 #define RXD r0
@@ -20,7 +21,7 @@
 // R2 : TXD
 // R1 : Valid Token Port
 // R0 : RXD
-.align 4
+.align FUNCTION_ALIGNMENT
 InNotReady:
     ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
@@ -35,7 +36,7 @@ XUD_IN_TxNak:                                       // Non-Iso
     outpw     res[TXD], r11, 8
     #include "XUD_TokenJmp.S"
 
-.align 8
+.align FUNCTION_ALIGNMENT
 Pid_In:
     #include "XUD_CrcAddrCheck.S"
     ldaw       r3, r10[4]                           // R3 = R10 + 16
@@ -110,14 +111,14 @@ WaitForHandshake:			                        // Wait for timeout or handshake
     waiteu
 
 // We sent some data but the host didn't handshake in time.  Needs a re-send.
-.align 4
+.align FUNCTION_ALIGNMENT
 TxHandshakeTimeOut:
     in 	    	r11, res[r1]                        // This will clear port time
     edu         res[r1]
     {edu         res[RXD]; bu          BadHandshake}
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
-.align 4
+.align FUNCTION_ALIGNMENT
 TxHandShakeReceived:
 XUD_IN_RxAck:
     in 		    r11, res[RXD]                       // Input data from RXD port

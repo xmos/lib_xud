@@ -537,6 +537,6 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 #endif
 
 
-#endif //__XC__ || __STDC__
+#endif //__XC__ || || __DOXYGEN__
 
 #endif // __xud_h__

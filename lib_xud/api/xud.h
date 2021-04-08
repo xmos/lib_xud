@@ -3,8 +3,8 @@
  * \brief     User defines and functions for XMOS USB Device library
  */
 
-#ifndef __xud_h__
-#define __xud_h__
+#ifndef _XUD_H_
+#define _XUD_H_
 
 #include <platform.h>
 
@@ -527,7 +527,7 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
  */
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
-#endif
+#endif //__XC__ || __DOXYGEN__
 
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
@@ -536,7 +536,6 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 #define XUD_OSC_MHZ (24)
 #endif
 
+#endif //__ASSEMBLER__
 
-#endif //__XC__ || __STDC__
-
-#endif // __xud_h__
+#endif // _XUD_H_

@@ -505,7 +505,7 @@ class TxDataPacket(DataPacket, TxPacket):
         #self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', 13) #13 lowest working for single issue loopback
     
     def __str__(self):
-        return  super(DataPacket, self).__str__() + ": TX DataPacket: " + super(DataPacket, self).get_pid_str() + " " + str(self.data_bytes) + " Valid CRC: " + str(not self.bad_crc) 
+        return  super(DataPacket, self).__str__() + ": TX DataPacket: " + super(DataPacket, self).get_pid_str() + " " + str(self.data_bytes) + " Valid CRC: " + str(not self.bad_crc) + "RXE Assert: " + str(self.rxe_assert_time) 
 
 #Always TX
 class TokenPacket(TxPacket):

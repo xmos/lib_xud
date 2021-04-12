@@ -11,7 +11,8 @@ USB_EP_TYPES=["CONTROL", "BULK", "ISO", "INTERRUPT"]
 class UsbTransaction(UsbEvent):
 
     def __init__(self, session, deviceAddress = 0, endpointNumber = 0, endpointType = "BULK", 
-            direction="OUT", bus_speed="HS", eventTime = 0, dataLength = 0, interEventDelay=INTER_TRANSACTION_DELAY, badDataCrc = False, resend=False): # TODO Enums when we move to py3
+            direction="OUT", bus_speed="HS", eventTime = 0, dataLength = 0, interEventDelay=INTER_TRANSACTION_DELAY, badDataCrc = False,
+            resend=False, rxeAssertDelay_data=0): # TODO Enums when we move to py3
         
         self._deviceAddress = deviceAddress
         self._endpointNumber = endpointNumber
@@ -20,6 +21,7 @@ class UsbTransaction(UsbEvent):
         self._datalength = dataLength
         self._bus_speed = bus_speed
         self._badDataCrc = badDataCrc
+        self._rxeAssertDelay_data = rxeAssertDelay_data
 
         assert endpointType in USB_EP_TYPES
         assert direction in USB_DIRECTIONS
@@ -39,21 +41,25 @@ class UsbTransaction(UsbEvent):
 
 
             # Don't toggle data pid if we had a bad data crc 
-            if self._badDataCrc == True:
+            if self._badDataCrc or self._rxeAssertDelay_data:
                 togglePid = False
             else:
                 togglePid = True
-            
+           
+            if (not self._badDataCrc) and (not self._rxeAssertDelay_data):
+                expectHandshake = True
+            else:
+                expectHandshake = False
+
             # Generate packet data payload
-            packetPayload = session.getPayload_out(endpointNumber, dataLength);
+            packetPayload = session.getPayload_out(endpointNumber, dataLength, resend = not expectHandshake);
 
             pid = session.data_pid_out(endpointNumber, togglePid = togglePid)
 
             # Add data packet to packets list 
-            packets.append(TxDataPacket(pid=pid, dataPayload = packetPayload, bad_crc=self._badDataCrc))
+            packets.append(TxDataPacket(pid=pid, dataPayload = packetPayload, bad_crc=self._badDataCrc, rxe_assert_time=self._rxeAssertDelay_data))
        
-            if not self._badDataCrc:
-                # Add handshake packet to packets list
+            if expectHandshake:
                 packets.append(RxHandshakePacket())
        
             self._packets.extend(packets)

@@ -44,9 +44,10 @@ class UsbSession(object):
     def data_valid_count(self):
         return USB_DATA_VALID_COUNT[self._bus_speed] 
 
-    def getPayload_out(self, n, length):
+    def getPayload_out(self, n, length, resend = False):
         payload = [x for x in range(self._dataGen_out[n], self._dataGen_out[n] + length)]
-        self._dataGen_out[n] += length
+        if not resend:
+            self._dataGen_out[n] += length
         return payload
 
     def getPayload_in(self, n, length):

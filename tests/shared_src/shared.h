@@ -62,11 +62,11 @@ void TerminatePass(unsigned x)
 #endif
 
 #ifndef PKT_LEN_END
-#define PKT_LEN_END 21
+#define PKT_LEN_END    21
 #endif
 
 #ifndef MAX_PKT_COUNT 
-#define MAX_PKT_COUNT (10)
+#define MAX_PKT_COUNT (50)
 #endif
 
 #define XUD_Manager XUD_Main

@@ -3,6 +3,8 @@ from usb_phy import USB_DATA_VALID_COUNT
 import usb_transaction
 import usb_packet
 
+# TODO should EP numbers include the IN bit?
+
 def CounterByte(startVal = 0, length = 0):
     l = startVal
     while l < length:
@@ -15,7 +17,7 @@ class UsbSession(object):
         self._bus_speed = bus_speed
         self._events = []
         self._enumerate = run_enumeration
-        self._device_address = device_address
+        self._deviceAddress = device_address
         self._pidTable_out = [usb_packet.USB_PID["DATA0"]] * 16
         self._pidTable_in = [usb_packet.USB_PID["DATA0"]] * 16
 
@@ -33,8 +35,8 @@ class UsbSession(object):
         return self._events
 
     @property
-    def device_address(self):
-        return self._device_address
+    def deviceAddress(self):
+        return self._deviceAddress
 
     @property
     def enumerate(self):
@@ -50,9 +52,10 @@ class UsbSession(object):
             self._dataGen_out[n] += length
         return payload
 
-    def getPayload_in(self, n, length):
+    def getPayload_in(self, n, length, resend = False):
         payload = [x for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)]
-        self._dataGen_in[n] += length
+        if not resend:
+            self._dataGen_in[n] += length
         return payload
     
     def _pid_toggle(self, pid_table, n):

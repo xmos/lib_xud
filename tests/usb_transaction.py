@@ -8,6 +8,7 @@ INTER_TRANSACTION_DELAY = 500
 USB_DIRECTIONS=["OUT", "IN"]
 USB_EP_TYPES=["CONTROL", "BULK", "ISO", "INTERRUPT"]
 
+#TODO UsbTransaction_IN and UsbTransaction_OUT
 class UsbTransaction(UsbEvent):
 
     def __init__(self, session, deviceAddress = 0, endpointNumber = 0, endpointType = "BULK", 
@@ -46,7 +47,7 @@ class UsbTransaction(UsbEvent):
             else:
                 togglePid = True
            
-            if (not self._badDataCrc) and (not self._rxeAssertDelay_data):
+            if (not self._badDataCrc) and (not self._rxeAssertDelay_data) and deviceAddress == session.deviceAddress:
                 expectHandshake = True
             else:
                 expectHandshake = False

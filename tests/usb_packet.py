@@ -91,11 +91,11 @@ def AppendPingToken(packets, ep, address, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
     AppendTokenPacket(packets, 0xb4, ep, ipg, address, **kwargs)
 
-def AppendInToken(packets, ep, address, **kwargs):
+#def AppendInToken(packets, ep, address, **kwargs):
     #357 was min IPG supported on bulk loopback to not nak
     #lower values mean the loopback NAKs
-    ipg = kwargs.pop('inter_pkt_gap', 10) 
-    AppendTokenPacket(packets, 0x69, ep, ipg, address, **kwargs)
+#    ipg = kwargs.pop('inter_pkt_gap', 10) 
+#    AppendTokenPacket(packets, 0x69, ep, ipg, address, **kwargs)
 
 def AppendSofToken(packets, framenumber, **kwargs):
     ipg = kwargs.pop('inter_pkt_gap', 500) 
@@ -266,7 +266,7 @@ class RxPacket(UsbPacket):
     def timeout(self):
         return self._timeout
 
-    def expected_output(self, offeet=0):
+    def expected_output(self, offset=0):
         expected_output = "Packet:\tDEVICE -> HOST\n"
         
         for (i, byte) in enumerate(self.get_bytes()):
@@ -446,12 +446,6 @@ class DataPacket(UsbPacket):
     def __init__(self, dataPayload = [], **kwargs):
         super(DataPacket, self).__init__(**kwargs)
         self.pid = kwargs.pop('pid', 0x3) #DATA0
-        #data_start_val = kwargs.pop('data_start_val', None)
-
-        #if data_start_val != None:
-        #    self.data_bytes = [x+data_start_val for x in range(self.num_data_bytes)]
-        #else:
-        #    self.data_bytes = [x for x in range(self.num_data_bytes)]
         self.data_bytes = dataPayload
 
     def get_packet_bytes(self):

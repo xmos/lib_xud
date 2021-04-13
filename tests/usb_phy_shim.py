@@ -83,7 +83,7 @@ class UsbPhyShim(UsbPhy):
                         print("ERROR: Rx packet length bad. Expecting: {} actual: {}".format(len(expected), len(rx_packet)))
                 
                     # Check packet data against expected
-                    if cmp(expected, rx_packet):
+                    if expected == rx_packet:
                         print("ERROR: Rx Packet Error. Expected:")
                         for item in expected:
                             print("{0:#x}".format(item))

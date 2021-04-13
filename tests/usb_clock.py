@@ -49,7 +49,7 @@ class Clock(xmostest.SimThread):
         return self._bit_time
 
     def stop(self):
-        print "**** CLOCK STOP ****"
+        print("**** CLOCK STOP ****")
         self._running = False
 
     def start(self):

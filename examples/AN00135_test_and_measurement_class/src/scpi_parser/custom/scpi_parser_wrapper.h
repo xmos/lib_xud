@@ -1,4 +1,5 @@
-// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
+// Copyright 2015-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef SCPI_PARSER_WRAPPER_H_
 #define SCPI_PARSER_WRAPPER_H_

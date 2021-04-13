@@ -9,6 +9,7 @@ HEAD
   * CHANGE:     Removed support for XS1-G, and XS1-L (including U series) based devices
   * RESOLVED:   Exception when Endpoint marked as disabled
   * CHANGE:     Use common XN files for tests
+  * CHANGE:     Use XMOS Public Licence Version 1
   
 1.1.2
 -----

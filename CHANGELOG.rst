@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+1.2.0
+-----
+
+  * CHANGED: Use XMOS Public Licence Version 1
+
 1.1.2
 -----
 

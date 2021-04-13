@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 //.cc_top Pid_Sof.func, Pid_Sof
 // Received SOF token: Reset suspend/reset detection timer
 

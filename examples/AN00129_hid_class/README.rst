@@ -1,8 +1,6 @@
 USB HID Class
 =============
 
-.. version:: 2.0.2
-
 Summary
 -------
 

@@ -24,9 +24,9 @@ Features
 Typical Resource Usage
 ......................
 
-.. resusage::
+XCORE-200 series:
 
-  * - configuration: USB device (xCORE-200 series)
+  * - configuration: USB device
     - target: XCORE-200-EXPLORER
     - flags: -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
     - globals: XUD_EpType epTypeTableOut[1] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
@@ -38,7 +38,8 @@ Typical Resource Usage
     - pins: 23 (internal)
     - ports: 11
 
-  * - configuration: USB device (U series)
+XCORE U series:
+  * - configuration: USB device
     - target: SLICEKIT-U16
     - flags: -DXUD_SERIES_SUPPORT=XUD_U_SERIES
     - globals: XUD_EpType epTypeTableOut[1] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
@@ -53,14 +54,13 @@ Typical Resource Usage
 Software version and dependencies
 .................................
 
-.. libdeps::
+The CHANGELOG contains information about the current and previous versions.
+For a list of direct dependencies, look for DEPENDENT_MODULES in lib_xud/module_build_info.
 
 Related application notes
 .........................
 
 The following application notes use this library:
-
-.. sidebysidelist::
 
    * AN00125 - USB mass storage device class 
    * AN00126 - USB printer device class 

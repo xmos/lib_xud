@@ -79,17 +79,17 @@ USB_PID = {
             "ACK" : 0xD2
         }
 
-def AppendSetupToken(packets, ep, address, **kwargs):
-    ipg = kwargs.pop('inter_pkt_gap', 500)
-    AppendTokenPacket(packets, 0x2d, ep, ipg, address, **kwargs)
+#def AppendSetupToken(packets, ep, address, **kwargs):
+#    ipg = kwargs.pop('inter_pkt_gap', 500)
+#    AppendTokenPacket(packets, 0x2d, ep, ipg, address, **kwargs)
 
 #def AppendOutToken(packets, ep, address, **kwargs):
 #    ipg = kwargs.pop('inter_pkt_gap', 500) 
 #    AppendTokenPacket(packets, 0xe1, ep, ipg, address, **kwargs)
 
-def AppendPingToken(packets, ep, address, **kwargs):
-    ipg = kwargs.pop('inter_pkt_gap', 500) 
-    AppendTokenPacket(packets, 0xb4, ep, ipg, address, **kwargs)
+#def AppendPingToken(packets, ep, address, **kwargs):
+#    ipg = kwargs.pop('inter_pkt_gap', 500) 
+#    AppendTokenPacket(packets, 0xb4, ep, ipg, address, **kwargs)
 
 #def AppendInToken(packets, ep, address, **kwargs):
     #357 was min IPG supported on bulk loopback to not nak
@@ -97,13 +97,13 @@ def AppendPingToken(packets, ep, address, **kwargs):
 #    ipg = kwargs.pop('inter_pkt_gap', 10) 
 #    AppendTokenPacket(packets, 0x69, ep, ipg, address, **kwargs)
 
-def AppendSofToken(packets, framenumber, **kwargs):
-    ipg = kwargs.pop('inter_pkt_gap', 500) 
+#def AppendSofToken(packets, framenumber, **kwargs):
+#    ipg = kwargs.pop('inter_pkt_gap', 500) 
     
     # Override EP and Address 
-    ep = (framenumber >> 7) & 0xf
-    address = (framenumber) & 0x7f
-    AppendTokenPacket(packets, 0xa5, ep, ipg, address, **kwargs)
+#    ep = (framenumber >> 7) & 0xf
+#    address = (framenumber) & 0x7f
+#    AppendTokenPacket(packets, 0xa5, ep, ipg, address, **kwargs)
 
 #def AppendTokenPacket(packets, _pid, ep, ipg, addr=0, **kwargs):
 #    
@@ -490,16 +490,15 @@ class RxDataPacket(RxPacket, DataPacket):
         super(RxDataPacket, self).__init__(pid = (_pid & 0xf) | (((~_pid)&0xf) << 4), **kwargs)
 
     def __str__(self):
-        return  super(DataPacket, self).__str__() + ": TX DataPacket: " + super(DataPacket, self).get_pid_str() + " " + str(self.data_bytes)
+        return  super(DataPacket, self).__str__() + ": RX DataPacket: " + super(DataPacket, self).get_pid_str() + " " + str(self.data_bytes)
 
 class TxDataPacket(DataPacket, TxPacket):
 
     def __init__(self, **kwargs):
         super(TxDataPacket, self).__init__(**kwargs)
-        #self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', 13) #13 lowest working for single issue loopback
     
     def __str__(self):
-        return  super(DataPacket, self).__str__() + ": TX DataPacket: " + super(DataPacket, self).get_pid_str() + " " + str(self.data_bytes) + " Valid CRC: " + str(not self.bad_crc) + "RXE Assert: " + str(self.rxe_assert_time) 
+        return  super(DataPacket, self).__str__() + ": RX DataPacket: " + super(DataPacket, self).get_pid_str() + " " + str(self.data_bytes) + " Valid CRC: " + str(not self.bad_crc) + "RXE Assert: " + str(self.rxe_assert_time) 
 
 #Always TX
 class TokenPacket(TxPacket):

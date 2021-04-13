@@ -1,51 +1,32 @@
 #!/usr/bin/env python
-import random
 import xmostest
-from  usb_packet import *
-import usb_packet
-from usb_clock import Clock
-from helpers import do_usb_test, runall_rx
+from  usb_packet import USB_PID, TokenPacket, RxDataPacket
+from helpers import do_usb_test, RunUsbTest
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
-
-def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
-    rand = random.Random()
-    rand.seed(seed)
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
     ep = 1
     address = 1
+    
+    # Note, quite big gap to allow checking
+    ied = 4000
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
+    session = UsbSession(bus_speed=usb_speed, run_enumeration=False, device_address=address)
 
-    dataval = 0;
+    for pktLength in range(10, 14):
 
-    pid = PID_DATA0;
-
-    pktlength = 10
-
-    for i in range(0, 4):
-
-        if(i == 2):
-            AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=4000)
-            packets.append(RxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) 
+        if pktLength == 12:
+            session.add_event(TokenPacket(pid=USB_PID['IN'], address=address, endpoint=ep, data_valid_count=data_valid_count, inter_pkt_gap=ied))
+            session.add_event(RxDataPacket(dataPayload=session.getPayload_in(ep, pktLength, resend=True)))
             # Missing ACK - simulate CRC fail at host
 
-        AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=4000)
-        packets.append(RxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) 
-        packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
-        
-        if(pid == usb_packet.PID_DATA1):
-            pid = usb_packet.PID_DATA0;
-        else:
-            pid = usb_packet.PID_DATA1;
+        session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "IN", dataLength=pktLength, interEventDelay=ied))
 
-        dataval += pktlength
-        pktlength += 1
+    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 
-    # Note, quite big gap to allow checking.
-    do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
 
 def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    RunUsbTest(do_test)
+

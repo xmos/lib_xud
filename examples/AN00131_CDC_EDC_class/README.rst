@@ -1,8 +1,6 @@
 USB CDC-ECM Class for Ethernet over USB
 =======================================
 
-.. version:: 2.0.2
-
 Summary
 -------
 

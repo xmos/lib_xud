@@ -1,8 +1,6 @@
 USB CDC Class as Virtual Serial Port
 ====================================
 
-.. version:: 2.0.2
-
 Summary
 -------
 

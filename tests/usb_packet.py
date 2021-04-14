@@ -68,15 +68,17 @@ RXA_START_DELAY = 5 #Taken from RTL sim
 RX_RX_DELAY = 40
 
 #TODO shoud we have a PID class?
+#TODO remove the inverted check bits 
 USB_PID = {
-            "OUT": 0xE1,
-            "IN" : 0x69,
-            "SETUP" : 0x2D,
-            "PING" : 0xA5,
-            "DATA1" : 0x4b,
-            "DATA0" : 0xc3,
-            "SOF" : 165,
-            "ACK" : 0xD2
+            "OUT"       : 0xE1,
+            "IN"        : 0x69,
+            "SETUP"     : 0x2D,
+            "SOF"       : 0xA5,
+            "DATA1"     : 0x4b,
+            "DATA0"     : 0xc3,
+            "ACK"       : 0xD2,
+            "PING"      : 0xB4,
+            "RESERVED"  : 0x0F,
         }
 
 #def AppendSetupToken(packets, ep, address, **kwargs):

@@ -40,25 +40,24 @@ class UsbTransaction(UsbEvent):
                                         endpoint = self._endpointNumber,
                                         data_valid_count = self.data_valid_count))
 
-
             # Don't toggle data pid if we had a bad data crc 
-            if self._badDataCrc or self._rxeAssertDelay_data:
+            if self._badDataCrc or self._rxeAssertDelay_data or endpointType == "ISO":
                 togglePid = False
             else:
                 togglePid = True
            
-            if (not self._badDataCrc) and (not self._rxeAssertDelay_data) and deviceAddress == session.deviceAddress:
+            if (not self._badDataCrc) and (not self._rxeAssertDelay_data) and (deviceAddress == session.deviceAddress) and (self._endpointType != "ISO"):
                 expectHandshake = True
             else:
                 expectHandshake = False
 
             # Generate packet data payload
-            packetPayload = session.getPayload_out(endpointNumber, dataLength, resend = not expectHandshake);
+            packetPayload = session.getPayload_out(endpointNumber, dataLength, resend = False)#(not expectHandshake or not self._endpointType == "ISO"))
 
             pid = session.data_pid_out(endpointNumber, togglePid = togglePid)
 
             # Add data packet to packets list 
-            packets.append(TxDataPacket(pid=pid, dataPayload = packetPayload, bad_crc=self._badDataCrc, rxe_assert_time=self._rxeAssertDelay_data))
+            packets.append(TxDataPacket(pid=pid, dataPayload=packetPayload, bad_crc=self._badDataCrc, rxe_assert_time=self._rxeAssertDelay_data))
        
             if expectHandshake:
                 packets.append(RxHandshakePacket())
@@ -80,12 +79,18 @@ class UsbTransaction(UsbEvent):
             # Generate packet data payload
             packetPayload = session.getPayload_in(endpointNumber, dataLength);
 
-            pid = session.data_pid_in(endpointNumber);
+            if self._badDataCrc or self._rxeAssertDelay_data or self._endpointType == "ISO":
+                togglePid = False
+            else:
+                togglePid = True
+
+            pid = session.data_pid_in(endpointNumber, togglePid = togglePid);
 
             # Add data packet to packets list 
             self._packets.append(RxDataPacket(pid=pid, dataPayload = packetPayload))
-        
-            self._packets.append(TxHandshakePacket())
+       
+            if self._endpointType != "ISO":
+                self._packets.append(TxHandshakePacket())
 
         super(UsbTransaction, self).__init__(time = eventTime, interEventDelay = interEventDelay)
     

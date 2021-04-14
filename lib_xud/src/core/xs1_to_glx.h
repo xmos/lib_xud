@@ -1,4 +1,5 @@
-// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
+// Copyright 2017-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _XS1_TO_GLX_H_
 #define _XS1_TO_GLX_H_

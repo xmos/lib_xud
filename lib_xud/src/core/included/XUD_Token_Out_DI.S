@@ -8,6 +8,13 @@
 .skip 0
 Pid_Out:
     #include "XUD_CrcAddrCheck.S"
+
+    ldaw       r11, dp[handshakeTable_OUT]       // Load handshake table
+   {ldw        r11, r11[r10]
+    ldc        r3, USB_PIDn_STALL}
+    eq         r3, r11, r3
+    bt         r3, XUD_TokenOut_BufferFull
+
     ldw        r3, r5[r10]                      // Load relevant EP pointer
     bf         r3, XUD_TokenOut_BufferFull
     ldw        r1, r3[3]                        // Load buffer from EP structure

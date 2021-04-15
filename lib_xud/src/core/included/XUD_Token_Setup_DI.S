@@ -1,10 +1,12 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
+#include "XUD_AlignmentDefines.h"
 
 // We received a setup token.  This is much the same as out token, apart from:
 // - Can't NAK a setup
 // - Data PID will always be DATA0
 // - Payload will always be 8 bytes
-.align 4
+.align FUNCTION_ALIGNMENT
 Pid_Setup:
     #include "XUD_CrcAddrCheck.S"
     ldw        r3, r5[r10]                      // Load relevant EP pointer

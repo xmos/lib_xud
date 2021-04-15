@@ -1,27 +1,22 @@
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import xmostest
 import sys
 import zlib
 
 class Clock(xmostest.SimThread):
 
-    (CLK_125MHz, CLK_60MHz, CLK_2_5MHz) = (0x4, 0x2, 0x0)
+    CLK_60MHz = 0x0
 
     def __init__(self, port, clk):
         self._running = True
         self._clk = clk
-        if clk == self.CLK_125MHz:
-            self._period = float(1000000000) / 125000000
-            self._name = '125Mhz'
-            self._min_ifg = 96
-            self._bit_time = 1
-        elif clk == self.CLK_60MHz:
+        if clk == self.CLK_60MHz:
             self._period = float(1000000000) / 60000000
             self._name = '60Mhz'
             self._bit_time = 5 # TODO
-        elif clk == self.CLK_2_5MHz:
-            self._period = float(1000000000) / 2500000
-            self._name = '2.5Mhz'
-            self._bit_time = 100
+        else:
+            raise ValueError('Unsupported Clock Frequency')
         self._min_ifg = 96 * self._bit_time
         self._val = 0
         self._port = port

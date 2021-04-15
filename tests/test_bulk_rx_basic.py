@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 import random
 import xmostest
@@ -7,7 +9,7 @@ import usb_packet
 from usb_clock import Clock
 from helpers import do_usb_test, runall_rx
 
-def do_test(arch, clk, phy, seed):
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     rand = random.Random()
     rand.seed(seed)
 
@@ -23,9 +25,9 @@ def do_test(arch, clk, phy, seed):
 
     for pktlength in range(10, 20):
 
-        AppendOutToken(packets, ep, address, inter_pkt_gap=500)
-        packets.append(TxDataPacket(rand, data_start_val=dataval, length=pktlength, pid=pid)) 
-        packets.append(RxHandshakePacket())
+        AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=500)
+        packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) 
+        packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
    
         if(pid == usb_packet.PID_DATA1):
             pid = usb_packet.PID_DATA0;
@@ -34,7 +36,7 @@ def do_test(arch, clk, phy, seed):
 
         dataval += pktlength
 
-    do_usb_test(arch, clk, phy, packets, __file__, seed, level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def runtest():
     random.seed(1)

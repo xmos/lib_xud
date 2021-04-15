@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright 2019-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Same as simple RX bulk test but some invalid tokens also included
 
@@ -11,7 +13,7 @@ from helpers import do_usb_test, runall_rx
 
 # Single, setup transaction to EP 0
 
-def do_test(arch, clk, phy, seed):
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     rand = random.Random()
     rand.seed(seed)
 
@@ -23,23 +25,23 @@ def do_test(arch, clk, phy, seed):
     dataval = 0;
 
     # Start with a valid transaction */
-    AppendOutToken(packets, ep, address)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=10, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=0x3)) #DATA0
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-    AppendSofToken(packets, framenumber)
-    AppendSofToken(packets, framenumber+1) 
-    AppendSofToken(packets, framenumber+2)
-    AppendSofToken(packets, framenumber+3, crc5=0xff) # Invalidate the CRC
-    AppendSofToken(packets, framenumber+4)
+    AppendSofToken(packets, framenumber, data_valid_count=data_valid_count)
+    AppendSofToken(packets, framenumber+1, data_valid_count=data_valid_count) 
+    AppendSofToken(packets, framenumber+2, data_valid_count=data_valid_count)
+    AppendSofToken(packets, framenumber+3, crc5=0xff, data_valid_count=data_valid_count) # Invalidate the CRC
+    AppendSofToken(packets, framenumber+4, data_valid_count=data_valid_count)
 
     #Finish with valid transaction 
     dataval += 10
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=11, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb)) #DATA1
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-    do_usb_test(arch, clk, phy, packets, __file__, seed, level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def runtest():
     random.seed(1)

@@ -1,11 +1,13 @@
 #!/usr/bin/env python
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import xmostest
 import argparse
 import os
 import re
 import shutil
-
 import helpers
+from helpers import ARCHITECTURE_CHOICES, BUSSPEED_CHOICES
 
 XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 
@@ -36,13 +38,17 @@ def prologue(args):
 def epilogue(args):
     delete_test_specific_xn_files(args)
 
+
+
 if __name__ == "__main__":
     global trace
     argparser = argparse.ArgumentParser(description="XMOS lib_xud tests")
     argparser.add_argument('--trace', action='store_true', help='Run tests with simulator and VCD traces')
-    argparser.add_argument('--arch', choices=['xs2', 'xs3'], type=str, help='Run tests only on specified xcore architecture')
+    argparser.add_argument('--arch', choices=ARCHITECTURE_CHOICES, type=str, help='Run tests only on specified xcore architecture')
     argparser.add_argument('--seed', type=int, help='The seed', default=None)
     argparser.add_argument('--verbose', action='store_true', help='Enable verbose tracing in the phys')
+    argparser.add_argument('--busspeed', choices=BUSSPEED_CHOICES, type=str, help='Speed of USB to run test at')
+
     
     helpers.args = xmostest.init(argparser)
 

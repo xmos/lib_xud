@@ -1,3 +1,5 @@
+// Copyright 2019-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 
 #define PASTER(x,y) x ## _ ## y

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import xmostest
 import os
 import random
@@ -12,28 +14,29 @@ from usb_packet import BusReset
 
 args = None
 
+ARCHITECTURE_CHOICES = ['xs2', 'xs3']
+BUSSPEED_CHOICES = ['FS', 'HS']
+
 def create_if_needed(folder):
     if not os.path.exists(folder):
         os.makedirs(folder)
     return folder
-
-#todo
-dut_address = 1
 
 def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                        complete_fn=None, expect_loopback=False,
                        dut_exit_time=350000, arch='xs2'):
 
     if arch=='xs2':
-        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-        phy = UsbPhyShim('tile[0]:XS1_PORT_8B',
-                         'tile[0]:XS1_PORT_1F', #rxa
-                         'tile[0]:XS1_PORT_1I', #rxv
-                         'tile[0]:XS1_PORT_1G', #rxe
-                         'tile[0]:XS1_PORT_1E', #vld
+        clk = Clock('XS1_USB_CLK', Clock.CLK_60MHz)
+        phy = UsbPhyUtmi('XS1_USB_RXD',
+                         'XS1_USB_RXA', #rxa
+                         'XS1_USB_RXV', #rxv
+                         'XS1_USB_RXE', #rxe
                          'tile[0]:XS1_PORT_8A', #txd
                          'tile[0]:XS1_PORT_1K', #txv
                          'tile[0]:XS1_PORT_1H', #txrdy
+                         'XS1_USB_LS0', 
+                         'XS1_USB_LS1',
                          clk,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,
@@ -41,7 +44,6 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          dut_exit_time=dut_exit_time)
  
     elif arch=='xs3':
-        #clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
         clk = Clock('XS1_USB_CLK', Clock.CLK_60MHz)
         phy = UsbPhyUtmi('XS1_USB_RXD',
                          'XS1_USB_RXA', #rxa
@@ -76,18 +78,18 @@ def run_on(**kwargs):
 
 def runall_rx(test_fn):
    
-    if run_on(arch='xs3'):
-        (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs3')
-        seed = args.seed if args.seed else random.randint(0, sys.maxint)
-        test_fn('xs3', clk_60, usb_phy, seed)
-    
-    if run_on(arch='xs2'):
-        (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
-        seed = args.seed if args.seed else random.randint(0, sys.maxint)
-        test_fn('xs2', clk_60, usb_phy, seed)
+    seed = args.seed if args.seed else random.randint(0, sys.maxint)
 
+    data_valid_count = {'FS': 39, "HS": 0}
 
-def do_usb_test(arch, clk, phy, packets, test_file, seed,
+    for _arch in ARCHITECTURE_CHOICES:
+        for _busspeed in BUSSPEED_CHOICES:
+            if run_on(arch=_arch):
+                if run_on(busspeed=_busspeed):
+                    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
+                    test_fn(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed)
+
+def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
                level='nightly', extra_tasks=[]):
 
     """ Shared test code for all RX tests using the test_rx application.
@@ -101,20 +103,20 @@ def do_usb_test(arch, clk, phy, packets, test_file, seed,
     print binary
 
     if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-        print "Running {test}: {arch} arch sending {n} packets at {clk} (seed {seed})".format(
+        print "Running {test}: {arch} arch sending {n} packets at {clk} using {speed} (seed {seed})".format(
             test=testname, n=len(packets),
-            arch=arch, clk=clk.get_name(), seed=seed)
+            arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed)
 
     phy.set_packets(packets)
 
     expect_folder = create_if_needed("expect")
     expect_filename = '{folder}/{test}_{arch}.expect'.format(
-        folder=expect_folder, test=testname, phy=phy.get_name(), clk=clk.get_name(), arch=arch)
+        folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
     create_expect(arch, packets, expect_filename)
 
     tester = xmostest.ComparisonTester(open(expect_filename),
                                       'lib_xud', 'xud_sim_tests', testname,
-                                     {'clk':clk.get_name(), 'arch':arch})
+                                     {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
 
     tester.set_min_testlevel(level)
 
@@ -151,7 +153,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(
             log=log_folder, test=testname,
-            clk=clk.get_name(), phy=phy.get_name(), arch=arch)
+            clk=clk.get_name(), phy=phy.name, arch=arch)
 
         sim_args += ['--trace-to', '{0}.txt'.format(filename), '--enable-fnop-tracing']
 
@@ -167,13 +169,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
 def packet_processing_time(phy, data_bytes):
     """ Returns the time it takes the DUT to process a given frame
     """
-    return 6000 * phy.get_clock().get_bit_time()
-
-#def get_dut_address():
-#    """ Returns the busaddress of the DUT
-#    """
-#    #TODO, we need the ability to config this
-#    return 1
+    return 6000 * phy.clock.get_bit_time()
 
 def choose_small_frame_size(rand):
     """ Choose the size of a frame near the minimum size frame (46 data bytes)

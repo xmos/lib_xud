@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 import random
 import xmostest
@@ -8,7 +10,7 @@ from helpers import do_usb_test, runall_rx
 
 # Single, setup transaction to EP 0
 
-def do_test(arch, clk, phy, seed):
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
     rand = random.Random()
     rand.seed(seed)
 
@@ -20,44 +22,44 @@ def do_test(arch, clk, phy, seed):
 
     dataval = 0;
 
-    AppendOutToken(packets, ep, address)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=10, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=10, pid=0x3)) #DATA0
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     # Assert RxError during packet
     dataval += 10
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=11, pid=0xb, rxe_assert_time=5)) #DATA1
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb, rxe_assert_time=5)) #DATA1
     
     # xCORE should ignore the packet and not handshake...
-    #packets.append(RxHandshakePacket())
+    #packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     # Re-send..
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=11, pid=0xb, rxe_assert_time=0)) #DATA1
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=11, pid=0xb, rxe_assert_time=0)) #DATA1
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 11
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=12, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=12, pid=0x3)) #DATA0
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 12
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=13, pid=0xb, rxe_assert_time=1)) #DATA1
-    #packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=13, pid=0xb, rxe_assert_time=1)) #DATA1
+    #packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     #resend
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=13, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=13, pid=0xb)) #DATA1
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
     dataval += 13
-    AppendOutToken(packets, ep, address, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=14, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=6000)
+    packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=14, pid=0x3)) #DATA0
+    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
-    do_usb_test(arch, clk, phy, packets, __file__, seed, level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def runtest():
     random.seed(1)

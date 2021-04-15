@@ -1,9 +1,11 @@
-// Copyright (c) 2011-2021, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /** XUD_EpFuncs.S
   * @brief     ASM functions for data transfer to/from XUD
   * @author    Ross Owen, XMOS Limited
   */
 #include "XUD_USB_Defines.h"
+#include "XUD_AlignmentDefines.h"
 
 #if !defined __XS2A__
 .set too_many_cores, main.maxcores > 6
@@ -12,7 +14,7 @@
 
 .section	.cp.rodata,"ac", @progbits
 .cc_top ep_info_address.data,ep_info_address
-.align	4
+.align FUNCTION_ALIGNMENT
 .type	ep_info_address,@object
 .size	ep_info_address, 4
 ep_info_address:
@@ -28,7 +30,7 @@ ep_info_address:
 .type XUD_GetSetupData, @function
 .cc_top XUD_GetSetupData.func
 .issue_mode single
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_GetSetupData:
     ENTSP_lu6   4
     stw         r4, sp[1]
@@ -142,7 +144,7 @@ XUD_GetSetupData_Reset:
 .globl XUD_GetData
 .type XUD_GetData, @function
 .cc_top XUD_GetData.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_GetData:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
@@ -280,7 +282,7 @@ XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on
 .globl XUD_SetData
 .type XUD_SetData, @function
 .cc_top XUD_SetData.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_SetData:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
@@ -387,7 +389,7 @@ XUD_SetData_Reset:
 .globl XUD_GetData_Select
 .type XUD_GetData_Select, @function
 .cc_top XUD_GetData_Select.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_GetData_Select:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
@@ -479,7 +481,7 @@ XUD_GetData_Select_Return_Reset:
 .globl XUD_SetData_Select
 .type XUD_SetData_Select, @function
 .cc_top XUD_SetData_Select.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_SetData_Select:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
@@ -537,7 +539,7 @@ XUD_SetData_Select_Reset:
 
 /* R0: ep number */
 .cc_top XUD_SetStallByAddr.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_SetStallByAddr:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
@@ -584,7 +586,7 @@ XUD_SetStallByAddr_OUT:
 /* R0: ep number */
 .cc_top XUD_ClearStallByAddr.func
 .issue_mode single
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_ClearStallByAddr:
     ENTSP_lu6   0
     ldc         r2, USB_PIDn_NAK
@@ -647,7 +649,7 @@ XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
 
 /* R0: ep number */
 .cc_top XUD_ResetEpStateByAddr.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_ResetEpStateByAddr:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
@@ -702,7 +704,7 @@ NoOffset:
 .type XUD_SetTestMode, @function
 
 .cc_top XUD_SetTestMode.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_SetTestMode:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single

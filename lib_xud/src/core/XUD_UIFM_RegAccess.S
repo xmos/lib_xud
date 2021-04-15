@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /** XUD_UIFM_RegAccess.S
   * @brief     Functions for UIFM register read/write
   * @author    Ross Owen, XMOS Limited
@@ -12,12 +13,13 @@
 #ifndef XS1_PS_XCORE_CTRL0
 #define XS1_PS_XCORE_CTRL0 0x20b
 #endif
+#include "XUD_AlignmentDefines.h"
 
 .text
 .globl XUD_UIFM_Enable, "f{ui}(ui)"
 .type  XUD_UIFM_Enable, @function
 .cc_top XUD_UIFM_Enable.function
-.align    4
+.align FUNCTION_ALIGNMENT
 // void XUD_UIFM_Enable (unsigned mode);
 XUD_UIFM_Enable:
   ldc       r1, XS1_PS_XCORE_CTRL0

@@ -79,6 +79,7 @@ USB_PID = {
             "ACK"       : 0xD2,
             "PING"      : 0xB4,
             "RESERVED"  : 0x0F,
+            "NAK"       : 0x5A,
         }
 
 #def AppendSetupToken(packets, ep, address, **kwargs):

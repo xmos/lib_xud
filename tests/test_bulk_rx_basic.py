@@ -13,10 +13,10 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
     start_length = 10
     end_length = 19
     
-    session = UsbSession(bus_speed = usb_speed, run_enumeration = False, device_address = address)
+    session = UsbSession(bus_speed=usb_speed, run_enumeration=False, device_address = address)
 
     for pktLength in range(10, end_length+1):
-        session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "OUT", eventTime=10, dataLength=pktLength))
+        session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="BULK", direction= "OUT", dataLength=pktLength))
 
     do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 

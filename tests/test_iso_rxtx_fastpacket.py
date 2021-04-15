@@ -1,38 +1,29 @@
-#!/usr/bin/env python
 
-import random
+#!/usr/bin/env python
 import xmostest
 from  usb_packet import *
-from usb_clock import Clock
-from helpers import do_usb_test, runall_rx
+import usb_packet
+from helpers import do_usb_test, RunUsbTest
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
-    rand = random.Random()
-    rand.seed(seed)
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
     ep = 3
     address = 1
+    start_length = 10
+    end_length = 19
 
-    packets = []
+    session = UsbSession(bus_speed = usb_speed, run_enumeration = False, device_address = address)
 
-    data_val = 0;
-    pkt_length = 20
-    data_pid = 0x3 #DATA0 
-
-    for pkt_length in range(10, 20):
+    for pktLength in range(start_length, end_length+1):
 
         # < 17 fails
-        AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=20)
-        packets.append(TxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid)) #DATA0
+        session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="ISO", direction= "OUT", dataLength=pktLength, interEventDelay=20))
+       
+        session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="ISO", direction= "IN", dataLength=pktLength, interEventDelay=58))
 
-        AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=58)
-        packets.append(RxDataPacket(rand, data_start_val=data_val, data_valid_count=data_valid_count, length=pkt_length, pid=data_pid))
-
-        data_val = data_val + pkt_length
-        #data_pid = data_pid ^ 8
-
-    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 
 def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    RunUsbTest(do_test)

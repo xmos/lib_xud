@@ -51,8 +51,13 @@ class UsbTransaction(UsbEvent):
             else:
                 expectHandshake = False
 
+            if expectHandshake or self._endpointType == "ISO":
+                resend = False
+            else:
+                resend = True
+
             # Generate packet data payload
-            packetPayload = session.getPayload_out(endpointNumber, dataLength, resend = False)#(not expectHandshake or not self._endpointType == "ISO"))
+            packetPayload = session.getPayload_out(endpointNumber, dataLength, resend=resend)
 
             pid = session.data_pid_out(endpointNumber, togglePid = togglePid)
 
@@ -64,9 +69,9 @@ class UsbTransaction(UsbEvent):
        
             self._packets.extend(packets)
 
-            if resend:
+            #if resend:
                 # Add again..
-                self._packets.extend(packets)
+            #    self._packets.extend(packets)
 
         else: 
             

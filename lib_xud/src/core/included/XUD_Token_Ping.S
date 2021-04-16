@@ -1,5 +1,8 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
-.align 4
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
+#include "XUD_AlignmentDefines.h"
+
+.align FUNCTION_ALIGNMENT
 Pid_Ping:
     #include "XUD_CrcAddrCheck.S"
 

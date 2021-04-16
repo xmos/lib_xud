@@ -22,6 +22,7 @@ test_results.csv
 .DS_Store
 _README/**
 **/pdf/**
+**/.venv/**
 *.doctree
 sphinx.output
 Installs/

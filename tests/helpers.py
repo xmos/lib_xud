@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import xmostest
 import os
 import random
@@ -77,6 +79,8 @@ def run_on(**kwargs):
 def RunUsbTest(test_fn):
    
     seed = args.seed if args.seed else random.randint(0, sys.maxsize)
+
+    data_valid_count = {'FS': 39, "HS": 0}
 
     for _arch in ARCHITECTURE_CHOICES:
         for _busspeed in BUSSPEED_CHOICES:

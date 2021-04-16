@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
+# Rx out of seq (but valid.. ) data PID
 import xmostest
 from  usb_packet import TokenPacket, USB_PID
 from helpers import do_usb_test, RunUsbTest

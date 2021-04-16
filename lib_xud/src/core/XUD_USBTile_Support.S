@@ -1,4 +1,5 @@
-// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
+// Copyright 2015-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /** XUD_USBTile_Support.S
   * @brief     Support functions for USB Tile use
   * @author    Ross Owen, XMOS Limited
@@ -10,12 +11,13 @@
 #ifdef __XS3A__
 #include <xs3a_registers.h>
 #endif
+#include <XUD_AlignmentDefines.h>
 
 .text
 .globl XUD_EnableUsbPortMux, "f{ui}()"
 .type  XUD_EnableUsbPortMux, @function
 .cc_top XUD_EnableUsbPortMux.function
-.align    4
+.align FUNCTION_ALIGNMENT
 // void XUD_EnableUsbPortMux (unsigned mode);
 XUD_EnableUsbPortMux:
 .issue_mode single
@@ -47,7 +49,7 @@ XUD_EnableUsbPortMux:
 .globl XUD_DisableUsbPortMux, "f{ui}()"
 .type  XUD_DisableUsbPortMux, @function
 .cc_top XUD_DisableUsbPortMux.function
-.align    4
+.align FUNCTION_ALIGNMENT
 // void XUD_DisableUsbPortMux (unsigned mode);
 XUD_DisableUsbPortMux:
   ldc       r1, XS1_PS_XCORE_CTRL0

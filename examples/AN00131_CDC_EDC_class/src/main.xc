@@ -1,4 +1,5 @@
-// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
+// Copyright 2015-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <platform.h>
 #include <xs1.h>
@@ -34,7 +35,7 @@ int main() {
     {
         on USB_TILE: XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                       null, epTypeTableOut, epTypeTableIn, 
-                      null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
+                      XUD_SPEED_HS, XUD_PWR_BUS);
 
         on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);
 

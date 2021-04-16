@@ -47,12 +47,12 @@ class UsbPhyShim(UsbPhy):
 
                     #sample TXV for new packet
                     if xsi.sample_port_pins(self._txv) == 1:
-                        print "Receiving packet {}".format(i)
+                        print("Receiving packet {}".format(i))
                         in_rx_packet = True
                         break
             
                 if in_rx_packet == False:
-                    print "ERROR: Timed out waiting for packet"
+                    print("ERROR: Timed out waiting for packet")
 
                 else:
                     #print "in packet"
@@ -62,7 +62,7 @@ class UsbPhyShim(UsbPhy):
                         xsi.drive_port_pins(self._txrdy, 1)
                         data = xsi.sample_port_pins(self._txd)
                        
-                        print "Received byte: {0:#x}".format(data)
+                        print("Received byte: {0:#x}".format(data))
                         rx_packet.append(data)
 
                         self.wait(lambda x: self._clock.is_high())
@@ -80,30 +80,30 @@ class UsbPhyShim(UsbPhy):
                     # Check packet agaist expected
                     expected = packet.get_bytes(do_tokens=True)
                     if len(expected) != len(rx_packet):
-                        print "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(len(expected), len(rx_packet))
+                        print("ERROR: Rx packet length bad. Expecting: {} actual: {}".format(len(expected), len(rx_packet)))
                 
                     # Check packet data against expected
                     if cmp(expected, rx_packet):
-                        print "ERROR: Rx Packet Error. Expected:"
+                        print("ERROR: Rx Packet Error. Expected:")
                         for item in expected:
-                            print "{0:#x}".format(item)
+                            print("{0:#x}".format(item))
 
-                        print "Received:" 
+                        print("Received:") 
                         for item in rx_packet:
-                            print "{0:#x}".format(item)
+                            print("{0:#x}".format(item))
             else:
 
                 
                 # xCore should not be trying to send if we are trying to send..
                 if xsi.sample_port_pins(self._txv) == 1:
-                    print "ERROR: Unexpected packet from xCORE"
+                    print("ERROR: Unexpected packet from xCORE")
 
                 rxv_count = packet.get_data_valid_count();
 
                 #print "Waiting for inter_pkt_gap: {i}".format(i=packet.inter_frame_gap)
                 self.wait_until(xsi.get_time() + packet.inter_pkt_gap)
 
-                print "Phy transmitting packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid)
+                print("Phy transmitting packet {} PID: {} ({})".format(i, packet.get_pid_pretty(), packet.pid))
                 if self._verbose:
                     sys.stdout.write(packet.dump())
 
@@ -122,7 +122,7 @@ class UsbPhyShim(UsbPhy):
 
                     # xCore should not be trying to send if we are trying to send..
                     if xsi.sample_port_pins(self._txv) == 1:
-                        print "ERROR: Unexpected packet from xCORE"
+                        print("ERROR: Unexpected packet from xCORE")
 
                     self.wait(lambda x: self._clock.is_low())
 
@@ -142,7 +142,7 @@ class UsbPhyShim(UsbPhy):
 
                         # xCore should not be trying to send if we are trying to send..
                         if xsi.sample_port_pins(self._txv) == 1:
-                            print "ERROR: Unexpected packet from xCORE"
+                            print("ERROR: Unexpected packet from xCORE")
 
                     #print "Sending byte {0:#x}".format(byte)
 
@@ -171,14 +171,14 @@ class UsbPhyShim(UsbPhy):
                
                     # xCore should not be trying to send if we are trying to send..
                     if xsi.sample_port_pins(self._txv) == 1:
-                        print "ERROR: Unexpected packet from xCORE"
+                        print("ERROR: Unexpected packet from xCORE")
 
                 xsi.drive_port_pins(self._rxa, 0)
 
                 #if self._verbose:
                     #print "Sent"
 
-        print "Test done"
+        print("Test done")
         self.end_test()
 
 

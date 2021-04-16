@@ -252,7 +252,7 @@ class UsbPacket(UsbEvent):
         return "USBPacket"
 
     def get_pid_str(self):
-        for key, value in USB_PID.iteritems():
+        for key, value in USB_PID.items():
             if value == self.pid:
                 return key
         return "UNKNOWN"
@@ -295,12 +295,12 @@ class RxPacket(UsbPacket):
 
             #sample TXV for new packet
             if xsi.sample_port_pins(usb_phy._txv) == 1:
-                print "Packet:\tDEVICE -> HOST"
+                print("Packet:\tDEVICE -> HOST")
                 in_rx_packet = True
                 break
 
         if in_rx_packet == False:
-            print "ERROR: Timed out waiting for packet"
+            print("ERROR: Timed out waiting for packet")
         else:
             while in_rx_packet == True:
 
@@ -308,7 +308,7 @@ class RxPacket(UsbPacket):
                 xsi.drive_port_pins(usb_phy._txrdy, 1)
                 data = xsi.sample_port_pins(usb_phy._txd)
 
-                print "\tRX byte: {0:#x}".format(data)
+                print("\tRX byte: {0:#x}".format(data))
                 rx_packet.append(data)
 
                 wait(lambda x: usb_phy._clock.is_high())
@@ -324,17 +324,17 @@ class RxPacket(UsbPacket):
             # Check packet against expected
             expected = self.get_bytes(do_tokens=False)
             if len(expected) != len(rx_packet):
-                print "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(len(expected), len(rx_packet))
+                print("ERROR: Rx packet length bad. Expecting: {} actual: {}".format(len(expected), len(rx_packet)))
 
             # Check packet data against expected
-            if cmp(expected, rx_packet):
-                print "ERROR: Rx Packet Error. Expected:"
+            if expected != rx_packet:
+                print("ERROR: Rx Packet Error. Expected:")
                 for item in expected:
-                    print "{0:#x}".format(item)
+                    print("{0:#x}".format(item))
 
-                print "Received:"
+                print("Received:")
                 for item in rx_packet:
-                    print "{0:#x}".format(item)
+                    print("{0:#x}".format(item))
 
 
 
@@ -361,13 +361,13 @@ class TxPacket(UsbPacket):
 
          # xCore should not be trying to send if we are trying to send..
         if xsi.sample_port_pins(usb_phy._txv) == 1:
-            print "ERROR: Unexpected packet from xCORE"
+            print("ERROR: Unexpected packet from xCORE")
 
         rxv_count = self.data_valid_count
 
         usb_phy.wait_until(xsi.get_time() + self.interEventDelay)
 
-        print "Packet:\tHOST -> DEVICE\n\tPID: {0} ({1:#x})".format(self.get_pid_str(), self.pid)
+        print("Packet:\tHOST -> DEVICE\n\tPID: {0} ({1:#x})".format(self.get_pid_str(), self.pid))
         
         # Set RXA high to USB shim
         xsi.drive_periph_pin(usb_phy._rxa, 1)
@@ -384,7 +384,7 @@ class TxPacket(UsbPacket):
 
             # xCore should not be trying to send if we are trying to send..
             if xsi.sample_port_pins(usb_phy._txv) == 1:
-                print "ERROR: Unexpected packet from xCORE"
+                print("ERROR: Unexpected packet from xCORE")
 
             wait(lambda x: usb_phy._clock.is_low())
             wait(lambda x: usb_phy._clock.is_high())
@@ -403,7 +403,7 @@ class TxPacket(UsbPacket):
 
                 # xCore should not be trying to send if we are trying to send..
                 if xsi.sample_port_pins(usb_phy._txv) == 1:
-                    print "ERROR: Unexpected packet from xCORE"
+                    print("ERROR: Unexpected packet from xCORE")
 
             #print "Sending byte {0:#x}".format(byte)
 
@@ -426,7 +426,7 @@ class TxPacket(UsbPacket):
 
             # xCore should not be trying to send if we are trying to send..
             if xsi.sample_port_pins(usb_phy._txv) == 1:
-                print "ERROR: Unexpected packet from xCORE"
+                print("ERROR: Unexpected packet from xCORE")
 
         xsi.drive_periph_pin(usb_phy._rxa, 0)
 

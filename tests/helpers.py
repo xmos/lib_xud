@@ -67,7 +67,7 @@ def run_on(**kwargs):
     if not args:
         return True
 
-    for name,value in kwargs.iteritems():
+    for name,value in kwargs.items():
         arg_value = getattr(args,name)
         if arg_value is not None and value != arg_value:
             return False
@@ -76,7 +76,7 @@ def run_on(**kwargs):
 
 def RunUsbTest(test_fn):
    
-    seed = args.seed if args.seed else random.randint(0, sys.maxint)
+    seed = args.seed if args.seed else random.randint(0, sys.maxsize)
 
     for _arch in ARCHITECTURE_CHOICES:
         for _busspeed in BUSSPEED_CHOICES:
@@ -96,7 +96,7 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
 
     binary = '{testname}/bin/{arch}/{testname}_{arch}.xe'.format(testname=testname, arch=arch)
 
-    print binary
+    print(binary)
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
 
@@ -105,13 +105,13 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
         events = session.events
 
         if args.verbose:
-            print "Session " + str(sessions.index(session))
-            print str(session)
+            print("Session " + str(sessions.index(session)))
+            print(str(session))
 
         if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-            print "Running {test}: {arch} arch sending {n} event(s) at {clk} using {speed} (seed {seed})".format(
+            print("Running {test}: {arch} arch sending {n} event(s) at {clk} using {speed} (seed {seed})".format(
                 test=testname, n=len(events),
-                arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed)
+                arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed))
 
         phy.events = session.events
 
@@ -142,21 +142,21 @@ def create_expect(arch, events, filename, verbose = False):
         packet_offset = 0
         
         if verbose:
-            print "EXPECTED OUTPUT:"
+            print("EXPECTED OUTPUT:")
         for i, event in enumerate(events):
            
             expect_str = event.expected_output(offset = packet_offset)
             packet_offset += event.event_count
             
             if verbose:
-                print str(expect_str), 
+                print(str(expect_str), end=' ') 
             
             f.write(str(expect_str))
         
         f.write("Test done\n")
 
         if verbose:
-            print "Test done\n"
+            print("Test done\n")
 
 def get_sim_args(testname, clk, phy, arch='xs2'):
     sim_args = []
@@ -203,15 +203,15 @@ def check_received_packet(packet, phy):
     if phy.expect_packet_index < phy.num_expected_packets:
         expected = phy.expected_packets[phy.expect_packet_index]
         if packet != expected:
-            print "ERROR: packet {n} does not match expected packet".format(
-                n=phy.expect_packet_index)
+            print("ERROR: packet {n} does not match expected packet".format(
+                n=phy.expect_packet_index))
 
-            print "Received:"
+            print("Received:")
             sys.stdout.write(packet.dump())
-            print "Expected:"
+            print("Expected:")
             sys.stdout.write(expected.dump())
 
-        print "Received packet {} ok".format(phy.expect_packet_index)
+        print("Received packet {} ok".format(phy.expect_packet_index))
         # Skip this packet
         phy.expect_packet_index += 1
 
@@ -219,11 +219,11 @@ def check_received_packet(packet, phy):
         move_to_next_valid_packet(phy)
 
     else:
-        print "ERROR: received unexpected packet from DUT"
-        print "Received:"
+        print("ERROR: received unexpected packet from DUT")
+        print("Received:")
         sys.stdout.write(packet.dump())
 
     if phy.expect_packet_index >= phy.num_expected_packets:
-        print "Test done"
+        print("Test done")
         phy.xsi.terminate()
 

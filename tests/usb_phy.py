@@ -57,7 +57,7 @@ class UsbPhy(xmostest.SimThread):
 
     def end_test(self):
         if self._verbose:
-            print "All events sent"
+            print("All events sent")
 
         if self._complete_fn:
             self._complete_fn(self)
@@ -92,7 +92,7 @@ class UsbPhy(xmostest.SimThread):
             # Allow time for the DUT to exit
             self.wait_until(self.xsi.get_time() + self._dut_exit_time)
 
-            print "ERROR: Test timed out"
+            print("ERROR: Test timed out")
             self.xsi.terminate()
 
     def set_clock(self, clock):
@@ -111,7 +111,7 @@ class UsbPhy(xmostest.SimThread):
 
             event.drive(self)
            
-        print "Test done"
+        print("Test done")
         self.end_test()
 
 

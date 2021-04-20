@@ -23,26 +23,35 @@
 // R1 : Valid Token Port
 // R0 : RXD
 .align FUNCTION_ALIGNMENT
-InNotReady:
-    ldw         r11, sp[STACK_EPTYPES_IN]
-    ldw         r11, r11[r10]                       // Load EP Type
-    bt          r11, XUD_IN_TxNak
-    ldc         r11, 0xc3                           // Create 0-length packet
-    outpw       res[TXD], r11, 24
-    #include "XUD_TokenJmp.S"
-
-XUD_IN_TxNak:                                       // Non-Iso
-    ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
-    ldw        r11, r11[r10]                        // Load handshake PID
-    outpw     res[TXD], r11, 8
-    #include "XUD_TokenJmp.S"
-
-.align FUNCTION_ALIGNMENT
 Pid_In:
     #include "XUD_CrcAddrCheck.S"
-    ldaw       r3, r10[4]                           // R3 = R10 + 16
-    ldw        r4, r5[r3]                           // Load EP structure address
-    bf         r4, InNotReady                       // If 0 then not ready...
+    ldaw       r3,  r10[4]                          // R3 = R10 + 16
+    ldw        r4,  r5[r3]                          // Load EP structure address into R4
+
+
+    ldw        r11, sp[STACK_EPTYPES_IN]
+    ldw        r11, r11[r10]                        // Load EP Type into R11
+    bt         r11, In_NonIso                       // If the type is non-zero then it is not isochronous
+    bt         r4,  In_LoadPid                      // If the EP structure address is not 0, and the
+                                                    // EP type is iso, then we are ready to send.
+    ldc        r11, 0xc3                            // Otherwise, create 0-length packet
+    outpw      res[TXD], r11, 24
+    #include "XUD_TokenJmp.S"
+
+In_NonIso:
+    ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
+    ldw        r11, r11[r10]                        // Load handshake PID into R11
+   {bf         r4,  In_TxHandshake                  // If the EP structure address is 0, and the EP type
+                                                    // is not iso, then send the PID from the handshake table.
+    ldc        r8,  USB_PIDn_STALL}                 // If the EP is ready, then compare the STALL PID
+    eq         r8,  r11, r8                         // with the PID in the handshake table.
+    bf         r8,  In_LoadPid                      // If it's not a STALL, then we are ready to send.
+                                                    // Otherwise, send the PID from the handshake table.
+    ldc r8, 0
+    ecallf r8
+In_TxHandshake:
+    outpw     res[TXD], r11, 8
+    #include "XUD_TokenJmp.S"
 
 In_LoadPid:
     ldw         r11, r4[4]                          // Load PID from structure

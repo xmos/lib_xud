@@ -47,8 +47,6 @@ In_NonIso:
     eq         r8,  r11, r8                         // with the PID in the handshake table.
     bf         r8,  In_LoadPid                      // If it's not a STALL, then we are ready to send.
                                                     // Otherwise, send the PID from the handshake table.
-    ldc r8, 0
-    ecallf r8
 In_TxHandshake:
     outpw     res[TXD], r11, 8
     #include "XUD_TokenJmp.S"

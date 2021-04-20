@@ -8,7 +8,6 @@
 .skip 0
 Pid_Out:
     #include "XUD_CrcAddrCheck.S"
-
     ldw        r3, r5[r10]                      // Load relevant EP pointer
     bf         r3, XUD_TokenOut_BufferFull
     ldw        r1, r3[3]                        // Load buffer from EP structure

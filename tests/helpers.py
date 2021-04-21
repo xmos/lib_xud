@@ -102,10 +102,10 @@ def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
 
     print(binary)
 
-    if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-        print("Running {test}: {arch} arch sending {n} packets at {clk} using {speed} (seed {seed})".format(
-            test=testname, n=len(packets),
-            arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed))
+    # if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
+    #     print("Running {test}: {arch} arch sending {n} packets at {clk} using {speed} (seed {seed})".format(
+    #         test=testname, n=len(packets),
+    #         arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed))
 
     phy.set_packets(packets)
 
@@ -114,17 +114,21 @@ def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
         folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
     create_expect(arch, packets, expect_filename)
 
-    tester = xmostest.ComparisonTester(open(expect_filename),
-                                      'lib_xud', 'xud_sim_tests', testname,
-                                     {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
+    # tester = xmostest.ComparisonTester(open(expect_filename),
+    #                                   'lib_xud', 'xud_sim_tests', testname,
+    #                                  {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
 
-    tester.set_min_testlevel(level)
+    # tester.set_min_testlevel(level)
 
     simargs = get_sim_args(testname, clk, phy, arch)
-    xmostest.run_on_simulator(resources['xsim'], binary,
+    # return xmostest.run_on_simulator(resources['xsim'], binary,
+    #                           simthreads=[clk, phy] + extra_tasks,
+    #                           tester=tester,
+    #                           simargs=simargs)
+    return xmostest.run_on_simulator(resources['xsim'], binary,
                               simthreads=[clk, phy] + extra_tasks,
-                              tester=tester,
                               simargs=simargs)
+
 
 def create_expect(arch, packets, filename):
     do_tokens = (arch == "xs2")

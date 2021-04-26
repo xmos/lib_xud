@@ -1,7 +1,5 @@
 .. include:: ../../README.rst
 
-.. include:: ../../lib_xud/doc/rst/typical_resource_usage.rst
-
 |newpage|
 
 Overview

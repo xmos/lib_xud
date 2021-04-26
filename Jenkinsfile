@@ -32,8 +32,8 @@ pipeline {
           dir("${REPO}") {
             runXdoc('doc')
           }
-         archiveArtifacts artifacts: "${REPO}/**/*.pdf", fingerprint: true, allowEmptyArchive: true
         }
+        archiveArtifacts artifacts: "${REPO}/**/*.pdf", fingerprint: true, allowEmptyArchive: true
       }
     }
     // stage('Tests') {

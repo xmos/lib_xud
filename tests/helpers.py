@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import xmostest
+from xmostest import simulators
+from xmostest import testers
 import os
 import random
 import sys
@@ -65,29 +66,19 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
         
     return (clk, phy)
 
-# def run_on(**kwargs):
-#     if not args:
-#         return True
 
-#     for name,value in kwargs.items():
-#         arg_value = getattr(args,name)
-#         if arg_value is not None and value != arg_value:
-#             return False
+def run_on_simulator(resource, xe, **kwargs):
+    for k in ['do_xe_prebuild', 'build_env', 'clean_before_build']:
+        if k in kwargs:
+            kwargs.pop(k)
+    return resource.run(xe, **kwargs)
 
-#     return True
-
-# def runall_rx(test_fn):
-   
-#     seed = args.seed if args.seed else random.randint(0, sys.maxsize)
-
-#     data_valid_count = {'FS': 39, "HS": 0}
-
-#     for _arch in ARCHITECTURE_CHOICES:
-#         for _busspeed in BUSSPEED_CHOICES:
-#             if run_on(arch=_arch):
-#                 if run_on(busspeed=_busspeed):
-#                     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
-#                     test_fn(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed)
+def request_resource(resource_type, tester = None,
+                     remote_resource_lease_time = 600):
+    if resource_type == 'xsim':
+        return {'xsim':simulators.XSim()}
+    elif resource_type == 'axe':
+        return {'axe':simulators.Axe()}
 
 def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
                level='nightly', extra_tasks=[]):
@@ -96,16 +87,9 @@ def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
     """
     testname,extension = os.path.splitext(os.path.basename(test_file))
 
-    resources = xmostest.request_resource("xsim")
+    resources = request_resource("xsim")
 
     binary = '{testname}/bin/{arch}/{testname}_{arch}.xe'.format(testname=testname, arch=arch)
-
-    print(binary)
-
-    # if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-    #     print("Running {test}: {arch} arch sending {n} packets at {clk} using {speed} (seed {seed})".format(
-    #         test=testname, n=len(packets),
-    #         arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed))
 
     phy.set_packets(packets)
 
@@ -114,19 +98,12 @@ def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
         folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
     create_expect(arch, packets, expect_filename)
 
-    tester = xmostest.ComparisonTester(open(expect_filename),
+    tester = testers.ComparisonTester(open(expect_filename),
                                       'lib_xud', 'xud_sim_tests', testname,
                                      {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
 
-    # tester.set_min_testlevel(level)
-
-    # simargs = get_sim_args(testname, clk, phy, arch)
-    # return xmostest.run_on_simulator(resources['xsim'], binary,
-    #                           simthreads=[clk, phy] + extra_tasks,
-    #                           tester=tester,
-    #                           simargs=simargs)
-    xmostest.run_on_simulator(resources['xsim'], binary,
-                              simthreads=[clk, phy] + extra_tasks)
+    run_on_simulator(resources['xsim'], binary,
+                              simthreads=[clk, phy] + extra_tasks)  
     return tester
 
 

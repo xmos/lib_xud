@@ -65,29 +65,29 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
         
     return (clk, phy)
 
-def run_on(**kwargs):
-    if not args:
-        return True
+# def run_on(**kwargs):
+#     if not args:
+#         return True
 
-    for name,value in kwargs.items():
-        arg_value = getattr(args,name)
-        if arg_value is not None and value != arg_value:
-            return False
+#     for name,value in kwargs.items():
+#         arg_value = getattr(args,name)
+#         if arg_value is not None and value != arg_value:
+#             return False
 
-    return True
+#     return True
 
-def runall_rx(test_fn):
+# def runall_rx(test_fn):
    
-    seed = args.seed if args.seed else random.randint(0, sys.maxsize)
+#     seed = args.seed if args.seed else random.randint(0, sys.maxsize)
 
-    data_valid_count = {'FS': 39, "HS": 0}
+#     data_valid_count = {'FS': 39, "HS": 0}
 
-    for _arch in ARCHITECTURE_CHOICES:
-        for _busspeed in BUSSPEED_CHOICES:
-            if run_on(arch=_arch):
-                if run_on(busspeed=_busspeed):
-                    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
-                    test_fn(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed)
+#     for _arch in ARCHITECTURE_CHOICES:
+#         for _busspeed in BUSSPEED_CHOICES:
+#             if run_on(arch=_arch):
+#                 if run_on(busspeed=_busspeed):
+#                     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
+#                     test_fn(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed)
 
 def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
                level='nightly', extra_tasks=[]):
@@ -114,20 +114,20 @@ def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
         folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
     create_expect(arch, packets, expect_filename)
 
-    # tester = xmostest.ComparisonTester(open(expect_filename),
-    #                                   'lib_xud', 'xud_sim_tests', testname,
-    #                                  {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
+    tester = xmostest.ComparisonTester(open(expect_filename),
+                                      'lib_xud', 'xud_sim_tests', testname,
+                                     {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
 
     # tester.set_min_testlevel(level)
 
-    simargs = get_sim_args(testname, clk, phy, arch)
+    # simargs = get_sim_args(testname, clk, phy, arch)
     # return xmostest.run_on_simulator(resources['xsim'], binary,
     #                           simthreads=[clk, phy] + extra_tasks,
     #                           tester=tester,
     #                           simargs=simargs)
-    return xmostest.run_on_simulator(resources['xsim'], binary,
-                              simthreads=[clk, phy] + extra_tasks,
-                              simargs=simargs)
+    xmostest.run_on_simulator(resources['xsim'], binary,
+                              simthreads=[clk, phy] + extra_tasks)
+    return tester
 
 
 def create_expect(arch, packets, filename):

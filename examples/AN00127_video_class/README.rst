@@ -1,8 +1,6 @@
 USB Video Class Device
 ======================
 
-.. version:: 2.0.2
-
 Summary
 -------
 

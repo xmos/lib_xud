@@ -1,6 +1,6 @@
 .. appnote:: AN00126
 
-.. version:: 2.0.2
+.. include:: ../../../../lib_xud/doc/rst/version.rst
 
 .. include:: ../../README.rst
 

@@ -9,12 +9,25 @@ import usb_packet
 
 USB_DATA_VALID_COUNT = {'FS': 39, "HS": 0}
 
+USB_LINESTATE = {
+                    'IDLE': 0,
+                    'FS_J': 2,
+                    'FS_K': 1,
+                    'HS_J': 1,
+                    'HS_K': 2,
+                  }
+
+USB_TIMINGS = {
+                    'IDLE_TO_FS_MIN_US': 3000,
+                    'IDLE_TO_FS_MAX_US': 3125,
+                }
+
 class UsbPhy(xmostest.SimThread):
 
     # Time in ns from the last packet being sent until the end of test is signalled to the DUT
     END_OF_TEST_TIME = 5000
 
-    def __init__(self, name, rxd, rxa, rxdv, rxer, txd, txv, txrdy, ls0, ls1, clock, initial_delay, verbose,
+    def __init__(self, name, rxd, rxa, rxdv, rxer, txd, txv, txrdy, ls, xcvrsel, termsel, clock, initial_delay, verbose,
                  test_ctrl, do_timeout, complete_fn, expect_loopback, dut_exit_time):
         self._name = name
         self._test_ctrl = test_ctrl
@@ -25,8 +38,9 @@ class UsbPhy(xmostest.SimThread):
         self._txd = txd
         self._txv = txv
         self._txrdy = txrdy
-        self.ls0 = ls0
-        self.ls1 = ls1
+        self._ls = ls
+        self._xcvrsel = xcvrsel
+        self._termsel = termsel
         self._events = []
         self._clock = clock
         self._initial_delay = initial_delay
@@ -52,6 +66,10 @@ class UsbPhy(xmostest.SimThread):
     def events(self, events):
         self._events = events
    
+    def us_to_clocks(self, time_us):
+        time_clocks = time_us/self._clock.period_us
+        return time_clocks
+
     def start_test(self):
         self.wait_until(self.xsi.get_time() + self._initial_delay)
         self.wait(lambda x: self._clock.is_high())

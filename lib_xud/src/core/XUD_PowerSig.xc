@@ -5,8 +5,6 @@
   * @author     Ross Owen, XMOS Limited
   **/
 
-#ifndef XUD_SIM_XSIM
-
 #include <xs1.h>
 
 #include "xud.h"
@@ -289,5 +287,4 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
         }
     }
 }
-#endif
 #endif

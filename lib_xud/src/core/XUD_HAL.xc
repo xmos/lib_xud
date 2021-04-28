@@ -125,7 +125,6 @@ void XUD_HAL_EnableUsb(unsigned pwrConfig)
 
 void XUD_HAL_EnterMode_PeripheralFullSpeed()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS3A__
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 1);
@@ -148,12 +147,10 @@ void XUD_HAL_EnterMode_PeripheralFullSpeed()
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 
         (1<<XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT) | (1<<XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
 #endif
-#endif
 }
 
 void XUD_HAL_EnterMode_PeripheralChirp()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS3A__
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0);
@@ -174,12 +171,10 @@ void XUD_HAL_EnterMode_PeripheralChirp()
 #else
    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1010);
 #endif
-#endif
 }
 
 void XUD_HAL_EnterMode_PeripheralHighSpeed()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS3A__
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0); // HS
@@ -200,12 +195,10 @@ void XUD_HAL_EnterMode_PeripheralHighSpeed()
 #else
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b0000);
 #endif
-#endif
 }
 
 void XUD_HAL_EnterMode_PeripheralTestJTestK()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS3A__
 
   /* From ULPI Specification Revsion 1.1, table 41 
@@ -235,12 +228,10 @@ void XUD_HAL_EnterMode_PeripheralTestJTestK()
 #else
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
 #endif
-#endif
 }
 
 void XUD_HAL_Mode_PowerSig()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS2A__
     /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */
   	set_port_no_inv(flag2_port);
@@ -254,12 +245,10 @@ void XUD_HAL_Mode_PowerSig()
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 1);
     write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_SHIM_CFG_NUM, d); 
 #endif
-#endif
 }
 
 void XUD_HAL_Mode_DataTransfer()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS2A__
     /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
      * NOTE: Need to do this every iteration since CHKTOK would break power signaling */
@@ -280,7 +269,6 @@ void XUD_HAL_Mode_DataTransfer()
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 0);
     write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_SHIM_CFG_NUM, d); 
-#endif
 #endif
 }
 

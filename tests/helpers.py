@@ -35,8 +35,9 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          'tile[0]:XS1_PORT_8A', #txd
                          'tile[0]:XS1_PORT_1K', #txv
                          'tile[0]:XS1_PORT_1H', #txrdy
-                         'XS1_USB_LS0', 
-                         'XS1_USB_LS1',
+                         'XS1_USB_LS', 
+                         'XS1_USB_XCVRSEL',
+                         'XS1_USB_TERMSEL',
                          clk,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,
@@ -52,8 +53,9 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
                          'tile[0]:XS1_PORT_8A', #txd
                          'tile[0]:XS1_PORT_1K', #txv
                          'tile[0]:XS1_PORT_1H', #txrdy
-                         'XS1_USB_LS0', 
-                         'XS1_USB_LS1',
+                         'XS1_USB_LS', 
+                         'XS1_USB_XCVRSEL',
+                         'XS1_USB_TERMSEL',
                          clk,
                          verbose=verbose, test_ctrl=test_ctrl,
                          do_timeout=do_timeout, complete_fn=complete_fn,

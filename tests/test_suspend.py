@@ -17,13 +17,17 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
     end_length = 12
     
     session = UsbSession(bus_speed=usb_speed, run_enumeration=False, device_address = address)
+   
+    pktLength = 10
+    session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="BULK", direction= "OUT", dataLength=pktLength, interEventDelay=0))
+    session.add_event(UsbSuspend(500000000000))
+    session.add_event(UsbResume())
 
-    for pktLength in range(start_length, end_length+1):
+    #for pktLength in range(start_length, end_length+1):
     
-        if pktLength == start_length + 2:
-            session.add_event(UsbSuspend(10))
+     #   if pktLength == start_length + 2:
+     #       session.add_event(UsbSuspend(500000000000))
 
-        session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="BULK", direction= "OUT", dataLength=pktLength))
 
     do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 

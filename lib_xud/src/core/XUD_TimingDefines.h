@@ -4,8 +4,10 @@
 #define _XUD_USB_DEFINES_H_
 
 // Defines relating to USB/ULPI/UTMI/Phy specs
-#define REF_CLK_FREQ 100
-#define SUSPEND_TIMEOUT_us          3000 
+#define REF_CLK_FREQ                (100)
+#ifndef SUSPEND_TIMEOUT_us
+#define SUSPEND_TIMEOUT_us          (3000) 
+#endif
 #define SUSPEND_TIMEOUT             (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
 
 // Device attach timing defines

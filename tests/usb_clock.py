@@ -31,6 +31,14 @@ class Clock(xmostest.SimThread):
                 #self.xsi.drive_port_pins(self._port, self._val)
                 self.xsi.drive_periph_pin(self._port, self._val)
 
+    @property
+    def period_ns(self):
+        return self._period
+
+    @property
+    def period_us(self):
+        return self._period/1000
+
     def is_high(self):
         return (self._val == 1)
 

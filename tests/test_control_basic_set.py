@@ -8,8 +8,8 @@ import usb_packet
 from usb_clock import Clock
 from helpers import do_usb_test, get_usb_clk_phy
 from usb_clock import Clock
-from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
+import Pyxsim
 import pytest
 import os
 
@@ -68,25 +68,8 @@ def runall_rx(capfd):
                     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
                     tester_list.append(do_test(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed))
     captured = capfd.readouterr()
-    caps = captured.out.split("\n")
-    separate_point = [index for index, element in enumerate(caps) if element.strip() == "Test done"]
-    result = []
-    if len(separate_point) > 1:
-        i = 0
-        start = 0
-        stop = 0
-        while(i<len(separate_point)):
-            if i == 0:
-                stop = separate_point[i]+1
-            else:
-                start = separate_point[i-1]+1
-                stop = separate_point[i]+1
-            re_cap = caps[start:stop]
-            result.append(tester_list[i]._run(re_cap)) 
-            i += 1
-    else:
-        result.append(tester_list[0]._run(caps[:separate_point[0]+1])) 
-    return result
+    
+    return Pyxsim.run_tester(caps,tester_list)
 
 
 def test_control_basic_set(runall_rx):

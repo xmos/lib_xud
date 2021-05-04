@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-from xmostest import simulators
-from xmostest import testers
+# from Pyxsim import simulators
+from Pyxsim import testers
+import Pyxsim
 import os
 import random
 import sys
 from usb_clock import Clock
 from usb_phy import UsbPhy
-from usb_phy_shim import UsbPhyShim
+# from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
 from usb_packet import RxPacket
 from usb_packet import BusReset
@@ -67,18 +68,25 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
     return (clk, phy)
 
 
-def run_on_simulator(resource, xe, **kwargs):
+# def run_on_simulator(resource, xe, **kwargs):
+#     for k in ['do_xe_prebuild', 'build_env', 'clean_before_build']:
+#         if k in kwargs:
+#             kwargs.pop(k)
+#     return Pyxsim.run(xe, **kwargs)
+
+def run_on_simulator(xe, simthreads, **kwargs):
     for k in ['do_xe_prebuild', 'build_env', 'clean_before_build']:
         if k in kwargs:
             kwargs.pop(k)
-    return resource.run(xe, **kwargs)
+    return Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
 
-def request_resource(resource_type, tester = None,
-                     remote_resource_lease_time = 600):
-    if resource_type == 'xsim':
-        return {'xsim':simulators.XSim()}
-    elif resource_type == 'axe':
-        return {'axe':simulators.Axe()}
+
+# def request_resource(resource_type, tester = None,
+#                      remote_resource_lease_time = 600):
+#     if resource_type == 'xsim':
+#         return {'xsim':simulators.XSim()}
+#     elif resource_type == 'axe':
+#         return {'axe':simulators.Axe()}
 
 def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
                level='nightly', extra_tasks=[]):
@@ -87,7 +95,7 @@ def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
     """
     testname,extension = os.path.splitext(os.path.basename(test_file))
 
-    resources = request_resource("xsim")
+    # resources = request_resource("xsim")
 
     binary = '{testname}/bin/{arch}/{testname}_{arch}.xe'.format(testname=testname, arch=arch)
 
@@ -102,8 +110,10 @@ def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
                                       'lib_xud', 'xud_sim_tests', testname,
                                      {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
 
-    run_on_simulator(resources['xsim'], binary,
-                              simthreads=[clk, phy] + extra_tasks)  
+    # run_on_simulator(resources['xsim'], binary,
+    #                           simthreads=[clk, phy] + extra_tasks)  
+    simthreads = [clk, phy] + extra_tasks
+    run_on_simulator(binary, simthreads)  
     return tester
 
 

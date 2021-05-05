@@ -68,6 +68,7 @@ def runall_rx(capfd):
                     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
                     tester_list.append(do_test(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed))
     captured = capfd.readouterr()
+    caps = captured.out.split("\n")
     
     return Pyxsim.run_tester(caps,tester_list)
 

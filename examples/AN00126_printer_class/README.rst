@@ -1,10 +1,6 @@
 USB Printer Device Class
 ========================
 
-.. appnote:: AN00126
-
-.. version:: 2.0.2
-
 Summary
 -------
 

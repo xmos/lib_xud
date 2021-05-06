@@ -13,11 +13,12 @@ from usb_phy import UsbPhy
 from usb_phy_utmi import UsbPhyUtmi
 from usb_packet import RxPacket
 from usb_packet import BusReset
-
-args = None
+import pytest
+import tempfile
 
 ARCHITECTURE_CHOICES = ['xs2', 'xs3']
 BUSSPEED_CHOICES = ['FS', 'HS']
+args = {'arch':'xs3'}
 
 def create_if_needed(folder):
     if not os.path.exists(folder):
@@ -67,26 +68,44 @@ def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
         
     return (clk, phy)
 
-
-# def run_on_simulator(resource, xe, **kwargs):
-#     for k in ['do_xe_prebuild', 'build_env', 'clean_before_build']:
-#         if k in kwargs:
-#             kwargs.pop(k)
-#     return Pyxsim.run(xe, **kwargs)
-
 def run_on_simulator(xe, simthreads, **kwargs):
     for k in ['do_xe_prebuild', 'build_env', 'clean_before_build']:
         if k in kwargs:
             kwargs.pop(k)
     return Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
 
+def run_on(**kwargs):
 
-# def request_resource(resource_type, tester = None,
-#                      remote_resource_lease_time = 600):
-#     if resource_type == 'xsim':
-#         return {'xsim':simulators.XSim()}
-#     elif resource_type == 'axe':
-#         return {'axe':simulators.Axe()}
+    for name,value in kwargs.items():
+        arg_value = args.get(name)
+        if arg_value is not None and value != arg_value:
+            return False
+
+    return True
+
+def runall_rx(do_test):
+    tester_list = []
+    testname,extension = os.path.splitext(os.path.basename(__file__))
+    seed = random.randint(0, sys.maxsize)
+
+    data_valid_count = {'FS': 39, "HS": 0}
+
+    (fd, fname) = tempfile.mkstemp()
+    old_std = os.fdopen(os.dup(sys.stdout.fileno()), "w")
+    sys.stdout = os.fdopen(fd, "w")
+    std_reader = open(fname, "r")
+
+    for _arch in ARCHITECTURE_CHOICES:
+        for _busspeed in BUSSPEED_CHOICES:
+            if run_on(arch=_arch):
+                if run_on(busspeed=_busspeed):
+                    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
+                    tester_list.append(do_test(_arch, clk_60, usb_phy, data_valid_count[_busspeed], _busspeed, seed))
+    captured = std_reader.read()
+    sys.stdout = old_std
+    caps = captured.split("\n")
+    
+    return Pyxsim.run_tester(caps,tester_list)
 
 def do_usb_test(arch, clk, phy, usb_speed, packets, test_file, seed,
                level='nightly', extra_tasks=[]):

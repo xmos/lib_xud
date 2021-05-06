@@ -32,9 +32,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
         packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) 
         dataval += pktlength
 
-    tester = do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
-
-    return tester
+    return do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def test_iso_rx_basic():
     random.seed(1)

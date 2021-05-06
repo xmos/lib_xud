@@ -45,9 +45,7 @@ def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
     AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=2000)
     packets.append(RxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=14, pid=0x3)) #DATA0
 
-    tester = do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
-
-    return tester
+    return do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def test_iso_tx_basic():
     random.seed(1)

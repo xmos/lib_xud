@@ -60,9 +60,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
         if(trafficEp1 > 15):
             trafficEp1 = 0
 
-    tester = do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
-
-    return tester
+    return do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def test_bulk_rx_traffic():
     random.seed(1)

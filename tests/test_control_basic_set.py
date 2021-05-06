@@ -36,9 +36,7 @@ def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
     packets.append(RxDataPacket(rand, data_valid_count=data_valid_count, length=0, pid=0xb))
     packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
 
-    tester = do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
-
-    return tester
+    return do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def test_control_basic_set():
     random.seed(1)

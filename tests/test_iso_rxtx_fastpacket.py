@@ -37,9 +37,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
         data_val = data_val + pkt_length
         #data_pid = data_pid ^ 8
 
-    tester = do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
-
-    return tester
+    return do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
 
 def test_iso_rxtx_fastpacket():
     random.seed(1)

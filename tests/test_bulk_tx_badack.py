@@ -48,11 +48,9 @@ def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
         pktlength += 1
 
     # Note, quite big gap to allow checking.
-    tester = do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed,
+    return do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed,
                level='smoke', extra_tasks=[])
 
-    return tester
-    
 def test_bulk_tx_badack():
     random.seed(1)
     for result in runall_rx(do_test):

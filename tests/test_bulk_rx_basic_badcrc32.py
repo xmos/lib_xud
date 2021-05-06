@@ -59,10 +59,8 @@ def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
     packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
 
 
-    tester = do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed,
+    return do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed,
                level='smoke', extra_tasks=[])
-    
-    return tester
 
 def test_bulk_rx_basic_badcrc32():
     random.seed(1)

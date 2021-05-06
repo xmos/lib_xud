@@ -1,4 +1,5 @@
-// Copyright (c) 2017, XMOS Ltd, All rights reserved
+// Copyright 2017-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef __XUD_CONF_DEFAULT_H__
 #define __XUD_CONF_DEFAULT_H__

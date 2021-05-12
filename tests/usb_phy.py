@@ -18,8 +18,10 @@ USB_LINESTATE = {
                   }
 
 USB_TIMINGS = {
-                    'IDLE_TO_FS_MIN_US': 3000,
-                    'IDLE_TO_FS_MAX_US': 3125,
+                    'IDLE_TO_FS_MIN_US': 300, #Spec: 3000
+                    'IDLE_TO_FS_MAX_US': 312, #Spec: 3125
+                    'RESUME_FSK_MIN_US': 200, #Spec: 20000us
+                    'RESUME_SE0_US': 1.25, # 1.25uS - 1.5uS  
                 }
 
 class UsbPhy(xmostest.SimThread):
@@ -67,7 +69,7 @@ class UsbPhy(xmostest.SimThread):
         self._events = events
    
     def us_to_clocks(self, time_us):
-        time_clocks = time_us/self._clock.period_us
+        time_clocks = int(time_us/self._clock.period_us)
         return time_clocks
 
     def start_test(self):

@@ -30,4 +30,5 @@ class UsbEvent(object):
     def eventcount(self):
         pass
 
-   
+    def __str__(self):
+        return "UsbEvent IED: " + str(self.interEventDelay)

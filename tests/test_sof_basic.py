@@ -4,21 +4,11 @@
 import xmostest
 from  usb_packet import *
 import usb_packet
-from helpers import do_usb_test, RunUsbTest
+from helpers import do_usb_test, RunUsbTest, CreateSofToken
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 
-# TODO ideally creation of SOF's is moved elsewhere 
-def CreateSofToken(frameNumber, data_valid_count, badCrc = False):
-    ep = (frameNumber >> 7) & 0xf
-    address = (frameNumber) & 0x7f
-   
-    if badCrc:
-        return TokenPacket(pid=USB_PID['SOF'], address=address, endpoint=ep, data_valid_count=data_valid_count, crc5=0xff)
-    else:
-        return TokenPacket(pid=USB_PID['SOF'], address=address, endpoint=ep, data_valid_count=data_valid_count)
-    
-    return sofToken
+
 
 def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
    

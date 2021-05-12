@@ -84,41 +84,17 @@ USB_PID = {
             "NAK"       : 0x5A,
         }
 
-#def AppendSetupToken(packets, ep, address, **kwargs):
-#    ipg = kwargs.pop('inter_pkt_gap', 500)
-#    AppendTokenPacket(packets, 0x2d, ep, ipg, address, **kwargs)
-
-#def AppendOutToken(packets, ep, address, **kwargs):
-#    ipg = kwargs.pop('inter_pkt_gap', 500) 
-#    AppendTokenPacket(packets, 0xe1, ep, ipg, address, **kwargs)
-
-#def AppendPingToken(packets, ep, address, **kwargs):
-#    ipg = kwargs.pop('inter_pkt_gap', 500) 
-#    AppendTokenPacket(packets, 0xb4, ep, ipg, address, **kwargs)
-
-#def AppendInToken(packets, ep, address, **kwargs):
-    #357 was min IPG supported on bulk loopback to not nak
-    #lower values mean the loopback NAKs
-#    ipg = kwargs.pop('inter_pkt_gap', 10) 
-#    AppendTokenPacket(packets, 0x69, ep, ipg, address, **kwargs)
-
-#def AppendSofToken(packets, framenumber, **kwargs):
-#    ipg = kwargs.pop('inter_pkt_gap', 500) 
+def CreateSofToken(frameNumber, data_valid_count, badCrc = False, interEventDelay=1000):
+    ep = (frameNumber >> 7) & 0xf
+    address = (frameNumber) & 0x7f
+   
+    if badCrc:
+        return TokenPacket(pid=USB_PID['SOF'], address=address, endpoint=ep, data_valid_count=data_valid_count, crc5=0xff, interEventDelay=interEventDelay)
+    else:
+        return TokenPacket(pid=USB_PID['SOF'], address=address, endpoint=ep, data_valid_count=data_valid_count, interEventDelay=interEventDelay)
     
-    # Override EP and Address 
-#    ep = (framenumber >> 7) & 0xf
-#    address = (framenumber) & 0x7f
-#    AppendTokenPacket(packets, 0xa5, ep, ipg, address, **kwargs)
+    return sofToken
 
-#def AppendTokenPacket(packets, _pid, ep, ipg, addr=0, **kwargs):
-#    
-#    data_valid_count = kwargs.pop('data_valid_count', 0)
-#    packets.append(TokenPacket( 
-#        inter_pkt_gap=ipg, 
-#        pid=_pid,
-#        address=addr, 
-#        endpoint=ep,
-#        data_valid_count=data_valid_count))
 
 def reflect(val, numBits):
 
@@ -251,7 +227,7 @@ class UsbPacket(UsbEvent):
         return 1
 
     def __str__(self):
-        return "USBPacket"
+        return super().__str__() + " USBPacket"
 
     def get_pid_str(self):
         for key, value in USB_PID.items():

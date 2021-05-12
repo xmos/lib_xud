@@ -1,10 +1,13 @@
 // Copyright 2019-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#include "xud.h"
+
 /** 
  * @file   XUD_HAL.h 
  * \brief   USB HAL Layer 
 **/
+
+#include "xud.h"
+#include <platform.h>
 
 #ifdef __XS3A__
 #include <xs3a_registers.h>

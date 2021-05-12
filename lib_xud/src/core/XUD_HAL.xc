@@ -355,3 +355,12 @@ void XUD_HAL_SetDeviceAddress(unsigned char address)
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, address);
 #endif
 }
+
+#ifdef __XS2A__
+unsigned read_vbus()
+{
+    unsigned int x;
+    read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
+    return x & (1 << XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT);
+}
+#endif

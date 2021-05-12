@@ -27,8 +27,9 @@
 #define T_FILT                      (T_FILT_us * REF_CLK_FREQ)
 #endif
 
-
-#define SUSPEND_T_WTWRSTHS_us       200     // 200us Time beforechecking for J after asserting XcvrSelect and Termselect
+#ifndef SUSPEND_T_WTWRSTHS_us
+#define SUSPEND_T_WTWRSTHS_us       200     // 200us Time beforechecking for J after asserting XcvrSelect and Termselect: T_WTRSTHS: 100-875us
+#endif
 #define SUSPEND_T_WTWRSTHS          (SUSPEND_T_WTWRSTHS_us * REF_CLK_FREQ)
 
 #define OUT_TIMEOUT_us              500     // How long we wait for data after OUT token

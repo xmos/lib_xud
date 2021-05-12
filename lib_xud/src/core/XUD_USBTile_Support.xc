@@ -66,10 +66,11 @@ void write_periph_word_two_part_end(chanend tmpchan, unsigned data)
     outct(tmpchan, XS1_CT_END);
 }
 
+#ifdef __XS2A__
 unsigned read_vbus()
 {
     unsigned int x;
     read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
     return x & (1 << XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT);
 }
-
+#endif

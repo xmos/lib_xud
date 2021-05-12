@@ -1,7 +1,10 @@
 // Copyright 2019-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
-#include <xs1.h>
+#if defined(__XS2A__)
+#include "xs1_to_glx.h"
+#include "xs2_su_registers.h"
+#include "XUD_USBTile_Support.h"
+#endif
 
 #if defined(__XS3A__)
 unsigned int XUD_HAL_GetVBusState(void) __attribute__((weak));

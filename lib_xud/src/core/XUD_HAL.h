@@ -75,3 +75,10 @@ void XUD_HAL_SetDeviceAddress(unsigned char address);
  **/
 void XUD_HAL_EnableUsb(unsigned pwrConfig);
 
+/**
+ * \brief  HAL funtion to get state of VBUS line, if any
+ * \param  none
+ * \return unsigned int non-zero if VBUS asserted, zero otherwise
+ **/
+unsigned int XUD_HAL_GetVBusState(void);
+

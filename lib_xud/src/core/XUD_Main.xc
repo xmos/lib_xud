@@ -273,14 +273,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 {
                     while(1)
                     {
-                        unsigned x, time;
+                        unsigned time;
                         timer t;
-#if defined(__XS2A__)
-                        read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
-                        if(x&(1<<XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))
-#else
-                        #warning XS3 wait for VBUS not implemented
-#endif
+
+                        if(XUD_HAL_GetVBusState())
                         {
                             break;
                         }

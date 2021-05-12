@@ -126,7 +126,6 @@ int XUD_Init()
   * @return True if reset detected during resume */
 int XUD_Suspend(XUD_PwrConfig pwrConfig)
 {
-    unsigned tmp;
     timer t;
     unsigned time;
 
@@ -142,8 +141,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
         select
         {
             case (pwrConfig == XUD_PWR_SELF) => t when timerafter(time + SUSPEND_VBUS_POLL_TIMER_TICKS) :> void:
-                read_periph_word(USB_TILE_REF,  XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, tmp);
-                if (!(tmp & (1 << XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT)))
+                if(!XUD_HAL_GetVBusState())
                 {
                     // VBUS not valid
                     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,  XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4 /* OpMode 01 */);

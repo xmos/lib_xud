@@ -94,18 +94,11 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #endif
                     if(pwrConfig == XUD_PWR_SELF) 
                     {
-                        unsigned x;
-#ifdef __XS3A__
-                        #warning VBUS checking in failed HS handhake missing from XS3A
-#else
-                        read_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_OTG_FLAGS_NUM, x);
-                   
-                        if(!(x&(1<<XS1_SU_UIFM_OTG_FLAGS_SESSVLDB_SHIFT))) 
+                        if(!XUD_HAL_GetVBusState())
                         {
                             write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4);
                              return -1;             // VBUS gone, handshake fails completely.
                         }
-#endif
                     }
                 }
                 break;

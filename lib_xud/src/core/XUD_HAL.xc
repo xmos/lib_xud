@@ -355,6 +355,3 @@ void XUD_HAL_SetDeviceAddress(unsigned char address)
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, address);
 #endif
 }
-
-
-

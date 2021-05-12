@@ -27,6 +27,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "XUD_DeviceAttach.h"
 #include "XUD_PowerSig.h"
 #include "XUD_HAL.h"
+#include "XUD_TimingDefines.h"
 
 #if (USB_MAX_NUM_EP_IN != 16)
 #error USB_MAX_NUM_EP_IN must be 16!
@@ -292,24 +293,24 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 XUD_HAL_EnterMode_PeripheralFullSpeed();
 
-//#if defined(XUD_SIM_XSIM) || defined(XUD_BYPASS_CONNECT) 
-#if 0
-                reset = 1;
-#else
 
                 /* Setup flags for power signalling - i.e. J/K/SE0 line state*/
                 XUD_HAL_Mode_PowerSig();
                 
                 if (one)
                 {
-                    reset = XUD_Init();
+                    #if defined(XUD_SIM_XSIM) || defined(XUD_BYPASS_CONNECT) 
+                        reset = 1;
+                    #else
+                        reset = XUD_Init();
+                    #endif
                     one = 0;
                 }
                 else
                 {
                     timer t; unsigned time;
                     t :> time;
-                    t when timerafter(time + 20000) :> int _;// T_WTRSTHS: 100-875us
+                    t when timerafter(time + SUSPEND_T_WTWRSTHS) :> int _;// T_WTRSTHS: 100-875us
 
                     /* Sample line state and check for reset (or suspend) */
                     XUD_LineState_t ls = XUD_HAL_GetLineState();
@@ -317,8 +318,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                         reset == 1;
                     else
                         reset = 0;
-
-                    printstr("RESET: "); printintln(reset);
                 }
                 /* Inspect for suspend or reset */
                 if(!reset)
@@ -338,7 +337,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Run user resume code */
                     XUD_UserResume();
                 }
-#endif
                 /* Test if coming back from reset or suspend */
                 if(reset == 1)
                 {

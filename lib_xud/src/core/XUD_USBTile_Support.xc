@@ -2,6 +2,7 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
+#include "XUD_HAL.h"
 
 #define STRINGIFY0(x) #x
 #define STRINGIFY(x) STRINGIFY0(x)
@@ -12,6 +13,7 @@
 #define JUNK_RETURN_ADDRESS 0xFF
 
 unsigned getsr_int();
+
 
 int write_periph_word(tileref tile, unsigned peripheral, unsigned addr, unsigned data)
 {
@@ -63,3 +65,11 @@ void write_periph_word_two_part_end(chanend tmpchan, unsigned data)
     outuchar(tmpchan, data);
     outct(tmpchan, XS1_CT_END);
 }
+
+unsigned read_vbus()
+{
+    unsigned int x;
+    read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
+    return x & (1 << XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT);
+}
+

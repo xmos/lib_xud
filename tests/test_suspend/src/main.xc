@@ -15,7 +15,7 @@
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END 19
+#define PKT_LENGTH_END 11
 #endif
 
 #ifndef TEST_EP_NUM

@@ -178,7 +178,7 @@ def get_sim_args(testname, clk, phy, arch='xs2'):
 
         vcd_args  = '-o {0}.vcd'.format(filename)
         vcd_args += (' -tile tile[0] -ports -ports-detailed -instructions'
-                     ' -functions -cycles -clock-blocks -pads -cores')
+                     ' -functions -cycles -clock-blocks -pads -cores -usb')
 
         sim_args += ['--vcd-tracing', vcd_args]
 #        sim_args += ['--xscope', '-offline logs/xscope.xmt']

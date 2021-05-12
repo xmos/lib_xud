@@ -340,8 +340,10 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     select 
     {
         case dp_port when pinsneq(dp) :> dp:
+            dm_port :> dm; //Both might have changed!
             break;
         case dm_port when pinsneq(dm) :> dm:
+            dp_port :> dp; //Both might have changed!
             break;
         case timeout != null => t when timerafter(time + timeout) :> int _:
             return 1;
@@ -354,8 +356,8 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
 #else
     #warning TODO for XS2A
 #endif
-    
 }
+
 
 void XUD_HAL_SetDeviceAddress(unsigned char address)
 {

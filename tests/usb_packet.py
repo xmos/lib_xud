@@ -483,10 +483,7 @@ class TokenPacket(TxPacket):
         # Correct crc5 can be overridden
         self.crc5 = kwargs.pop('crc5', crc5)
 
-        # Always override to match IFM
-        # Only required for < XS3?
-        #self.data_valid_count = 4 #todo
-        #self.data_valid_count = 0
+        # TODO Always override data_valid count to match IFM for archs < XS3
 
     def get_bytes(self, do_tokens=False):
         bytes = []

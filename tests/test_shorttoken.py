@@ -2,11 +2,12 @@
 # Copyright 2019-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-import xmostest
+import Pyxsim
 from usb_packet import TxPacket, USB_PID 
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+import pytest
 
 def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
@@ -27,7 +28,8 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
     #Finish with valid transaction 
     session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="BULK", direction= "OUT", dataLength=11, interEventDelay=6000))
 
-    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[])
+    return do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[])
 
-def runtest():
-    RunUsbTest(do_test)
+def test_shorttoken():
+    for result in RunUsbTest(do_test):
+        assert result

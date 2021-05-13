@@ -1,7 +1,8 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import random
-import xmostest
+# import xmostest
+import Pyxsim
 import sys
 import zlib
 from usb_packet import RxPacket, TokenPacket, USB_PID
@@ -9,7 +10,7 @@ import usb_packet
 
 USB_DATA_VALID_COUNT = {'FS': 39, "HS": 0}
 
-class UsbPhy(xmostest.SimThread):
+class UsbPhy(Pyxsim.SimThread):
 
     # Time in ns from the last packet being sent until the end of test is signalled to the DUT
     END_OF_TEST_TIME = 5000

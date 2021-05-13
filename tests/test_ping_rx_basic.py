@@ -4,11 +4,12 @@
 
 # Basic check of PING functionality
 
-import xmostest
+import Pyxsim
 from usb_packet import TokenPacket, TxDataPacket, RxDataPacket, TxHandshakePacket, RxHandshakePacket, USB_PID 
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+import pytest
 
 
 def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
@@ -51,7 +52,8 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
     # Send a packet to EP 1 so the DUT knows it can exit. 
     session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="BULK", direction="OUT", dataLength=10))
    
-    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[])
+    return do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[])
 
-def runtest():
-    RunUsbTest(do_test)
+def test_ping_rx_basic():
+    for result in RunUsbTest(do_test):
+        assert result

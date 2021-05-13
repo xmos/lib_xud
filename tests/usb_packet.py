@@ -95,7 +95,6 @@ def CreateSofToken(frameNumber, data_valid_count, badCrc = False, interEventDela
     
     return sofToken
 
-
 def reflect(val, numBits):
 
     valRef = 0;
@@ -320,7 +319,6 @@ class RxPacket(UsbPacket):
 class TxPacket(UsbPacket):
 
     def __init__(self, **kwargs):
-        #self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', RX_RX_DELAY) #13 lowest working for single issue loopback
         self.rxa_start_delay = kwargs.pop('rxa_start_delay', 2)
         self.rxa_end_delay = kwargs.pop('rxa_end_delay', RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop('rxe_assert_time', 0)
@@ -496,10 +494,7 @@ class TokenPacket(TxPacket):
         # Correct crc5 can be overridden
         self.crc5 = kwargs.pop('crc5', crc5)
 
-        # Always override to match IFM
-        # Only required for < XS3?
-        #self.data_valid_count = 4 #todo
-        #self.data_valid_count = 0
+        # TODO Always override data_valid count to match IFM for archs < XS3
 
     def get_bytes(self, do_tokens=False):
         bytes = []

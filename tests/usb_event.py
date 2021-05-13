@@ -22,7 +22,7 @@ class UsbEvent(object):
 
     # Drive event to simulator
     @abc.abstractmethod
-    def drive(self, xsi):
+    def drive(self, usb_phy, bus_speed):
         pass
 
     #Note, an event might contain events 

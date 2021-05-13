@@ -21,7 +21,7 @@ class UsbResume(UsbEvent):
     def event_count(self):
         return 1
     
-    def drive(self, usb_phy): 
+    def drive(self, usb_phy, bus_speed): 
         xsi = usb_phy.xsi
         wait = usb_phy.wait
 
@@ -60,17 +60,18 @@ class UsbResume(UsbEvent):
         print("RESUME END")
         #print("RESUME END: " + str(currentTime_ns))
 
-        # Check that the DUT has re-entered HS
-        xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
-        termsel = xsi.sample_periph_pin(usb_phy._termsel)
+        if bus_speed == "HS":
+            # Check that the DUT has re-entered HS
+            xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
+            termsel = xsi.sample_periph_pin(usb_phy._termsel)
        
-        if xcvrsel == 1:
-            print("ERROR: DUT did not enter HS after resume (XCVRSel)")
+            if xcvrsel == 1:
+                print("ERROR: DUT did not enter HS after resume (XCVRSel)")
         
-        if termsel == 1: 
-            print("ERROR: DUT did not enter HS after resume (TermSel)")
+            if termsel == 1: 
+                print("ERROR: DUT did not enter HS after resume (TermSel)")
 
-        print("DUT ENTERED HS MODE") 
+            print("DUT ENTERED HS MODE") 
 
 
 class UsbSuspend(UsbEvent): 
@@ -93,7 +94,7 @@ class UsbSuspend(UsbEvent):
     def event_count(self):
         return 1
 
-    def drive(self, usb_phy):
+    def drive(self, usb_phy, bus_speed):
 
         xsi = usb_phy.xsi
         wait = usb_phy.wait
@@ -133,8 +134,9 @@ class UsbSuspend(UsbEvent):
                 #print("DEVICE ENTERED FS AT TIME " + str(fsTime_ns/1000) + "(after " + str(timeToFs_ns/1000) +" uS)") 
                 print("DEVICE ENTERED FS MODE");
 
-                if timeToFs_ns < (USB_TIMINGS["IDLE_TO_FS_MIN_US"]*1000):
-                    print("ERROR: DUT ENTERED FS MODE TOO SOON")
+                if bus_speed == "HS": 
+                    if timeToFs_ns < (USB_TIMINGS["IDLE_TO_FS_MIN_US"]*1000):
+                        print("ERROR: DUT ENTERED FS MODE TOO SOON")
                 
                 # Drive J state onto LS pins - replicate pullup 
                 xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE['FS_J'])

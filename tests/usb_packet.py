@@ -255,7 +255,7 @@ class RxPacket(UsbPacket):
 
         return expected_output
 
-    def drive(self, usb_phy):
+    def drive(self, usb_phy, bus_speed):
 
         wait = usb_phy.wait
         xsi = usb_phy.xsi
@@ -332,7 +332,7 @@ class TxPacket(UsbPacket):
         expected_output += "\tPID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
         return expected_output
 
-    def drive(self, usb_phy, verbose = True):
+    def drive(self, usb_phy, bus_speed, verbose = True):
         
         xsi = usb_phy.xsi
         wait = usb_phy.wait

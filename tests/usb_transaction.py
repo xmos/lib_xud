@@ -151,7 +151,7 @@ class UsbTransaction(UsbEvent):
            s += "\t" + str(p) + "\n"
         return s
 
-    def drive(self, xsi):
+    def drive(self, usb_phy, bus_speed):
         for i, p in enumerate(self.packets):
-            p.drive(xsi)
+            p.drive(usb_phy, bus_speed)
 

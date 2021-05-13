@@ -10,31 +10,67 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_signalling import UsbSuspend, UsbResume
 
+
 def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
-   
+
     ep = 1
     address = 1
     start_length = 10
     end_length = 12
     pktLength = 10
-    frameNumber = 52 # Note, for frame number 52 we expect A5 34 40 on the bus
+    frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
 
-    session = UsbSession(bus_speed=usb_speed, run_enumeration=False, device_address = address)
-   
-    session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="BULK", direction= "OUT", dataLength=pktLength, interEventDelay=0))
-    
+    session = UsbSession(
+        bus_speed=usb_speed, run_enumeration=False, device_address=address
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=pktLength,
+            interEventDelay=0,
+        )
+    )
+
     session.add_event(CreateSofToken(frameNumber, data_valid_count))
-    
+
     session.add_event(UsbSuspend(350000))
     session.add_event(UsbResume())
-   
+
     frameNumber = frameNumber + 1
     pktLength = pktLength + 1
-    session.add_event(CreateSofToken(frameNumber, data_valid_count, interEventDelay=2000))
-    session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="BULK", direction= "OUT", dataLength=pktLength, interEventDelay=0))
-    
+    session.add_event(
+        CreateSofToken(frameNumber, data_valid_count, interEventDelay=2000)
+    )
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=pktLength,
+            interEventDelay=0,
+        )
+    )
 
-    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
+    do_usb_test(
+        arch,
+        clk,
+        phy,
+        usb_speed,
+        [session],
+        __file__,
+        seed,
+        level="smoke",
+        extra_tasks=[],
+        verbose=verbose,
+    )
+
 
 def runtest():
     RunUsbTest(do_test)

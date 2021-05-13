@@ -9,36 +9,57 @@ import usb_packet
 
 USB_MAX_EP_ADDRESS = 15
 
-USB_DATA_VALID_COUNT = {'FS': 39, "HS": 0}
+USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 
 USB_LINESTATE = {
-                    'IDLE': 0,
-                    'FS_J': 2,
-                    'FS_K': 1,
-                    'HS_J': 1,
-                    'HS_K': 2,
-                  }
+    "IDLE": 0,
+    "FS_J": 2,
+    "FS_K": 1,
+    "HS_J": 1,
+    "HS_K": 2,
+}
 
 USB_TIMINGS = {
-                    'IDLE_TO_FS_MIN_US': 300, #Spec: 3000
-                    'IDLE_TO_FS_MAX_US': 312, #Spec: 3125
-                    'RESUME_FSK_MIN_US': 200, #Spec: 20000us
-                    'RESUME_SE0_US': 1.25, # 1.25uS - 1.5uS  
-                }
+    "IDLE_TO_FS_MIN_US": 300,  # Spec: 3000
+    "IDLE_TO_FS_MAX_US": 312,  # Spec: 3125
+    "RESUME_FSK_MIN_US": 200,  # Spec: 20000us
+    "RESUME_SE0_US": 1.25,  # 1.25uS - 1.5uS
+}
+
 
 class UsbPhy(xmostest.SimThread):
 
     # Time in ns from the last packet being sent until the end of test is signalled to the DUT
     END_OF_TEST_TIME = 5000
 
-    def __init__(self, name, rxd, rxa, rxdv, rxer, txd, txv, txrdy, ls, xcvrsel, termsel, clock, initial_delay, verbose,
-                 test_ctrl, do_timeout, complete_fn, expect_loopback, dut_exit_time):
+    def __init__(
+        self,
+        name,
+        rxd,
+        rxa,
+        rxdv,
+        rxer,
+        txd,
+        txv,
+        txrdy,
+        ls,
+        xcvrsel,
+        termsel,
+        clock,
+        initial_delay,
+        verbose,
+        test_ctrl,
+        do_timeout,
+        complete_fn,
+        expect_loopback,
+        dut_exit_time,
+    ):
         self._name = name
         self._test_ctrl = test_ctrl
-        self._rxd = rxd    #Rx data
-        self._rxa = rxa    #Rx Active
-        self._rxdv = rxdv  #Rx valid
-        self._rxer = rxer  #Rx Error
+        self._rxd = rxd  # Rx data
+        self._rxa = rxa  # Rx Active
+        self._rxdv = rxdv  # Rx valid
+        self._rxer = rxer  # Rx Error
         self._txd = txd
         self._txv = txv
         self._txrdy = txrdy
@@ -61,7 +82,7 @@ class UsbPhy(xmostest.SimThread):
     @property
     def clock(self):
         return self._clock
-    
+
     @property
     def session(self):
         return self._session
@@ -69,9 +90,9 @@ class UsbPhy(xmostest.SimThread):
     @session.setter
     def session(self, session):
         self._session = session
-   
+
     def us_to_clocks(self, time_us):
-        time_clocks = int(time_us/self._clock.period_us)
+        time_clocks = int(time_us / self._clock.period_us)
         return time_clocks
 
     def start_test(self):
@@ -91,11 +112,13 @@ class UsbPhy(xmostest.SimThread):
 
         if self._do_timeout:
             # Allow time for a maximum sized packet to arrive
-            timeout_time = (self._clock.get_bit_time() * 1522 * 8)
+            timeout_time = self._clock.get_bit_time() * 1522 * 8
 
             if self._expect_loopback:
                 # If looping back then take into account all the data
-                total_packet_bytes = sum([len(packet.get_bytes()) for packet in self._session.events])
+                total_packet_bytes = sum(
+                    [len(packet.get_bytes()) for packet in self._session.events]
+                )
                 total_data_bits = total_packet_bytes * 8
 
                 # Allow 2 cycles per bit
@@ -131,16 +154,9 @@ class UsbPhy(xmostest.SimThread):
 
         self.start_test()
 
-        for i,event in enumerate(self._session.events):
+        for i, event in enumerate(self._session.events):
 
-            event.drive(self, xsi, self._session.bus_speed)
-           
+            event.drive(self, self._session.bus_speed)
+
         print("Test done")
         self.end_test()
-
-
-
-
-
-
-

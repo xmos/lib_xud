@@ -43,7 +43,7 @@ class UsbPhy(xmostest.SimThread):
         self._ls = ls
         self._xcvrsel = xcvrsel
         self._termsel = termsel
-        self._events = []
+        self._session = []
         self._clock = clock
         self._initial_delay = initial_delay
         self._verbose = verbose
@@ -61,12 +61,12 @@ class UsbPhy(xmostest.SimThread):
         return self._clock
     
     @property
-    def events(self):
-        return self._events
+    def session(self):
+        return self._session
 
-    @events.setter
-    def events(self, events):
-        self._events = events
+    @session.setter
+    def session(self, session):
+        self._session = session
    
     def us_to_clocks(self, time_us):
         time_clocks = int(time_us/self._clock.period_us)
@@ -93,7 +93,7 @@ class UsbPhy(xmostest.SimThread):
 
             if self._expect_loopback:
                 # If looping back then take into account all the data
-                total_packet_bytes = sum([len(packet.get_bytes()) for packet in self.events])
+                total_packet_bytes = sum([len(packet.get_bytes()) for packet in self._session.events])
                 total_data_bits = total_packet_bytes * 8
 
                 # Allow 2 cycles per bit
@@ -129,7 +129,7 @@ class UsbPhy(xmostest.SimThread):
 
         self.start_test()
 
-        for i,event in enumerate(self.events):
+        for i,event in enumerate(self._session.events):
 
             event.drive(self)
            

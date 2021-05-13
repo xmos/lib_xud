@@ -107,8 +107,6 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
     assert len(sessions) == 1, "Multiple sessions not yet supported"
 
     for session in sessions:
-       
-        events = session.events
 
         if args.verbose:
             print("Session " + str(sessions.index(session)))
@@ -116,10 +114,10 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
 
         if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
             print("Running {test}: {arch} arch sending {n} event(s) at {clk} using {speed} (seed {seed})".format(
-                test=testname, n=len(events),
+                test=testname, n=len(session.events),
                 arch=arch, clk=clk.get_name(), speed=usb_speed, seed=seed))
 
-        phy.events = session.events
+        phy.session = session
 
         expect_folder = create_if_needed("expect")
         expect_filename = '{folder}/{test}_{arch}.expect'.format(

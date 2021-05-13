@@ -135,7 +135,6 @@ class UsbSuspend(UsbEvent):
 
                 if timeToFs_ns < (USB_TIMINGS["IDLE_TO_FS_MIN_US"]*1000):
                     print("ERROR: DUT ENTERED FS MODE TOO SOON")
-                    exit()
                 
                 # Drive J state onto LS pins - replicate pullup 
                 xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE['FS_J'])

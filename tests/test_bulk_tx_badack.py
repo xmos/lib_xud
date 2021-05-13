@@ -1,53 +1,31 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import random
 import xmostest
-from  usb_packet import *
-import usb_packet
-from usb_clock import Clock
-from helpers import do_usb_test, runall_rx
+from usb_packet import TokenPacket, RxDataPacket, TxHandshakePacket, USB_PID 
+from helpers import do_usb_test, RunUsbTest
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
-
-def do_test(arch, tx_clk, tx_phy, data_valid_count, usb_speed, seed):
-    rand = random.Random()
-    rand.seed(seed)
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
     ep = 1
     address = 1
+    pktLength = 10
+    ied = 4000
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
+    session = UsbSession(bus_speed = usb_speed, run_enumeration = False, device_address = address)
+    
+    for pktLength in range(10, 14):
 
-    dataval = 0;
+        if pktLength == 12:
+            session.add_event(TokenPacket(pid=USB_PID['IN'], address=address, endpoint=ep, data_valid_count=data_valid_count, inter_pkt_gap=ied))
+            session.add_event(RxDataPacket(dataPayload=session.getPayload_in(ep, pktLength, resend=True), valid_count=data_valid_count, pid=USB_PID['DATA0']))
+            session.add_event(TxHandshakePacket(data_valid_count=data_valid_count, pid=0xff))
 
-    pid = PID_DATA0;
-
-    pktlength = 10
-
-    for i in range(0, 4):
-
-        if(i == 2):
-            AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=4000)
-            packets.append(RxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) #DATA1
-            packets.append(TxHandshakePacket(data_valid_count=data_valid_count, pid=0xff))
-
-        AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=4000)
-        packets.append(RxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) #DATA1
-        packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
+        session.add_event(UsbTransaction(session, deviceAddress = address, endpointNumber=ep, endpointType="BULK", direction= "IN", dataLength=pktLength, interEventDelay=ied))
         
-        if(pid == usb_packet.PID_DATA1):
-            pid = usb_packet.PID_DATA0;
-        else:
-            pid = usb_packet.PID_DATA1;
-
-        dataval += pktlength
-        pktlength += 1
-
-    # Note, quite big gap to allow checking.
-    do_usb_test(arch, tx_clk, tx_phy, usb_speed, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 
 def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    RunUsbTest(do_test)

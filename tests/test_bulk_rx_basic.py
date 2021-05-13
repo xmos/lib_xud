@@ -2,42 +2,26 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-import random
 import xmostest
 from  usb_packet import *
 import usb_packet
-from usb_clock import Clock
-from helpers import do_usb_test, runall_rx
+from helpers import do_usb_test, RunUsbTest
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
-    rand = random.Random()
-    rand.seed(seed)
-
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+   
     ep = 1
     address = 1
+    start_length = 10
+    end_length = 19
+    
+    session = UsbSession(bus_speed=usb_speed, run_enumeration=False, device_address = address)
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
+    for pktLength in range(10, end_length+1):
+        session.add_event(UsbTransaction(session, deviceAddress=address, endpointNumber=ep, endpointType="BULK", direction= "OUT", dataLength=pktLength))
 
-    dataval = 0;
-
-    pid = PID_DATA0;
-
-    for pktlength in range(10, 20):
-
-        AppendOutToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap=500)
-        packets.append(TxDataPacket(rand, data_start_val=dataval, data_valid_count=data_valid_count, length=pktlength, pid=pid)) 
-        packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
-   
-        if(pid == usb_packet.PID_DATA1):
-            pid = usb_packet.PID_DATA0;
-        else:
-            pid = usb_packet.PID_DATA1;
-
-        dataval += pktlength
-
-    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
+    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[], verbose=verbose)
 
 def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    RunUsbTest(do_test)

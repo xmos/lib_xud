@@ -197,7 +197,6 @@ XUD_GetData_PidOkay:
     bf         r11, XUD_GetData_ReturnOk        // Jump over PID toggle for ISO
 
 XUD_GetData_PidToggle:
-//#if (XUD_SERIES_SUPPORT==3)
 #ifdef __XS3A__
     ldc        r11, 0x88
 #else

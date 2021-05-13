@@ -1,46 +1,36 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
-import random
 import xmostest
-from usb_packet import *
-import usb_packet
-from usb_clock import Clock
-from helpers import do_usb_test, runall_rx
+from usb_packet import TokenPacket, TxDataPacket, RxDataPacket, TxHandshakePacket, RxHandshakePacket, USB_PID 
+from helpers import do_usb_test, RunUsbTest
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
-# Single, setup transaction to EP 0
-
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed):
-    rand = random.Random()
-    rand.seed(seed)
-
+def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
     ep = 0
     address = 1 
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
+    session = UsbSession(bus_speed=usb_speed, run_enumeration=False, device_address=address)
 
     # SETUP transaction
-    AppendSetupToken(packets, ep, address, data_valid_count=data_valid_count)
-    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=8, pid=3))
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
+    session.add_event(TokenPacket(pid=USB_PID['SETUP'], address=address, endpoint=ep, data_valid_count=data_valid_count))
+    session.add_event(TxDataPacket(dataPayload=session.getPayload_out(ep, 8), data_valid_count=data_valid_count, pid=USB_PID["DATA0"]))
+    session.add_event(RxHandshakePacket(data_valid_count=data_valid_count))
 
     # IN transaction
     # Note, quite big gap to avoid nak
-    AppendInToken(packets, ep, address, data_valid_count=data_valid_count, inter_pkt_gap = 10000)
-    packets.append(RxDataPacket(rand, data_valid_count=data_valid_count, length=10, pid=0xb))
-    packets.append(TxHandshakePacket(data_valid_count=data_valid_count))
+    session.add_event(TokenPacket(pid=USB_PID['IN'], address=address, endpoint=ep, data_valid_count=data_valid_count, interEventDelay=10000))
+    session.add_event(RxDataPacket(dataPayload=session.getPayload_in(ep, 10), data_valid_count=data_valid_count, pid=USB_PID["DATA1"]))
+    session.add_event(TxHandshakePacket(data_valid_count=data_valid_count))
  
     # Send 0 length OUT transaction 
-    AppendOutToken(packets, ep, address, data_valid_count=data_valid_count)
-    packets.append(TxDataPacket(rand, data_valid_count=data_valid_count, length=0, pid=PID_DATA1))
-    packets.append(RxHandshakePacket(data_valid_count=data_valid_count))
+    session.add_event(TokenPacket(pid=USB_PID['OUT'], address=address, endpoint=ep, data_valid_count=data_valid_count))
+    session.add_event(TxDataPacket(data_valid_count=data_valid_count, length=0, pid=USB_PID['DATA1']))
+    session.add_event(RxHandshakePacket(data_valid_count=data_valid_count))
 
-    do_usb_test(arch, clk, phy, usb_speed, packets, __file__, seed, level='smoke', extra_tasks=[])
-
+    do_usb_test(arch, clk, phy, usb_speed, [session], __file__, seed, level='smoke', extra_tasks=[])
 
 def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    RunUsbTest(do_test)

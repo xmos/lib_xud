@@ -39,13 +39,6 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
 
     for(int i = 10; i <= 14; i++)
     {
-        /* Expect bad CRC */
-        if(i == 12)
-        unsafe{
-            g_rxDataCheck[epNum]+=12;
-            continue;   
-        }
-         
         XUD_GetBuffer(ep_out, buffer, length);
 
         if(length != i)

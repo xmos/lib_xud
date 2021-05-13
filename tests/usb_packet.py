@@ -58,6 +58,7 @@ Packet Class Hierarchy
   +-------------------+   +-------------------+
 """
 
+from usb_event import UsbEvent
 import sys
 import zlib
 import random
@@ -68,46 +69,20 @@ RXA_END_DELAY = 2 # Pad delay not currently simulated in xsim for USB or OTP, so
 RXA_START_DELAY = 5 #Taken from RTL sim
 RX_RX_DELAY = 40
 
-PID_DATA1 = 0xb
-PID_DATA0 = 0x3
-
-
-
-def AppendSetupToken(packets, ep, address, **kwargs):
-    ipg = kwargs.pop('inter_pkt_gap', 500)
-    AppendTokenPacket(packets, 0x2d, ep, ipg, address, **kwargs)
-
-def AppendOutToken(packets, ep, address, **kwargs):
-    ipg = kwargs.pop('inter_pkt_gap', 500) 
-    AppendTokenPacket(packets, 0xe1, ep, ipg, address, **kwargs)
-
-def AppendPingToken(packets, ep, address, **kwargs):
-    ipg = kwargs.pop('inter_pkt_gap', 500) 
-    AppendTokenPacket(packets, 0xb4, ep, ipg, address, **kwargs)
-
-def AppendInToken(packets, ep, address, **kwargs):
-    #357 was min IPG supported on bulk loopback to not nak
-    #lower values mean the loopback NAKs
-    ipg = kwargs.pop('inter_pkt_gap', 10) 
-    AppendTokenPacket(packets, 0x69, ep, ipg, address, **kwargs)
-
-def AppendSofToken(packets, framenumber, **kwargs):
-    ipg = kwargs.pop('inter_pkt_gap', 500) 
-    
-    # Override EP and Address 
-    ep = (framenumber >> 7) & 0xf
-    address = (framenumber) & 0x7f
-    AppendTokenPacket(packets, 0xa5, ep, ipg, address, **kwargs)
-
-def AppendTokenPacket(packets, _pid, ep, ipg, addr=0, **kwargs):
-    
-    data_valid_count = kwargs.pop('data_valid_count', 0)
-    packets.append(TokenPacket( 
-        inter_pkt_gap=ipg, 
-        pid=_pid,
-        address=addr, 
-        endpoint=ep,
-        data_valid_count=data_valid_count))
+#TODO shoud we have a PID class?
+#TODO remove the inverted check bits 
+USB_PID = {
+            "OUT"       : 0xE1,
+            "IN"        : 0x69,
+            "SETUP"     : 0x2D,
+            "SOF"       : 0xA5,
+            "DATA1"     : 0x4b,
+            "DATA0"     : 0xc3,
+            "ACK"       : 0xD2,
+            "PING"      : 0xB4,
+            "RESERVED"  : 0x0F,
+            "NAK"       : 0x5A,
+        }
 
 def reflect(val, numBits):
 
@@ -215,63 +190,211 @@ class BusReset(object):
 # Lowest base class for all packets. All USB packets have:
 # - a PID
 # - some (or none) data bytes
-class UsbPacket(object):
+class UsbPacket(UsbEvent):
 
     def __init__(self, **kwargs):
         self.pid = kwargs.pop('pid', 0xc3) 
         self.data_bytes = kwargs.pop('data_bytes', None)
         self.num_data_bytes = kwargs.pop('length', 0)
-        self.data_valid_count = kwargs.pop('data_valid_count', 0)
+        self._data_valid_count = kwargs.pop('data_valid_count', 0)
         self.bad_crc = kwargs.pop('bad_crc', False)
+        ied = kwargs.pop('interEventDelay', 500) #TODO RM magic number
+        super(UsbPacket, self).__init__(interEventDelay = ied)
 
-    def get_data_valid_count(self):
-        return self.data_valid_count
+    # This is used on HOST->DEVICE (TX) packets to toggle RXValid and DEVICE->HOST (RX) packets to toggle TXReady
+    @property
+    def data_valid_count(self):
+        return self._data_valid_count
 
-    def get_pid_pretty(self):
+    @data_valid_count.setter
+    def data_valid_count(self, dvc):
+        self._data_valid_count = dvc
+    
+    @property
+    def event_count(self):
+        return 1
 
-        if self.pid == 2:
-            return "ACK"
-        elif self.pid == 225:
-            return "OUT"
-        elif self.pid == 11:
-            return "DATA1"
-        elif self.pid == 3:
-            return "DATA0"
-        elif self.pid == 105:
-            return "IN"
-        elif self.pid == 180:
-            return "PING"
-        elif self.pid == 165:
-            return "SOF"
-        elif self.pid == 45:
-            return "SETUP"
-        else:
-           return "UNKNOWN"
+    def __str__(self):
+        return "USBPacket"
+
+    def get_pid_str(self):
+        for key, value in USB_PID.items():
+            if value == self.pid:
+                return key
+        return "UNKNOWN"
 
 
 #Rx to host i.e. xCORE Tx
 class RxPacket(UsbPacket):
 
     def __init__(self, **kwargs):
-        self.timeout = kwargs.pop('timeout', 25)
+        self._timeout = kwargs.pop('timeout', 25)
         super(RxPacket, self).__init__(**kwargs)
 
-    def get_timeout(self):
-        return self.timeout
+    @property 
+    def timeout(self):
+        return self._timeout
+
+    def expected_output(self, offset=0):
+        expected_output = "Packet:\tDEVICE -> HOST\n"
+        
+        for (i, byte) in enumerate(self.get_bytes()):
+            expected_output += "\tRX byte: {0:#x}\n".format(byte)
+
+        return expected_output
+
+    def drive(self, usb_phy):
+
+        wait = usb_phy.wait
+        xsi = usb_phy.xsi
+
+        timeout = self.timeout
+        in_rx_packet = False
+        rx_packet = []
+
+        while timeout != 0:
+
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+
+            timeout = timeout - 1
+
+            #sample TXV for new packet
+            if xsi.sample_port_pins(usb_phy._txv) == 1:
+                print("Packet:\tDEVICE -> HOST")
+                in_rx_packet = True
+                break
+
+        if in_rx_packet == False:
+            print("ERROR: Timed out waiting for packet")
+        else:
+            while in_rx_packet == True:
+
+                # TODO txrdy pulsing
+                xsi.drive_port_pins(usb_phy._txrdy, 1)
+                data = xsi.sample_port_pins(usb_phy._txd)
+
+                print("\tRX byte: {0:#x}".format(data))
+                rx_packet.append(data)
+
+                wait(lambda x: usb_phy._clock.is_high())
+                wait(lambda x: usb_phy._clock.is_low())
+
+                if xsi.sample_port_pins(usb_phy._txv) == 0:
+                    #print "TXV low, breaking out of loop"
+                    in_rx_packet = False
+
+            # End of packet
+            xsi.drive_port_pins(usb_phy._txrdy, 0)
+
+            # Check packet against expected
+            expected = self.get_bytes(do_tokens=False)
+            if len(expected) != len(rx_packet):
+                print("ERROR: Rx packet length bad. Expecting: {} actual: {}".format(len(expected), len(rx_packet)))
+
+            # Check packet data against expected
+            if expected != rx_packet:
+                print("ERROR: Rx Packet Error. Expected:")
+                for item in expected:
+                    print("{0:#x}".format(item))
+
+                print("Received:")
+                for item in rx_packet:
+                    print("{0:#x}".format(item))
+
+
 
 #Tx from host i.e. xCORE Rx
 class TxPacket(UsbPacket):
 
     def __init__(self, **kwargs):
-        self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', RX_RX_DELAY) #13 lowest working for single issue loopback
         self.rxa_start_delay = kwargs.pop('rxa_start_delay', 2)
         self.rxa_end_delay = kwargs.pop('rxa_end_delay', RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop('rxe_assert_time', 0)
         self.rxe_assert_length = kwargs.pop('rxe_assert_length', 1)
         super(TxPacket, self).__init__(**kwargs)
 
-    def get_inter_pkt_gap(self):
-        return self.inter_pkt_gap
+    def expected_output(self, offset=0):
+        expected_output = "Packet:\tHOST -> DEVICE\n"
+        expected_output += "\tPID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
+        return expected_output
+
+    def drive(self, usb_phy, verbose = True):
+        
+        xsi = usb_phy.xsi
+        wait = usb_phy.wait
+
+         # xCore should not be trying to send if we are trying to send..
+        if xsi.sample_port_pins(usb_phy._txv) == 1:
+            print("ERROR: Unexpected packet from xCORE")
+
+        rxv_count = self.data_valid_count
+
+        usb_phy.wait_until(xsi.get_time() + self.interEventDelay)
+
+        print("Packet:\tHOST -> DEVICE\n\tPID: {0} ({1:#x})".format(self.get_pid_str(), self.pid))
+        
+        # Set RXA high to USB shim
+        xsi.drive_periph_pin(usb_phy._rxa, 1)
+
+        # Wait for RXA start delay
+        rxa_start_delay = RXA_START_DELAY;
+
+        while rxa_start_delay != 0:
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+            rxa_start_delay = rxa_start_delay- 1;
+
+        for (i, byte) in enumerate(self.get_bytes(do_tokens = False)):
+
+            # xCore should not be trying to send if we are trying to send..
+            if xsi.sample_port_pins(usb_phy._txv) == 1:
+                print("ERROR: Unexpected packet from xCORE")
+
+            wait(lambda x: usb_phy._clock.is_low())
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+            xsi.drive_periph_pin(usb_phy._rxdv, 1)
+            xsi.drive_periph_pin(usb_phy._rxd, byte)
+
+            if (self.rxe_assert_time != 0) and (self.rxe_assert_time == i):
+                xsi.drive_periph_pin(usb_phy._rxer, 1)
+
+            while rxv_count != 0:
+                wait(lambda x: usb_phy._clock.is_high())
+                wait(lambda x: usb_phy._clock.is_low())
+                xsi.drive_periph_pin(usb_phy._rxdv, 0)
+                rxv_count = rxv_count - 1
+
+                # xCore should not be trying to send if we are trying to send..
+                if xsi.sample_port_pins(usb_phy._txv) == 1:
+                    print("ERROR: Unexpected packet from xCORE")
+
+            #print "Sending byte {0:#x}".format(byte)
+
+            rxv_count = self.data_valid_count;
+
+        # Wait for last byte
+        wait(lambda x: usb_phy._clock.is_high())
+        wait(lambda x: usb_phy._clock.is_low())
+
+        xsi.drive_periph_pin(usb_phy._rxdv, 0)
+        xsi.drive_periph_pin(usb_phy._rxer, 0)
+
+        rxa_end_delay = self.rxa_end_delay
+        
+        while rxa_end_delay != 0:
+            # Wait for RXA fall delay TODO, this should be configurable
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+            rxa_end_delay = rxa_end_delay - 1
+
+            # xCore should not be trying to send if we are trying to send..
+            if xsi.sample_port_pins(usb_phy._txv) == 1:
+                print("ERROR: Unexpected packet from xCORE")
+
+        xsi.drive_periph_pin(usb_phy._rxa, 0)
+
 
 # Implemented such that we can generate malformed packets
     def get_bytes(self, do_tokens=False):
@@ -288,16 +411,10 @@ class TxPacket(UsbPacket):
 # DataPacket class, inherits from Usb Packet
 class DataPacket(UsbPacket):
 
-    def __init__(self, **kwargs):
+    def __init__(self, dataPayload = [], **kwargs):
         super(DataPacket, self).__init__(**kwargs)
         self.pid = kwargs.pop('pid', 0x3) #DATA0
-        data_start_val = kwargs.pop('data_start_val', None)
-
-        if data_start_val != None:
-            self.data_bytes = [x+data_start_val for x in range(self.num_data_bytes)]
-        else:
-            self.data_bytes = [x for x in range(self.num_data_bytes)]
-
+        self.data_bytes = dataPayload
 
     def get_packet_bytes(self):
         packet_bytes = []
@@ -334,18 +451,22 @@ class DataPacket(UsbPacket):
 
 class RxDataPacket(RxPacket, DataPacket):
     
-    def __init__(self, rand, **kwargs):
+    def __init__(self, **kwargs):
         _pid = self.pid = kwargs.pop('pid', 0x3) #DATA0
 
         #Re-construct full PID - xCORE sends out full PIDn | PID on Tx
         super(RxDataPacket, self).__init__(pid = (_pid & 0xf) | (((~_pid)&0xf) << 4), **kwargs)
 
+    def __str__(self):
+        return  super(DataPacket, self).__str__() + ": RX DataPacket: " + super(DataPacket, self).get_pid_str() + " " + str(self.data_bytes)
+
 class TxDataPacket(DataPacket, TxPacket):
 
-    def __init__(self, rand, **kwargs):
+    def __init__(self, **kwargs):
         super(TxDataPacket, self).__init__(**kwargs)
-        #self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', 13) #13 lowest working for single issue loopback
-
+    
+    def __str__(self):
+        return  super(DataPacket, self).__str__() + ": RX DataPacket: " + super(DataPacket, self).get_pid_str() + " " + str(self.data_bytes) + " Valid CRC: " + str(not self.bad_crc) + "RXE Assert: " + str(self.rxe_assert_time) 
 
 #Always TX
 class TokenPacket(TxPacket):
@@ -362,9 +483,7 @@ class TokenPacket(TxPacket):
         # Correct crc5 can be overridden
         self.crc5 = kwargs.pop('crc5', crc5)
 
-        # Always override to match IFM
-        #self.data_valid_count = 4 #todo
-        self.data_valid_count = 0
+        # TODO Always override data_valid count to match IFM for archs < XS3
 
     def get_bytes(self, do_tokens=False):
         bytes = []
@@ -383,6 +502,9 @@ class TokenPacket(TxPacket):
         
         return bytes
 
+    def __str__(self):
+        return  super(TokenPacket, self).__str__() + ": TokenPacket: " + super(TokenPacket, self).get_pid_str()
+
     # Token valid
     def get_token_valid(self):
         return self.valid
@@ -391,7 +513,7 @@ class HandshakePacket(UsbPacket):
     
     def __init__(self, **kwargs):
         super(HandshakePacket, self).__init__(**kwargs)
-        self.pid = kwargs.pop('pid', 0x2) #Default to ACK
+        self.pid = kwargs.pop('pid', USB_PID["ACK"]) #Default to ACK
         
     def get_bytes(self, do_tokens=False):
         bytes = []
@@ -403,8 +525,11 @@ class RxHandshakePacket(HandshakePacket, RxPacket):
     def __init__(self, **kwargs):
         super(RxHandshakePacket, self).__init__(**kwargs)
         self.pid = kwargs.pop('pid', 0xd2) #Default to ACK (not expect inverted bits on Rx)
-        self.timeout = kwargs.pop('timeout', RX_TX_DELAY) 
+        self._timeout = kwargs.pop('timeout', RX_TX_DELAY)  #TODO handled by Super()
     
+    def __str__(self):
+        return  super(RxHandshakePacket, self).__str__() + ": RX HandshakePacket: " + super(RxHandshakePacket, self).get_pid_str()
+
  
 class TxHandshakePacket(HandshakePacket, TxPacket):
     
@@ -419,3 +544,5 @@ class TxHandshakePacket(HandshakePacket, TxPacket):
             bytes.append(self.pid | ((~self.pid) << 4))
         return bytes
 
+    def __str__(self):
+        return  super(TxHandshakePacket, self).__str__() + ": TX HandshakePacket: " + super(TxHandshakePacket, self).get_pid_str()

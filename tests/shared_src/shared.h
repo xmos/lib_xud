@@ -63,11 +63,11 @@ void TerminatePass(unsigned x)
 #endif
 
 #ifndef PKT_LEN_END
-#define PKT_LEN_END 21
+#define PKT_LEN_END    21
 #endif
 
 #ifndef MAX_PKT_COUNT 
-#define MAX_PKT_COUNT (10)
+#define MAX_PKT_COUNT (50)
 #endif
 
 #define XUD_Manager XUD_Main
@@ -130,7 +130,10 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
 int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
 {
     if (l != expectedLength)
-        return 2;
+    {
+        printf("%d %d", (unsigned) l, expectedLength); 
+        return FAIL_RX_LENERROR;
+    }
 
     for (int i = 0; i < l; i++)
     {

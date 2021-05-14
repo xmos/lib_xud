@@ -19,7 +19,8 @@ import re
 
 ARCHITECTURE_CHOICES = ['xs2', 'xs3']
 BUSSPEED_CHOICES = ['FS', 'HS']
-arch_args = {'arch':'xs3'}
+args = {'arch':'xs3',
+        'trace':False}
 XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 clean_only = False
 
@@ -92,7 +93,7 @@ def run_on_simulator(xe, simthreads, **kwargs):
 def run_on(**kwargs):
 
     for name,value in kwargs.items():
-        arg_value = arch_args.get(name)
+        arg_value = args.get(name)
         if arg_value is not None and value != arg_value:
             return False
 
@@ -134,7 +135,6 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
     binary = '{testname}/bin/{arch}/{testname}_{arch}.xe'.format(testname=testname, arch=arch)
     copy_common_xn_files(testname)
     build_success, build_output = Pyxsim._build(binary)
-    # print(binary)
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
     if build_success:
@@ -154,9 +154,9 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
                                          {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
 
             tester_list.append(tester)
-
+            simargs = get_sim_args(testname, clk, phy, arch)
             simthreads = [clk, phy] + extra_tasks
-            run_on_simulator(binary, simthreads)  
+            run_on_simulator(binary, simthreads, simargs = simargs)  
         delete_test_specific_xn_files(testname)
         return tester_list
     else:
@@ -191,7 +191,7 @@ def create_expect(arch, events, filename, verbose = False):
 def get_sim_args(testname, clk, phy, arch='xs2'):
     sim_args = []
 
-    if args and args.trace:
+    if args and args.get('trace'):
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(

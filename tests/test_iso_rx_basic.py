@@ -25,4 +25,3 @@ def test_iso_rx_basic():
     for result in RunUsbTest(do_test):
         assert result
 
-

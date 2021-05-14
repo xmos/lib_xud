@@ -103,8 +103,13 @@ class ComparisonTester():
         if (num_expected > line_num + 1):
             self.record_failure("Length of expected output greater than output")
         output = {'output':''.join(output)}
+
         if not self.result:
             output['failures'] = ''.join(self.failures)
-        # xmostest.set_test_result(product, group, test, config, self.result,
-        #                          output = output, env = env)
+
+        if self.result:
+            sys.stdout.write("%-30s %-6s %-6s Pass\n" % (test, config.get('arch'), config.get('speed')))
+        else:
+            sys.stderr.write("%-30s %-6s %-6s Fail\n" % (test, config.get('arch'), config.get('speed')))
+
         return self.result

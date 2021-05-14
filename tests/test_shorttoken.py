@@ -33,3 +33,4 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 def test_shorttoken():
     for result in RunUsbTest(do_test):
         assert result
+

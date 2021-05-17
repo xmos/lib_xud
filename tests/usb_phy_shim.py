@@ -57,13 +57,10 @@ class UsbPhyShim(UsbPhy):
         self.start_test()
 
         for i, packet in enumerate(self._packets):
-            # error_nibbles = packet.get_error_nibbles()
 
             if isinstance(packet, RxPacket):
 
                 timeout = packet.get_timeout()
-
-                # print "Expecting pkt. Timeout in: {i}".format(i=timeout)
 
                 in_rx_packet = False
                 rx_packet = []
@@ -74,7 +71,6 @@ class UsbPhyShim(UsbPhy):
                     self.wait(lambda x: self._clock.is_low())
 
                     timeout = timeout - 1
-                    # print "{i}".format(i=timeout)
 
                     # sample TXV for new packet
                     if xsi.sample_port_pins(self._txv) == 1:
@@ -86,7 +82,6 @@ class UsbPhyShim(UsbPhy):
                     print("ERROR: Timed out waiting for packet")
 
                 else:
-                    # print "in packet"
                     while in_rx_packet == True:
 
                         # TODO txrdy pulsing
@@ -132,7 +127,6 @@ class UsbPhyShim(UsbPhy):
 
                 rxv_count = packet.get_data_valid_count()
 
-                # print "Waiting for inter_pkt_gap: {i}".format(i=packet.inter_frame_gap)
                 self.wait_until(xsi.get_time() + packet.inter_pkt_gap)
 
                 print(
@@ -150,8 +144,6 @@ class UsbPhyShim(UsbPhy):
                 self.wait(lambda x: self._clock.is_high())
                 self.wait(lambda x: self._clock.is_low())
 
-                # if isinstance(packet, TokenPacket):
-                #   print "Token packet, clear valid token"
                 xsi.drive_port_pins(self._vld, 0)
 
                 for (i, byte) in enumerate(packet.get_bytes(do_tokens=True)):
@@ -180,12 +172,10 @@ class UsbPhyShim(UsbPhy):
                         if xsi.sample_port_pins(self._txv) == 1:
                             print("ERROR: Unexpected packet from xCORE")
 
-                    # print "Sending byte {0:#x}".format(byte)
-
                     rxv_count = packet.get_data_valid_count()
 
                     if isinstance(packet, TokenPacket):
-                        # print "Token packet, driving valid"
+
                         if packet.get_token_valid():
                             xsi.drive_port_pins(self._vld, 1)
                         else:
@@ -210,9 +200,6 @@ class UsbPhyShim(UsbPhy):
                         print("ERROR: Unexpected packet from xCORE")
 
                 xsi.drive_port_pins(self._rxa, 0)
-
-                # if self._verbose:
-                # print "Sent"
 
         print("Test done")
         self.end_test()

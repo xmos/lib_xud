@@ -295,11 +295,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 
                 if (one)
                 {
-                    #if defined(XUD_SIM_XSIM) || defined(XUD_BYPASS_CONNECT) 
-                        reset = 1;
-                    #else
-                        reset = XUD_Init();
-                    #endif
+#if defined(XUD_SIM_XSIM) || defined(XUD_BYPASS_CONNECT) 
+                    reset = 1;
+#else
+                    reset = XUD_Init();
+#endif
                     one = 0;
                 }
                 else

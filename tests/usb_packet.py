@@ -107,8 +107,6 @@ def CreateSofToken(frameNumber, data_valid_count, badCrc=False, interEventDelay=
             interEventDelay=interEventDelay,
         )
 
-    return sofToken
-
 
 def reflect(val, numBits):
 

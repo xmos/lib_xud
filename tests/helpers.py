@@ -242,19 +242,8 @@ def get_sim_args(testname, clk, phy, arch="xs2"):
         )
 
         sim_args += ["--vcd-tracing", vcd_args]
-    #        sim_args += ['--xscope', '-offline logs/xscope.xmt']
 
     return sim_args
-
-
-def packet_processing_time(phy, data_bytes):
-    """Returns the time it takes the DUT to process a given frame"""
-    return 6000 * phy.clock.get_bit_time()
-
-
-def choose_small_frame_size(rand):
-    """Choose the size of a frame near the minimum size frame (46 data bytes)"""
-    return rand.randint(46, 54)
 
 
 def move_to_next_valid_packet(phy):

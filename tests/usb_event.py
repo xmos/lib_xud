@@ -1,7 +1,7 @@
-import abc
+from abc import ABC, abstractmethod, abstractproperty
 
 
-class UsbEvent(object):
+class UsbEvent(ABC):
     def __init__(self, time=0, interEventDelay=1):  # TODO set delay to sensible default
         self._time = time
         self._interEventDelay = interEventDelay
@@ -15,18 +15,18 @@ class UsbEvent(object):
     def interEventDelay(self):
         return self._interEventDelay
 
-    @abc.abstractmethod
+    @abstractmethod
     def expected_output(self, bus_speed, offset=0):
         pass
 
     # Drive event to simulator
-    @abc.abstractmethod
+    @abstractmethod
     def drive(self, usb_phy, bus_speed):
         pass
 
     # Note, an event might contain events
-    @abc.abstractproperty
-    def eventcount(self):
+    @abstractproperty
+    def event_count(self):
         pass
 
     def __str__(self):

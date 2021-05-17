@@ -100,6 +100,7 @@ def run_with_pyxsim(xe, simthreads, xscope_io = False, loopback=[],
 def run_tester(caps, tester_list):
     separate_word = [index for index, element in enumerate(caps) if element.strip() == "Test done"]
     result = []
+    print(tester_list[0])
     if len(separate_word) > 1:
         i = 0
         start = 0
@@ -111,16 +112,16 @@ def run_tester(caps, tester_list):
                 start = separate_word[i-1]+1
                 stop = separate_word[i]+1
             re_cap = caps[start:stop]
-            if tester_list[i] != False: 
+            if tester_list[i] != "Build Failed": 
                 result.append(tester_list[i].run(re_cap))
             else:
-                result.append(tester_list[i])
+                result.append(False)
             i += 1
     else:
-        if tester_list[0] != False:
+        if tester_list[0] != "Build Failed":
             result.append(tester_list[0].run(caps[:separate_word[0]+1])) 
         else:
-            result.append(tester_list[0])
+            result.append(False)
     return result
 
 class SimThread(object):

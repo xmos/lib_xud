@@ -3,8 +3,6 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Basic check of PING functionality
-
-import Pyxsim
 from usb_packet import TokenPacket, TxDataPacket, RxDataPacket, TxHandshakePacket, RxHandshakePacket, USB_PID 
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession

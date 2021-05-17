@@ -161,7 +161,7 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
         return tester_list
     else:
         delete_test_specific_xn_files(testname)
-        return False
+        return ["Build Failed"]
 
 def create_expect(arch, events, filename, verbose = False):
     

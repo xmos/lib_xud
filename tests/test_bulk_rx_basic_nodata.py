@@ -3,7 +3,6 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Rx out of seq (but valid.. ) data PID
-import Pyxsim
 from  usb_packet import TokenPacket, USB_PID
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession

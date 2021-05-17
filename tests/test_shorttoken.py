@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2019-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
-import Pyxsim
 from usb_packet import TxPacket, USB_PID 
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession

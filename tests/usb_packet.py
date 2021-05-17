@@ -108,6 +108,40 @@ def CreateSofToken(frameNumber, data_valid_count, badCrc=False, interEventDelay=
         )
 
 
+def GenCrc16(data: bytes):
+    poly = 0xA001
+    crc = 0xFFFF
+    for b in data:
+        crc ^= 0xFF & b
+        for _ in range(0, 8):
+            if crc & 0x0001:
+                crc = (crc >> 1) ^ poly
+            else:
+                crc >>= 1
+
+    return crc ^ 0xFFFF
+
+
+def GenCrc5(args):
+    poly = 0x14
+    crc = 0x1F
+    n = args & 0x7FF
+    i = 11
+
+    while i > 0:
+        if (n ^ crc) & 1:
+            crc = (crc >> 1) ^ poly
+        else:
+            crc >>= 1
+        i -= 1
+        n >>= 1
+
+    # Invert contents to generate crc field
+    crc ^= 0x1F
+
+    return crc
+
+
 def reflect(val, numBits):
 
     valRef = 0
@@ -120,61 +154,6 @@ def reflect(val, numBits):
         val >>= 1
 
     return valRef
-
-
-def GenCrc16(args):
-
-    data = args
-
-    crc = 0xFFFF
-    poly = 0x8005
-
-    for byte in data:
-        topBit = 1 << 15
-        crc ^= reflect(int(byte) & int(0xFF), 8) << 8
-
-        for k in range(0, 8):
-            if crc & topBit:
-                crc = (crc << 1) ^ poly
-            else:
-                crc <<= 1
-
-    # //crc = crc ^0xffff;
-    crc = reflect(crc, 16)
-    crc = ~crc
-    crc = crc & 0xFFFF
-    # print "CRC: : {0:#x}".format(crc)
-    return crc
-
-
-def GenCrc5(args):
-    intSize = 32
-    elevenBits = args
-
-    poly5 = 0x05 << (intSize - 5)
-    crc5 = 0x1F << (intSize - 5)
-    udata = elevenBits << (intSize - 11)
-    # crc over 11 bits
-
-    iBitcnt = 11
-
-    while iBitcnt > 0:
-        if (udata ^ crc5) & (0x1 << (intSize - 1)):  # bit4 != bit4?
-            crc5 <<= 1
-            crc5 ^= poly5
-        else:
-            crc5 <<= 1
-        udata <<= 1
-        iBitcnt = iBitcnt - 1
-
-    # Shift back into position
-    crc5 >>= intSize - 5
-
-    # Invert contents to generate crc field
-    crc5 ^= 0x1F
-
-    crc5 = reflect(crc5, 5)
-    return crc5
 
 
 # Functions for creating the data contents of packets

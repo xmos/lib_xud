@@ -306,7 +306,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 {
                     timer t; unsigned time;
                     t :> time;
-                    t when timerafter(time + SUSPEND_T_WTWRSTHS) :> int _;// T_WTRSTHS: 100-875us
+                    t when timerafter(time + SUSPEND_T_WTWRSTHS_ticks) :> int _;// T_WTRSTHS: 100-875us
 
                     /* Sample line state and check for reset (or suspend) */
                     XUD_LineState_t ls = XUD_HAL_GetLineState();

@@ -19,7 +19,7 @@
 .cc_top suspendTimeout.data
 .align 4
 suspendTimeout:
-.long  SUSPEND_TIMEOUT
+.long  SUSPEND_TIMEOUT_ticks
 .cc_bottom suspendTimeout.data
 .text
 
@@ -27,7 +27,7 @@ suspendTimeout:
 .cc_top suspend_t_wtwrsths.data
 .align 4
 suspend_t_wtwrsths:
-.long SUSPEND_T_WTWRSTHS
+.long SUSPEND_T_WTWRSTHS_ticks
 .cc_bottom suspend_t_wtwrsths.data
 .text
 

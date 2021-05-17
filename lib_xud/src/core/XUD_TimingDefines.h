@@ -8,33 +8,27 @@
 #ifndef SUSPEND_TIMEOUT_us
 #define SUSPEND_TIMEOUT_us          (3000) 
 #endif
-#define SUSPEND_TIMEOUT             (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
+#define SUSPEND_TIMEOUT_ticks       (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
 
 // Device attach timing defines
-#define T_SIGATT_ULPI_us            5000     // 5ms
-#define T_SIGATT_ULPI               (T_SIGATT_ULPI_us * REF_CLK_FREQ)
-#define T_ATTDB_us                  1000000  // 1000ms
-#define T_ATTDB                     (T_ATTDB_us * REF_CLK_FREQ)
 #define T_UCHEND_T_UCH_us           1000000  // 1000ms
 #define T_UCHEND_T_UCH              (T_UCHEND_T_UCH_us * REF_CLK_FREQ)
-#define T_UCHEND_T_UCH_ULPI_us      2000     //    2ms
-#define T_UCHEND_T_UCH_ULPI         (T_UCHEND_T_UCH_us * REF_CLK_FREQ)
 
 #ifdef XUD_TIMING_SHORT
-#define T_FILT                      100      
+#define T_FILT_ticks                (100)      
 #else
-#define T_FILT_us                   3       //   2.5us
-#define T_FILT                      (T_FILT_us * REF_CLK_FREQ)
+#define T_FILT_us                   (3)       //   2.5us
+#define T_FILT_ticks                (T_FILT_us * REF_CLK_FREQ)
 #endif
 
 #ifndef SUSPEND_T_WTWRSTHS_us
 #define SUSPEND_T_WTWRSTHS_us       200     // 200us Time beforechecking for J after asserting XcvrSelect and Termselect: T_WTRSTHS: 100-875us
 #endif
-#define SUSPEND_T_WTWRSTHS          (SUSPEND_T_WTWRSTHS_us * REF_CLK_FREQ)
+#define SUSPEND_T_WTWRSTHS_ticks    (SUSPEND_T_WTWRSTHS_us * REF_CLK_FREQ)
 
-#define OUT_TIMEOUT_us              500     // How long we wait for data after OUT token
-#define OUT_TIMEOUT                 (OUT_TIMEOUT_us * REF_CLK_FREQ)
-#define TX_HANDSHAKE_TIMEOUT_us     5      // How long we wait for handshake after sending tx data
-#define TX_HANDSHAKE_TIMEOUT        (TX_HANDSHAKE_TIMEOUT_us * REF_CLK_FREQ)
+#define OUT_TIMEOUT_us              (500)     // How long we wait for data after OUT token
+#define OUT_TIMEOUT_ticks           (OUT_TIMEOUT_us * REF_CLK_FREQ)
+#define TX_HANDSHAKE_TIMEOUT_us     (5)      // How long we wait for handshake after sending tx data
+#define TX_HANDSHAKE_TIMEOUT_ticks  (TX_HANDSHAKE_TIMEOUT_us * REF_CLK_FREQ)
 
 #endif

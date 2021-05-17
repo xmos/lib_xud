@@ -1,7 +1,6 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import random
-# import xmostest
 import Pyxsim
 import sys
 import zlib

@@ -84,42 +84,6 @@ USB_PID = {
             "NAK"       : 0x5A,
         }
 
-#def AppendSetupToken(packets, ep, address, **kwargs):
-#    ipg = kwargs.pop('inter_pkt_gap', 500)
-#    AppendTokenPacket(packets, 0x2d, ep, ipg, address, **kwargs)
-
-#def AppendOutToken(packets, ep, address, **kwargs):
-#    ipg = kwargs.pop('inter_pkt_gap', 500) 
-#    AppendTokenPacket(packets, 0xe1, ep, ipg, address, **kwargs)
-
-#def AppendPingToken(packets, ep, address, **kwargs):
-#    ipg = kwargs.pop('inter_pkt_gap', 500) 
-#    AppendTokenPacket(packets, 0xb4, ep, ipg, address, **kwargs)
-
-#def AppendInToken(packets, ep, address, **kwargs):
-    #357 was min IPG supported on bulk loopback to not nak
-    #lower values mean the loopback NAKs
-#    ipg = kwargs.pop('inter_pkt_gap', 10) 
-#    AppendTokenPacket(packets, 0x69, ep, ipg, address, **kwargs)
-
-#def AppendSofToken(packets, framenumber, **kwargs):
-#    ipg = kwargs.pop('inter_pkt_gap', 500) 
-    
-    # Override EP and Address 
-#    ep = (framenumber >> 7) & 0xf
-#    address = (framenumber) & 0x7f
-#    AppendTokenPacket(packets, 0xa5, ep, ipg, address, **kwargs)
-
-#def AppendTokenPacket(packets, _pid, ep, ipg, addr=0, **kwargs):
-#    
-#    data_valid_count = kwargs.pop('data_valid_count', 0)
-#    packets.append(TokenPacket( 
-#        inter_pkt_gap=ipg, 
-#        pid=_pid,
-#        address=addr, 
-#        endpoint=ep,
-#        data_valid_count=data_valid_count))
-
 def reflect(val, numBits):
 
     valRef = 0;
@@ -344,7 +308,6 @@ class RxPacket(UsbPacket):
 class TxPacket(UsbPacket):
 
     def __init__(self, **kwargs):
-        #self.inter_pkt_gap = kwargs.pop('inter_pkt_gap', RX_RX_DELAY) #13 lowest working for single issue loopback
         self.rxa_start_delay = kwargs.pop('rxa_start_delay', 2)
         self.rxa_end_delay = kwargs.pop('rxa_end_delay', RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop('rxe_assert_time', 0)
@@ -520,10 +483,7 @@ class TokenPacket(TxPacket):
         # Correct crc5 can be overridden
         self.crc5 = kwargs.pop('crc5', crc5)
 
-        # Always override to match IFM
-        # Only required for < XS3?
-        #self.data_valid_count = 4 #todo
-        #self.data_valid_count = 0
+        # TODO Always override data_valid count to match IFM for archs < XS3
 
     def get_bytes(self, do_tokens=False):
         bytes = []

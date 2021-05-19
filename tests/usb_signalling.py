@@ -2,6 +2,24 @@ from usb_event import UsbEvent
 from usb_phy import USB_LINESTATE, USB_TIMINGS
 
 
+class UsbDeviceAttach(UsbEvent):
+    def __init__(self, interEventDelay=0):
+        super().__init__(interEventDelay=interEventDelay)
+
+    def __str__(self):
+        return "DeviceAttach"
+
+    def expected_output(self, bus_speed, offset=0):
+        return self.__str__() + "\n"
+
+    @property
+    def event_count(self):
+        return 1
+
+    def drive(self, usb_phy, bus_speed):
+        pass
+
+
 class UsbResume(UsbEvent):
     def __init__(self, duration=USB_TIMINGS["RESUME_FSK_MIN_US"], interEventDelay=0):
         self._duration = duration

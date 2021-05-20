@@ -3,8 +3,11 @@
 #ifndef _XUD_USB_DEFINES_H_
 #define _XUD_USB_DEFINES_H_
 
-// Defines relating to USB/ULPI/UTMI/Phy specs
+#ifndef REF_CLK_FREQ
 #define REF_CLK_FREQ                (100)
+#endif
+
+// Defines relating to USB/ULPI/UTMI/Phy specs
 #ifndef SUSPEND_TIMEOUT_us
 #define SUSPEND_TIMEOUT_us          (3000) 
 #endif

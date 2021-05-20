@@ -107,7 +107,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #warning J and K definitons are reversed in XS3A
 #endif
             case detecting_k => flag1_port when pinseq(1):> void @ tx:       // K Chirp
-                flag1_port @ tx + T_FILT :> tmp;
+                flag1_port @ tx + T_FILT_ticks :> tmp;
                 if (tmp) 
                 {
                     detecting_k = 0;
@@ -115,7 +115,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 break;
 
              case !detecting_k => flag0_port when pinseq(1) :> void @ tx:    // J Chirp
-                flag0_port @ tx + T_FILT :> tmp;
+                flag0_port @ tx + T_FILT_ticks :> tmp;
                 if (tmp == 1) 
                 {                                              
                     chirpCount++;                                            // Seen an extra K-J pair

@@ -69,10 +69,6 @@ class UsbTransaction(UsbEvent):
        
             self._packets.extend(packets)
 
-            #if resend:
-                # Add again..
-            #    self._packets.extend(packets)
-
         else: 
             
             self._packets.append(TokenPacket(interEventDelay = interEventDelay, 

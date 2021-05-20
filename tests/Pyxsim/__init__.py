@@ -49,12 +49,6 @@ def _build(xe_path, build_config=None, env={}, do_clean = False):
     if build_config != None:
         cmd += ['CONFIG=%s' % build_config]
 
-    # if show_build_messages:
-    #     if clean_only:
-    #         sys.stdout.write("Cleaning %s\n" % xe_path)
-    #     else:
-    #         sys.stdout.write("Building %s\n" % xe_path)
-
     output = call_get_output(cmd, cwd = path, env = my_env,
                              merge_out_and_err = True)
 
@@ -100,7 +94,6 @@ def run_with_pyxsim(xe, simthreads, xscope_io = False, loopback=[],
 def run_tester(caps, tester_list):
     separate_word = [index for index, element in enumerate(caps) if element.strip() == "Test done"]
     result = []
-    print(tester_list[0])
     if len(separate_word) > 1:
         i = 0
         start = 0

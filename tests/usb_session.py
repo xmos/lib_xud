@@ -1,4 +1,5 @@
-from usb_phy import USB_DATA_VALID_COUNT
+# Copyright 2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.rom usb_phy import USB_DATA_VALID_COUNT
 import usb_transaction
 import usb_packet
 

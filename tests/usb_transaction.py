@@ -1,4 +1,5 @@
-from usb_event import UsbEvent
+# Copyright 2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.rom usb_event import UsbEvent
 from usb_packet import (
     USB_PID,
     TokenPacket,

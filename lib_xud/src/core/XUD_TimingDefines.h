@@ -11,7 +11,7 @@
 #define SUSPEND_TIMEOUT_ticks       (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
 
 // Device attach timing defines
-#define T_UCHEND_T_UCH_us           1000000  // 1000ms
+#define T_UCHEND_T_UCH_us           (1000000)  // 1000ms
 #define T_UCHEND_T_UCH              (T_UCHEND_T_UCH_us * REF_CLK_FREQ)
 
 #ifdef XUD_TIMING_SHORT
@@ -22,7 +22,7 @@
 #endif
 
 #ifndef SUSPEND_T_WTWRSTHS_us
-#define SUSPEND_T_WTWRSTHS_us       200     // 200us Time beforechecking for J after asserting XcvrSelect and Termselect: T_WTRSTHS: 100-875us
+#define SUSPEND_T_WTWRSTHS_us       (200)     // 200us Time beforechecking for J after asserting XcvrSelect and Termselect: T_WTRSTHS: 100-875us
 #endif
 #define SUSPEND_T_WTWRSTHS_ticks    (SUSPEND_T_WTWRSTHS_us * REF_CLK_FREQ)
 

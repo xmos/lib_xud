@@ -1,6 +1,6 @@
 # Copyright 2016-2021 XMOS LIMITED.
-# This Software is subject to the terms of the XMOS Public Licence: Version 1.rom abc import ABC, abstractmethod, abstractproperty
-
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
+from abc import ABC, abstractmethod, abstractproperty
 
 class UsbEvent(ABC):
     def __init__(self, time=0, interEventDelay=1):  # TODO set delay to sensible default

@@ -9,7 +9,6 @@
 #ifdef __XS2A__
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
-#include "XUD_USBTile_Support.h"
 extern in port flag0_port;
 extern in port flag1_port;
 extern in port flag2_port;
@@ -125,7 +124,6 @@ void XUD_HAL_EnableUsb(unsigned pwrConfig)
 
 void XUD_HAL_EnterMode_PeripheralFullSpeed()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS3A__
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 1);
@@ -148,12 +146,10 @@ void XUD_HAL_EnterMode_PeripheralFullSpeed()
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 
         (1<<XS1_SU_UIFM_FUNC_CONTROL_XCVRSELECT_SHIFT) | (1<<XS1_SU_UIFM_FUNC_CONTROL_TERMSELECT_SHIFT));
 #endif
-#endif
 }
 
 void XUD_HAL_EnterMode_PeripheralChirp()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS3A__
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0);
@@ -174,12 +170,10 @@ void XUD_HAL_EnterMode_PeripheralChirp()
 #else
    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b1010);
 #endif
-#endif
 }
 
 void XUD_HAL_EnterMode_PeripheralHighSpeed()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS3A__
     unsigned d = 0;
     d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0); // HS
@@ -200,12 +194,10 @@ void XUD_HAL_EnterMode_PeripheralHighSpeed()
 #else
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0b0000);
 #endif
-#endif
 }
 
 void XUD_HAL_EnterMode_PeripheralTestJTestK()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS3A__
 
   /* From ULPI Specification Revsion 1.1, table 41 
@@ -235,12 +227,43 @@ void XUD_HAL_EnterMode_PeripheralTestJTestK()
 #else
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
 #endif
+}
+
+void XUD_HAL_EnterMode_TristateDrivers()
+{
+#ifdef __XS2A__
+    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4);
+#else
+    /* From ULPI Specification Revsion 1.1, table 41 
+     * XcvrSelect:  XXb
+     * TermSelect:  Xb
+     * OpMode:      01b
+     * DpPullDown   Xb
+     * DmPullDown:  Xb
+     */
+    unsigned d = 0;
+    d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_UTMI_TERMSELECT_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_UTMI_OPMODE_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_DMPULLDOWN_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_DPPULLDOWN_SET(d, 0);
+
+    d = XS1_USB_PHY_CFG0_UTMI_SUSPENDM_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_TXBITSTUFF_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_PLL_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_LPM_ALIVE_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_IDPAD_EN_SET(d, 0);
+
+    unsigned xtlSelVal = XtlSelFromMhz(XUD_OSC_MHZ);
+    d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlSelVal);
+
+    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
 #endif
 }
 
+
 void XUD_HAL_Mode_PowerSig()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS2A__
     /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */
   	set_port_no_inv(flag2_port);
@@ -254,12 +277,10 @@ void XUD_HAL_Mode_PowerSig()
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 1);
     write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_SHIM_CFG_NUM, d); 
 #endif
-#endif
 }
 
 void XUD_HAL_Mode_DataTransfer()
 {
-#ifndef XUD_SIM_XSIM
 #ifdef __XS2A__
     /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
      * NOTE: Need to do this every iteration since CHKTOK would break power signaling */
@@ -280,7 +301,6 @@ void XUD_HAL_Mode_DataTransfer()
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 0);
     write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_SHIM_CFG_NUM, d); 
-#endif
 #endif
 }
 
@@ -304,8 +324,8 @@ XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
 {
 #ifdef __XS3A__
     unsigned dp, dm;
-    dp_port :> dp;
-    dm_port :> dm;
+    dp_port :> dp;//flag1
+    dm_port :> dm;//flag0
     return LinesToLineState(dp, dm);
 #else   
     unsigned j, k, se0;
@@ -340,8 +360,10 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     select 
     {
         case dp_port when pinsneq(dp) :> dp:
+            dm_port :> dm; //Both might have changed!
             break;
         case dm_port when pinsneq(dm) :> dm:
+            dp_port :> dp; //Both might have changed!
             break;
         case timeout != null => t when timerafter(time + timeout) :> int _:
             return 1;
@@ -365,3 +387,12 @@ void XUD_HAL_SetDeviceAddress(unsigned char address)
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_DEVICE_ADDRESS_NUM, address);
 #endif
 }
+
+#ifdef __XS2A__
+unsigned read_vbus()
+{
+    unsigned int x;
+    read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
+    return x & (1 << XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT);
+}
+#endif

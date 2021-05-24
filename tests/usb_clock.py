@@ -4,6 +4,7 @@ import xmostest
 import sys
 import zlib
 
+
 class Clock(xmostest.SimThread):
 
     CLK_60MHz = 0x0
@@ -13,29 +14,37 @@ class Clock(xmostest.SimThread):
         self._clk = clk
         if clk == self.CLK_60MHz:
             self._period = float(1000000000) / 60000000
-            self._name = '60Mhz'
-            self._bit_time = 5 # TODO
+            self._name = "60Mhz"
+            self._bit_time = 5  # TODO
         else:
-            raise ValueError('Unsupported Clock Frequency')
+            raise ValueError("Unsupported Clock Frequency")
         self._min_ifg = 96 * self._bit_time
         self._val = 0
         self._port = port
 
     def run(self):
         while True:
-            self.wait_until(self.xsi.get_time() + self._period/2)
+            self.wait_until(self.xsi.get_time() + self._period / 2)
             self._val = 1 - self._val
 
             if self._running:
-                #print "{}".format(self._val)
-                #self.xsi.drive_port_pins(self._port, self._val)
+                # print "{}".format(self._val)
+                # self.xsi.drive_port_pins(self._port, self._val)
                 self.xsi.drive_periph_pin(self._port, self._val)
 
+    @property
+    def period_ns(self):
+        return self._period
+
+    @property
+    def period_us(self):
+        return self._period / 1000
+
     def is_high(self):
-        return (self._val == 1)
+        return self._val == 1
 
     def is_low(self):
-        return (self._val == 0)
+        return self._val == 0
 
     def get_rate(self):
         return self._clk

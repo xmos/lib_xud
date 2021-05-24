@@ -27,6 +27,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "XUD_DeviceAttach.h"
 #include "XUD_PowerSig.h"
 #include "XUD_HAL.h"
+#include "XUD_TimingDefines.h"
 
 #if (USB_MAX_NUM_EP_IN != 16)
 #error USB_MAX_NUM_EP_IN must be 16!
@@ -288,23 +289,24 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 XUD_HAL_EnterMode_PeripheralFullSpeed();
 
-#if defined(XUD_SIM_XSIM) || defined(XUD_BYPASS_CONNECT) 
-                reset = 1;
-#else
 
                 /* Setup flags for power signalling - i.e. J/K/SE0 line state*/
                 XUD_HAL_Mode_PowerSig();
                 
                 if (one)
                 {
+#if defined(XUD_SIM_XSIM) || defined(XUD_BYPASS_CONNECT) 
+                    reset = 1;
+#else
                     reset = XUD_Init();
+#endif
                     one = 0;
                 }
                 else
                 {
                     timer t; unsigned time;
                     t :> time;
-                    t when timerafter(time + 20000) :> int _;// T_WTRSTHS: 100-875us
+                    t when timerafter(time + SUSPEND_T_WTWRSTHS_ticks) :> int _;// T_WTRSTHS: 100-875us
 
                     /* Sample line state and check for reset (or suspend) */
                     XUD_LineState_t ls = XUD_HAL_GetLineState();
@@ -331,7 +333,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Run user resume code */
                     XUD_UserResume();
                 }
-#endif
                 /* Test if coming back from reset or suspend */
                 if(reset == 1)
                 {
@@ -365,9 +366,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     #if defined(XUD_TEST_SPEED_HS)
                         g_curSpeed = XUD_SPEED_HS;
                         g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
+                        XUD_HAL_EnterMode_PeripheralHighSpeed();
     #elif defined(XUD_TEST_SPEED_FS)
                         g_curSpeed = XUD_SPEED_FS;
                         g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
+                        XUD_HAL_EnterMode_PeripheralFullSpeed(); //Technically not required since we should already be in FS mode..
     #else 
                         #error XUD_TEST_SPEED_ must be defined if using XUD_BYPASS_RESET!
     #endif

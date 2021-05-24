@@ -2,13 +2,11 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #if !defined(XUD_BYPASS_RESET) && !defined(XUD_SIM_XSIM)
 #include <xs1.h>
-#include <print.h>
 #include <platform.h>
+#include "xud.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_TimingDefines.h"
-#include "XUD_Support.h"
-#include "xud.h"
-
+//#include "XUD_Support.h"
 #include "XUD_HAL.h"
 
 extern in  port flag0_port;
@@ -16,9 +14,9 @@ extern in  port flag1_port;
 extern in  port flag2_port;
 extern out buffered port:32 p_usb_txd;
 
-#define TUCHEND_DELAY_us   1500 // 1.5ms
+#define TUCHEND_DELAY_us   (1500) // 1.5ms
 #define TUCHEND_DELAY      (TUCHEND_DELAY_us * REF_CLK_FREQ)
-#define INVALID_DELAY_us   2500 // 2.5ms
+#define INVALID_DELAY_us   (2500) // 2.5ms
 #define INVALID_DELAY      (INVALID_DELAY_us * REF_CLK_FREQ)
 
 extern int resetCount;
@@ -96,8 +94,8 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                     {
                         if(!XUD_HAL_GetVBusState())
                         {
-                            write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4);
-                             return -1;             // VBUS gone, handshake fails completely.
+                            XUD_HAL_EnterMode_TristateDrivers();
+                            return -1;             // VBUS gone, handshake fails completely.
                         }
                     }
                 }
@@ -107,7 +105,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #warning J and K definitons are reversed in XS3A
 #endif
             case detecting_k => flag1_port when pinseq(1):> void @ tx:       // K Chirp
-                flag1_port @ tx + T_FILT :> tmp;
+                flag1_port @ tx + T_FILT_ticks :> tmp;
                 if (tmp) 
                 {
                     detecting_k = 0;
@@ -115,7 +113,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 break;
 
              case !detecting_k => flag0_port when pinseq(1) :> void @ tx:    // J Chirp
-                flag0_port @ tx + T_FILT :> tmp;
+                flag0_port @ tx + T_FILT_ticks :> tmp;
                 if (tmp == 1) 
                 {                                              
                     chirpCount++;                                            // Seen an extra K-J pair

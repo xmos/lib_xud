@@ -1,25 +1,29 @@
 #!/usr/bin/env python
-# Copyright 2019-2021 XMOS LIMITED.
+# Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
 import xmostest
-from usb_packet import *
 import usb_packet
-from helpers import do_usb_test, RunUsbTest, CreateSofToken
+from usb_packet import CreateSofToken
+from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+from usb_signalling import UsbSuspend, UsbResume
 
 
 def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
-    address = 1
     ep = 1
+    address = 1
+    start_length = 10
+    end_length = 12
+    pktLength = 10
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
 
     session = UsbSession(
         bus_speed=usb_speed, run_enumeration=False, device_address=address
     )
 
-    # Start with a valid transaction */
     session.add_event(
         UsbTransaction(
             session,
@@ -27,17 +31,21 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             endpointNumber=ep,
             endpointType="BULK",
             direction="OUT",
-            dataLength=10,
+            dataLength=pktLength,
+            interEventDelay=0,
         )
     )
 
     session.add_event(CreateSofToken(frameNumber, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 1, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 2, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 3, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 4, data_valid_count))
 
-    # Finish with valid transaction
+    session.add_event(UsbSuspend(350000))
+    session.add_event(UsbResume())
+
+    frameNumber = frameNumber + 1
+    pktLength = pktLength + 1
+    session.add_event(
+        CreateSofToken(frameNumber, data_valid_count, interEventDelay=2000)
+    )
     session.add_event(
         UsbTransaction(
             session,
@@ -45,8 +53,8 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             endpointNumber=ep,
             endpointType="BULK",
             direction="OUT",
-            dataLength=11,
-            interEventDelay=6000,
+            dataLength=pktLength,
+            interEventDelay=0,
         )
     )
 

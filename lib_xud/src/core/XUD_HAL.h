@@ -9,15 +9,16 @@
 #include "xud.h"
 #include <platform.h>
 
+#define USB_TILE_REF usb_tile
+
 #ifdef __XS3A__
 #include <xs3a_registers.h>
-// TODO shoudl be properlty in HAL
+// TODO should be properlty in HAL
 unsigned XtlSelFromMhz(unsigned m);
 #else
 #include "XUD_USBTile_Support.h"
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
-#define USB_TILE_REF usb_tile
 #endif
 
 /** 
@@ -36,6 +37,7 @@ void XUD_HAL_EnterMode_PeripheralChirp();
 void XUD_HAL_EnterMode_PeripheralFullSpeed();
 void XUD_HAL_EnterMode_PeripheralHighSpeed();
 void XUD_HAL_EnterMode_PeripheralTestJTestK();
+void XUD_HAL_EnterMode_TristateDrivers();
 
 /**
  * \brief   Get current linestate status 

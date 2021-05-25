@@ -9,7 +9,6 @@
 #ifdef __XS2A__
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
-#include "XUD_USBTile_Support.h"
 extern in port flag0_port;
 extern in port flag1_port;
 extern in port flag2_port;
@@ -229,6 +228,39 @@ void XUD_HAL_EnterMode_PeripheralTestJTestK()
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
 #endif
 }
+
+void XUD_HAL_EnterMode_TristateDrivers()
+{
+#ifdef __XS2A__
+    write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4);
+#else
+    /* From ULPI Specification Revsion 1.1, table 41 
+     * XcvrSelect:  XXb
+     * TermSelect:  Xb
+     * OpMode:      01b
+     * DpPullDown   Xb
+     * DmPullDown:  Xb
+     */
+    unsigned d = 0;
+    d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_UTMI_TERMSELECT_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_UTMI_OPMODE_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_DMPULLDOWN_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_DPPULLDOWN_SET(d, 0);
+
+    d = XS1_USB_PHY_CFG0_UTMI_SUSPENDM_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_TXBITSTUFF_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_PLL_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_LPM_ALIVE_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_IDPAD_EN_SET(d, 0);
+
+    unsigned xtlSelVal = XtlSelFromMhz(XUD_OSC_MHZ);
+    d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlSelVal);
+
+    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+#endif
+}
+
 
 void XUD_HAL_Mode_PowerSig()
 {

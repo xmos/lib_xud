@@ -59,14 +59,13 @@ Typical Resource Usage
 Software version and dependencies
 .................................
 
-.. libdeps::
+The CHANGELOG contains information about the current and previous versions.
+For a list of direct dependencies, look for DEPENDENT_MODULES in lib_xud/module_build_info.
 
 Related application notes
 .........................
 
 The following application notes use this library:
-
-.. sidebysidelist::
 
    * AN00125 - USB mass storage device class 
    * AN00126 - USB printer device class 

@@ -1,6 +1,8 @@
 // Copyright 2011-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "XUD_AlignmentDefines.h"
+//.cc_top Pid_Sof.func, Pid_Sof
+// Received SOF token: Reset suspend/reset detection timer
 
 // Received SOF token: Reset suspend/reset detection timer
 .align FUNCTION_ALIGNMENT

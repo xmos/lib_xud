@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
 import xmostest
 from usb_packet import *
 import usb_packet
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-from usb_phy import MAX_ENDPOINT_ADDRESS
+from usb_phy import USB_MAX_EP_ADDRESS
 
 
 def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):

@@ -20,6 +20,39 @@ class UsbDeviceAttach(UsbEvent):
         return 1
 
     def drive(self, usb_phy, bus_speed):
+
+        # Check XcvrSel & TermSel low
+
+        # Drive VBUS
+
+        # Check device asserts XcvrSel and TermSel before T_SIGATT 
+
+        # Bus state: Idle (FS 'J')
+
+        # Drive bus reset (SE0) after T_ATTDB - This is T0
+
+        # Check DUT enables HS Transceiver and asserts Chirp K on the bus (XcvrSel low, TxValid high)
+        # (This needs to be done before T_UCHEND - T_UCH)
+
+        # Check that Chirp K lasts atleast T_UCH 
+
+        # Check that Chirp K ends before T_UCHEND
+
+        # if bus_speed == "HS":
+            # Before end of Chirp K + T_WTDCH assert chirp K on the bus
+
+            # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp K to chirp J
+
+            # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp J to chirp K
+
+            # After atleast X chirp pairs ensure DUT de-asserts TermSel to enter HS mode
+
+            # Terminate downstream chirp K-J Sequence (between T_DCHSE0_MAX and T_DCHSE0_MIN
+
+            # Endure DUT enters HS before T0 + T_DRST
+
+            # Drive HS Idle (SE0) on bus
+       
         pass
 
 

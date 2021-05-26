@@ -24,7 +24,11 @@ USB_TIMINGS = {
     "IDLE_TO_FS_MAX_US": 312,  # Spec: 3125
     "RESUME_FSK_MIN_US": 200,  # Spec: 20000us
     "RESUME_SE0_US": 1.25,  # 1.25uS - 1.5uS
-}
+    'T_UCHEND': 7000, # Upstream Chirp end time
+    'T_UCH': 1000, # Upstream Chirp length  
+    'T_SIGATT_US': 100000, # Maximum time from Vbus valid to when the device must signal attach
+    'T_ATTDB_US': 100000, # Debouce interval. The dives now enters the HS Detection Handshake protocol
+    }
 
 
 class UsbPhy(xmostest.SimThread):

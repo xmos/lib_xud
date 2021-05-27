@@ -13,6 +13,7 @@ class UsbDeviceAttach(UsbEvent):
         return "DeviceAttach"
 
     def expected_output(self, bus_speed, offset=0):
+        #return "DeviceAttach\n"
         return self.__str__() + "\n"
 
     @property
@@ -21,22 +22,68 @@ class UsbDeviceAttach(UsbEvent):
 
     def drive(self, usb_phy, bus_speed):
 
+        wait = usb_phy.wait
+        time = usb_phy.xsi.get_time
+        xsi = usb_phy.xsi
+
+        tConnect_ns = time()
+        
+        print(self.__str__() + "\n")
+
         # Check XcvrSel & TermSel low
+        xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
+        termsel = xsi.sample_periph_pin(usb_phy._termsel)
 
-        # Drive VBUS
+        if xcvrsel == 1:
+            print("ERROR: DUT enabled pull up before valid Vbus (XCVRSel)")
 
-        # Check device asserts XcvrSel and TermSel before T_SIGATT 
+        if termsel == 1:
+            print("ERROR: DUT enabled pull up before valid Vbus (TermSel)")
+
+        # TODO Drive VBUS
+
+        while True:  
+
+            if (time() - tConnect_ns) > USB_TIMINGS['T_SIGATT_US']:
+                print("ERROR: DUT didnt not assert XcvrSel & TermSel quickly enough")
+
+            # Check device asserts XcvrSel and TermSel before T_SIGATT 
+            xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
+            termsel = xsi.sample_periph_pin(usb_phy._termsel)
+
+            if xcvrsel == 1 and termsel == 1:
+                break;
 
         # Bus state: Idle (FS 'J')
+        xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_J"])
 
-        # Drive bus reset (SE0) after T_ATTDB - This is T0
+        # Drive bus reset (SE0) after T_ATTDB - This is T0 of Figure 25
+        wait(USB_TIMINGS['T_ATTDB_US'])
+        xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["SE0"])
 
         # Check DUT enables HS Transceiver and asserts Chirp K on the bus (XcvrSel low, TxValid high)
         # (This needs to be done before T_UCHEND - T_UCH)
+        while True:
+            xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
+            txv = xsi.sample_periph_pin(usb_phy._txv)
+
+            if xcvrsel == 1 and txv == 1:
+                t_ChirpStart_ns = time()
+                break;
 
         # Check that Chirp K lasts atleast T_UCH 
+        while True:
+            txv = xsi.sample_periph_pin(usb_phy._txv)
+    
+            if txv == 0:
+                t_ChirpEnd_ns = time()
+                if (t_ChirpEnd_ns - t_ChirpStart_ns) < USB_TIMINGS["T_UCH"]:
+                    print("ERROR: Upstream chirp too short")
+                break;
 
         # Check that Chirp K ends before T_UCHEND
+        if (t_ChirpEnd - tConnect_ns) > USB_TIMINGS["T_UCHEND"]:
+            print("ERROR: Upstream chirp finished too late")
 
         # if bus_speed == "HS":
             # Before end of Chirp K + T_WTDCH assert chirp K on the bus
@@ -53,7 +100,6 @@ class UsbDeviceAttach(UsbEvent):
 
             # Drive HS Idle (SE0) on bus
        
-        pass
 
 
 class UsbResume(UsbEvent):

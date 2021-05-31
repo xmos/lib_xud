@@ -159,8 +159,8 @@ def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
             phy.session = session
 
             expect_folder = create_if_needed("expect")
-            expect_filename = '{folder}/{test}_{arch}.expect'.format(
-                folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch)
+            expect_filename = '{folder}/{test}_{arch}_{usb_speed}.expect'.format(
+                folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch, usb_speed=usb_speed)
 
             create_expect(arch, session, expect_filename, verbose=verbose)
 

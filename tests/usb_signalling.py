@@ -17,9 +17,9 @@ class UsbDeviceAttach(UsbEvent):
         return (
             self.__str__()
             + "\n"
-            + "DUT Entered FS\n"
+            + "DUT entered FS\n"
             + "Received upstream chirp\n"
-            + "DUT Entered HS mode\n"
+            + "DUT entered HS mode\n"
         )
 
     @property
@@ -40,13 +40,12 @@ class UsbDeviceAttach(UsbEvent):
         xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
         termsel = xsi.sample_periph_pin(usb_phy._termsel)
 
-        if xcvrsel == 1:
-            print("ERROR: DUT enabled pull up before valid Vbus (XCVRSel)")
+        # TODO Drive VBUS and enabled these checks
+        #if xcvrsel == 1:
+        #    print("ERROR: DUT enabled pull up before valid Vbus (XCVRSel)")
 
-        if termsel == 1:
-            print("ERROR: DUT enabled pull up before valid Vbus (TermSel)")
-
-        # TODO Drive VBUS
+        #if termsel == 1:
+        #    print("ERROR: DUT enabled pull up before valid Vbus (TermSel)")
 
         while True:
 
@@ -108,11 +107,11 @@ class UsbDeviceAttach(UsbEvent):
         xsi.drive_port_pins(usb_phy._txrdy, 0)
 
         # Check that Chirp K lasts atleast T_UCH
-        if (t_ChirpEnd_ns - t_ChirpStart_ns) < USB_TIMINGS["T_UCH"]:
+        if (t_ChirpEnd_ns - t_ChirpStart_ns) < USB_TIMINGS["T_UCH_US"]*1000:
             print("ERROR: Upstream chirp too short")
 
         # Check that Chirp K ends before T_UCHEND
-        if (t_ChirpEnd_ns - tConnect_ns) > USB_TIMINGS["T_UCHEND"]:
+        if (t_ChirpEnd_ns - tConnect_ns) > USB_TIMINGS["T_UCHEND"]*1000:
             print("ERROR: Upstream chirp finished too late")
 
         if bus_speed == "HS":

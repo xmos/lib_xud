@@ -104,6 +104,14 @@ class UsbPhy(xmostest.SimThread):
         self._dut_exit_time = dut_exit_time
 
     @property
+    def initial_delay(self):
+        return self._initial_delay
+
+    @initial_delay.setter
+    def initial_delay(self, d):
+        self._initial_delay = d
+
+    @property
     def name(self):
         return self._name
 

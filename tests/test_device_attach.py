@@ -56,6 +56,8 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
         )
     )
 
+    phy.initial_delay = 19000
+
     do_usb_test(
         arch,
         clk,

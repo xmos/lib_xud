@@ -20,7 +20,7 @@ class UsbPhyUtmi(UsbPhy):
         xcvrsel,
         termsel,
         clock,
-        initial_delay=60000,
+        initial_delay=19000,  # TODO why can't this be set to a lower value?
         verbose=False,
         test_ctrl=None,
         do_timeout=True,

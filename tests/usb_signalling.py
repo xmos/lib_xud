@@ -13,8 +13,14 @@ class UsbDeviceAttach(UsbEvent):
         return "DeviceAttach"
 
     def expected_output(self, bus_speed, offset=0):
-        #return "DeviceAttach\n"
-        return self.__str__() + "\n"
+        # return "DeviceAttach\n"
+        return (
+            self.__str__()
+            + "\n"
+            + "DUT Entered FS\n"
+            + "Received upstream chirp\n"
+            + "DUT Entered HS mode\n"
+        )
 
     @property
     def event_count(self):
@@ -23,12 +29,12 @@ class UsbDeviceAttach(UsbEvent):
     def drive(self, usb_phy, bus_speed):
 
         wait = usb_phy.wait
-        time = usb_phy.xsi.get_time
+        wait_until_ns = usb_phy.wait_until
         xsi = usb_phy.xsi
+        time = xsi.get_time
 
+        print("DeviceAttach")
         tConnect_ns = time()
-        
-        print(self.__str__() + "\n")
 
         # Check XcvrSel & TermSel low
         xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
@@ -42,64 +48,118 @@ class UsbDeviceAttach(UsbEvent):
 
         # TODO Drive VBUS
 
-        while True:  
+        while True:
 
-            if (time() - tConnect_ns) > USB_TIMINGS['T_SIGATT_US']:
+            if (time() - tConnect_ns) > USB_TIMINGS["T_SIGATT_US"]:
                 print("ERROR: DUT didnt not assert XcvrSel & TermSel quickly enough")
 
-            # Check device asserts XcvrSel and TermSel before T_SIGATT 
+            # Check device asserts XcvrSel and TermSel before T_SIGATT
             xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
             termsel = xsi.sample_periph_pin(usb_phy._termsel)
 
             if xcvrsel == 1 and termsel == 1:
-                break;
+                break
+
+        print("DUT entered FS")
 
         # Bus state: Idle (FS 'J')
         xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_J"])
 
         # Drive bus reset (SE0) after T_ATTDB - This is T0 of Figure 25
-        wait(USB_TIMINGS['T_ATTDB_US'])
-        xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["SE0"])
+        wait_until_ns(time() + USB_TIMINGS["T_ATTDB_US"] * 1000)
+        wait(lambda x: usb_phy._clock.is_high())
+        wait(lambda x: usb_phy._clock.is_low())
+
+        xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["IDLE"])
 
         # Check DUT enables HS Transceiver and asserts Chirp K on the bus (XcvrSel low, TxValid high)
         # (This needs to be done before T_UCHEND - T_UCH)
         while True:
             xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
-            txv = xsi.sample_periph_pin(usb_phy._txv)
+            txv = xsi.sample_port_pins(usb_phy._txv)
 
-            if xcvrsel == 1 and txv == 1:
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+
+            if (xcvrsel == 0) and (txv == 1):
                 t_ChirpStart_ns = time()
-                break;
+                break
 
-        # Check that Chirp K lasts atleast T_UCH 
+        print("Received upstream chirp")
+
         while True:
-            txv = xsi.sample_periph_pin(usb_phy._txv)
-    
+
+            xsi.drive_port_pins(usb_phy._txrdy, 1)
+            data = xsi.sample_port_pins(usb_phy._txd)
+
+            if data != 0:
+                print("ERROR: Unexpected data from DUT during upstream chirp")
+
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+
+            txv = xsi.sample_port_pins(usb_phy._txv)
+
             if txv == 0:
+                # End of upstream chirp
                 t_ChirpEnd_ns = time()
-                if (t_ChirpEnd_ns - t_ChirpStart_ns) < USB_TIMINGS["T_UCH"]:
-                    print("ERROR: Upstream chirp too short")
-                break;
+                break
+
+        xsi.drive_port_pins(usb_phy._txrdy, 0)
+
+        # Check that Chirp K lasts atleast T_UCH
+        if (t_ChirpEnd_ns - t_ChirpStart_ns) < USB_TIMINGS["T_UCH"]:
+            print("ERROR: Upstream chirp too short")
 
         # Check that Chirp K ends before T_UCHEND
-        if (t_ChirpEnd - tConnect_ns) > USB_TIMINGS["T_UCHEND"]:
+        if (t_ChirpEnd_ns - tConnect_ns) > USB_TIMINGS["T_UCHEND"]:
             print("ERROR: Upstream chirp finished too late")
 
-        # if bus_speed == "HS":
-            # Before end of Chirp K + T_WTDCH assert chirp K on the bus
+        if bus_speed == "HS":
 
-            # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp K to chirp J
+            wait_until_ns(time() + USB_TIMINGS["T_WTDCH_US"] * 1000)
 
-            # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp J to chirp K
+            for chirp_count in range(USB_TIMINGS["CHIRP_COUNT_MIN"]):
 
-            # After atleast X chirp pairs ensure DUT de-asserts TermSel to enter HS mode
+                # Before end of Chirp K + T_WTDCH assert chirp K on the bus
+                xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_K"])
+                wait_until_ns(time() + USB_TIMINGS["T_DCHBIT_MIN_US"] * 1000)
+
+                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp K to chirp J
+                xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_J"])
+                wait_until_ns(time() + USB_TIMINGS["T_DCHBIT_MIN_US"] * 1000)
+
+                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp J to chirp K
+
+            # After atleast 3 chirp pairs ensure DUT de-asserts TermSel to enter HS mode
+            if xsi.sample_periph_pin(usb_phy._termsel) != 0:
+                print("ERROR: DUT didnt enter HS as expected")
+            else:
+                print("DUT entered HS mode")
+
+            for chirp_count in range(
+                USB_TIMINGS["CHIRP_COUNT_MAX"] - USB_TIMINGS["CHIRP_COUNT_MIN"]
+            ):
+
+                # Before end of Chirp K + T_WTDCH assert chirp K on the bus
+                xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_K"])
+                wait_until_ns(time() + USB_TIMINGS["T_DCHBIT_MIN_US"] * 1000)
+
+                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp K to chirp J
+                xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_J"])
+                wait_until_ns(time() + USB_TIMINGS["T_DCHBIT_MIN_US"] * 1000)
 
             # Terminate downstream chirp K-J Sequence (between T_DCHSE0_MAX and T_DCHSE0_MIN
 
-            # Endure DUT enters HS before T0 + T_DRST
+            # Ensure DUT enters HS before T0 + T_DRST
 
             # Drive HS Idle (SE0) on bus
-       
+            xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["IDLE"])
+
+            # TODO how long to drive SE0 for?
+            wait_until_ns(time() + 10000)
+
+        return
 
 
 class UsbResume(UsbEvent):

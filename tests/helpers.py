@@ -23,6 +23,20 @@ XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 clean_only = False
 
 
+class cap_redirect:
+    def __init__(self):
+        (self.fd, self.fname) = tempfile.mkstemp()
+        self.old_std = os.fdopen(os.dup(sys.stdout.fileno()), "w")
+        sys.stdout = os.fdopen(self.fd, "w")
+
+    def read_output(self):
+        std_reader = open(self.fname, "r")
+        return std_reader.read()
+
+    def close_capture(self):
+        sys.stdout = self.old_std
+
+
 def copy_common_xn_files(
     test_dir, path=".", common_dir="shared_src", source_dir="src", xn_files=XN_FILES
 ):
@@ -132,10 +146,7 @@ def RunUsbTest(test_fn):
 
     data_valid_count = {"FS": 39, "HS": 0}
 
-    (fd, fname) = tempfile.mkstemp()
-    old_std = os.fdopen(os.dup(sys.stdout.fileno()), "w")
-    sys.stdout = os.fdopen(fd, "w")
-    std_reader = open(fname, "r")
+    start_cap = cap_redirect()
 
     for _arch in ARCHITECTURE_CHOICES:
         for _busspeed in BUSSPEED_CHOICES:
@@ -152,12 +163,11 @@ def RunUsbTest(test_fn):
                             seed,
                         )
                     )
-
-    captured = std_reader.read()
-    sys.stdout = old_std
-    caps = captured.split("\n")
+    output = start_cap.read_output()
+    start_cap.close_capture()
+    output = output.split("\n")
     sys.stdout.write("\n")
-    return Pyxsim.run_tester(caps, tester_list)
+    return Pyxsim.run_tester(output, tester_list)
 
 
 def do_usb_test(
@@ -218,6 +228,7 @@ def do_usb_test(
 
     delete_test_specific_xn_files(testname)
     return tester_list
+
 
 def create_expect(arch, session, filename, verbose=False):
 

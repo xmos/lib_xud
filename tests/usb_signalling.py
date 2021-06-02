@@ -41,10 +41,10 @@ class UsbDeviceAttach(UsbEvent):
         termsel = xsi.sample_periph_pin(usb_phy._termsel)
 
         # TODO Drive VBUS and enabled these checks
-        #if xcvrsel == 1:
+        # if xcvrsel == 1:
         #    print("ERROR: DUT enabled pull up before valid Vbus (XCVRSel)")
 
-        #if termsel == 1:
+        # if termsel == 1:
         #    print("ERROR: DUT enabled pull up before valid Vbus (TermSel)")
 
         while True:
@@ -107,11 +107,11 @@ class UsbDeviceAttach(UsbEvent):
         xsi.drive_port_pins(usb_phy._txrdy, 0)
 
         # Check that Chirp K lasts atleast T_UCH
-        if (t_ChirpEnd_ns - t_ChirpStart_ns) < USB_TIMINGS["T_UCH_US"]*1000:
+        if (t_ChirpEnd_ns - t_ChirpStart_ns) < USB_TIMINGS["T_UCH_US"] * 1000:
             print("ERROR: Upstream chirp too short")
 
         # Check that Chirp K ends before T_UCHEND
-        if (t_ChirpEnd_ns - tConnect_ns) > USB_TIMINGS["T_UCHEND"]*1000:
+        if (t_ChirpEnd_ns - tConnect_ns) > USB_TIMINGS["T_UCHEND"] * 1000:
             print("ERROR: Upstream chirp finished too late")
 
         if bus_speed == "HS":

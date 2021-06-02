@@ -6,6 +6,7 @@
 import os, re, struct
 from ctypes import cdll, byref, c_void_p, c_char_p, c_int, create_string_buffer
 from Pyxsim.xe import Xe
+from Pyxsim.testers import TestError
 import threading
 import traceback
 import Pyxsim
@@ -96,7 +97,7 @@ def parse_port(p):
         if bit != None:
             bit = int(bit)
     else:
-        raise Pyxsim.XmosTestError("Cannot parse port: %s" % p)
+        raise TestError("Cannot parse port: %s" % p)
     if bit != None:
         mask = 1 << bit
     else:
@@ -110,7 +111,7 @@ def parse_periph_pin(p):
         perif = m.groups(0)[0]
         pin = m.groups(0)[1]
     else:
-        raise Pyxsim.XmosTestError("Cannot parse periph pin: %s" % p)
+        raise TestError("Cannot parse periph pin: %s" % p)
     mask = ALL_BITS
     return (perif, pin, mask)
 
@@ -263,7 +264,7 @@ class Xsi(object):
         simthread.complete_event.wait()
         simthread.complete_event.clear()
         if simthread.had_exception:
-            raise Pyxsim.XmosTestError("Simthread encoutered an exception")
+            raise TestError("Simthread encoutered an exception")
 
     def clock(self):
         status = xsi_lib.xsi_clock(self.xsim)

@@ -10,6 +10,7 @@ import time
 import os
 import signal
 import errno
+from Pyxsim.testers import TestError
 
 
 def pstreekill(process):
@@ -83,6 +84,8 @@ if platform_is_windows():
     concat_args = True
     use_shell = True
     # Windows version of Python 2.7 doesn't support SIGINT
+    if sys.version_info < (3, 0):
+        raise TestError("Doesn't support Python version < 3, please upgrade to Python 3 or higher.")
     SIGINT = signal.SIGTERM
 else:
     concat_args = False

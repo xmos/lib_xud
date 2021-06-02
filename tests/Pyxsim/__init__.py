@@ -15,16 +15,6 @@ import os
 
 clean_only = False
 
-class XmosTestError(Exception):
-    """
-    This exception is used for any errors that occur whilst calling
-    functions in the Pyxsim module.
-    """
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
-
 # This function is called automatically by the runners
 def _build(xe_path, build_config=None, env={}, do_clean=False):
 

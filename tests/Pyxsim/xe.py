@@ -1,6 +1,7 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 from Pyxsim.xmostest_subprocess import call, call_get_output
+from Pyxsim.testers import TestError
 import os, tempfile
 from xml.dom.minidom import parse
 import re
@@ -55,7 +56,7 @@ class Xe:
             for (package, pin, bitnum) in pins:
                 if bitnum == bit:
                     return [(package, pin, bitnum)]
-            raise Pyxsim.XmosTestError("Cannot find port pins")
+            raise TestError("Cannot find port pins")
         else:
             return self._port_map[port]
 

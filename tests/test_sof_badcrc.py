@@ -6,7 +6,6 @@ import usb_packet
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-import pytest
 
 # TODO ideally creation of SOF's is moved elsewhere
 def CreateSofToken(frameNumber, data_valid_count, badCrc=False):

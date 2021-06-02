@@ -1,7 +1,10 @@
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import re
 import sys
 
-class ComparisonTester():
+
+class ComparisonTester:
     """
     This tester will compare ouput against a file and pass a test if
     the output matches
@@ -21,8 +24,18 @@ class ComparisonTester():
                       be matched in an ordered manner or not.
     """
 
-    def __init__(self, golden, product, group, test, config={}, env={},
-                 regexp=False, ignore=[], ordered=True):
+    def __init__(
+        self,
+        golden,
+        product,
+        group,
+        test,
+        config={},
+        env={},
+        regexp=False,
+        ignore=[],
+        ordered=True,
+    ):
         super(ComparisonTester, self).__init__()
         # self.register_test(product, group, test, config)
         self._golden = golden
@@ -33,8 +46,8 @@ class ComparisonTester():
 
     def record_failure(self, failure_reason):
         # Append a newline if there isn't one already
-        if not failure_reason.endswith('\n'):
-            failure_reason += '\n'
+        if not failure_reason.endswith("\n"):
+            failure_reason += "\n"
         self.failures.append(failure_reason)
         sys.stderr.write("ERROR: %s" % failure_reason)
         self.result = False
@@ -46,12 +59,12 @@ class ComparisonTester():
         if isinstance(golden, list):
             expected = golden
         elif isinstance(golden, str):
-            expected = golden.split('\n')
+            expected = golden.split("\n")
         else:
             expected = [x.strip() for x in golden.readlines()]
-        if expected[0].strip()=='':
+        if expected[0].strip() == "":
             expected = expected[1:]
-        if expected[-1].strip()=='':
+        if expected[-1].strip() == "":
             expected = expected[:-1]
         self.result = True
         self.failures = []
@@ -62,7 +75,7 @@ class ComparisonTester():
         for i in range(len(output)):
             ignore = False
             for p in self._ignore:
-                if re.match(p,output[i].strip()):
+                if re.match(p, output[i].strip()):
                     ignore = True
                     break
             if ignore:
@@ -75,40 +88,48 @@ class ComparisonTester():
 
             if self._ordered:
                 if regexp:
-                    match = re.match(expected[line_num]+"$", output[i].strip())
+                    match = re.match(expected[line_num] + "$", output[i].strip())
                 else:
                     match = expected[line_num] == output[i].strip()
 
                 if not match:
-                    self.record_failure(("Line %d of output does not match expected\n"+
-                                         "  Expected: %s\n"+
-                                         "  Actual  : %s")
-                                        % (line_num,
-                                           expected[line_num].strip(),
-                                           output[i].strip()))
-            else: # Unordered testing
+                    self.record_failure(
+                        (
+                            "Line %d of output does not match expected\n"
+                            + "  Expected: %s\n"
+                            + "  Actual  : %s"
+                        )
+                        % (line_num, expected[line_num].strip(), output[i].strip())
+                    )
+            else:  # Unordered testing
                 stripped = output[i].strip()
                 if regexp:
-                    match = any(re.match(e+"$", stripped) for e in expected)
+                    match = any(re.match(e + "$", stripped) for e in expected)
                 else:
                     match = any(e == stripped for e in expected)
 
                 if not match:
-                    self.record_failure(("Line %d of output not found in expected\n"+
-                                         "  Actual  : %s")
-                                        % (line_num,
-                                           output[i].strip()))
+                    self.record_failure(
+                        ("Line %d of output not found in expected\n" + "  Actual  : %s")
+                        % (line_num, output[i].strip())
+                    )
 
-        if (num_expected > line_num + 1):
+        if num_expected > line_num + 1:
             self.record_failure("Length of expected output greater than output")
-        output = {'output':''.join(output)}
+        output = {"output": "".join(output)}
 
         if not self.result:
-            output['failures'] = ''.join(self.failures)
+            output["failures"] = "".join(self.failures)
 
         if self.result:
-            sys.stdout.write("%-30s %-6s %-6s Pass\n" % (test, config.get('arch'), config.get('speed')))
+            sys.stdout.write(
+                "%-30s %-6s %-6s Pass\n"
+                % (test, config.get("arch"), config.get("speed"))
+            )
         else:
-            sys.stderr.write("%-30s %-6s %-6s Fail\n" % (test, config.get('arch'), config.get('speed')))
+            sys.stderr.write(
+                "%-30s %-6s %-6s Fail\n"
+                % (test, config.get("arch"), config.get("speed"))
+            )
 
         return self.result

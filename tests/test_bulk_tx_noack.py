@@ -5,8 +5,6 @@ from usb_packet import USB_PID, TokenPacket, RxDataPacket
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-import pytest
-
 
 def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 

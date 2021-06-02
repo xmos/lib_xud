@@ -16,24 +16,30 @@ import pytest
 import tempfile
 import shutil
 
-ARCHITECTURE_CHOICES = ['xs2', 'xs3']
-BUSSPEED_CHOICES = ['FS', 'HS']
-args = {'arch':'xs3',
-        'trace':False}
+ARCHITECTURE_CHOICES = ["xs2", "xs3"]
+BUSSPEED_CHOICES = ["FS", "HS"]
+args = {"arch": "xs3", "trace": False}
 XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 clean_only = False
 
-def copy_common_xn_files(test_dir, path = ".", common_dir = "shared_src", source_dir = "src", xn_files = XN_FILES):
+
+def copy_common_xn_files(
+    test_dir, path=".", common_dir="shared_src", source_dir="src", xn_files=XN_FILES
+):
     src_dir = os.path.join(test_dir, source_dir)
     for xn_file in xn_files:
         xn = os.path.join(common_dir, xn_file)
         shutil.copy(xn, src_dir)
 
-def delete_test_specific_xn_files(test_dir, path = ".", source_dir = "src", xn_files = XN_FILES):
+
+def delete_test_specific_xn_files(
+    test_dir, path=".", source_dir="src", xn_files=XN_FILES
+):
     src_dir = os.path.join(test_dir, source_dir)
     for xn_file in xn_files:
         xn = os.path.join(src_dir, xn_file)
         os.remove(xn)
+
 
 def create_if_needed(folder):
     if not os.path.exists(folder):
@@ -100,28 +106,31 @@ def get_usb_clk_phy(
 
     return (clk, phy)
 
+
 def run_on_simulator(xe, simthreads, **kwargs):
-    for k in ['do_xe_prebuild', 'build_env', 'clean_before_build']:
+    for k in ["do_xe_prebuild", "build_env", "clean_before_build"]:
         if k in kwargs:
             kwargs.pop(k)
     return Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
 
+
 def run_on(**kwargs):
 
-    for name,value in kwargs.items():
+    for name, value in kwargs.items():
         arg_value = args.get(name)
         if arg_value is not None and value != arg_value:
             return False
 
     return True
 
+
 def RunUsbTest(test_fn):
-   
+
     tester_list = []
-    testname,extension = os.path.splitext(os.path.basename(__file__))
+    testname, extension = os.path.splitext(os.path.basename(__file__))
     seed = random.randint(0, sys.maxsize)
 
-    data_valid_count = {'FS': 39, "HS": 0}
+    data_valid_count = {"FS": 39, "HS": 0}
 
     (fd, fname) = tempfile.mkstemp()
     old_std = os.fdopen(os.dup(sys.stdout.fileno()), "w")
@@ -133,51 +142,82 @@ def RunUsbTest(test_fn):
             if run_on(arch=_arch):
                 if run_on(busspeed=_busspeed):
                     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
-                    tester_list.extend(test_fn(_arch, clk_60, usb_phy, USB_DATA_VALID_COUNT[_busspeed], _busspeed, seed))
+                    tester_list.extend(
+                        test_fn(
+                            _arch,
+                            clk_60,
+                            usb_phy,
+                            USB_DATA_VALID_COUNT[_busspeed],
+                            _busspeed,
+                            seed,
+                        )
+                    )
 
     captured = std_reader.read()
     sys.stdout = old_std
     caps = captured.split("\n")
-    return Pyxsim.run_tester(caps,tester_list)
+    sys.stdout.write("\n")
+    return Pyxsim.run_tester(caps, tester_list)
 
-def do_usb_test(arch, clk, phy, usb_speed, sessions, test_file, seed,
-               level='nightly', extra_tasks=[], verbose=False):
 
-    """ Shared test code for all RX tests using the test_rx application.
-    """
-    testname,extension = os.path.splitext(os.path.basename(test_file))
+def do_usb_test(
+    arch,
+    clk,
+    phy,
+    usb_speed,
+    sessions,
+    test_file,
+    seed,
+    level="nightly",
+    extra_tasks=[],
+    verbose=False,
+):
+
+    """Shared test code for all RX tests using the test_rx application."""
+    testname, extension = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    binary = '{testname}/bin/{arch}/{testname}_{arch}.xe'.format(testname=testname, arch=arch)
+    binary = "{testname}/bin/{arch}/{testname}_{arch}.xe".format(
+        testname=testname, arch=arch
+    )
     copy_common_xn_files(testname)
     build_success, build_output = Pyxsim._build(binary)
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
     if build_success:
         for session in sessions:
-       
+
             phy.session = session
 
             expect_folder = create_if_needed("expect")
-            expect_filename = '{folder}/{test}_{arch}_{usb_speed}.expect'.format(
-                folder=expect_folder, test=testname, phy=phy.name, clk=clk.get_name(), arch=arch, usb_speed=usb_speed)
+            expect_filename = "{folder}/{test}_{arch}_{usb_speed}.expect".format(
+                folder=expect_folder,
+                test=testname,
+                phy=phy.name,
+                clk=clk.get_name(),
+                arch=arch,
+                usb_speed=usb_speed,
+            )
 
             create_expect(arch, session, expect_filename, verbose=verbose)
 
-            tester = testers.ComparisonTester(open(expect_filename),
-                                          'lib_xud', 'xud_sim_tests', testname,
-                                         {'clk':clk.get_name(), 'arch':arch, 'speed':usb_speed})
+            tester = testers.ComparisonTester(
+                open(expect_filename),
+                "lib_xud",
+                "xud_sim_tests",
+                testname,
+                {"clk": clk.get_name(), "arch": arch, "speed": usb_speed},
+            )
 
             tester_list.append(tester)
             simargs = get_sim_args(testname, clk, phy, arch)
             simthreads = [clk, phy] + extra_tasks
-            run_on_simulator(binary, simthreads, simargs = simargs)  
-        delete_test_specific_xn_files(testname)
-        return tester_list
+            run_on_simulator(binary, simthreads, simargs=simargs)
     else:
-        delete_test_specific_xn_files(testname)
-        return ["Build Failed"]
+        tester_list.append("Build Failed")
 
+    delete_test_specific_xn_files(testname)
+    return tester_list
 
 def create_expect(arch, session, filename, verbose=False):
 
@@ -210,7 +250,7 @@ def create_expect(arch, session, filename, verbose=False):
 def get_sim_args(testname, clk, phy, arch="xs2"):
     sim_args = []
 
-    if args and args.get('trace'):
+    if args and args.get("trace"):
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(

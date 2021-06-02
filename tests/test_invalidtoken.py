@@ -12,7 +12,6 @@ from usb_packet import (
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-import pytest
 
 # Same as simple RX bulk test but some invalid tokens also included
 

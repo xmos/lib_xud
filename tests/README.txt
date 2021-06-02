@@ -6,11 +6,12 @@ xsim
 xsimutils
 tools_xmostest
 
-Run in pytest:
+Installation and prerequiste for running pytest
+python3
 pip install pytest
 
 To run all tests, simply type:
-pytest
+pytest -s
 
-To run specifiC test, type:
+To run specific test, type:
 pytest test_xx_xx.py

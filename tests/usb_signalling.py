@@ -158,8 +158,6 @@ class UsbDeviceAttach(UsbEvent):
             # TODO how long to drive SE0 for?
             wait_until_ns(time() + 10000)
 
-        return
-
 
 class UsbResume(UsbEvent):
     def __init__(self, duration=USB_TIMINGS["RESUME_FSK_MIN_US"], interEventDelay=0):

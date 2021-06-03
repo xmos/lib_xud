@@ -10,6 +10,7 @@ import Pyxsim.pyxsim
 from Pyxsim.xmostest_subprocess import call_get_output
 import platform
 import multiprocessing
+import tempfile
 import re
 import os
 
@@ -132,6 +133,20 @@ def run_tester(caps, tester_list):
         else:
             result.append(False)
     return result
+
+
+class cap_redirect:
+    def __init__(self):
+        (self.fd, self.fname) = tempfile.mkstemp()
+        self.old_std = os.fdopen(os.dup(sys.stdout.fileno()), "w")
+        sys.stdout = os.fdopen(self.fd, "w")
+
+    def read_output(self):
+        std_reader = open(self.fname, "r")
+        return std_reader.read()
+
+    def close_capture(self):
+        sys.stdout = self.old_std
 
 
 class SimThread(object):

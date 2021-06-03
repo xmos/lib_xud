@@ -12,8 +12,6 @@ from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
 from usb_packet import RxPacket
 from usb_packet import BusReset
-import pytest
-import tempfile
 import shutil
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
@@ -21,20 +19,6 @@ BUSSPEED_CHOICES = ["FS", "HS"]
 args = {"arch": "xs3", "trace": False}
 XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 clean_only = False
-
-
-class cap_redirect:
-    def __init__(self):
-        (self.fd, self.fname) = tempfile.mkstemp()
-        self.old_std = os.fdopen(os.dup(sys.stdout.fileno()), "w")
-        sys.stdout = os.fdopen(self.fd, "w")
-
-    def read_output(self):
-        std_reader = open(self.fname, "r")
-        return std_reader.read()
-
-    def close_capture(self):
-        sys.stdout = self.old_std
 
 
 def copy_common_xn_files(
@@ -146,7 +130,7 @@ def RunUsbTest(test_fn):
 
     data_valid_count = {"FS": 39, "HS": 0}
 
-    start_cap = cap_redirect()
+    start_cap = Pyxsim.cap_redirect()
 
     for _arch in ARCHITECTURE_CHOICES:
         for _busspeed in BUSSPEED_CHOICES:

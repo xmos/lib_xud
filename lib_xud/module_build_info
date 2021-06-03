@@ -16,7 +16,6 @@ XCC_FLAGS_dfu_flash.xc = $(MODULE_XCC_FLAGS) -Os
 XCC_FLAGS_XUD_Client.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_Main.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_SetDevAddr.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
-#XCC_FLAGS_XUD_DeviceAttach.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue -Wno-return-type
 XCC_FLAGS_XUD_PhyResetUser.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_Support.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_IOLoopCall.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue

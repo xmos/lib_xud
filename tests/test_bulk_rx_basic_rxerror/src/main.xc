@@ -1,10 +1,12 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
+/*
+ * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
+ * in both directions between the ports.
+ *
+ * NOTE: The src/testbenches/ExampleTestbench must have been compiled for this to run without error.
+ *
+ */
 #include "shared.h"
 
 #define XUD_EP_COUNT_OUT   (5)

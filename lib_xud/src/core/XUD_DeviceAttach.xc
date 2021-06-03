@@ -6,7 +6,6 @@
 #include "xud.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_TimingDefines.h"
-//#include "XUD_Support.h"
 #include "XUD_HAL.h"
 
 extern in  port flag0_port;

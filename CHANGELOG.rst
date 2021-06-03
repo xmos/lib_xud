@@ -11,6 +11,11 @@ HEAD
   * CHANGE:     Use common XN files for tests
   * CHANGE:     Use XMOS Public Licence Version 1
   
+1.2.0
+-----
+
+  * CHANGED: Use XMOS Public Licence Version 1
+
 1.1.2
 -----
 

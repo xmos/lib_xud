@@ -11,7 +11,7 @@ from usb_transaction import UsbTransaction
 from usb_signalling import UsbDeviceAttach
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     ep = 1
     address = 1
@@ -26,7 +26,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
     session.add_event(UsbDeviceAttach())
 
-    session.add_event(CreateSofToken(frameNumber, data_valid_count))
+    session.add_event(CreateSofToken(frameNumber))
 
     session.add_event(
         UsbTransaction(
@@ -43,7 +43,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
     frameNumber = frameNumber + 1
     pktLength = pktLength + 1
 
-    session.add_event(CreateSofToken(frameNumber, data_valid_count))
+    session.add_event(CreateSofToken(frameNumber))
     session.add_event(
         UsbTransaction(
             session,

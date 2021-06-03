@@ -17,7 +17,7 @@ from usb_transaction import UsbTransaction
 # Same as simple RX bulk test but some invalid tokens also included
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     address = 1
     ep = 1
@@ -32,7 +32,6 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["RESERVED"],
             address=address,
             endpoint=ep,
-            data_valid_count=data_valid_count,
         )
     )
 
@@ -42,7 +41,6 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["IN"],
             address=address + 1,
             endpoint=ep,
-            data_valid_count=data_valid_count,
         )
     )
 
@@ -52,7 +50,6 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["OUT"],
             address=address + 1,
             endpoint=ep,
-            data_valid_count=data_valid_count,
         )
     )
 
@@ -74,7 +71,6 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["SETUP"],
             address=address + 2,
             endpoint=ep,
-            data_valid_count=data_valid_count,
         )
     )
 
@@ -98,7 +94,6 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["PING"],
             address=address + 2,
             endpoint=ep,
-            data_valid_count=data_valid_count,
         )
     )
 

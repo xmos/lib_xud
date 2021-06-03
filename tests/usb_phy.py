@@ -9,8 +9,6 @@ import usb_packet
 
 USB_MAX_EP_ADDRESS = 15
 
-USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
-
 USB_LINESTATE = {
     "IDLE": 0,
     "FS_J": 2,

@@ -190,7 +190,7 @@ class UsbPhy(xmostest.SimThread):
 
         self.start_test()
 
-        for i, event in enumerate(self._session.events):
+        for event in self._session.events:
             event.drive(self, self._session.bus_speed)
 
         print("Test done")

@@ -27,7 +27,6 @@ COMMON_FLAGS = -g -report -DDEBUG_PRINT_ENABLE -save-temps -O3 -Xmapper --map -X
 			   -Wno-timing \
 			   -DXUD_SIM_XSIM=1 \
 			   -DXUD_TEST_SPEED_HS=1 \
-			   -DXUD_BYPASS_RESET=1 \
 			   -DXUD_STARTUP_ADDRESS=1
 
 #TODO RM ARCH_L define

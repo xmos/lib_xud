@@ -19,12 +19,40 @@ USB_LINESTATE = {
     "HS_K": 2,
 }
 
-USB_TIMINGS = {
+# TODO want two sets of these, one "spec" and one "fast" for testing
+USB_TIMINGS_SPEC = {
     "IDLE_TO_FS_MIN_US": 300,  # Spec: 3000
     "IDLE_TO_FS_MAX_US": 312,  # Spec: 3125
     "RESUME_FSK_MIN_US": 200,  # Spec: 20000us
     "RESUME_SE0_US": 1.25,  # 1.25uS - 1.5uS
+    "T_UCHEND": 7000,  # Upstream Chirp end time
+    "T_UCH_US": 1000,  # Upstream Chirp length
+    "T_WTDCH_US": 100,
+    "T_SIGATT_US": 100000,  # Maximum time from Vbus valid to when the device must signal attach
+    "T_ATTDB_US": 10,  # 100000 Debouce interval. The device now enters the HS Detection Handshake protocol
+    "T_DCHBIT_MIN_US": 40,
+    "T_DCHBIT_MAX_US": 60,
+    "CHIRP_COUNT_MIN": 3,  # Minimum chirp pairs DUT must detect before moving into HS mode
+    "CHIRP_COUNT_MAX": 10,  # TODO should these chirp defines be removed and use timing?
 }
+
+USB_TIMINGS_SHORT = {
+    "IDLE_TO_FS_MIN_US": 300,  # Spec: 3000
+    "IDLE_TO_FS_MAX_US": 312,  # Spec: 3125
+    "RESUME_FSK_MIN_US": 200,  # Spec: 20000us
+    "RESUME_SE0_US": 1.25,  # 1.25uS - 1.5uS
+    "T_UCHEND": 7000,  # Upstream Chirp end time
+    "T_UCH_US": 10,  # Upstream Chirp length
+    "T_WTDCH_US": 50,
+    "T_SIGATT_US": 100000,  # Maximum time from Vbus valid to when the device must signal attach
+    "T_ATTDB_US": 10,  # 100000 Debouce interval. The device now enters the HS Detection Handshake protocol
+    "T_DCHBIT_MIN_US": 4,  # Spec: 40us
+    "T_DCHBIT_MAX_US": 6,  # Spec: 60us
+    "CHIRP_COUNT_MIN": 3,  # Minimum chirp pairs DUT must detect before moving into HS mode
+    "CHIRP_COUNT_MAX": 10,  # TODO should these chirp defines be removed and use timing?
+}
+
+USB_TIMINGS = USB_TIMINGS_SHORT
 
 
 class UsbPhy(xmostest.SimThread):
@@ -74,6 +102,14 @@ class UsbPhy(xmostest.SimThread):
         self._complete_fn = complete_fn
         self._expect_loopback = expect_loopback
         self._dut_exit_time = dut_exit_time
+
+    @property
+    def initial_delay(self):
+        return self._initial_delay
+
+    @initial_delay.setter
+    def initial_delay(self, d):
+        self._initial_delay = d
 
     @property
     def name(self):
@@ -154,8 +190,7 @@ class UsbPhy(xmostest.SimThread):
 
         self.start_test()
 
-        for i, event in enumerate(self._session.events):
-
+        for event in self._session.events:
             event.drive(self, self._session.bus_speed)
 
         print("Test done")

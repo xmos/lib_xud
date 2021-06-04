@@ -17,12 +17,10 @@
 #define T_UCHEND_T_UCH_us           (1000000)  // 1000ms
 #define T_UCHEND_T_UCH              (T_UCHEND_T_UCH_us * REF_CLK_FREQ)
 
-#ifdef XUD_TIMING_SHORT
-#define T_FILT_ticks                (100)      
-#else
+#ifndef T_FILT_us
 #define T_FILT_us                   (3)       //   2.5us
-#define T_FILT_ticks                (T_FILT_us * REF_CLK_FREQ)
 #endif
+#define T_FILT_ticks                (T_FILT_us * REF_CLK_FREQ)
 
 #ifndef SUSPEND_T_WTWRSTHS_us
 #define SUSPEND_T_WTWRSTHS_us       (200)     // 200us Time beforechecking for J after asserting XcvrSelect and Termselect: T_WTRSTHS: 100-875us

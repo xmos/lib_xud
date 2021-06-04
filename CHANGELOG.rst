@@ -1,4 +1,4 @@
-lib_xud Change Log
+lib_xud change log
 ==================
 
 2.0.0

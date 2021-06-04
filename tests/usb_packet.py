@@ -310,7 +310,7 @@ class RxPacket(UsbPacket):
                 wait(lambda x: usb_phy._clock.is_low())
 
                 if xsi.sample_port_pins(usb_phy._txv) == 0:
-                    # print "TXV low, breaking out of loop"
+                    # TxV low, break out of loop
                     in_rx_packet = False
 
             # End of packet

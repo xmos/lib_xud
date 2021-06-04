@@ -11,7 +11,7 @@ lib_xud change log
     devices
   * RESOLVED:   Exception when Endpoint marked as disabled
   * CHANGED:    Use common XN files for tests
-  
+
 1.2.0
 -----
 

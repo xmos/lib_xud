@@ -27,35 +27,6 @@ Known Issues
   * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc)
 
 
-Typical Resource Usage
-......................
-
-.. resusage::
-
-  * - configuration: USB device (xCORE-200 series)
-    - target: XCORE-200-EXPLORER
-    - flags: -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
-    - globals: XUD_EpType epTypeTableOut[1] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
-               XUD_EpType epTypeTableIn[1] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
-    - locals: chan c_ep_out[1];chan c_ep_in[1];
-    - fn: XUD_Main(c_ep_out, 1, c_ep_in, 1,
-                      null, epTypeTableOut, epTypeTableIn, 
-                      null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
-    - pins: 23 (internal)
-    - ports: 11
-
-  * - configuration: USB device (U series)
-    - target: SLICEKIT-U16
-    - flags: -DXUD_SERIES_SUPPORT=XUD_U_SERIES
-    - globals: XUD_EpType epTypeTableOut[1] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
-               XUD_EpType epTypeTableIn[1] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
-    - locals: chan c_ep_out[1];chan c_ep_in[1];
-    - fn: XUD_Main(c_ep_out, 1, c_ep_in, 1,
-                      null, epTypeTableOut, epTypeTableIn, 
-                      null, null, -1 , XUD_SPEED_HS, XUD_PWR_BUS);
-    - pins: 23 (internal)
-    - ports: 11
-
 Software version and dependencies
 .................................
 
@@ -67,12 +38,12 @@ Related application notes
 
 The following application notes use this library:
 
+   * AN00124 - USB CDC VCOM device class
    * AN00125 - USB mass storage device class 
    * AN00126 - USB printer device class 
    * AN00127 - USB video device class 
    * AN00129 - USB HID device class 
    * AN00131 - USB CDC-EDC device class 
    * AN00132 - USB Image device class 
-   * AN00124 - USB CDC VCOM device class
    * AN00135 - USB Test and Measurement device class
    * AN00136 - USB Vendor specific device

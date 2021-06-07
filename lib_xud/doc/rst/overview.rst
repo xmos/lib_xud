@@ -4,13 +4,14 @@ Overview
 ========
 
 The XUD library allows the implementation of both full-speed and
-high-speed USB 2.0 devices on xCORE-200 series, XS1 U-Series and L-Series devices.
+high-speed USB 2.0 devices on xCORE-200 and xCORE.AI series devices. 
 
-For the L series devices the implementation requires the use of an
-external ULPI transceiver such as the SMSC USB33XX range. Selected xCORE-200 and all U-Series
-devices include an integrated USB transceiver. Three libraries, with
-identical API, are provided - one each for xCORE-200 series, XS1 U-Series and L-Series devices.
-Please note, G-series is not recommended for new designs.
+Selected xCORE-200 and xCORE.AI devies include an integrated USB transceiver. 
+Two libraries, with an identical API, are provided - one each for each
+architecture.
+
+Please note, XS1-G, XS1-L and XS1-U series devices are not recommended for 
+new designs.
 
 The library performs all of the low-level I/O operations required to meet
 the USB 2.0 specification. This processing goes up to and includes the

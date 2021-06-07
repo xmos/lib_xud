@@ -13,7 +13,7 @@ General operation is as follows:
 
     * An ``XUD_SetReady_`` function is called to mark an endpoint as ready to send or receive data
 
-    * An ``select`` statement is used, along with a ``select handler`` to wait for, and capture, send/receive notifications from the ``XUD_Manager`` core.
+    * An ``select`` statement is used, along with a ``select handler`` to wait for, and capture, send/receive notifications from the ``XUD_Main`` core.
 
 Function Details
 ----------------
@@ -42,7 +42,7 @@ The following functions are also provided to ease integration with more complex 
 
 .. doxygenfunction:: XUD_SetReady_InPtr
 
-Once an endpoint has been marked ready to send/receive by calling one of the above ``XUD_SetReady_`` functions, an ``XC select`` statement can be used to handle notifications of a packet being sent/received from ``XUD_Manager()``.  These notifications are communicated via channels.
+Once an endpoint has been marked ready to send/receive by calling one of the above ``XUD_SetReady_`` functions, an ``XC select`` statement can be used to handle notifications of a packet being sent/received from ``XUD_Main()``.  These notifications are communicated via channels.
 
 For convenience, ``select handler`` functions are provided to handle events in the ``select`` statement.  These are documented below.
 

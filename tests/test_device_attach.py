@@ -26,7 +26,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     session.add_event(UsbDeviceAttach())
 
-    session.add_event(CreateSofToken(frameNumber))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=100))
 
     session.add_event(
         UsbTransaction(

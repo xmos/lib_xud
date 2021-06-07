@@ -1,8 +1,8 @@
 lib_xud Change Log
 ==================
 
-HEAD
-----
+2.0.0
+-----
 
   * ADDED:      Initial support for XS3A based devices
   * ADDED:      Requirement to define XUD_CORE_CLOCK with xcore core clock speed in MHz

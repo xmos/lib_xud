@@ -1,8 +1,6 @@
 USB Mass Storage Device Class
 =============================
 
-.. version:: 2.0.2
-
 Summary
 -------
 

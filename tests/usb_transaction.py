@@ -10,7 +10,7 @@ from usb_packet import (
     RxDataPacket,
     TxHandshakePacket,
 )
-from usb_phy import USB_DATA_VALID_COUNT
+from usb_packet import USB_DATA_VALID_COUNT
 
 INTER_TRANSACTION_DELAY = 500
 

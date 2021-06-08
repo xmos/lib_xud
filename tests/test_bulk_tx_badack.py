@@ -7,7 +7,7 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     ep = 1
     address = 1
@@ -26,20 +26,16 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
                     pid=USB_PID["IN"],
                     address=address,
                     endpoint=ep,
-                    data_valid_count=data_valid_count,
                     inter_pkt_gap=ied,
                 )
             )
             session.add_event(
                 RxDataPacket(
                     dataPayload=session.getPayload_in(ep, pktLength, resend=True),
-                    valid_count=data_valid_count,
                     pid=USB_PID["DATA0"],
                 )
             )
-            session.add_event(
-                TxHandshakePacket(data_valid_count=data_valid_count, pid=0xFF)
-            )
+            session.add_event(TxHandshakePacket(pid=0xFF))
 
         session.add_event(
             UsbTransaction(

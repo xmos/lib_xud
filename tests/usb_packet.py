@@ -59,9 +59,8 @@ Packet Class Hierarchy
 """
 
 from usb_event import UsbEvent
-import sys
-import zlib
-import random
+
+USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 
 # In USB clocks
 RX_TX_DELAY = 20
@@ -85,7 +84,7 @@ USB_PID = {
 }
 
 
-def CreateSofToken(frameNumber, data_valid_count, badCrc=False, interEventDelay=1000):
+def CreateSofToken(frameNumber, badCrc=False, interEventDelay=1000):
     ep = (frameNumber >> 7) & 0xF
     address = (frameNumber) & 0x7F
 
@@ -94,7 +93,6 @@ def CreateSofToken(frameNumber, data_valid_count, badCrc=False, interEventDelay=
             pid=USB_PID["SOF"],
             address=address,
             endpoint=ep,
-            data_valid_count=data_valid_count,
             crc5=0xFF,
             interEventDelay=interEventDelay,
         )
@@ -103,7 +101,6 @@ def CreateSofToken(frameNumber, data_valid_count, badCrc=False, interEventDelay=
             pid=USB_PID["SOF"],
             address=address,
             endpoint=ep,
-            data_valid_count=data_valid_count,
             interEventDelay=interEventDelay,
         )
 
@@ -226,19 +223,9 @@ class UsbPacket(UsbEvent):
         self.pid = kwargs.pop("pid", 0xC3)
         self.data_bytes = kwargs.pop("data_bytes", None)
         self.num_data_bytes = kwargs.pop("length", 0)
-        self._data_valid_count = kwargs.pop("data_valid_count", 0)
         self.bad_crc = kwargs.pop("bad_crc", False)
         ied = kwargs.pop("interEventDelay", 500)  # TODO RM magic number
         super(UsbPacket, self).__init__(interEventDelay=ied)
-
-    # This is used on HOST->DEVICE (TX) packets to toggle RXValid and DEVICE->HOST (RX) packets to toggle TXReady
-    @property
-    def data_valid_count(self):
-        return self._data_valid_count
-
-    @data_valid_count.setter
-    def data_valid_count(self, dvc):
-        self._data_valid_count = dvc
 
     @property
     def event_count(self):
@@ -310,7 +297,7 @@ class RxPacket(UsbPacket):
                 wait(lambda x: usb_phy._clock.is_low())
 
                 if xsi.sample_port_pins(usb_phy._txv) == 0:
-                    # print "TXV low, breaking out of loop"
+                    # TxV low, break out of loop
                     in_rx_packet = False
 
             # End of packet
@@ -357,9 +344,9 @@ class TxPacket(UsbPacket):
 
         # xCore should not be trying to send if we are trying to send..
         if xsi.sample_port_pins(usb_phy._txv) == 1:
-            print("ERROR: Unexpected packet from xCORE")
+            print("ERROR: Unexpected packet from xCORE (TxPacket 0)")
 
-        rxv_count = self.data_valid_count
+        rxv_count = USB_DATA_VALID_COUNT[bus_speed]
 
         usb_phy.wait_until(xsi.get_time() + self.interEventDelay)
 
@@ -384,7 +371,7 @@ class TxPacket(UsbPacket):
 
             # xCore should not be trying to send if we are trying to send..
             if xsi.sample_port_pins(usb_phy._txv) == 1:
-                print("ERROR: Unexpected packet from xCORE")
+                print("ERROR: Unexpected packet from xCORE (TxPacket 1)")
 
             wait(lambda x: usb_phy._clock.is_low())
             wait(lambda x: usb_phy._clock.is_high())
@@ -402,12 +389,13 @@ class TxPacket(UsbPacket):
                 rxv_count = rxv_count - 1
 
                 # xCore should not be trying to send if we are trying to send..
-                if xsi.sample_port_pins(usb_phy._txv) == 1:
-                    print("ERROR: Unexpected packet from xCORE")
+                # We assume that the Phy internally blocks the TXValid signal to the Transmit State Machine
+                # until the Rx packet has completed
 
-            # print "Sending byte {0:#x}".format(byte)
+                # if xsi.sample_port_pins(usb_phy._txv) == 1:
+                #    print("ERROR: Unexpected packet from xCORE (TxPacket 2)")
 
-            rxv_count = self.data_valid_count
+            rxv_count = USB_DATA_VALID_COUNT[bus_speed]
 
         # Wait for last byte
         wait(lambda x: usb_phy._clock.is_high())
@@ -425,8 +413,11 @@ class TxPacket(UsbPacket):
             rxa_end_delay = rxa_end_delay - 1
 
             # xCore should not be trying to send if we are trying to send..
-            if xsi.sample_port_pins(usb_phy._txv) == 1:
-                print("ERROR: Unexpected packet from xCORE")
+            # We assume that the Phy internally blocks the TXValid signal to the Transmit State Machine
+            # until the Rx packet has completed
+
+            # if xsi.sample_port_pins(usb_phy._txv) == 1:
+            #    print("ERROR: Unexpected packet from xCORE (TxPacket 3)")
 
         xsi.drive_periph_pin(usb_phy._rxa, 0)
 

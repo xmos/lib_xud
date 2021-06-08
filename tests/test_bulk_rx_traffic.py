@@ -9,7 +9,7 @@ from usb_transaction import UsbTransaction
 from usb_phy import USB_MAX_EP_ADDRESS
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     ep = 1
     address = 1

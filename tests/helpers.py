@@ -7,12 +7,11 @@ import os
 import random
 import sys
 from usb_clock import Clock
-from usb_phy import UsbPhy, USB_DATA_VALID_COUNT
+from usb_phy import UsbPhy
 from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
-from usb_packet import RxPacket
-from usb_packet import BusReset
 import shutil
+from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
@@ -128,8 +127,6 @@ def RunUsbTest(test_fn):
     testname, extension = os.path.splitext(os.path.basename(__file__))
     seed = random.randint(0, sys.maxsize)
 
-    data_valid_count = {"FS": 39, "HS": 0}
-
     start_cap = Pyxsim.cap_redirect()
 
     for _arch in ARCHITECTURE_CHOICES:
@@ -142,7 +139,6 @@ def RunUsbTest(test_fn):
                             _arch,
                             clk_60,
                             usb_phy,
-                            USB_DATA_VALID_COUNT[_busspeed],
                             _busspeed,
                             seed,
                         )

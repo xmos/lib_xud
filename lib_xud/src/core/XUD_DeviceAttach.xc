@@ -1,6 +1,6 @@
 // Copyright 2011-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#if !defined(XUD_BYPASS_RESET) && !defined(XUD_SIM_XSIM)
+#if !defined(XUD_BYPASS_RESET)
 #include <xs1.h>
 #include <platform.h>
 #include "xud.h"
@@ -16,7 +16,11 @@ extern out buffered port:32 p_usb_txd;
 
 #define TUCHEND_DELAY_us   (1500) // 1.5ms
 #define TUCHEND_DELAY      (TUCHEND_DELAY_us * REF_CLK_FREQ)
+
+#ifndef INVALID_DELAY_us
 #define INVALID_DELAY_us   (2500) // 2.5ms
+#endif
+
 #define INVALID_DELAY      (INVALID_DELAY_us * REF_CLK_FREQ)
 
 extern int resetCount;
@@ -102,18 +106,23 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 break;
 
 #ifdef __XS3A__
-#warning J and K definitons are reversed in XS3A
+// Note, J and K definitons are reversed in XS3A
+#define j_port flag1_port
+#define k_port flag0_port
+#else
+#define k_port flag1_port
+#define j_port flag0_port
 #endif
-            case detecting_k => flag1_port when pinseq(1):> void @ tx:       // K Chirp
-                flag1_port @ tx + T_FILT_ticks :> tmp;
+            case detecting_k => k_port when pinseq(1):> void @ tx:       // K Chirp
+                k_port @ tx + T_FILT_ticks :> tmp;
                 if (tmp) 
                 {
                     detecting_k = 0;
                 }
                 break;
 
-             case !detecting_k => flag0_port when pinseq(1) :> void @ tx:    // J Chirp
-                flag0_port @ tx + T_FILT_ticks :> tmp;
+             case !detecting_k => j_port when pinseq(1) :> void @ tx:    // J Chirp
+                j_port @ tx + T_FILT_ticks :> tmp;
                 if (tmp == 1) 
                 {                                              
                     chirpCount++;                                            // Seen an extra K-J pair

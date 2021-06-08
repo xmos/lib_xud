@@ -15,7 +15,8 @@ from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     address = 1
     ep = 1
@@ -30,11 +31,10 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["PING"],
             address=address,
             endpoint=2,
-            data_valid_count=data_valid_count,
         )
     )
     session.add_event(
-        RxHandshakePacket(data_valid_count=data_valid_count, pid=USB_PID["NAK"])
+        RxHandshakePacket(pid=USB_PID["NAK"])
     )
 
     # And again
@@ -43,11 +43,10 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["PING"],
             address=address,
             endpoint=2,
-            data_valid_count=data_valid_count,
         )
     )
     session.add_event(
-        RxHandshakePacket(data_valid_count=data_valid_count, pid=USB_PID["NAK"])
+        RxHandshakePacket(pid=USB_PID["NAK"])
     )
 
     # Send packet to EP 1, xCORE should mark EP 2 as ready
@@ -68,12 +67,11 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["PING"],
             address=address,
             endpoint=2,
-            data_valid_count=data_valid_count,
             interEventDelay=6000,
         )
     )
     session.add_event(
-        RxHandshakePacket(data_valid_count=data_valid_count, pid=USB_PID["ACK"])
+        RxHandshakePacket(pid=USB_PID["ACK"])
     )
 
     # And again..
@@ -82,12 +80,11 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["PING"],
             address=address,
             endpoint=2,
-            data_valid_count=data_valid_count,
             interEventDelay=6000,
         )
     )
     session.add_event(
-        RxHandshakePacket(data_valid_count=data_valid_count, pid=USB_PID["ACK"])
+        RxHandshakePacket(pid=USB_PID["ACK"])
     )
 
     # Send out to EP 2.. expect ack
@@ -109,11 +106,10 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["PING"],
             address=address,
             endpoint=2,
-            data_valid_count=data_valid_count,
         )
     )
     session.add_event(
-        RxHandshakePacket(data_valid_count=data_valid_count, pid=USB_PID["NAK"])
+        RxHandshakePacket(pid=USB_PID["NAK"])
     )
 
     # And again
@@ -122,11 +118,10 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
             pid=USB_PID["PING"],
             address=address,
             endpoint=2,
-            data_valid_count=data_valid_count,
         )
     )
     session.add_event(
-        RxHandshakePacket(data_valid_count=data_valid_count, pid=USB_PID["NAK"])
+        RxHandshakePacket(pid=USB_PID["NAK"])
     )
 
     # Send a packet to EP 1 so the DUT knows it can exit.

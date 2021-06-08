@@ -7,7 +7,7 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     address = 1
     ep = 1
@@ -29,11 +29,11 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
         )
     )
 
-    session.add_event(CreateSofToken(frameNumber, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 1, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 2, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 3, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 4, data_valid_count))
+    session.add_event(CreateSofToken(frameNumber))
+    session.add_event(CreateSofToken(frameNumber + 1))
+    session.add_event(CreateSofToken(frameNumber + 2))
+    session.add_event(CreateSofToken(frameNumber + 3))
+    session.add_event(CreateSofToken(frameNumber + 4))
 
     # Finish with valid transaction
     session.add_event(

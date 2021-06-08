@@ -1,7 +1,5 @@
-# Copyright (c) 2011-2021, XMOS Ltd, All rights reserved
-# This software is freely distributable under a derivative of the
-# University of Illinois/NCSA Open Source License posted in
-# LICENSE.txt and at <http://github.xcore.com/>
+# Copyright 2016-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 import os, re, struct
 from ctypes import cdll, byref, c_void_p, c_char_p, c_int, create_string_buffer

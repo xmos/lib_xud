@@ -9,7 +9,8 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 
 # TODO ideally creation of SOF's is moved elsewhere
-def CreateSofToken(frameNumber, data_valid_count, badCrc=False):
+def CreateSofToken(frameNumber, badCrc=False):
+
     ep = (frameNumber >> 7) & 0xF
     address = (frameNumber) & 0x7F
 
@@ -18,7 +19,6 @@ def CreateSofToken(frameNumber, data_valid_count, badCrc=False):
             pid=USB_PID["SOF"],
             address=address,
             endpoint=ep,
-            data_valid_count=data_valid_count,
             crc5=0xFF,
         )
     else:
@@ -26,13 +26,12 @@ def CreateSofToken(frameNumber, data_valid_count, badCrc=False):
             pid=USB_PID["SOF"],
             address=address,
             endpoint=ep,
-            data_valid_count=data_valid_count,
         )
 
     return sofToken
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     address = 1
     ep = 1
@@ -54,13 +53,13 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
         )
     )
 
-    session.add_event(CreateSofToken(frameNumber, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 1, data_valid_count))
-    session.add_event(CreateSofToken(frameNumber + 2, data_valid_count))
+    session.add_event(CreateSofToken(frameNumber))
+    session.add_event(CreateSofToken(frameNumber + 1))
+    session.add_event(CreateSofToken(frameNumber + 2))
     session.add_event(
-        CreateSofToken(frameNumber + 3, data_valid_count, badCrc=True)
+        CreateSofToken(frameNumber + 3, badCrc=True)
     )  # Invalidate the CRC
-    session.add_event(CreateSofToken(frameNumber + 4, data_valid_count))
+    session.add_event(CreateSofToken(frameNumber + 4))
 
     # Finish with valid transaction
     session.add_event(

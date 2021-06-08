@@ -6,11 +6,10 @@ import os
 import random
 import sys
 from usb_clock import Clock
-from usb_phy import UsbPhy, USB_DATA_VALID_COUNT
+from usb_phy import UsbPhy
 from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
-from usb_packet import RxPacket
-from usb_packet import BusReset
+from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
 args = None
 
@@ -100,8 +99,6 @@ def RunUsbTest(test_fn):
 
     seed = args.seed if args.seed else random.randint(0, sys.maxsize)
 
-    data_valid_count = {"FS": 39, "HS": 0}
-
     for _arch in ARCHITECTURE_CHOICES:
         for _busspeed in BUSSPEED_CHOICES:
             if run_on(arch=_arch):
@@ -111,7 +108,6 @@ def RunUsbTest(test_fn):
                         _arch,
                         clk_60,
                         usb_phy,
-                        USB_DATA_VALID_COUNT[_busspeed],
                         _busspeed,
                         seed,
                         verbose=args.verbose,

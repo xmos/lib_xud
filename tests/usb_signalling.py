@@ -13,14 +13,13 @@ class UsbDeviceAttach(UsbEvent):
         return "DeviceAttach"
 
     def expected_output(self, bus_speed, offset=0):
-        # return "DeviceAttach\n"
-        return (
-            self.__str__()
-            + "\n"
-            + "DUT entered FS\n"
-            + "Received upstream chirp\n"
-            + "DUT entered HS mode\n"
-        )
+            
+        expected = self.__str__() + "\nDUT entered FS\nReceived upstream chirp\n"
+
+        if bus_speed == "HS":
+            expected += "DUT entered HS mode\n"
+        
+        return expected
 
     @property
     def event_count(self):
@@ -152,11 +151,28 @@ class UsbDeviceAttach(UsbEvent):
 
             # Ensure DUT enters HS before T0 + T_DRST
 
-            # Drive HS Idle (SE0) on bus
-            xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["IDLE"])
+        # Drive HS Idle (SE0) on bus
+        xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["IDLE"])
 
-            # TODO how long to drive SE0 for?
-            wait_until_ns(time() + 10000)
+        # TODO how long to drive SE0 for?
+        wait_until_ns(time() + 10000)
+
+        if bus_speed == "FS":
+            # Wait for device to timeout and  move back into FS mode
+            while True:
+                xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
+                termsel = xsi.sample_periph_pin(usb_phy._termsel)
+
+                if xcvrsel == 1 and termsel == 1:
+                    wait_until_ns(time() + 10000)
+                    xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_J"])
+                    wait_until_ns(time() + 10000)
+                    break
+
+                wait(lambda x: usb_phy._clock.is_high())
+                wait(lambda x: usb_phy._clock.is_low())
+
+
 
 
 class UsbResume(UsbEvent):

@@ -9,7 +9,7 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     address = 1
     ep = 1
@@ -36,7 +36,6 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
         shorttoken = TxPacket(
             pid=USB_PID["OUT"],
             data_bytes=[0x81],
-            data_valid_count=data_valid_count,
             interEventDelay=100,
         )
         session.add_event(shorttoken)

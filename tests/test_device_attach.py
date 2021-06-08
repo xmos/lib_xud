@@ -1,6 +1,7 @@
-#!/usr/bin/env python
-# Copyright 2021 XMOS LIMITED.
+# Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
+#!/usr/bin/env python
 
 import xmostest
 import usb_packet
@@ -11,7 +12,7 @@ from usb_transaction import UsbTransaction
 from usb_signalling import UsbDeviceAttach
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     ep = 1
     address = 1
@@ -26,7 +27,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
 
     session.add_event(UsbDeviceAttach())
 
-    session.add_event(CreateSofToken(frameNumber, data_valid_count))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=100))
 
     session.add_event(
         UsbTransaction(
@@ -43,7 +44,7 @@ def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
     frameNumber = frameNumber + 1
     pktLength = pktLength + 1
 
-    session.add_event(CreateSofToken(frameNumber, data_valid_count))
+    session.add_event(CreateSofToken(frameNumber))
     session.add_event(
         UsbTransaction(
             session,

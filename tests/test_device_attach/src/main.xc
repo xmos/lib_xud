@@ -1,4 +1,4 @@
-// Copyright 2021 XMOS LIMITED.
+// Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -38,13 +38,13 @@ int main()
     par
     {
         { 
-#if defined(XUD_TEST_SPEED_FS)
+            #if defined(XUD_TEST_SPEED_FS)
             unsigned speed = XUD_SPEED_FS;
-#elif defined(XUD_TEST_SPEED_HS)
+            #elif defined(XUD_TEST_SPEED_HS)
             unsigned speed = XUD_SPEED_HS;
-#else
-#error XUD_TEST_SPEED_XX not defined
-#endif
+            #else
+            #error XUD_TEST_SPEED_XX not defined
+            #endif
 
             XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                 null, epTypeTableOut, epTypeTableIn, speed, XUD_PWR_BUS);

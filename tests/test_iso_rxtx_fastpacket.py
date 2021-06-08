@@ -10,7 +10,7 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 
 
-def do_test(arch, clk, phy, data_valid_count, usb_speed, seed, verbose=False):
+def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     ep = 3
     address = 1

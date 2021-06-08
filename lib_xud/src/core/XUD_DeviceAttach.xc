@@ -16,7 +16,11 @@ extern out buffered port:32 p_usb_txd;
 
 #define TUCHEND_DELAY_us   (1500) // 1.5ms
 #define TUCHEND_DELAY      (TUCHEND_DELAY_us * REF_CLK_FREQ)
+
+#ifndef INVALID_DELAY_us
 #define INVALID_DELAY_us   (2500) // 2.5ms
+#endif
+
 #define INVALID_DELAY      (INVALID_DELAY_us * REF_CLK_FREQ)
 
 extern int resetCount;

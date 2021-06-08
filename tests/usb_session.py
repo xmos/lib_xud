@@ -1,7 +1,7 @@
 # Copyright 2021 XMOS LIMITED.
-# This Software is subject to the terms of the XMOS Public Licence: Version 1
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-from usb_phy import USB_DATA_VALID_COUNT
+from usb_packet import USB_DATA_VALID_COUNT
 import usb_transaction
 import usb_packet
 
@@ -98,6 +98,7 @@ class UsbSession(object):
         e.bus_speed = (
             self.bus_speed
         )  # TODO ideally dont need transction to know bus speed
+
         self._events.append(e)
 
     def pop_event(self, e):

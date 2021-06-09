@@ -43,9 +43,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     frameNumber = frameNumber + 1
     pktLength = pktLength + 1
-    session.add_event(
-        CreateSofToken(frameNumber, interEventDelay=2000)
-    )
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=2000))
     session.add_event(
         UsbTransaction(
             session,

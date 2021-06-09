@@ -20,12 +20,38 @@
 #endif
 
 #ifndef TEST_EP_NUM
-#define TEST_EP_NUM   1
+#define TEST_EP_NUM     (1)
 #endif
+
+#ifndef CTRL_EP_NUM   
+#define CTRL_EP_NUM     (2)
+#endif
+
 
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+
+
+unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], unsigned epNum)
+{
+    unsigned failed = 0;
+    uint8_t buffer[1024];
+    unsigned length;
+
+    /* Stall EP */
+    XUD_ep ep = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
+    XUD_SetStall(ep);
+
+    XUD_ep ep_ctrl = XUD_InitEp(c_ep_out[CTRL_EP_NUM]);
+
+    XUD_Result_t result = XUD_GetBuffer(ep_ctrl, buffer, length);
+
+    failed = (result != XUD_RES_OKAY);
+
+    return failed;
+} 
+
 
 #ifdef XUD_SIM_RTL
 int testmain()
@@ -38,21 +64,20 @@ int main()
     par
     {
         { 
-            #if defined(XUD_TEST_SPEED_FS)
+#if defined(XUD_TEST_SPEED_FS)
             unsigned speed = XUD_SPEED_FS;
-            #elif defined(XUD_TEST_SPEED_HS)
+#elif defined(XUD_TEST_SPEED_HS)
             unsigned speed = XUD_SPEED_HS;
-            #else
-            #error XUD_TEST_SPEED_XX not defined
-            #endif
+#else
+#error XUD_TEST_SPEED_XX not defined
+#endif
 
             XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                 null, epTypeTableOut, epTypeTableIn, speed, XUD_PWR_BUS);
         }
 
         {
-            unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
-
+            unsigned fail = TestEp_Stall(c_ep_out, TEST_EP_NUM);
            
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);

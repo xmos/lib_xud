@@ -33,7 +33,7 @@ class UsbTransaction(UsbEvent):
         badDataCrc=False,
         resend=False,
         rxeAssertDelay_data=0,
-        halted = False
+        halted=False,
     ):  # TODO Enums when we move to py3
 
         self._deviceAddress = deviceAddress
@@ -44,7 +44,7 @@ class UsbTransaction(UsbEvent):
         self._bus_speed = bus_speed
         self._badDataCrc = badDataCrc
         self._rxeAssertDelay_data = rxeAssertDelay_data
-        seld._halted = halted
+        self._halted = halted
 
         assert endpointType in USB_EP_TYPES
         assert direction in USB_DIRECTIONS
@@ -67,7 +67,12 @@ class UsbTransaction(UsbEvent):
             )
 
             # Don't toggle data pid if we had a bad data crc
-            if self._badDataCrc or self._rxeAssertDelay_data or endpointType == "ISO" or halted:
+            if (
+                self._badDataCrc
+                or self._rxeAssertDelay_data
+                or endpointType == "ISO"
+                or halted
+            ):
                 togglePid = False
             else:
                 togglePid = True
@@ -106,7 +111,7 @@ class UsbTransaction(UsbEvent):
 
             if expectHandshake:
                 if halted:
-                    packets.append(RxHandshakePacket(pid = USB_PID['STALL'))
+                    packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
                 else:
                     packets.append(RxHandshakePacket())
 

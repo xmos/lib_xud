@@ -13,12 +13,12 @@ class UsbDeviceAttach(UsbEvent):
         return "DeviceAttach"
 
     def expected_output(self, bus_speed, offset=0):
-            
+
         expected = self.__str__() + "\nDUT entered FS\nReceived upstream chirp\n"
 
         if bus_speed == "HS":
             expected += "DUT entered HS mode\n"
-        
+
         return expected
 
     @property
@@ -171,8 +171,6 @@ class UsbDeviceAttach(UsbEvent):
 
                 wait(lambda x: usb_phy._clock.is_high())
                 wait(lambda x: usb_phy._clock.is_low())
-
-
 
 
 class UsbResume(UsbEvent):

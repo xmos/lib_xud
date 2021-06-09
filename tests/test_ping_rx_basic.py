@@ -35,9 +35,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             endpoint=2,
         )
     )
-    session.add_event(
-        RxHandshakePacket(pid=USB_PID["NAK"])
-    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
     # And again
     session.add_event(
@@ -47,9 +45,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             endpoint=2,
         )
     )
-    session.add_event(
-        RxHandshakePacket(pid=USB_PID["NAK"])
-    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
     # Send packet to EP 1, xCORE should mark EP 2 as ready
     session.add_event(
@@ -72,9 +68,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             interEventDelay=6000,
         )
     )
-    session.add_event(
-        RxHandshakePacket(pid=USB_PID["ACK"])
-    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["ACK"]))
 
     # And again..
     session.add_event(
@@ -85,9 +79,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             interEventDelay=6000,
         )
     )
-    session.add_event(
-        RxHandshakePacket(pid=USB_PID["ACK"])
-    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["ACK"]))
 
     # Send out to EP 2.. expect ack
     session.add_event(
@@ -110,9 +102,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             endpoint=2,
         )
     )
-    session.add_event(
-        RxHandshakePacket(pid=USB_PID["NAK"])
-    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
     # And again
     session.add_event(
@@ -122,9 +112,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             endpoint=2,
         )
     )
-    session.add_event(
-        RxHandshakePacket(pid=USB_PID["NAK"])
-    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
     # Send a packet to EP 1 so the DUT knows it can exit.
     session.add_event(

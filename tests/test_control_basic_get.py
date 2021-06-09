@@ -66,9 +66,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             endpoint=ep,
         )
     )
-    session.add_event(
-        TxDataPacket(length=0, pid=USB_PID["DATA1"])
-    )
+    session.add_event(TxDataPacket(length=0, pid=USB_PID["DATA1"]))
     session.add_event(RxHandshakePacket())
 
     do_usb_test(

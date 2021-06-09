@@ -149,5 +149,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 break;
         }
     }
+
+    return -1;
 }
 #endif

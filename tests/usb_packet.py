@@ -81,6 +81,7 @@ USB_PID = {
     "PING": 0xB4,
     "RESERVED": 0x0F,
     "NAK": 0x5A,
+    "STALL": 0x1E, 
 }
 
 

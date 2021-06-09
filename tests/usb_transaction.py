@@ -129,9 +129,6 @@ class UsbTransaction(UsbEvent):
                 )
             )
 
-            # Generate packet data payload
-            packetPayload = session.getPayload_in(endpointNumber, dataLength)
-
             if (
                 self._badDataCrc
                 or self._rxeAssertDelay_data
@@ -144,10 +141,16 @@ class UsbTransaction(UsbEvent):
             pid = session.data_pid_in(endpointNumber, togglePid=togglePid)
 
             # Add data packet to packets list
-            self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
+            if not halted:
+                # Generate packet data payload
+                packetPayload = session.getPayload_in(endpointNumber, dataLength)
+                self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
 
-            if self._endpointType != "ISO":
+            if self._endpointType != "ISO" and not halted:
                 self._packets.append(TxHandshakePacket())
+
+            if halted:
+                self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
 
         super(UsbTransaction, self).__init__(
             time=eventTime, interEventDelay=interEventDelay

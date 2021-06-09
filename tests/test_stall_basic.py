@@ -19,8 +19,8 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         bus_speed=usb_speed, run_enumeration=False, device_address=address
     )
 
-    ep_ctrl = 3
-    ep = 2
+    ep_ctrl = 2
+    ep = 1
 
     session.add_event(
         UsbTransaction(
@@ -42,6 +42,28 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             endpointType="BULK",
             direction="OUT",
             dataLength=pktLength,
+            halted=True,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
+            halted=True,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
             halted=True,
         )
     )

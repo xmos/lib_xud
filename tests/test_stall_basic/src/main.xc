@@ -33,15 +33,18 @@ XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, X
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
 
-unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], unsigned epNum)
+unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], chanend c_ep_in[XUD_EP_COUNT_IN])
 {
     unsigned failed = 0;
     uint8_t buffer[1024];
     unsigned length;
 
-    /* Stall EP */
-    XUD_ep ep = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
-    XUD_SetStall(ep);
+    /* Stall EPs */
+    XUD_ep ep_out = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
+    XUD_SetStall(ep_out);
+    
+    XUD_ep ep_in = XUD_InitEp(c_ep_in[TEST_EP_NUM]);
+    XUD_SetStall(ep_in);
 
     XUD_ep ep_ctrl = XUD_InitEp(c_ep_out[CTRL_EP_NUM]);
 
@@ -77,7 +80,7 @@ int main()
         }
 
         {
-            unsigned fail = TestEp_Stall(c_ep_out, TEST_EP_NUM);
+            unsigned fail = TestEp_Stall(c_ep_out, c_ep_in);
            
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);

@@ -27,7 +27,7 @@ Known Issues
   * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc)
 
 
-Software Version and Dependencies
+Software version and dependencies
 ---------------------------------
 
 The CHANGELOG contains information about the current and previous versions.

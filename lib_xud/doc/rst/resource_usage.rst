@@ -160,8 +160,8 @@ ensure correct operation. This means that core count restrictions must
 be observed. The XUD core must run at at least 80 MIPS.
 
 This means that for an xCORE device running at 500MHz there should be no more
-than six cores executing at any time when using the XUD. Devices all setting
-priority cores that are guarrenteed 20% of the processor bandwidth. If XUD is assigned
+than six cores executing at any time when using the XUD. xCORE devices allow setting cores to
+"priority" mode. Priority cores are guarenteed 20% of the processor bandwidth. If XUD is assigned
 a priority core then up to eight cores may be used with the remaining seven getting
 (500 * 0.8) / 7 = 57.1MHz each.
 

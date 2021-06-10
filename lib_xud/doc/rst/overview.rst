@@ -4,7 +4,7 @@ Overview
 ========
 
 The XUD library allows the implementation of both full-speed and
-high-speed USB 2.0 devices on xCORE-200 and xCORE.AI series devices. 
+high-speed USB 2.0 devices on xCORE-200 and xCORE.AI series devices.
 
 Selected xCORE-200 and xCORE.AI devies include an integrated USB transceiver. 
 Two libraries, with an identical API, are provided - one each for each

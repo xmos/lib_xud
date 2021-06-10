@@ -52,10 +52,12 @@ unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], chanend c_ep_in[XUD_EP
     /* Valid transaction on another EP, clear STALL on the test EP's */
     result = XUD_GetBuffer(ep_ctrl, outBuffer, length);
     failed = (result != XUD_RES_OKAY);
-    
+   
+    /* Clear stall on the test EP's */ 
     XUD_ClearStall(ep_out);
     XUD_ClearStall(ep_in);
 
+    /* Ensure test EP's now operate as expected */
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
     

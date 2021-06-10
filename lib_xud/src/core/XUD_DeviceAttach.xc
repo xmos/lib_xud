@@ -149,7 +149,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 break;
         }
     }
-
+    // Unreachable
     return -1;
 }
 #endif

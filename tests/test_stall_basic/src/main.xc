@@ -15,10 +15,6 @@
 #define PKT_LENGTH_START 10
 #endif
 
-#ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END 19
-#endif
-
 #ifndef TEST_EP_NUM
 #define TEST_EP_NUM     (1)
 #endif
@@ -36,8 +32,13 @@ XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, X
 unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], chanend c_ep_in[XUD_EP_COUNT_IN])
 {
     unsigned failed = 0;
-    uint8_t buffer[1024];
+    uint8_t outBuffer[128];
+    uint8_t inBuffer[128];
     unsigned length;
+    XUD_Result_t result;
+    
+    for(size_t i = 0; i < sizeof(outBuffer); i++)
+        inBuffer[i] = i;
 
     /* Stall EPs */
     XUD_ep ep_out = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
@@ -48,9 +49,18 @@ unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], chanend c_ep_in[XUD_EP
 
     XUD_ep ep_ctrl = XUD_InitEp(c_ep_out[CTRL_EP_NUM]);
 
-    XUD_Result_t result = XUD_GetBuffer(ep_ctrl, buffer, length);
-
+    /* Valid transaction on another EP, clear STALL on the test EP's */
+    result = XUD_GetBuffer(ep_ctrl, outBuffer, length);
     failed = (result != XUD_RES_OKAY);
+    
+    XUD_ClearStall(ep_out);
+    XUD_ClearStall(ep_in);
+
+    result = XUD_GetBuffer(ep_out, outBuffer, length);
+    failed |= (result != XUD_RES_OKAY);
+    
+    result = XUD_SetBuffer(ep_in, inBuffer, PKT_LENGTH_START);
+    failed |= (result != XUD_RES_OKAY);
 
     return failed;
 } 

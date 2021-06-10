@@ -22,6 +22,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     ep_ctrl = 2
     ep = 1
 
+    # Expect test EP's to be halted
     session.add_event(
         UsbTransaction(
             session,
@@ -68,6 +69,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         )
     )
 
+    # Valid transaction to another EP informing test code to clear stall
     session.add_event(
         UsbTransaction(
             session,
@@ -75,6 +77,29 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             endpointNumber=ep_ctrl,
             endpointType="BULK",
             direction="OUT",
+            dataLength=pktLength,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=pktLength,
+            interEventDelay=1000,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
             dataLength=pktLength,
         )
     )

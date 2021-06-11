@@ -2,6 +2,8 @@
 # Copyright 2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
+# Directed test for (github) issue #58
+
 import xmostest
 from usb_packet import *
 import usb_packet
@@ -22,6 +24,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     ep_ctrl = 2
     ep = 1
 
+    # Expect test EP's to be halted
     session.add_event(
         UsbTransaction(
             session,
@@ -47,6 +50,28 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     )
 
     session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
+            halted=True,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
+            halted=True,
+        )
+    )
+
+     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
@@ -55,6 +80,27 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             direction="OUT",
             dataLength=pktLength,
         )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=pktLength,
+        )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
+            dataLength=pktLength,
+        )
+
     )
 
     do_usb_test(

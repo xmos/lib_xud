@@ -71,7 +71,8 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         )
     )
 
-     session.add_event(
+    # Inform DUT to un halt EP's
+    session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
@@ -81,6 +82,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             dataLength=pktLength,
         )
 
+    # Expect normal transactions
     session.add_event(
         UsbTransaction(
             session,

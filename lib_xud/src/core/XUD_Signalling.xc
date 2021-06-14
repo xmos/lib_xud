@@ -40,9 +40,6 @@ extern unsigned g_curSpeed;
 
 int XUD_Init()
 {
-   timer SE0_timer;
-   unsigned SE0_start_time = 0;
-
    /* Wait for host */
     while (1)
     {
@@ -82,6 +79,9 @@ int XUD_Init()
         }
 
 #else
+       timer SE0_timer;
+       unsigned SE0_start_time = 0;
+
         select
         {
             /* SE0 State */
@@ -128,8 +128,6 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 {
     timer t;
     unsigned time;
-
-    unsigned rdata = 0;
 
     while (1)
     {
@@ -221,8 +219,6 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 {
     timer t;
     unsigned time;
-
-    unsigned reset = 0;
 
     XUD_LineState_t currentLs = XUD_LINESTATE_J;
     

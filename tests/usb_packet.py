@@ -68,21 +68,22 @@ USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 # RX_TX_DELAY = 20
 RXA_END_DELAY = 2  # Pad delay not currently simulated in xsim for USB or OTP, so add this delay here
 RXA_START_DELAY = 5  # Taken from RTL sim
+# RX_RX_DELAY = 40
 
 # TODO shoud we have a PID class?
 # TODO remove the inverted check bits
 USB_PID = {
     "OUT": 0xE1,
-    "IN": 0x69,
-    "SETUP": 0x2D,
+    "ACK": 0xD2,
+    "DATA0": 0xC3,
+    "PING": 0xB4,
     "SOF": 0xA5,
     "DATA1": 0x4B,
-    "DATA0": 0xC3,
-    "ACK": 0xD2,
-    "PING": 0xB4,
-    "RESERVED": 0x0F,
+    "IN": 0x69,
     "NAK": 0x5A,
+    "SETUP": 0x2D,
     "STALL": 0x1E,
+    "RESERVED": 0x0F,
 }
 
 

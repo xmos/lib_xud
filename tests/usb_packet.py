@@ -227,7 +227,7 @@ class UsbPacket(UsbEvent):
         self.data_bytes = kwargs.pop("data_bytes", None)
         self.num_data_bytes = kwargs.pop("length", 0)
         self.bad_crc = kwargs.pop("bad_crc", False)
-        ied = kwargs.pop("interEventDelay", 500)  # TODO RM magic number
+        ied = kwargs.pop("interEventDelay", None)
         super(UsbPacket, self).__init__(interEventDelay=ied)
 
     @property
@@ -335,7 +335,11 @@ class TxPacket(UsbPacket):
         self.rxa_end_delay = kwargs.pop("rxa_end_delay", RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop("rxe_assert_time", 0)
         self.rxe_assert_length = kwargs.pop("rxe_assert_length", 1)
-        super(TxPacket, self).__init__(**kwargs)
+
+        ied = kwargs.pop(
+            "interEventDelay", usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
+        )
+        super(TxPacket, self).__init__(**kwargs, interEventDelay=ied)
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "Packet:\tHOST -> DEVICE\n"
@@ -353,7 +357,7 @@ class TxPacket(UsbPacket):
 
         rxv_count = USB_DATA_VALID_COUNT[bus_speed]
 
-        usb_phy.wait_until(xsi.get_time() + self.interEventDelay)
+        usb_phy.wait_for_clocks(self.interEventDelay)
 
         print(
             "Packet:\tHOST -> DEVICE\n\tPID: {0} ({1:#x})".format(
@@ -505,7 +509,7 @@ class TxDataPacket(DataPacket, TxPacket):
     def __str__(self):
         return (
             super(DataPacket, self).__str__()
-            + ": RX DataPacket: "
+            + ": TX DataPacket: "
             + super(DataPacket, self).get_pid_str()
             + " "
             + str(self.data_bytes)

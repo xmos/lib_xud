@@ -53,6 +53,7 @@ USB_TIMINGS_SHORT = {
 
 USB_PKT_TIMINGS_TIGHT = {
     "TX_TO_RX_PACKET_TIMEOUT": 14,  # Timeout between sending DUT a packet and the expected response (in USB clocks). This is SIE decision time in UTMI spec
+    "TX_TO_TX_PACKET_DELAY": 4,  # Delay between transmitting two packets
 }
 
 
@@ -188,6 +189,14 @@ class UsbPhy(xmostest.SimThread):
 
     def drive_error(self, value):
         self.xsi.drive_port_pins(self._rxer, value)
+
+    def wait_for_clocks(self, clockCount):
+
+        delay = clockCount
+        while delay >= 0:
+            self.wait(lambda x: self._clock.is_high())
+            self.wait(lambda x: self._clock.is_low())
+            delay = delay - 1
 
     def run(self):
 

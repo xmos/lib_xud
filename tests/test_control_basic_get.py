@@ -19,6 +19,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     ep = 0
     address = 1
+    ied = 500
 
     session = UsbSession(
         bus_speed=usb_speed, run_enumeration=False, device_address=address
@@ -61,9 +62,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     # Send 0 length OUT transaction
     session.add_event(
         TokenPacket(
-            pid=USB_PID["OUT"],
-            address=address,
-            endpoint=ep,
+            pid=USB_PID["OUT"], address=address, endpoint=ep, interEventDelay=ied
         )
     )
     session.add_event(TxDataPacket(length=0, pid=USB_PID["DATA1"]))

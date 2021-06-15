@@ -65,7 +65,7 @@ import usb_phy
 USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 
 # In USB clocks
-#RX_TX_DELAY = 20
+# RX_TX_DELAY = 20
 RXA_END_DELAY = 2  # Pad delay not currently simulated in xsim for USB or OTP, so add this delay here
 RXA_START_DELAY = 5  # Taken from RTL sim
 
@@ -246,7 +246,9 @@ class UsbPacket(UsbEvent):
 # Rx to host i.e. xCORE Tx
 class RxPacket(UsbPacket):
     def __init__(self, **kwargs):
-        self._timeout = kwargs.pop("timeout", usb_phy.USB_PKT_TIMINGS["TX_TO_RX_PACKET_TIMEOUT"])
+        self._timeout = kwargs.pop(
+            "timeout", usb_phy.USB_PKT_TIMINGS["TX_TO_RX_PACKET_TIMEOUT"]
+        )
         super(RxPacket, self).__init__(**kwargs)
 
     @property
@@ -577,7 +579,7 @@ class RxHandshakePacket(HandshakePacket, RxPacket):
         self.pid = kwargs.pop(
             "pid", 0xD2
         )  # Default to ACK (not expect inverted bits on Rx)
-        #self._timeout = kwargs.pop("timeout", RX_TX_DELAY)  # TODO handled by Super()
+        # self._timeout = kwargs.pop("timeout", RX_TX_DELAY)  # TODO handled by Super()
 
     def __str__(self):
         return (

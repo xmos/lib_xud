@@ -4,6 +4,7 @@
 #include <print.h>
 #include <stdio.h>
 #include <platform.h>
+#include <stdint.h>
 #include "xud.h"
 
 unsigned char g_rxDataCheck_[16] = {0};

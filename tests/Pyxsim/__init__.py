@@ -111,7 +111,10 @@ def run_tester(caps, tester_list):
         index for index, element in enumerate(caps) if element.strip() == "Test done"
     ]
     result = []
-    if len(separate_word) > 1:
+    if not separate_word:
+        for test in tester_list:
+            result.append(test.run(caps))
+    elif len(separate_word) > 1:
         i = 0
         start = 0
         stop = 0

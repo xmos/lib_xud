@@ -84,6 +84,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     )
 
     # Expect normal transactions
+    # DUT will exit after one normal transaction per EP.
     session.add_event(
         UsbTransaction(
             session,

@@ -77,18 +77,21 @@ DoOutNonIso:
 
 doRXDataReturn_NonIso:
     bf         r1, NextTokenAfterOut            // Check for bad crc
-    ldc        r11, USB_PIDn_ACK                // Data CRC good and EP not Iso: Send Ack
-    nop
-    nop
-    nop
-    nop
-    nop
+
+    ldaw       r6,  dp[handshakeTable_OUT]      // Load the handshake table.
+    ldw        r11, r6[r10]                     // Get the handshake PID for this EP
+    ldc        r1,  USB_PIDn_STALL              // as well as the STALL PID
+    eq         r1,  r11, r1                     // and compare them.
+    bt         r1,  XUD_TokenOut_Handshake      // If the handshake PID for this EP is STALL, then
+                                                // go and send the handshake without clearing ready
+                                                // or communicating back to the application that
+                                                // the packet has been received.
+
+    ldc        r11, USB_PIDn_ACK                // Data CRC good, EP not Iso, and EP not halted: Send Ack
     outpw      res[TXD], r11, 8
     syncr      res[TXD]
 
 StoreTailDataOut:
-    //shr        r8, r8, 3                      // r8: number of tail bits, convert to bytes
-                                                // This is now done on the other side
     ldc        r11, 0
     stw        r11, r5[r10]                     // Clear ready
     ldw        r11, r3[1]                       // Load EP chanend
@@ -138,15 +141,13 @@ XUD_TokenOut_WaitForPacketEnd:                  // Wait for end of data then sen
 #endif
 
   // LOAD HANDSHAKE PID or STALL
-  ldaw       r5, dp[handshakeTable_OUT]         // Load handshake table
-  ldw        r11, r5[r10]
-  //ldc       r11, 0x5a
+  ldaw       r6, dp[handshakeTable_OUT]         // Load handshake table
+XUD_TokenOut_Handshake:
+  ldw        r11, r6[r10]
   outpw     res[TXD], r11, 8
   syncr     res[TXD]
 
 PrimaryBufferFull_NoNak:
-  //endin     r11, res[RXD]
-  //in        r11, res[RXD]
   setc      res[RXD], XS1_SETC_RUN_CLRBUF
   bu        NextToken
 

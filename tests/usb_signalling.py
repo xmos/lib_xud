@@ -2,7 +2,7 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 from usb_event import UsbEvent
-from usb_phy import USB_LINESTATE, USB_TIMINGS
+from usb_phy import USB_LINESTATE, USB_TIMINGS_SHORT
 
 
 class UsbDeviceAttach(UsbEvent):

@@ -50,8 +50,14 @@ USB_TIMINGS_SHORT = {
     "CHIRP_COUNT_MAX": 10,  # TODO should these chirp defines be removed and use timing?
 }
 
-USB_TIMINGS = USB_TIMINGS_SHORT
 
+USB_PKT_TIMINGS_TIGHT = {
+    "TX_TO_RX_PACKET_TIMEOUT": 14, # Timeout between sending DUT a packet and the expected response (in USB clocks). This is SIE decision time in UTMI spec
+}
+
+
+USB_TIMINGS = USB_TIMINGS_SHORT
+USB_PKT_TIMINGS = USB_PKT_TIMINGS_TIGHT
 
 class UsbPhy(xmostest.SimThread):
 

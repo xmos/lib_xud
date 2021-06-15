@@ -81,6 +81,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             direction="OUT",
             dataLength=pktLength,
         )
+    )
 
     # Expect normal transactions
     session.add_event(
@@ -92,6 +93,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             direction="OUT",
             dataLength=pktLength,
         )
+    )
 
     session.add_event(
         UsbTransaction(

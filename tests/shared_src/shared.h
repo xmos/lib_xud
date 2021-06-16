@@ -60,18 +60,20 @@ void TerminatePass(unsigned x)
 #endif
 
 #ifndef PKT_LEN_START
-#define PKT_LEN_START  10
+#define PKT_LEN_START       (10)
 #endif
 
 #ifndef PKT_LEN_END
-#define PKT_LEN_END    21
+#define PKT_LEN_END         (21)
 #endif
 
 #ifndef MAX_PKT_COUNT 
-#define MAX_PKT_COUNT (50)
+#define MAX_PKT_COUNT       (50)
 #endif
 
-#define XUD_Manager XUD_Main
+#ifndef DUMMY_THEAD_COUNT 
+#define DUMMY_THREAD_COUNT  (4)
+#endif
 
 typedef enum t_runMode
 {
@@ -194,5 +196,24 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     }
 
     return 0;
+}
+
+void dummyThread(chanend c)
+{
+    set_core_fast_mode_on();
+
+    while(1)
+    {
+        inuint(c);
+        break;
+    }
+}
+
+void dummyThreads(chanend c[])
+{
+    par(size_t i = 0; i < DUMMY_THREAD_COUNT; i++)
+    {
+        dummyThread(c[i]);
+    }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2021 XMOS LIMITED.
+// Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -44,22 +44,31 @@ unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], chanend c_ep_in[XUD_EP
     XUD_ep ep_ctrl = XUD_InitEp(c_ep_out[CTRL_EP_NUM]);
 
     XUD_ep ep_out = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
+    XUD_ep ep_in = XUD_InitEp(c_ep_in[TEST_EP_NUM]);
     XUD_SetStall(ep_out);
+    XUD_SetStall(ep_in);
    
     XUD_SetReady_Out(ep_out, outBuffer);
+    XUD_SetReady_In(ep_in, inBuffer, PKT_LENGTH_START);
     XUD_SetReady_Out(ep_ctrl, ctrlBuffer);
 
-    unsigned loop = 1;
-    while(loop)
+    unsigned loop0 = 1;
+    unsigned loop1 = 1;
+    while(loop0 | loop1)
     {
         select
         {
             case XUD_GetData_Select(c_ep_out[TEST_EP_NUM], ep_out, length, result):
-                loop = 0;
+                loop0 = 0;
                 break;
             
             case XUD_GetData_Select(c_ep_out[CTRL_EP_NUM], ep_ctrl, length, result):
                 XUD_ClearStall(ep_out);
+                XUD_ClearStall(ep_in);
+                break;
+            
+            case XUD_SetData_Select(c_ep_in[TEST_EP_NUM], ep_in, result):
+                loop1 = 0;
                 break;
         }
         failed |= (result != XUD_RES_OKAY);

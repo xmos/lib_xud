@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-#include "xc_ptr.h"
 #include "shared.h"
 
 #define XUD_EP_COUNT_OUT   5
@@ -78,7 +77,7 @@ int main()
     par
     {
         
-        XUD_Manager(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
        

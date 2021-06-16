@@ -38,7 +38,12 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         # Simulate missing data payload
         if length == 11:
             session.add_event(
-                TokenPacket(endpoint=ep, address=address, pid=USB_PID["OUT"])
+                TokenPacket(
+                    endpoint=ep,
+                    address=address,
+                    pid=USB_PID["OUT"],
+                    interEventDelay=ied,
+                )
             )
 
     return do_usb_test(

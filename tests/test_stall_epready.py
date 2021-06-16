@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2021 XMOS LIMITED.
+# Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Directed test for (github) issue #58
@@ -82,6 +82,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     )
 
     # Expect normal transactions
+    # DUT will exit after one normal transaction per EP.
     session.add_event(
         UsbTransaction(
             session,
@@ -102,7 +103,6 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             direction="IN",
             dataLength=pktLength,
         )
-
     )
 
     return do_usb_test(

@@ -29,6 +29,9 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             )
         )
 
+
+    phy.initial_delay = 100000
+    
     return do_usb_test(
         arch,
         clk,

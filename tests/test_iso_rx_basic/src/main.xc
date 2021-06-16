@@ -22,6 +22,7 @@
 #define TEST_EP_NUM        2
 #endif
 
+
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO,
                                                 XUD_EPTYPE_BUL,
@@ -35,6 +36,7 @@ int main()
 #endif
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+    chan c_dummy[DUMMY_THREAD_COUNT];
             
     par
     {
@@ -64,6 +66,9 @@ int main()
                 TerminatePass(fail);    
             
         }
+
+        dummyThreads(c_dummy);
+
     }
 
     return 0;

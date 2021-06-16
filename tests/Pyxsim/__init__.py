@@ -107,32 +107,11 @@ def run_with_pyxsim(
 
 
 def run_tester(caps, tester_list):
-    separate_word = [
-        index for index, element in enumerate(caps) if element.strip() == "Test done"
-    ]
     result = []
-    if not separate_word:
-        for test in tester_list:
-            result.append(test.run(caps))
-    elif len(separate_word) > 1:
-        i = 0
-        start = 0
-        stop = 0
-        while i < len(separate_word):
-            if i == 0:
-                stop = separate_word[i] + 1
-            else:
-                start = separate_word[i - 1] + 1
-                stop = separate_word[i] + 1
-            re_cap = caps[start:stop]
-            if tester_list[i] != "Build Failed":
-                result.append(tester_list[i].run(re_cap))
-            else:
-                result.append(False)
-            i += 1
-    else:
-        if tester_list[0] != "Build Failed":
-            result.append(tester_list[0].run(caps[: separate_word[0] + 1]))
+    for i, ele in enumerate(caps):
+        ele.remove("")
+        if tester_list[i] != "Build Failed":
+            result.append(tester_list[i].run(ele))
         else:
             result.append(False)
     return result

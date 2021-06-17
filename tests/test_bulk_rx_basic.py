@@ -6,7 +6,7 @@ import usb_packet
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-
+import pytest
 
 def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
@@ -44,7 +44,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         verbose=verbose,
     )
 
-
+@pytest.mark.bulk
 def test_bulk_rx_basic():
     for result in RunUsbTest(do_test):
         assert result

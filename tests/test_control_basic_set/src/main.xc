@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-#include "xc_ptr.h"
 #include "shared.h"
 
 #define XUD_EP_COUNT_OUT   5
@@ -21,7 +20,6 @@
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
-
 
 /* Out EP Should receive some data, perform some test process (crc or similar) to check okay */
 /* Answers should be responded to in the IN ep */
@@ -84,7 +82,7 @@ int main()
     par
     {
         
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 

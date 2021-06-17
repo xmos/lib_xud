@@ -27,7 +27,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
                     pid=USB_PID["IN"],
                     address=address,
                     endpoint=ep,
-                    inter_pkt_gap=ied,
+                    interEventDelay=ied,
                 )
             )
             session.add_event(

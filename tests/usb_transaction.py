@@ -33,6 +33,7 @@ class UsbTransaction(UsbEvent):
         badDataCrc=False,
         resend=False,
         rxeAssertDelay_data=0,
+        halted=False,
     ):  # TODO Enums when we move to py3
 
         self._deviceAddress = deviceAddress
@@ -43,6 +44,7 @@ class UsbTransaction(UsbEvent):
         self._bus_speed = bus_speed
         self._badDataCrc = badDataCrc
         self._rxeAssertDelay_data = rxeAssertDelay_data
+        self._halted = halted
 
         assert endpointType in USB_EP_TYPES
         assert direction in USB_DIRECTIONS
@@ -65,7 +67,12 @@ class UsbTransaction(UsbEvent):
             )
 
             # Don't toggle data pid if we had a bad data crc
-            if self._badDataCrc or self._rxeAssertDelay_data or endpointType == "ISO":
+            if (
+                self._badDataCrc
+                or self._rxeAssertDelay_data
+                or endpointType == "ISO"
+                or halted
+            ):
                 togglePid = False
             else:
                 togglePid = True
@@ -103,7 +110,10 @@ class UsbTransaction(UsbEvent):
             )
 
             if expectHandshake:
-                packets.append(RxHandshakePacket())
+                if halted:
+                    packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                else:
+                    packets.append(RxHandshakePacket())
 
             self._packets.extend(packets)
 
@@ -119,9 +129,6 @@ class UsbTransaction(UsbEvent):
                 )
             )
 
-            # Generate packet data payload
-            packetPayload = session.getPayload_in(endpointNumber, dataLength)
-
             if (
                 self._badDataCrc
                 or self._rxeAssertDelay_data
@@ -134,10 +141,16 @@ class UsbTransaction(UsbEvent):
             pid = session.data_pid_in(endpointNumber, togglePid=togglePid)
 
             # Add data packet to packets list
-            self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
+            if not halted:
+                # Generate packet data payload
+                packetPayload = session.getPayload_in(endpointNumber, dataLength)
+                self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
 
-            if self._endpointType != "ISO":
+            if self._endpointType != "ISO" and not halted:
                 self._packets.append(TxHandshakePacket())
+
+            if halted:
+                self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
 
         super(UsbTransaction, self).__init__(
             time=eventTime, interEventDelay=interEventDelay

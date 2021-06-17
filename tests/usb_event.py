@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod, abstractproperty
 
 
 class UsbEvent(ABC):
-    def __init__(self, time=0, interEventDelay=1):  # TODO set delay to sensible default
+    def __init__(self, time=0, interEventDelay=None):
         self._time = time
         self._interEventDelay = interEventDelay
 
@@ -13,6 +13,7 @@ class UsbEvent(ABC):
     def time(self):
         return self._time
 
+    # NOTE: its not always sensible for an event to used the IED - for example an Rx Packet
     @property
     def interEventDelay(self):
         return self._interEventDelay
@@ -32,4 +33,4 @@ class UsbEvent(ABC):
         pass
 
     def __str__(self):
-        return "UsbEvent IED: " + str(self.interEventDelay)
+        return "UsbEvent: IED: " + str(self.interEventDelay)

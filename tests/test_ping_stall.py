@@ -3,47 +3,58 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 import xmostest
+from usb_packet import *
 import usb_packet
-from usb_packet import CreateSofToken
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-from usb_signalling import UsbSuspend, UsbResume
 
 
 def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
-    ep = 1
     address = 1
-    start_length = 10
-    end_length = 12
     pktLength = 10
-    frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
 
     session = UsbSession(
         bus_speed=usb_speed, run_enumeration=False, device_address=address
     )
 
+    ep_ctrl = 2
+    ep = 1
+
+    # Ping EP, expect stall
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address,
+            endpoint=ep,
+        )
+    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["STALL"]))
+
+    # And again
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address,
+            endpoint=ep,
+        )
+    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["STALL"]))
+
+    # Valid transaction to another EP informing test code to clear stall
     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
-            endpointNumber=ep,
+            endpointNumber=ep_ctrl,
             endpointType="BULK",
             direction="OUT",
             dataLength=pktLength,
-            interEventDelay=0,
         )
     )
 
-    session.add_event(CreateSofToken(frameNumber))
-
-    session.add_event(UsbSuspend(350000))
-    session.add_event(UsbResume())
-
-    frameNumber = frameNumber + 1
-    pktLength = pktLength + 1
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=2000))
+    # Expect normal transactions
     session.add_event(
         UsbTransaction(
             session,
@@ -52,7 +63,17 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
             endpointType="BULK",
             direction="OUT",
             dataLength=pktLength,
-            interEventDelay=0,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=pktLength,
         )
     )
 

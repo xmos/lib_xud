@@ -15,7 +15,7 @@ from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
-args = {"arch": "xs3", "trace": False}
+args = {"arch": "xs3", "trace": True}
 XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 clean_only = False
 
@@ -146,7 +146,7 @@ def RunUsbTest(test_fn):
                     cap_output = start_cap.read_output()
                     start_cap.close_capture()
                     output.append(cap_output.split("\n"))
-                    
+
     sys.stdout.write("\n")
     return Pyxsim.run_tester(output, tester_list)
 

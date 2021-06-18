@@ -4,7 +4,6 @@ import random
 import xmostest
 import sys
 import zlib
-from usb_packet import RxPacket, TokenPacket, USB_PID
 import usb_packet
 
 USB_MAX_EP_ADDRESS = 15

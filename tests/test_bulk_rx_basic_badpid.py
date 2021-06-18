@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import xmostest
 from usb_packet import *
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
@@ -82,7 +81,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         )
     )
 
-    do_usb_test(
+    return do_usb_test(
         arch,
         clk,
         phy,
@@ -96,5 +95,6 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     )
 
 
-def runtest():
-    RunUsbTest(do_test)
+def test_bulk_rx_basic_badpid():
+    for result in RunUsbTest(do_test):
+        assert result

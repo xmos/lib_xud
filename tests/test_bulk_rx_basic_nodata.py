@@ -3,7 +3,6 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Rx out of seq (but valid.. ) data PID
-import xmostest
 from usb_packet import TokenPacket, USB_PID
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
@@ -47,7 +46,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
                 )
             )
 
-    do_usb_test(
+    return do_usb_test(
         arch,
         clk,
         phy,
@@ -61,5 +60,6 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     )
 
 
-def runtest():
-    RunUsbTest(do_test)
+def test_bulk_rx_basic_nodata():
+    for result in RunUsbTest(do_test):
+        assert result

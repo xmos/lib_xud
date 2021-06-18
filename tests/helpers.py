@@ -121,33 +121,30 @@ def run_on(**kwargs):
     return True
 
 
-def RunUsbTest(session, arch, ep, address, bus_speed, test_fn):
+def RunUsbTest(sessions, arch, ep, address, bus_speed, test_file):
 
     tester_list = []
     output = []
     testname, extension = os.path.splitext(os.path.basename(__file__))
     seed = random.randint(0, sys.maxsize)
 
-    #for _arch in ARCHITECTURE_CHOICES:
-    #    for _busspeed in BUSSPEED_CHOICES:
-    #        if run_on(arch=_arch):
-    #            if run_on(busspeed=_busspeed):
     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
     start_cap = Pyxsim.cap_redirect()
     tester_list.extend(
-            test_fn(
-                session,
-                arch,
-                clk_60,
-                usb_phy,
-                bus_speed,
-                seed,
-                )
-            )
+        do_usb_test(
+            arch,
+            clk_60,
+            usb_phy,
+            bus_speed,
+            sessions,
+            test_file,
+            seed,
+        )
+    )
     cap_output = start_cap.read_output()
     start_cap.close_capture()
     output.append(cap_output.split("\n"))
-                    
+
     sys.stdout.write("\n")
     return Pyxsim.run_tester(output, tester_list)
 

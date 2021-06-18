@@ -9,6 +9,7 @@ from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS
 
+
 def gen_test_session(ep, address, usb_speed):
 
     if usb_speed == "FS":
@@ -108,26 +109,12 @@ def gen_test_session(ep, address, usb_speed):
 
     return session
 
-def do_test(sessions, arch, clk, phy, usb_speed, seed, verbose=False):
-
-    return do_usb_test(
-        arch,
-        clk,
-        phy,
-        usb_speed,
-        sessions,
-        __file__,
-        seed,
-        level="smoke",
-        extra_tasks=[],
-        verbose=verbose,
-    )
-
 
 def test_stall_basic(test_arch, test_ep, test_address, test_bus_speed):
 
     session = gen_test_session(test_ep, test_address, test_bus_speed)
 
-    for result in RunUsbTest([session], test_arch, test_ep, test_address, test_bus_speed, do_test):
+    for result in RunUsbTest(
+        [session], test_arch, test_ep, test_address, test_bus_speed, __file__
+    ):
         assert result
-

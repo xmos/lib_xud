@@ -1,14 +1,14 @@
-
 import pytest
 
 PARAMS = {
     "default": {
-        "arch":["xs3"],
+        "arch": ["xs3"],
         "ep": [1],
         "address": [1],
         "bus_speed": ["HS", "FS"],
     },
 }
+
 
 def pytest_generate_tests(metafunc):
     try:
@@ -27,15 +27,17 @@ def pytest_generate_tests(metafunc):
 def test_ep(ep: int) -> int:
     return ep
 
+
 @pytest.fixture()
 def test_address(address: int) -> int:
     return address
+
 
 @pytest.fixture()
 def test_bus_speed(bus_speed: str) -> str:
     return bus_speed
 
+
 @pytest.fixture()
 def test_arch(arch: str) -> str:
     return arch
-

@@ -64,6 +64,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         extra_tasks=[],
     )
 
+
 @pytest.mark.xfail
 def test_shorttoken():
     for result in RunUsbTest(do_test):

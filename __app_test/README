@@ -1,9 +1,0 @@
-This is a xud trest using a xsim testbench.
-
-To build:
-  xmake
-
-To run:
-  xmake run
-
-Make sure you have built the TB first!

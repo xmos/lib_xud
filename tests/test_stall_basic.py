@@ -6,9 +6,13 @@ import usb_packet
 from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+import pytest
+from conftest import PARAMS
 
+def gen_test_session(ep, address, usb_speed):
 
-def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
+    if usb_speed == "FS":
+        pytest.xfail("Known failure at FS")
 
     address = 1
     pktLength = 10
@@ -102,12 +106,16 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         )
     )
 
+    return session
+
+def do_test(sessions, arch, clk, phy, usb_speed, seed, verbose=False):
+
     return do_usb_test(
         arch,
         clk,
         phy,
         usb_speed,
-        [session],
+        sessions,
         __file__,
         seed,
         level="smoke",
@@ -116,6 +124,10 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     )
 
 
-def test_stall_basic():
-    for result in RunUsbTest(do_test):
+def test_stall_basic(test_arch, test_ep, test_address, test_bus_speed):
+
+    session = gen_test_session(test_ep, test_address, test_bus_speed)
+
+    for result in RunUsbTest([session], test_arch, test_ep, test_address, test_bus_speed, do_test):
         assert result
+

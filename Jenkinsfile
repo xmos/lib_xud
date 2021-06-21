@@ -35,6 +35,15 @@ pipeline {
         }
       }
     }
+    stage('Tests') {
+      steps {
+        dir("${REPO}/tests") {
+          viewEnv(){
+            runPytest()
+          }          
+        }
+      }
+    }
     // stage('Tests') {
     //   steps {
     //     runXmostest("${REPO}", 'tests')

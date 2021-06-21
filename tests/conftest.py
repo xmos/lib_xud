@@ -2,6 +2,13 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 import pytest
+import os
+import random
+import sys
+import Pyxsim
+from Pyxsim import testers
+from helpers import get_usb_clk_phy, do_usb_test
+import inspect
 
 PARAMS = {
     "default": {
@@ -44,3 +51,35 @@ def test_bus_speed(bus_speed: str) -> str:
 @pytest.fixture()
 def test_arch(arch: str) -> str:
     return arch
+
+
+def test_RunUsbTest(test_session, arch, ep, address, bus_speed, test_file):
+
+    tester_list = []
+    output = []
+    testname, extension = os.path.splitext(os.path.basename(__file__))
+    seed = random.randint(0, sys.maxsize)
+
+    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
+    start_cap = Pyxsim.cap_redirect()
+    tester_list.extend(
+        do_usb_test(
+            arch,
+            clk_60,
+            usb_phy,
+            bus_speed,
+            [test_session],
+            test_file,
+            seed,
+        )
+    )
+    cap_output = start_cap.read_output()
+    start_cap.close_capture()
+    output.append(cap_output.split("\n"))
+
+    sys.stdout.write("\n")
+    results = Pyxsim.run_tester(output, tester_list)
+
+    # TODO only one result
+    for result in results:
+        assert result

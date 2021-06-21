@@ -5,19 +5,25 @@ from helpers import RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS
+from conftest import PARAMS, test_RunUsbTest
+
+# TODO Can this be moved?
+@pytest.fixture
+def test_file():
+    return __file__
 
 
-def gen_test_session(ep, address, usb_speed):
+@pytest.fixture
+def test_session(ep, address, bus_speed):
 
-    if usb_speed == "FS":
+    if bus_speed == "FS":
         pytest.xfail("Known failure at FS")
 
     address = 1
     pktLength = 10
 
     session = UsbSession(
-        bus_speed=usb_speed, run_enumeration=False, device_address=address
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
     ep_ctrl = 2
@@ -108,9 +114,7 @@ def gen_test_session(ep, address, usb_speed):
     return session
 
 
-def test_stall_basic(test_arch, test_ep, test_address, test_bus_speed):
-
-    for result in RunUsbTest(
-        gen_test_session, test_arch, test_ep, test_address, test_bus_speed, __file__
-    ):
-        assert result
+#   for result in RunUsbTest(
+#        gen_test_session, test_arch, test_ep, test_address, test_bus_speed, __file__
+#    ):
+#        assert result

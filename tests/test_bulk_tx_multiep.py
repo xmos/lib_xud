@@ -68,3 +68,5 @@ def test_session(ep, address, bus_speed):
                 interEventDelay=ied,
             )
         )
+
+    return session

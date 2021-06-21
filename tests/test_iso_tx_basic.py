@@ -21,7 +21,10 @@ def test_session(ep, address, bus_speed):
     end_length = 14
 
     session = UsbSession(
-        bus_speed=bus_speed, run_enumeration=False, device_address=address
+        bus_speed=bus_speed,
+        run_enumeration=False,
+        device_address=address,
+        initial_delay=100000,
     )
 
     for pktLength in range(10, end_length + 1):
@@ -35,7 +38,5 @@ def test_session(ep, address, bus_speed):
                 dataLength=pktLength,
             )
         )
-
-    phy.initial_delay = 100000
 
     return session

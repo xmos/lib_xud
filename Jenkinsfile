@@ -39,7 +39,7 @@ pipeline {
       steps {
         dir("${REPO}/tests/test_bulk_loopback") {
           viewEnv(){
-            runPytest()
+            runPytest('--numprocesses=1')
           }          
         }
       }

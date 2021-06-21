@@ -5,7 +5,7 @@ from helpers import RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbTest
+from conftest import PARAMS, test_RunUsbSession
 
 # TODO Can this be moved?
 @pytest.fixture

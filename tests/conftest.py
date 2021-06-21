@@ -53,7 +53,7 @@ def test_arch(arch: str) -> str:
     return arch
 
 
-def test_RunUsbTest(test_session, arch, ep, address, bus_speed, test_file):
+def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
 
     tester_list = []
     output = []

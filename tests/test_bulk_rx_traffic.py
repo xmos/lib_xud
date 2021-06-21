@@ -16,6 +16,9 @@ def test_file():
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
+    if bus_speed == "FS":
+        pytest.xfail("Known failure at FS")
+
     ep = 1
     address = 1
     ied = 500

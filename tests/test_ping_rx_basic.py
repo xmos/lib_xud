@@ -11,18 +11,25 @@ from usb_packet import (
     RxHandshakePacket,
     USB_PID,
 )
-from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+import pytest
+from conftest import PARAMS, test_RunUsbSession
+
+# TODO Can this be moved?
+@pytest.fixture
+def test_file():
+    return __file__
 
 
-def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
+@pytest.fixture
+def test_session(ep, address, bus_speed):
 
     address = 1
     ep = 1
 
     session = UsbSession(
-        bus_speed=usb_speed, run_enumeration=False, device_address=address
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
     # Ping EP 2, expect NAK
@@ -124,19 +131,4 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         )
     )
 
-    return do_usb_test(
-        arch,
-        clk,
-        phy,
-        usb_speed,
-        [session],
-        __file__,
-        seed,
-        level="smoke",
-        extra_tasks=[],
-    )
-
-
-def test_ping_rx_basic():
-    for result in RunUsbTest(do_test):
-        assert result
+    return session

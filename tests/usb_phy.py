@@ -201,6 +201,11 @@ class UsbPhy(Pyxsim.SimThread):
 
         xsi = self.xsi
 
+        # TODO ideally each session could have it's own start up delay rather than modifying the
+        # phy start up delay
+        if self._session.initial_delay is not None:
+            self._initial_delay = self._session.initial_delay
+
         self.start_test()
 
         for event in self._session.events:

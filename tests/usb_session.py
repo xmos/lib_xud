@@ -17,8 +17,14 @@ def CounterByte(startVal=0, length=0):
 
 class UsbSession(object):
     def __init__(
-        self, bus_speed="HS", run_enumeration=False, device_address=0, **kwargs
+        self,
+        bus_speed="HS",
+        run_enumeration=False,
+        device_address=0,
+        initial_delay=None,
+        **kwargs
     ):
+        self._initial_delay = initial_delay
         self._bus_speed = bus_speed
         self._events = []
         self._enumerate = run_enumeration
@@ -30,6 +36,10 @@ class UsbSession(object):
         self._dataGen_out = [0] * 16
 
         assert run_enumeration == False, "Not yet supported"
+
+    @property
+    def initial_delay(self):
+        return self._initial_delay
 
     @property
     def bus_speed(self):

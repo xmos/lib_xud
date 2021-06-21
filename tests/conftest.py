@@ -8,10 +8,15 @@ import sys
 import Pyxsim
 from Pyxsim import testers
 from helpers import get_usb_clk_phy, do_usb_test
-import inspect
 
 PARAMS = {
     "default": {
+        "arch": ["xs3"],
+        "ep": [0, 1, 15],
+        "address": [0, 1, 127],
+        "bus_speed": ["HS", "FS"],
+    },
+    "smoke": {
         "arch": ["xs3"],
         "ep": [1],
         "address": [1],
@@ -19,12 +24,16 @@ PARAMS = {
     },
 }
 
+def pytest_addoption(parser):
+    parser.addoption("--smoke", action="store_true", help="smoke test")
 
 def pytest_generate_tests(metafunc):
     try:
         PARAMS = metafunc.module.PARAMS
-        params = PARAMS["default"]
-
+        if metafunc.config.getoption("smoke"):
+            params = PARAMS.get("smoke", PARAMS["default"])
+        else:
+            params = PARAMS["default"]
     except AttributeError:
         params = {}
 

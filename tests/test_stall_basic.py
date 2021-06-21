@@ -112,9 +112,7 @@ def gen_test_session(ep, address, usb_speed):
 
 def test_stall_basic(test_arch, test_ep, test_address, test_bus_speed):
 
-    session = gen_test_session(test_ep, test_address, test_bus_speed)
-
     for result in RunUsbTest(
-        [session], test_arch, test_ep, test_address, test_bus_speed, __file__
+        gen_test_session, test_arch, test_ep, test_address, test_bus_speed, __file__
     ):
         assert result

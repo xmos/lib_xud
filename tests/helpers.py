@@ -121,12 +121,14 @@ def run_on(**kwargs):
     return True
 
 
-def RunUsbTest(sessions, arch, ep, address, bus_speed, test_file):
+def RunUsbTest(session_gen_func, arch, ep, address, bus_speed, test_file):
 
     tester_list = []
     output = []
     testname, extension = os.path.splitext(os.path.basename(__file__))
     seed = random.randint(0, sys.maxsize)
+
+    session = session_gen_func(ep, address, bus_speed)
 
     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
     start_cap = Pyxsim.cap_redirect()
@@ -136,7 +138,7 @@ def RunUsbTest(sessions, arch, ep, address, bus_speed, test_file):
             clk_60,
             usb_phy,
             bus_speed,
-            sessions,
+            [session],
             test_file,
             seed,
         )

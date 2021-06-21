@@ -8,6 +8,7 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
 
+
 def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 
     ep = 1
@@ -43,6 +44,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         extra_tasks=[],
         verbose=verbose,
     )
+
 
 @pytest.mark.bulk
 def test_bulk_rx_basic():

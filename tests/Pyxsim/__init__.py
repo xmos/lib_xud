@@ -29,10 +29,10 @@ def _build(xe_path, build_config=None, env={}, do_clean=False):
         if m:
             build_config = m.groups(0)[0]
 
-    if not path:
-        msg = "ERROR: Cannot determine path to build: %s\n" % xe_path
-        sys.stderr.write(msg)
-        return (False, msg)
+    # if not path:
+    #     msg = "ERROR: Cannot determine path to build: %s\n" % xe_path
+    #     sys.stderr.write(msg)
+    #     return (False, msg)
 
     # Copy the environment, to avoid modifying the env of the current shell
     my_env = os.environ.copy()
@@ -46,12 +46,12 @@ def _build(xe_path, build_config=None, env={}, do_clean=False):
         cmd = ["xmake", "all"]
 
     if do_clean:
-        call(["xmake", "clean"], cwd=path, env=my_env)
+        call(["xmake", "clean"], cwd='.', env=my_env)
 
     if build_config != None:
         cmd += ["CONFIG=%s" % build_config]
 
-    output = call_get_output(cmd, cwd=path, env=my_env, merge_out_and_err=True)
+    output = call_get_output(cmd, cwd='.', env=my_env, merge_out_and_err=True)
 
     success = True
     for x in output:

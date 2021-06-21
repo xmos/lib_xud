@@ -37,7 +37,7 @@ pipeline {
     }
     stage('Tests') {
       steps {
-        dir("${REPO}/tests") {
+        dir("${REPO}/tests/test_bulk_loopback") {
           viewEnv(){
             runPytest()
           }          

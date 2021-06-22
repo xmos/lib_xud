@@ -1,7 +1,7 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import random
-import xmostest
+import Pyxsim
 import sys
 import zlib
 import usb_packet
@@ -60,7 +60,7 @@ USB_TIMINGS = USB_TIMINGS_SHORT
 USB_PKT_TIMINGS = USB_PKT_TIMINGS_TIGHT
 
 
-class UsbPhy(xmostest.SimThread):
+class UsbPhy(Pyxsim.SimThread):
 
     # Time in ns from the last packet being sent until the end of test is signalled to the DUT
     END_OF_TEST_TIME = 5000
@@ -200,6 +200,11 @@ class UsbPhy(xmostest.SimThread):
     def run(self):
 
         xsi = self.xsi
+
+        # TODO ideally each session could have it's own start up delay rather than modifying the
+        # phy start up delay
+        if self._session.initial_delay is not None:
+            self._initial_delay = self._session.initial_delay
 
         self.start_test()
 

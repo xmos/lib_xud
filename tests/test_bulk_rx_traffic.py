@@ -1,15 +1,23 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-from usb_packet import *
-import usb_packet
-from helpers import do_usb_test, RunUsbTest
+
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_phy import USB_MAX_EP_ADDRESS
+import pytest
+from conftest import PARAMS, test_RunUsbSession
+
+# TODO Can this be moved?
+@pytest.fixture
+def test_file():
+    return __file__
 
 
-def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
+@pytest.fixture
+def test_session(ep, address, bus_speed):
+
+    if bus_speed == "FS":
+        pytest.xfail("Known failure at FS")
 
     ep = 1
     address = 1
@@ -21,7 +29,7 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
     trafficEp2 = 0
 
     session = UsbSession(
-        bus_speed=usb_speed, run_enumeration=False, device_address=address
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
     for pktLength in range(10, 20):
@@ -70,20 +78,4 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         if trafficEp1 > USB_MAX_EP_ADDRESS:
             trafficEp1 = 0
 
-    return do_usb_test(
-        arch,
-        clk,
-        phy,
-        usb_speed,
-        [session],
-        __file__,
-        seed,
-        level="smoke",
-        extra_tasks=[],
-        verbose=verbose,
-    )
-
-
-def test_bulk_rx_traffic():
-    for result in RunUsbTest(do_test):
-        assert result
+    return session

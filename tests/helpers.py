@@ -123,9 +123,11 @@ def run_on(**kwargs):
 
 def do_usb_test(
     arch,
+    ep,
+    address,
+    bus_speed,
     clk,
     phy,
-    usb_speed,
     sessions,
     test_file,
     seed,
@@ -133,6 +135,11 @@ def do_usb_test(
     extra_tasks=[],
     verbose=False,
 ):
+
+    # TODO ideally the test would test this somehow
+    build_options = (
+        "CFLAGS=-DTEST_EP_NUM=" + str(ep) + " -DXUD_STARTUP_ADDRESS=" + str(address)
+    )
 
     """Shared test code for all RX tests using the test_rx application."""
     testname, extension = os.path.splitext(os.path.basename(test_file))
@@ -142,7 +149,7 @@ def do_usb_test(
         testname=testname, arch=arch
     )
     copy_common_xn_files(testname)
-    build_success, build_output = Pyxsim._build(binary)
+    build_success, build_output = Pyxsim._build(binary, build_options=build_options)
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
     if build_success:
@@ -157,7 +164,7 @@ def do_usb_test(
                 phy=phy.name,
                 clk=clk.get_name(),
                 arch=arch,
-                usb_speed=usb_speed,
+                usb_speed=bus_speed,
             )
 
             create_expect(arch, session, expect_filename, verbose=verbose)
@@ -167,7 +174,7 @@ def do_usb_test(
                 "lib_xud",
                 "xud_sim_tests",
                 testname,
-                {"clk": clk.get_name(), "arch": arch, "speed": usb_speed},
+                {"clk": clk.get_name(), "arch": arch, "speed": bus_speed},
             )
 
             tester_list.append(tester)

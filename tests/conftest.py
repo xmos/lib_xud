@@ -12,14 +12,14 @@ from helpers import get_usb_clk_phy, do_usb_test
 PARAMS = {
     "default": {
         "arch": ["xs3"],
-        "ep": [0, 1, 15],
+        "ep": [1, 2, 5],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
     },
     "smoke": {
         "arch": ["xs3"],
         "ep": [1],
-        "address": [1],
+        "address": [0],
         "bus_speed": ["HS", "FS"],
     },
 }
@@ -81,9 +81,11 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
     tester_list.extend(
         do_usb_test(
             arch,
+            ep,
+            address,
+            bus_speed,
             clk_60,
             usb_phy,
-            bus_speed,
             [test_session],
             test_file,
             seed,

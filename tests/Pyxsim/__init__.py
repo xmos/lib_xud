@@ -17,7 +17,7 @@ import os
 clean_only = False
 
 # This function is called automatically by the runners
-def _build(xe_path, build_config=None, env={}, do_clean=False):
+def _build(xe_path, build_config=None, env={}, do_clean=False, build_options=""):
 
     # Work out the Makefile path
     path = None
@@ -50,6 +50,8 @@ def _build(xe_path, build_config=None, env={}, do_clean=False):
 
     if build_config != None:
         cmd += ["CONFIG=%s" % build_config]
+
+    cmd += [build_options]
 
     output = call_get_output(cmd, cwd=path, env=my_env, merge_out_and_err=True)
 

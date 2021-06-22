@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-from usb_packet import *
-import usb_packet
-from helpers import do_usb_test, RunUsbTest
-from usb_session import UsbSession
-from usb_transaction import UsbTransaction
-
 
 def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
 

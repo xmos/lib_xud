@@ -15,7 +15,7 @@ from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
-args = {"arch": "xs3", "trace": True}
+args = {"arch": "xs3", "trace": False}
 XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 clean_only = False
 

@@ -8,6 +8,7 @@ from usb_signalling import UsbDeviceAttach
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
+
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 

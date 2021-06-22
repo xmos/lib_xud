@@ -8,6 +8,7 @@ from usb_packet import TokenPacket, USB_PID, RxHandshakePacket
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
+
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 

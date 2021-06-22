@@ -64,6 +64,11 @@ def test_arch(arch: str) -> str:
     return arch
 
 
+@pytest.fixture
+def test_file(request):
+    return str(request.node.fspath)
+
+
 def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
 
     tester_list = []

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
@@ -8,12 +7,6 @@ from usb_transaction import UsbTransaction
 from usb_packet import TokenPacket, USB_PID, RxHandshakePacket
 import pytest
 from conftest import PARAMS, test_RunUsbSession
-
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
-
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):

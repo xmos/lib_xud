@@ -24,8 +24,10 @@ PARAMS = {
     },
 }
 
+
 def pytest_addoption(parser):
     parser.addoption("--smoke", action="store_true", help="smoke test")
+
 
 def pytest_generate_tests(metafunc):
     try:

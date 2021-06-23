@@ -118,22 +118,20 @@ def run_tester(caps, tester_list):
 
 
 class cap_redirect:
-    def __init__(self):
+    def __init__(self, std):
         (self.fd, self.fname) = tempfile.mkstemp()
-        (self.fderr, self.errfname) = tempfile.mkstemp()
-        self.old_stdout = os.fdopen(os.dup(sys.stdout.fileno()), "w")
-        self.old_stderr = os.fdopen(os.dup(sys.stderr.fileno()), "w")
+        fd_std = std.fileno()
+        self.old_std = os.fdopen(os.dup(fd_std), "w")
+        self.std_reader = open(self.fname, "r")
+        os.dup2(self.fd, fd_std)
         sys.stdout = os.fdopen(self.fd, "w")
-        sys.stderr = os.fdopen(self.fderr, "w")
 
     def read_output(self):
-        std_reader = open(self.fname, "r")
-        std_erreader = open(self.errfname, "r")
-        return std_reader.read(), std_erreader.read()
+        # std_reader = open(self.fname, "r")
+        return self.std_reader.read()
 
     def close_capture(self):
-        sys.stdout = self.old_stdout
-        sys.stderr = self.old_stderr
+        sys.stdout = self.old_std
 
 
 class SimThread(object):

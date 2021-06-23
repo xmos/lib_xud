@@ -9,6 +9,7 @@ import Pyxsim
 from Pyxsim import testers
 from helpers import get_usb_clk_phy, do_usb_test
 import inspect
+import time
 
 PARAMS = {
     "default": {
@@ -61,7 +62,7 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
     seed = random.randint(0, sys.maxsize)
 
     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
-    start_cap = Pyxsim.cap_redirect()
+    start_cap = Pyxsim.cap_redirect(sys.stdout)
     tester_list.extend(
         do_usb_test(
             arch,
@@ -73,11 +74,9 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
             seed,
         )
     )
-    cap_output, cap_error = start_cap.read_output()
+    cap_output = start_cap.read_output()
     start_cap.close_capture()
     output.append(cap_output.split("\n"))
-    print("error is :")
-    print(cap_error)
 
     sys.stdout.write("\n")
     results = Pyxsim.run_tester(output, tester_list)

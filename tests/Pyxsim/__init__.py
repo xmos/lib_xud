@@ -118,14 +118,16 @@ def run_tester(caps, tester_list):
 
 
 class cap_redirect:
-    def __init__(self):
+    def __init__(self, std):
         (self.fd, self.fname) = tempfile.mkstemp()
-        self.old_std = os.fdopen(os.dup(sys.stdout.fileno()), "w")
+        fd_std = std.fileno()
+        self.old_std = os.fdopen(os.dup(fd_std), "w")
+        self.std_reader = open(self.fname, "r")
+        os.dup2(self.fd, fd_std)
         sys.stdout = os.fdopen(self.fd, "w")
 
     def read_output(self):
-        std_reader = open(self.fname, "r")
-        return std_reader.read()
+        return self.std_reader.read()
 
     def close_capture(self):
         sys.stdout = self.old_std

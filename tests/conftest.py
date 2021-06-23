@@ -73,9 +73,11 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
             seed,
         )
     )
-    cap_output = start_cap.read_output()
+    cap_output, cap_error = start_cap.read_output()
     start_cap.close_capture()
     output.append(cap_output.split("\n"))
+    print("error is :")
+    print(cap_error)
 
     sys.stdout.write("\n")
     results = Pyxsim.run_tester(output, tester_list)

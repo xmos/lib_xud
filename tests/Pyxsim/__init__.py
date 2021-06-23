@@ -127,7 +127,6 @@ class cap_redirect:
         sys.stdout = os.fdopen(self.fd, "w")
 
     def read_output(self):
-        # std_reader = open(self.fname, "r")
         return self.std_reader.read()
 
     def close_capture(self):

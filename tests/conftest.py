@@ -9,7 +9,6 @@ import Pyxsim
 from Pyxsim import testers
 from helpers import get_usb_clk_phy, do_usb_test
 import inspect
-import time
 
 PARAMS = {
     "default": {

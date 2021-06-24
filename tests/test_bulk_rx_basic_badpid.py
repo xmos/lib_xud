@@ -10,9 +10,6 @@ from conftest import PARAMS, test_RunUsbSession
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    address = 1
-    ep = 1
-
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )

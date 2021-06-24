@@ -6,18 +6,13 @@ from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
-
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ep_loopback = 3
-    ep_loopback_kill = 2
-    address = 1
+    ep_loopback = ep
+    ep_loopback_kill = ep + 1
+
     start_length = 200
     end_length = 203
     session = UsbSession(
@@ -61,7 +56,7 @@ def test_session(ep, address, bus_speed):
             session,
             deviceAddress=address,
             endpointNumber=ep_loopback_kill,
-            endpointType="BULK",
+            endpointType="ISO",
             direction="OUT",
             dataLength=pktLength,
         )
@@ -71,7 +66,7 @@ def test_session(ep, address, bus_speed):
             session,
             deviceAddress=address,
             endpointNumber=ep_loopback_kill,
-            endpointType="BULK",
+            endpointType="ISO",
             direction="IN",
             dataLength=pktLength,
         )

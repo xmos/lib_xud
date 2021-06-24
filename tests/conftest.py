@@ -12,7 +12,7 @@ from helpers import get_usb_clk_phy, do_usb_test
 PARAMS = {
     "default": {
         "arch": ["xs3"],
-        "ep": [1, 2, 5],
+        "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
     },

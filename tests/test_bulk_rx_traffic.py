@@ -7,11 +7,6 @@ from usb_phy import USB_MAX_EP_ADDRESS
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
-
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
@@ -19,12 +14,10 @@ def test_session(ep, address, bus_speed):
     if bus_speed == "FS":
         pytest.xfail("Known failure at FS")
 
-    ep = 1
-    address = 1
     ied = 500
 
-    trafficAddress1 = 0
-    trafficAddress2 = 127
+    trafficAddress1 = (address + 1) % 128
+    trafficAddress2 = (address + 127) % 128
     trafficEp1 = USB_MAX_EP_ADDRESS
     trafficEp2 = 0
 
@@ -71,11 +64,21 @@ def test_session(ep, address, bus_speed):
         )
 
         trafficEp1 = trafficEp1 - 1
+
+        # Don't clash with test EP
+        if trafficEp1 == ep:
+            trafficEp1 = trafficEp1 - 1
+
         if trafficEp1 < 0:
             trafficEp1 = USB_MAX_EP_ADDRESS
 
         trafficEp2 + trafficEp2 + 1
-        if trafficEp1 > USB_MAX_EP_ADDRESS:
-            trafficEp1 = 0
+
+        # Don't clash with test EP
+        if trafficEp2 == ep:
+            trafficEp2 = trafficEp1 + 1
+
+        if trafficEp2 > USB_MAX_EP_ADDRESS:
+            trafficEp2 = 0
 
     return session

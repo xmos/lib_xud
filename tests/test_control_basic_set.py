@@ -12,13 +12,17 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS, test_RunUsbSession
+from copy import deepcopy
+
+# Only test on EP 0 - Update params
+PARAMS = deepcopy(PARAMS)
+PARAMS["default"].update({"ep": [0]})
+PARAMS["smoke"].update({"ep": [0]})
 
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ep = 0
-    address = 1
     ied = 500
 
     session = UsbSession(

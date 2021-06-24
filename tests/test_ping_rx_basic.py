@@ -16,28 +16,20 @@ from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
-
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
-
-    address = 1
-    ep = 1
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    # Ping EP 2, expect NAK
+    # Ping test EP, expect NAK
     session.add_event(
         TokenPacket(
             pid=USB_PID["PING"],
             address=address,
-            endpoint=2,
+            endpoint=ep,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
@@ -47,29 +39,29 @@ def test_session(ep, address, bus_speed):
         TokenPacket(
             pid=USB_PID["PING"],
             address=address,
-            endpoint=2,
+            endpoint=ep,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
-    # Send packet to EP 1, xCORE should mark EP 2 as ready
+    # Send packet to "ctrl" EP, DUT should mark test EP as ready
     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
-            endpointNumber=ep,
+            endpointNumber=ep + 1,
             endpointType="BULK",
             direction="OUT",
             dataLength=10,
         )
     )
 
-    # Ping EP 2 again - expect ACK
+    # Ping test EP again - expect ACK
     session.add_event(
         TokenPacket(
             pid=USB_PID["PING"],
             address=address,
-            endpoint=2,
+            endpoint=ep,
             interEventDelay=6000,
         )
     )
@@ -80,7 +72,7 @@ def test_session(ep, address, bus_speed):
         TokenPacket(
             pid=USB_PID["PING"],
             address=address,
-            endpoint=2,
+            endpoint=ep,
             interEventDelay=6000,
         )
     )
@@ -91,7 +83,7 @@ def test_session(ep, address, bus_speed):
         UsbTransaction(
             session,
             deviceAddress=address,
-            endpointNumber=2,
+            endpointNumber=ep,
             endpointType="BULK",
             direction="OUT",
             dataLength=10,
@@ -104,7 +96,7 @@ def test_session(ep, address, bus_speed):
         TokenPacket(
             pid=USB_PID["PING"],
             address=address,
-            endpoint=2,
+            endpoint=ep,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
@@ -114,17 +106,17 @@ def test_session(ep, address, bus_speed):
         TokenPacket(
             pid=USB_PID["PING"],
             address=address,
-            endpoint=2,
+            endpoint=ep,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
-    # Send a packet to EP 1 so the DUT knows it can exit.
+    # Send a packet to "ctrl" EP so the DUT knows it can exit.
     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
-            endpointNumber=ep,
+            endpointNumber=ep + 1,
             endpointType="BULK",
             direction="OUT",
             dataLength=10,

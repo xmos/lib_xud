@@ -9,11 +9,13 @@ from conftest import PARAMS, test_RunUsbSession
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
-    ep_loopback = 3
-    ep_loopback_kill = 2
-    address = 1
+
+    ep_loopback = ep
+    ep_loopback_kill = ep + 1
+
     start_length = 10
     end_length = 20
+
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )

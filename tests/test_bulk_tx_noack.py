@@ -10,9 +10,6 @@ from conftest import PARAMS, test_RunUsbSession
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ep = 1
-    address = 1
-
     # Note, quite big gap to allow checking
     ied = 4000
 

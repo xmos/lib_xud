@@ -137,6 +137,7 @@ def do_usb_test(
 ):
 
     # TODO ideally the test would test this somehow
+    # TODO use dictionary to convert pytest params to defines
     build_options = (
         "CFLAGS=-DTEST_EP_NUM=" + str(ep) + " -DXUD_STARTUP_ADDRESS=" + str(address)
     )

@@ -4,16 +4,19 @@ from usb_packet import CreateSofToken
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_signalling import UsbDeviceAttach
-
 import pytest
 from conftest import PARAMS, test_RunUsbSession
+from copy import deepcopy
+
+# Only need to run device attach tests for one ep/address
+PARAMS = deepcopy(PARAMS)
+for k in PARAMS:
+    PARAMS[k].update({"ep": [1], "address": [1]})
 
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ep = 1
-    address = 1
     start_length = 10
     end_length = 12
     pktLength = 10

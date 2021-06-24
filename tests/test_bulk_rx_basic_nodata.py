@@ -8,17 +8,9 @@ from conftest import PARAMS, test_RunUsbSession
 
 # Rx out of seq (but valid.. ) data PID
 
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
-
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
-
-    address = 1
-    ep = 1
 
     # The large inter-event delay is to give the DUT time to perform checking
     ied = 500

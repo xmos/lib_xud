@@ -10,9 +10,6 @@ from conftest import PARAMS, test_RunUsbSession
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    address = 1
-    ep = 1
-
     # The large inter-event delays are to give the DUT time to do checking on the fly
 
     session = UsbSession(

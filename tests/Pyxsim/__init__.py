@@ -48,7 +48,7 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options="")
     if do_clean:
         call(["xmake", "clean"], cwd=path, env=my_env)
 
-    if build_config != None:
+    if build_config is not None:
         cmd += ["CONFIG=%s" % build_config]
 
     cmd += [build_options]

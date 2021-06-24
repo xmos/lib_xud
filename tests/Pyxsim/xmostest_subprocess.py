@@ -97,7 +97,7 @@ else:
 
 def quote_string(s):
     """For Windows need to put quotes around arguments with spaces in them"""
-    if re.search("\s", s):
+    if re.search(r"\s", s):
         return '"%s"' % s
     else:
         return s

@@ -1,11 +1,11 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import xmostest
+from Pyxsim import SimThread
 import sys
 import zlib
 
 
-class Clock(xmostest.SimThread):
+class Clock(SimThread):
 
     CLK_60MHz = 0x0
 

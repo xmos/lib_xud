@@ -10,24 +10,16 @@ from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
-
-
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    address = 1
     pktLength = 10
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    ep_ctrl = 2
-    ep = 1
+    ep_ctrl = ep + 1
 
     # Expect test EP's to be halted
     session.add_event(

@@ -8,11 +8,11 @@
 #include "platform.h"
 #include "shared.h"
 
-#define XUD_EP_COUNT_OUT   5
-#define XUD_EP_COUNT_IN    5
+#define XUD_EP_COUNT_OUT   (5)
+#define XUD_EP_COUNT_IN    (5)
 
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START 10
+#define PKT_LENGTH_START (10)
 #endif
 
 #ifndef TEST_EP_NUM
@@ -20,7 +20,7 @@
 #endif
 
 #ifndef CTRL_EP_NUM   
-#define CTRL_EP_NUM     (2)
+#define CTRL_EP_NUM     (TEST_EP_NUM + 1)
 #endif
 
 

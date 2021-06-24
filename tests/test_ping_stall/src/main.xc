@@ -8,26 +8,26 @@
 #include "platform.h"
 #include "shared.h"
 
-#define XUD_EP_COUNT_OUT   5
-#define XUD_EP_COUNT_IN    5
+#define EP_COUNT_OUT       (6)
+#define EP_COUNT_IN        (6)
 
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START 10
+#define PKT_LENGTH_START   (10)
 #endif
 
 #ifndef TEST_EP_NUM
-#define TEST_EP_NUM     (1)
+#error
 #endif
 
 #ifndef CTRL_EP_NUM   
-#define CTRL_EP_NUM     (2)
+#define CTRL_EP_NUM        (TEST_EP_NUM + 1)
 #endif
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
-unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], chanend c_ep_in[XUD_EP_COUNT_IN])
+unsigned TestEp_Stall(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
     unsigned failed = 0;
     uint8_t outBuffer[128];
@@ -63,7 +63,7 @@ int testmain()
 int main()
 #endif
 {
-    chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
             
     par
     {
@@ -76,7 +76,7 @@ int main()
 #error XUD_TEST_SPEED_XX not defined
 #endif
 
-            XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+            XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                 null, epTypeTableOut, epTypeTableIn, speed, XUD_PWR_BUS);
         }
 

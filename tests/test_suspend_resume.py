@@ -11,8 +11,6 @@ from conftest import PARAMS, test_RunUsbSession
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ep = 1
-    address = 1
     start_length = 10
     end_length = 12
     pktLength = 10

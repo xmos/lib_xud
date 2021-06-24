@@ -16,11 +16,11 @@
 #endif
 
 #ifndef TEST_EP_NUM
-#define TEST_EP_NUM     (1)
+#error
 #endif
 
 #ifndef CTRL_EP_NUM   
-#define CTRL_EP_NUM     (2)
+#define CTRL_EP_NUM     (TEST_EP_NUM + 1)
 #endif
 
 

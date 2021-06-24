@@ -1,32 +1,27 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
 #include "shared.h"
 
-#define XUD_EP_COUNT_OUT   (5)
-#define XUD_EP_COUNT_IN    (5)
+#define XUD_EP_COUNT_OUT   (6)
+#define XUD_EP_COUNT_IN    (6)
 
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START (10)
+#define PKT_LENGTH_START   (10)
 #endif
 
 #ifndef TEST_EP_NUM
-#define TEST_EP_NUM     (1)
+#define TEST_EP_NUM        (1)
 #endif
 
 #ifndef CTRL_EP_NUM   
-#define CTRL_EP_NUM     (TEST_EP_NUM + 1)
+#define CTRL_EP_NUM        (TEST_EP_NUM + 1)
 #endif
 
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
 
 unsigned TestEp_Stall(chanend c_ep_out[XUD_EP_COUNT_OUT], chanend c_ep_in[XUD_EP_COUNT_IN])

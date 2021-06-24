@@ -26,14 +26,14 @@ xsi_lib = cdll.LoadLibrary(xsi_lib_path)
 
 
 def xsi_is_valid_port(port):
-    return re.match("XS1_PORT_\d+\w", port) != None
+    return re.match(r"XS1_PORT_\d+\w", port) != None
 
 
 def xsi_get_port_width(port):
     if not xsi_is_valid_port(port):
         return None
     else:
-        return int(re.match("^XS1_PORT_(\d+)\w", port).groups(0)[0])
+        return int(re.match(r"^XS1_PORT_(\d+)\w", port).groups(0)[0])
 
 
 class EnumExceptionSet:
@@ -85,7 +85,7 @@ XsiStatus = EnumExceptionSet(
 
 
 def parse_port(p):
-    m = re.match("(tile.*)\:([^\.]*)\.?(\d*)", p)
+    m = re.match(r"(tile.*)\:([^\.]*)\.?(\d*)", p)
     if m:
         tile = m.groups(0)[0]
         port = m.groups(0)[1]

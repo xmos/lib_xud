@@ -8,23 +8,34 @@ import sys
 import Pyxsim
 from Pyxsim import testers
 from helpers import get_usb_clk_phy, do_usb_test
-import inspect
 
 PARAMS = {
     "default": {
         "arch": ["xs3"],
+        "ep": [1, 2, 4],
+        "address": [0, 1, 127],
+        "bus_speed": ["HS", "FS"],
+    },
+    "smoke": {
+        "arch": ["xs3"],
         "ep": [1],
-        "address": [1],
+        "address": [0],
         "bus_speed": ["HS", "FS"],
     },
 }
 
 
+def pytest_addoption(parser):
+    parser.addoption("--smoke", action="store_true", help="smoke test")
+
+
 def pytest_generate_tests(metafunc):
     try:
         PARAMS = metafunc.module.PARAMS
-        params = PARAMS["default"]
-
+        if metafunc.config.getoption("smoke"):
+            params = PARAMS.get("smoke", PARAMS["default"])
+        else:
+            params = PARAMS["default"]
     except AttributeError:
         params = {}
 
@@ -53,6 +64,11 @@ def test_arch(arch: str) -> str:
     return arch
 
 
+@pytest.fixture
+def test_file(request):
+    return str(request.node.fspath)
+
+
 def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
 
     tester_list = []
@@ -65,9 +81,11 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
     tester_list.extend(
         do_usb_test(
             arch,
+            ep,
+            address,
+            bus_speed,
             clk_60,
             usb_phy,
-            bus_speed,
             [test_session],
             test_file,
             seed,

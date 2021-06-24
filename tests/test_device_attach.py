@@ -1,25 +1,22 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import usb_packet
 from usb_packet import CreateSofToken
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_signalling import UsbDeviceAttach
-
 import pytest
 from conftest import PARAMS, test_RunUsbSession
+from copy import deepcopy
 
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
+# Only need to run device attach tests for one ep/address
+PARAMS = deepcopy(PARAMS)
+for k in PARAMS:
+    PARAMS[k].update({"ep": [1], "address": [1]})
 
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ep = 1
-    address = 1
     start_length = 10
     end_length = 12
     pktLength = 10

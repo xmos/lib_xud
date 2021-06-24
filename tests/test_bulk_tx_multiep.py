@@ -1,22 +1,20 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS, test_RunUsbSession
+from copy import deepcopy
 
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
+# EP numbers currently fixed for this test - set in params
+PARAMS = deepcopy(PARAMS)
+for k in PARAMS:
+    PARAMS[k].update({"ep": [3]})
 
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ep = 3  # Note this is a starting EP
-    address = 1
     ied = 200
 
     session = UsbSession(

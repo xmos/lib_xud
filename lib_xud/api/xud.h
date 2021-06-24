@@ -15,12 +15,12 @@
 #define XUD_OPT_SOFTCRC5 (0)
 #endif
 
-#ifndef XUD_STARTUP_ADDRESS
-#define XUD_STARTUP_ADDRESS (0)
-#endif
-
 #ifdef __xud_conf_h_exists__
 #include "xud_conf.h"
+#endif
+
+#ifndef XUD_STARTUP_ADDRESS
+#define XUD_STARTUP_ADDRESS (0)
 #endif
 
 #ifndef __ASSEMBLER__

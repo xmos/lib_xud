@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
@@ -9,24 +8,17 @@ from usb_packet import TokenPacket, USB_PID, RxHandshakePacket
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
-# TODO Can this be moved?
-@pytest.fixture
-def test_file():
-    return __file__
-
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    address = 1
     pktLength = 10
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    ep_ctrl = 2
-    ep = 1
+    ep_ctrl = ep + 1
 
     # Ping EP, expect stall
     session.add_event(

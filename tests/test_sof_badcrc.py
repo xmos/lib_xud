@@ -12,7 +12,6 @@ from conftest import PARAMS, test_RunUsbSession
 def test_session(ep, address, bus_speed):
 
     pytest.xfail("Known failure (on XS3)")
-    
 
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
 

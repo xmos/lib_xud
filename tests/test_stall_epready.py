@@ -10,6 +10,7 @@ from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
+
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 

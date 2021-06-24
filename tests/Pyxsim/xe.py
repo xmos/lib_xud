@@ -48,7 +48,7 @@ class Xe:
                 self._port_map[port].append((package, pin, bitnum))
 
     def get_port_pins(self, port):
-        m = re.match("([^\.]*)\.(\d*)", port)
+        m = re.match(r"([^\.]*)\.(\d*)", port)
         if m:
             port = m.groups(0)[0]
             bit = int(m.groups(0)[1])

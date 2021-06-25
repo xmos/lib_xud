@@ -1,18 +1,13 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
 #include "shared.h"
 
-#define EP_COUNT_OUT   5
-#define EP_COUNT_IN    5
+#define EP_COUNT_OUT   (6)
+#define EP_COUNT_IN    (6)
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL,XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
 void exit(int);
 
@@ -88,7 +83,7 @@ int main()
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
         {
-            unsigned fail = TestEp_Bulk(c_ep_out[1], c_ep_in[1], 1, c_sof);
+            unsigned fail = TestEp_Bulk(c_ep_out[TEST_EP_NUM], c_ep_in[TEST_EP_NUM], TEST_EP_NUM, c_sof);
             
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);

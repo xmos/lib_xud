@@ -25,6 +25,9 @@ InformEP_Iso:                                   // Iso EP - no handshake
     ldw         r11, r3[1]                      // Load EP chanend
     {out        res[r11], r4;   ldw    r7, sp[STACK_TXCRC_INIT]} // Output datalength (words) & CRC 16 Init (IN) 
     {outt       res[r11], r8;   ldw    r6, sp[STACK_RXCRC_INIT]} // CRC16 init (out) - Needs reseting after an out & Send tail length
+#ifndef __XS3A__
+    ldw         r1, sp[STACK_VTOK_PORT]
+#endif
     #include "XUD_TokenJmp.S"
 
 .align FUNCTION_ALIGNMENT

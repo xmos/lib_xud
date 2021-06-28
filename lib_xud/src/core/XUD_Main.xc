@@ -25,7 +25,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "XUD_Support.h"
 
 #include "XUD_DeviceAttach.h"
-#include "XUD_PowerSig.h"
+#include "XUD_Signalling.h"
 #include "XUD_HAL.h"
 #include "XUD_TimingDefines.h"
 

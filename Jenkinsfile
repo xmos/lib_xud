@@ -7,7 +7,7 @@ pipeline {
     label 'x86_64 && brew && macOS'
   }
   environment {
-    REPO = 'lib_xud'
+    REPO = 'lib_xud_DEV_XS3'
     VIEW = getViewName(REPO)
   }
   options {

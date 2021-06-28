@@ -17,7 +17,7 @@ def test_session(ep, address, bus_speed):
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    for pktLength in range(10, 14):
+    for pktLength in range(10, 15):
 
         if pktLength == 12:
             session.add_event(

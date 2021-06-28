@@ -69,7 +69,7 @@ def test_file(request):
     return str(request.node.fspath)
 
 
-def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
+def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file, capsys):
 
     tester_list = []
     output = []
@@ -77,7 +77,7 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
     seed = random.randint(0, sys.maxsize)
 
     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
-    start_cap = Pyxsim.cap_redirect(sys.stdout)
+    # start_cap = Pyxsim.cap_redirect(sys.stdout)
     tester_list.extend(
         do_usb_test(
             arch,
@@ -91,8 +91,9 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file):
             seed,
         )
     )
-    cap_output = start_cap.read_output()
-    start_cap.close_capture()
+    # cap_output = start_cap.read_output()
+    # start_cap.close_capture()
+    cap_output, err = capsys.readouterr()
     output.append(cap_output.split("\n"))
 
     sys.stdout.write("\n")

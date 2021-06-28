@@ -118,6 +118,7 @@ def run_tester(caps, tester_list):
             result.append(False)
     return result
 
+
 class SimThread(object):
     def run(self, xsi):
         pass

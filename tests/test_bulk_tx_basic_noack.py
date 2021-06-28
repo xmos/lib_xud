@@ -48,4 +48,3 @@ def test_session(ep, address, bus_speed):
         )
 
     return session
-

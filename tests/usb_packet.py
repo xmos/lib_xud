@@ -105,6 +105,7 @@ def CreateSofToken(frameNumber, badCrc=False, interEventDelay=1000):
             interEventDelay=interEventDelay,
         )
 
+
 def reflect(val, numBits):
 
     valRef = 0

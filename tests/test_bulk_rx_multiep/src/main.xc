@@ -1,43 +1,43 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-/*
- * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
- * in both directions between the ports.
- *
- * NOTE: The src/testbenches/ExampleTestbench must have been compiled for this to run without error.
- *
- */
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
 #include "shared.h"
 
+#define EP_COUNT_OUT       (7)
+#define EP_COUNT_IN        (7)
 
-#define XUD_EP_COUNT_OUT   7
-#define XUD_EP_COUNT_IN    1
+#define PACKET_LEN_START   (10)
+#define PACKET_LEN_END     (19)
 
-#define PACKET_LEN_START   10
-#define PACKET_LEN_END     19
+/* Check for classes with TEST_EP and traffic EP */
+#if TEST_EP_NUM == 4
+#error
+#endif
+
+#if TEST_EP_NUM == 5
+#error
+#endif
+
+#if TEST_EP_NUM == 6
+#error
+#endif
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL};
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
 int main()
 {
-    chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
 
     par
     {
         
-        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
     
-        TestEp_Rx(c_ep_out[3], 3, PACKET_LEN_START, PACKET_LEN_END);
+        TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PACKET_LEN_START, PACKET_LEN_END);
         TestEp_Rx(c_ep_out[4], 4, PACKET_LEN_START, PACKET_LEN_END);
         TestEp_Rx(c_ep_out[5], 5, PACKET_LEN_START, PACKET_LEN_END);
         {

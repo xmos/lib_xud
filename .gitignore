@@ -32,3 +32,4 @@ tests/log
 tests/test_**/**test_xs2.xn
 tests/test_**/**test_xs3.xn
 **/venv/**
+*.gtkw

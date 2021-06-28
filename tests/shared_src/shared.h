@@ -1,5 +1,7 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+#ifndef _SHARED_H_
+#define _SHARED_H_
 #include <xs1.h>
 #include <print.h>
 #include <stdio.h>
@@ -216,4 +218,4 @@ void dummyThreads(chanend c[])
         dummyThread(c[i]);
     }
 }
-
+#endif

@@ -1,33 +1,17 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-/*
- * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
- * in both directions between the ports.
- *
- * NOTE: The src/testbenches/ExampleTestbench must have been compiled for this to run without error.
- *
- */
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
 #include "shared.h"
 
-#define XUD_EP_COUNT_OUT   5
-#define XUD_EP_COUNT_IN    5
+#define EP_COUNT_OUT   (5)
+#define EP_COUNT_IN    (5)
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
                                                 XUD_EPTYPE_BUL,
-                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                  XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
-
-
-/* Out EP Should receive some data, perform some test process (crc or similar) to check okay */
-/* Answers should be responded to in the IN ep */
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
 
 int TestEp_Control(XUD_ep c_ep0_out, XUD_ep c_ep0_in, int epNum)
@@ -72,12 +56,12 @@ int TestEp_Control(XUD_ep c_ep0_out, XUD_ep c_ep0_in, int epNum)
 
 int main()
 {
-    chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
 
     par
     {
         
-        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
        

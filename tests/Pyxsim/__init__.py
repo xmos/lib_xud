@@ -17,7 +17,7 @@ import os
 clean_only = False
 
 # This function is called automatically by the runners
-def _build(xe_path, build_config=None, env={}, do_clean=False):
+def _build(xe_path, build_config=None, env={}, do_clean=False, build_options=""):
 
     # Work out the Makefile path
     path = None
@@ -48,8 +48,10 @@ def _build(xe_path, build_config=None, env={}, do_clean=False):
     if do_clean:
         call(["xmake", "clean"], cwd=path, env=my_env)
 
-    if build_config != None:
+    if build_config is not None:
         cmd += ["CONFIG=%s" % build_config]
+
+    cmd += [build_options]
 
     output = call_get_output(cmd, cwd=path, env=my_env, merge_out_and_err=True)
 
@@ -60,7 +62,7 @@ def _build(xe_path, build_config=None, env={}, do_clean=False):
             # if x.find('Error') != -1:
             success = False
         # if re.match('xmake: \*\*\* .* Stop.', x) != None:
-        if re.match("xmake: \*\*\* .* Stop.", s) != None:
+        if re.match(r"xmake: \*\*\* .* Stop.", s) != None:
             success = False
 
     if not success:
@@ -115,20 +117,6 @@ def run_tester(caps, tester_list):
         else:
             result.append(False)
     return result
-
-
-class cap_redirect:
-    def __init__(self):
-        (self.fd, self.fname) = tempfile.mkstemp()
-        self.old_std = os.fdopen(os.dup(sys.stdout.fileno()), "w")
-        sys.stdout = os.fdopen(self.fd, "w")
-
-    def read_output(self):
-        std_reader = open(self.fname, "r")
-        return std_reader.read()
-
-    def close_capture(self):
-        sys.stdout = self.old_std
 
 
 class SimThread(object):

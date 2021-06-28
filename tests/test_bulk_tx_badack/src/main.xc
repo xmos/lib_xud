@@ -1,40 +1,28 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-/*
- * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
- * in both directions between the ports.
- *
- * NOTE: The src/testbenches/ExampleTestbench must have been compiled for this to run without error.
- *
- */
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
 #include "shared.h"
 
-#ifndef TEST_EP_NUM
-#define TEST_EP_NUM   1
-#endif
-
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START 10
+#define PKT_LENGTH_START      (10)
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END 13
+#define PKT_LENGTH_END        (13)
 #endif
-
-#define XUD_EP_COUNT_OUT   4
-#define XUD_EP_COUNT_IN    4
+    
+#define EP_COUNT_OUT          (6)
+#define EP_COUNT_IN           (6)
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
+                                                XUD_EPTYPE_BUL,
+                                                XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                  XUD_EPTYPE_BUL,
                                                  XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, 
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, 
+                                                XUD_EPTYPE_BUL,
+                                                XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_ISO};
@@ -45,19 +33,17 @@ int testmain()
 int main()
 #endif
 {
-    chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
 
     par
     {
         {
-            #if defined(XUD_TEST_SPEED_FS)
+#if defined(XUD_TEST_SPEED_FS)
             unsigned speed = XUD_SPEED_FS;
-            #elif defined(XUD_TEST_SPEED_HS)
+#elif defined(XUD_TEST_SPEED_HS)
             unsigned speed = XUD_SPEED_HS;
-            #endif
-            
-            // TODO test is running at 400MHz 
-            XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+#endif
+            XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 speed, XUD_PWR_BUS);
         }

@@ -5,22 +5,22 @@
 # Directed test for (github) issue #58
 from usb_packet import *
 import usb_packet
-from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+import pytest
+from conftest import PARAMS, test_RunUsbSession
 
 
-def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
+@pytest.fixture
+def test_session(ep, address, bus_speed):
 
-    address = 1
     pktLength = 10
 
     session = UsbSession(
-        bus_speed=usb_speed, run_enumeration=False, device_address=address
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    ep_ctrl = 2
-    ep = 1
+    ep_ctrl = ep + 1
 
     # Expect test EP's to be halted
     session.add_event(
@@ -105,20 +105,4 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         )
     )
 
-    return do_usb_test(
-        arch,
-        clk,
-        phy,
-        usb_speed,
-        [session],
-        __file__,
-        seed,
-        level="smoke",
-        extra_tasks=[],
-        verbose=verbose,
-    )
-
-
-def test_stall_epready():
-    for result in RunUsbTest(do_test):
-        assert result
+    return session

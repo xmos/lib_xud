@@ -1,33 +1,36 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
 #include "shared.h"
 
-#define XUD_EP_COUNT_OUT   5
-#define XUD_EP_COUNT_IN    5
+#define EP_COUNT_OUT       (6)
+#define EP_COUNT_IN        (6)
 
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START   10
+#define PKT_LENGTH_START   (10)
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END     14
+#define PKT_LENGTH_END     (14)
 #endif
 
 #ifndef TEST_EP_NUM
-#define TEST_EP_NUM        2
+#error
 #endif
 
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, 
+                                            XUD_EPTYPE_ISO, 
+                                            XUD_EPTYPE_ISO,
+                                            XUD_EPTYPE_ISO,
+                                            XUD_EPTYPE_ISO,
+                                            XUD_EPTYPE_ISO};
 
-/* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO,
-                                                XUD_EPTYPE_BUL,
-                                                 XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =  {XUD_EPTYPE_CTL, 
+                                            XUD_EPTYPE_ISO, 
+                                            XUD_EPTYPE_ISO,
+                                            XUD_EPTYPE_ISO,
+                                            XUD_EPTYPE_ISO,
+                                            XUD_EPTYPE_ISO};
+
 
 #ifdef XUD_SIM_RTL
 int testmain()
@@ -35,21 +38,20 @@ int testmain()
 int main()
 #endif
 {
-    chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-    chan c_dummy[DUMMY_THREAD_COUNT];
+    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
             
     par
     {
         { 
-            #if defined(XUD_TEST_SPEED_FS)
+#if defined(XUD_TEST_SPEED_FS)
             unsigned speed = XUD_SPEED_FS;
-            #elif defined(XUD_TEST_SPEED_HS)
+#elif defined(XUD_TEST_SPEED_HS)
             unsigned speed = XUD_SPEED_HS;
-            #else
-            #error XUD_TEST_SPEED_XX not defined
-            #endif
+#else
+#error XUD_TEST_SPEED_XX not defined
+#endif
 
-            XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+            XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                 null, epTypeTableOut, epTypeTableIn,
                 speed, XUD_PWR_BUS);
         }
@@ -66,9 +68,6 @@ int main()
                 TerminatePass(fail);    
             
         }
-
-        dummyThreads(c_dummy);
-
     }
 
     return 0;

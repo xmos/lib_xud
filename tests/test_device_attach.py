@@ -1,26 +1,32 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
-#!/usr/bin/env python
-import usb_packet
 from usb_packet import CreateSofToken
-from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_signalling import UsbDeviceAttach
+import pytest
+from conftest import PARAMS, test_RunUsbSession
+from copy import deepcopy
+
+# Only need to run device attach tests for one ep/address
+PARAMS = deepcopy(PARAMS)
+for k in PARAMS:
+    PARAMS[k].update({"ep": [1], "address": [1]})
 
 
-def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
+@pytest.fixture
+def test_session(ep, address, bus_speed):
 
-    ep = 1
-    address = 1
     start_length = 10
     end_length = 12
     pktLength = 10
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
 
     session = UsbSession(
-        bus_speed=usb_speed, run_enumeration=False, device_address=address
+        bus_speed=bus_speed,
+        run_enumeration=False,
+        device_address=address,
+        initial_delay=19000,
     )
 
     session.add_event(UsbDeviceAttach())
@@ -55,22 +61,4 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         )
     )
 
-    phy.initial_delay = 19000
-
-    return do_usb_test(
-        arch,
-        clk,
-        phy,
-        usb_speed,
-        [session],
-        __file__,
-        seed,
-        level="smoke",
-        extra_tasks=[],
-        verbose=verbose,
-    )
-
-
-def test_device_attach():
-    for result in RunUsbTest(do_test):
-        assert result
+    return session

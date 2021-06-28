@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 from usb_session import UsbSession
@@ -6,17 +5,8 @@ from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
-
-@pytest.fixture
-def test_file():
-    return __file__
-
-
 @pytest.fixture
 def test_session(ep, address, bus_speed):
-
-    address = 1
-    ep = 1
 
     # The large inter-event delays are to give the DUT time to do checking on the fly
 

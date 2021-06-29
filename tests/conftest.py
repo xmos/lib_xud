@@ -110,4 +110,5 @@ def test_RunUsbSession(
     for result in results:
         if not result:
             print(cap_output)
+            sys.stderr.write(err)
         assert result

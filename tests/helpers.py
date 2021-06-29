@@ -133,6 +133,7 @@ def do_usb_test(
     ep,
     address,
     bus_speed,
+    dummy_threads,
     clk,
     phy,
     sessions,

@@ -15,12 +15,14 @@ PARAMS = {
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
+        "dummy_threads": [0, 4],
     },
     "smoke": {
         "arch": ["xs3"],
         "ep": [1],
         "address": [0],
         "bus_speed": ["HS", "FS"],
+        "dummy_threads": [0, 4, 5],
     },
 }
 
@@ -69,7 +71,14 @@ def test_file(request):
     return str(request.node.fspath)
 
 
-def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file, capfd):
+@pytest.fixture()
+def test_dummy_threads(dummy_threads: int) -> int:
+    return dummy_threads
+
+
+def test_RunUsbSession(
+    test_session, arch, ep, address, bus_speed, dummy_threads, test_file, capfd
+):
 
     tester_list = []
     output = []
@@ -83,6 +92,7 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file, ca
             ep,
             address,
             bus_speed,
+            dummy_threads,
             clk_60,
             usb_phy,
             [test_session],

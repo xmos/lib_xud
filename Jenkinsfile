@@ -42,6 +42,15 @@ pipeline {
     //     runXmostest("${REPO}", 'tests')
     //   }
     // }
+    stage('Tests') {
+      steps {
+        viewEnv() {
+          dir("${REPO}/tests") {
+            runPytest('--smoke')
+          }
+        }
+      }
+    }
   }
   post {
     success {

@@ -38,9 +38,12 @@ int main()
                 unsigned * unsafe p = &g_dummyThreadCount;
                 *p = 0;
             }
-            XUD_ep ep_out_0 = XUD_InitEp(c_ep_out[0]);
-			XUD_Kill(ep_out_0);
-			exit(0);
+            if(TEST_EP_NUM != 0)
+            {
+                XUD_ep ep_out_0 = XUD_InitEp(c_ep_out[0]);
+			    XUD_Kill(ep_out_0);
+			}
+            exit(0);
 		}
 
         dummyThreads();

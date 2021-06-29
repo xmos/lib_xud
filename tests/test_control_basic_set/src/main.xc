@@ -9,16 +9,13 @@
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
-int TestEp_Control(chanend c_out, chanend c_in, int epNum)
+int TestEp_Control(XUD_ep c_ep0_out, XUD_ep c_ep0_in, int epNum)
 {
     unsigned int slength;
     unsigned int length;
     
     XUD_Result_t sres;
     XUD_Result_t res;
-
-    XUD_ep c_ep0_out = XUD_InitEp(c_out);
-    XUD_ep c_ep0_in  = XUD_InitEp(c_in);
 
     unsigned char sbuffer[120];
     unsigned char buffer[120];
@@ -54,32 +51,18 @@ int TestEp_Control(chanend c_out, chanend c_in, int epNum)
             return 1;
         }
 
-        XUD_Kill(c_ep0_out);
-
         return 0;
     }
 }
 
-int main()
+unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
-    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
+    XUD_ep c_ep0_out = XUD_InitEp(c_ep_out[0]);
+    XUD_ep c_ep0_in  = XUD_InitEp(c_ep_in[0]);
 
-    par
-    {
-        
-        XUD_Main( c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
-                                null, epTypeTableOut, epTypeTableIn,
-                                XUD_SPEED_HS, XUD_PWR_BUS);
+    unsigned failed = TestEp_Control(c_ep0_out, c_ep0_in, 0);
 
-        {
-            int fail = TestEp_Control(c_ep_out[0], c_ep_in[0], 0);
-    
-            if (fail)
-                TerminateFail(fail);
-            else
-                TerminatePass(fail);
-
-            exit(0);
-        }
-    }
+    XUD_Kill(c_ep0_out);
+    return failed;
 }
+#include "test_main.xc"

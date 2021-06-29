@@ -29,7 +29,7 @@ XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_E
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
 
-unsigned TestEp_Stall(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
+unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
     unsigned failed = 0;
     uint8_t outBuffer[128];
@@ -67,43 +67,6 @@ unsigned TestEp_Stall(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_I
     return failed;
 } 
 
+#include "test_main.xc"
 
-#ifdef XUD_SIM_RTL
-int testmain()
-#else
-int main()
-#endif
-{
-    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
-            
-    par
-    {
-        { 
-#if defined(XUD_TEST_SPEED_FS)
-            unsigned speed = XUD_SPEED_FS;
-#elif defined(XUD_TEST_SPEED_HS)
-            unsigned speed = XUD_SPEED_HS;
-#else
-#error XUD_TEST_SPEED_XX not defined
-#endif
 
-            XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
-                null, epTypeTableOut, epTypeTableIn, speed, XUD_PWR_BUS);
-        }
-
-        {
-            unsigned fail = TestEp_Stall(c_ep_out, c_ep_in);
-           
-            XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
-            XUD_Kill(ep0);
-            
-            if(fail)
-                TerminateFail(fail);
-            else
-                TerminatePass(fail);    
-            
-        }
-    }
-
-    return 0;
-}

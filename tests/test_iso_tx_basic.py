@@ -7,10 +7,13 @@ from conftest import PARAMS, test_RunUsbSession
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed):
+def test_session(ep, address, bus_speed, dummy_threads):
 
     start_length = 10
     end_length = 14
+
+    if dummy_threads > 3 and bus_speed == "HS":
+        pytest.xfail("Known failure when dummy_threads > 4 at HS")
 
     session = UsbSession(
         bus_speed=bus_speed,

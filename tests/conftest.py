@@ -15,14 +15,16 @@ PARAMS = {
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 4],
+        "dummy_threads": [0, 4, 5],
     },
     "smoke": {
         "arch": ["xs3"],
         "ep": [1],
         "address": [0],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 4, 5],
+        "dummy_threads": [
+            4
+        ],  # TODO Set to 0 for speed of simulation vs higher for better quality testing..
     },
 }
 

@@ -69,7 +69,7 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options="")
         sys.stderr.write("ERROR: build failed.\n")
         for x in output:
             s = str(x)
-            sys.stderr.write(s)
+            sys.stderr.write(s + "\n")
 
     return (success, output)
 

@@ -100,4 +100,5 @@ def test_RunUsbSession(test_session, arch, ep, address, bus_speed, test_file, ca
     for result in results:
         if not result:
             print(cap_output)
+            sys.stderr.write(err)
         assert result

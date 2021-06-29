@@ -2,10 +2,6 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "shared.h"
 
-#ifndef TEST_EP_NUM
-#define TEST_EP_NUM   		(1)
-#endif
-
 #ifndef PKT_LENGTH_START
 #define PKT_LENGTH_START 	(10)
 #endif

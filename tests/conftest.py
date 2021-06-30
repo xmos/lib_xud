@@ -135,33 +135,55 @@ def delete_test_specific_xn_files(
     src_dir = os.path.join(test_dir, source_dir)
     for xn_file in xn_files:
         xn = os.path.join(src_dir, xn_file)
+
+        print("DELETE: " + str(xn))
+
+        # TODO ideally we don't need to catch this exception if we only try to delete once
+        # try:
         os.remove(xn)
+        # except OSError:
+        #    pass
+
+
+@pytest.fixture(scope="session", autouse=True)
+def worker_id(request):
+    if hasattr(request.config, "slaveinput"):
+        return request.config.slaveinput["slaveid"]
+    else:
+        # Master means not executing with multiple workers
+        return "master"
 
 
 # Runs after all tests are collected
 @pytest.fixture(scope="session", autouse=True)
-def copy_xn_files(request):
+def copy_xn_files(worker_id, request):
 
-    session = request.node
+    # Attempt to only run copy/delete once..
+    if worker_id == "master" or worker_id == "gw0":
 
-    # There will be duplicates (same test name with different params) so treat as set
-    test_dirs = set([])
+        session = request.node
 
-    # Go through collected tests and copy over XN files
-    for item in session.items:
-        full_path = item.fspath
-        test_dir = Path(full_path).with_suffix("")  # Strip suffix
-        test_dir = os.path.basename(test_dir)
-        test_dirs.add(test_dir)
+        # There will be duplicates (same test name with different params) so treat as set
+        test_dirs = set([])
 
-    for test_dir in test_dirs:
-        copy_common_xn_files(test_dir)
+        # Go through collected tests and copy over XN files
+        for item in session.items:
+            full_path = item.fspath
+            test_dir = Path(full_path).with_suffix("")  # Strip suffix
+            test_dir = os.path.basename(test_dir)
+            test_dirs.add(test_dir)
 
-    def delete_xn_files():
-
-        # Go through collected tests deleting XN files
         for test_dir in test_dirs:
-            delete_test_specific_xn_files(test_dir)
+            copy_common_xn_files(test_dir)
+
+        def delete_xn_files():
+
+            # Run deletion on one process only
+            if worker_id == "master" or worker_id == "gw0":
+
+                # Go through collected tests deleting XN files
+                for test_dir in test_dirs:
+                    delete_test_specific_xn_files(test_dir)
 
     # Setup tear down
     request.addfinalizer(delete_xn_files)

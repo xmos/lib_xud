@@ -267,10 +267,4 @@ void dummyThreads()
     }
 #endif
 }
-
-
-
-
-
-
 #endif

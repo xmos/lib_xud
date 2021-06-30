@@ -73,8 +73,9 @@ void TerminatePass(unsigned x)
 #define MAX_PKT_COUNT       (50)
 #endif
 
-#ifndef DUMMY_THEAD_COUNT 
-#define DUMMY_THREAD_COUNT  (4)
+#ifndef TEST_EP_NUM
+#warning TEST_EP_NUM not defined
+#define TEST_EP_NUM         (1)
 #endif
 
 typedef enum t_runMode
@@ -107,6 +108,8 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
 
     int counter = 0;
     int length = start;
+
+    set_core_fast_mode_on();
 
     /* Prepare packets */
     for(int i = 0; i <= (end-start); i++)
@@ -178,6 +181,8 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     /* Buffer for Setup data */
     unsigned char buffer[MAX_PKT_COUNT][1024];
 
+    set_core_fast_mode_on();
+
     /* Receive a bunch of packets quickly, then check them */
 #pragma loop unroll
     for(int i = 0; i <= (end-start); i++)
@@ -200,22 +205,66 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     return 0;
 }
 
-void dummyThread(chanend c)
+/* Loopback packets forever */
+#pragma unsafe arrays
+int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode)
 {
+    unsigned int length;
+    XUD_Result_t res;
+    
     set_core_fast_mode_on();
+
+    XUD_ep ep_out1 = XUD_InitEp(c_out1);
+    XUD_ep ep_in1  = XUD_InitEp(c_in1);
+
+    /* Buffer for Setup data */
+    unsigned char buffer[1024];
 
     while(1)
     {
-        inuint(c);
-        break;
+        XUD_GetBuffer(ep_out1, buffer, length);
+        XUD_SetBuffer(ep_in1, buffer, length);
+        
+        /* Loop back once and return */
+        if(runMode == RUNMODE_DIE)
+            break;
+       
+        /* Partial un-roll */ 
+        XUD_GetBuffer(ep_out1, buffer, length);
+        XUD_SetBuffer(ep_in1, buffer, length);
     }
 }
 
-void dummyThreads(chanend c[])
+#ifndef DUMMY_THREAD_COUNT
+#error
+#warning DUMMY_THREAD_COUNT not defined
+#define DUMMY_THREAD_COUNT (0)
+#endif
+
+#if (DUMMY_THREAD_COUNT > 6)
+#error DUMMY_THREAD_COUNT too high
+#endif
+
+size_t g_dummyThreadCount = DUMMY_THREAD_COUNT;
+
+void dummyThread()
 {
+    unsigned x = 0;
+    set_core_fast_mode_on();
+
+    while(g_dummyThreadCount)
+    {
+        x++;
+    }
+}
+
+void dummyThreads()
+{
+#if (DUMMY_THREAD_COUNT > 0)
     par(size_t i = 0; i < DUMMY_THREAD_COUNT; i++)
     {
-        dummyThread(c[i]);
+        dummyThread();
     }
+#endif
 }
 #endif

@@ -17,28 +17,6 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_E
 #error KILL EP OUT OF RANGE
 #endif
 
-/* Loopback packets forever */
-#pragma unsafe arrays
-int TestEp_Bulk(chanend c_out1, chanend c_in1)
-{
-    unsigned int length;
-    XUD_Result_t res;
-
-    XUD_ep ep_out1 = XUD_InitEp(c_out1);
-    XUD_ep ep_in1  = XUD_InitEp(c_in1);
-
-    /* Buffer for Setup data */
-    unsigned char buffer[1024];
-
-    while(1)
-    {
-        XUD_GetBuffer(ep_out1, buffer, length);
-        XUD_SetBuffer(ep_in1, buffer, length);
-        
-        XUD_GetBuffer(ep_out1, buffer, length);
-        XUD_SetBuffer(ep_in1, buffer, length);
-    }
-}
 
 /* Loopback packet and terminate program */
 #pragma unsafe arrays
@@ -57,7 +35,6 @@ int TestEp_Bulk2(chanend c_out, chanend c_in, chanend c_out_0)
     XUD_GetBuffer(ep_out, buffer, length);
     XUD_SetBuffer(ep_in, buffer, length);
 
-
     XUD_Kill(ep_out_0);
     exit(0);
 }
@@ -65,8 +42,6 @@ int TestEp_Bulk2(chanend c_out, chanend c_in, chanend c_out_0)
 int main()
 {
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
-    chan c_sync;
-    chan c_sync_iso;
 
     par
     {
@@ -74,8 +49,10 @@ int main()
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
-        TestEp_Bulk(c_ep_out[TEST_EP_NUM], c_ep_in[TEST_EP_NUM]);
+        TestEp_Loopback(c_ep_out[TEST_EP_NUM], c_ep_in[TEST_EP_NUM], RUNMODE_LOOP);
         TestEp_Bulk2(c_ep_out[KILL_EP], c_ep_in[KILL_EP], c_ep_out[0]);
+
+        dummyThreads();
     }
 
     return 0;

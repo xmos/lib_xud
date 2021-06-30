@@ -1,7 +1,7 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#define EP_COUNT_OUT       (4)
+#define EP_COUNT_OUT       (5)
 #define EP_COUNT_IN        (8)
 
 #define PKT_LENGTH_START   (10)

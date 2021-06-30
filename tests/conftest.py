@@ -8,6 +8,10 @@ import sys
 import Pyxsim
 from Pyxsim import testers
 from helpers import get_usb_clk_phy, do_usb_test
+from pathlib import Path
+import shutil
+
+XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 
 PARAMS = {
     "default": {
@@ -114,3 +118,50 @@ def test_RunUsbSession(
             print(cap_output)
             sys.stderr.write(err)
         assert result
+
+
+def copy_common_xn_files(
+    test_dir, path=".", common_dir="shared_src", source_dir="src", xn_files=XN_FILES
+):
+    src_dir = os.path.join(test_dir, source_dir)
+    for xn_file in xn_files:
+        xn = os.path.join(common_dir, xn_file)
+        shutil.copy(xn, src_dir)
+
+
+def delete_test_specific_xn_files(
+    test_dir, path=".", source_dir="src", xn_files=XN_FILES
+):
+    src_dir = os.path.join(test_dir, source_dir)
+    for xn_file in xn_files:
+        xn = os.path.join(src_dir, xn_file)
+        os.remove(xn)
+
+
+# Runs after all tests are collected
+@pytest.fixture(scope="session", autouse=True)
+def copy_xn_files(request):
+
+    session = request.node
+
+    # There will be duplicates (same test name with different params) so treat as set
+    test_dirs = set([])
+
+    # Go through collected tests and copy over XN files
+    for item in session.items:
+        full_path = item.fspath
+        test_dir = Path(full_path).with_suffix("")  # Strip suffix
+        test_dir = os.path.basename(test_dir)
+        test_dirs.add(test_dir)
+
+    for test_dir in test_dirs:
+        copy_common_xn_files(test_dir)
+
+    def delete_xn_files():
+
+        # Go through collected tests deleting XN files
+        for test_dir in test_dirs:
+            delete_test_specific_xn_files(test_dir)
+
+    # Setup tear down
+    request.addfinalizer(delete_xn_files)

@@ -1,6 +1,5 @@
 # Copyright 2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
 import pytest
 import os
 import random
@@ -154,7 +153,8 @@ def worker_id(request):
         return "master"
 
 
-# Runs after all tests are collected
+# Runs after all tests are collected, but before all tests are run 
+# Note, there is one session per process, to this runs once per process...
 @pytest.fixture(scope="session", autouse=True)
 def copy_xn_files(worker_id, request):
 
@@ -186,4 +186,5 @@ def copy_xn_files(worker_id, request):
                     delete_test_specific_xn_files(test_dir)
 
     # Setup tear down
-    request.addfinalizer(delete_xn_files)
+    # Deletion removed for now - doesn't seem important
+    #request.addfinalizer(delete_xn_files)

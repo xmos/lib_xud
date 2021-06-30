@@ -13,9 +13,9 @@ int main()
     {
         {
 #if defined(XUD_TEST_SPEED_FS)
-            unsigned speed = XUD_SPEED_FS;
+            const unsigned speed = XUD_SPEED_FS;
 #elif defined(XUD_TEST_SPEED_HS)
-            unsigned speed = XUD_SPEED_HS;
+            const unsigned speed = XUD_SPEED_HS;
 #endif
             
             XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,

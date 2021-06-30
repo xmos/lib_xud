@@ -16,17 +16,16 @@
 
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
                                                 XUD_EPTYPE_BUL,
-                                                 XUD_EPTYPE_BUL,
-                                                 XUD_EPTYPE_BUL,
-                                                 XUD_EPTYPE_BUL,
-                                                 XUD_EPTYPE_BUL};
+                                                XUD_EPTYPE_BUL,
+                                                XUD_EPTYPE_BUL,
+                                                XUD_EPTYPE_BUL,
+                                                XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, 
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL};
-
 
 unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {

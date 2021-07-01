@@ -267,19 +267,6 @@ ConfigRxErrEventVector:
     setd       res[r3], r11                 // Set event cond data to 1
     eeu        res[r3]
 
-#if 0
-SetupOutTimer:
-    getr       r1, XS1_RES_TYPE_TIMER
-    ecallf     r1
-
-    ldap       r11, OutDataTimeOut
-    setv       res[r1], r11
-    setc       res[r1], XS1_SETC_COND_AFTER
-
-    stw        r1, sp[STACK_OUT_TIMER]
-#endif
-
-
 SetupSuspendResetTimer:
     getr       r10, XS1_RES_TYPE_TIMER
     ecallf     r10

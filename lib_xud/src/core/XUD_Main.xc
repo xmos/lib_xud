@@ -40,8 +40,6 @@ void XUD_UserSuspend();
 void XUD_UserResume();
 void XUD_PhyReset_User();
 
-#include "xta_pragmas.h"
-
 #define HS_TX_HANDSHAKE_TIMEOUT (167)
 #define FS_TX_HANDSHAKE_TIMEOUT (5000)
 

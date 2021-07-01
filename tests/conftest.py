@@ -146,11 +146,10 @@ def delete_test_specific_xn_files(
 
         print("DELETE: " + str(xn))
 
-        # TODO ideally we don't need to catch this exception if we only try to delete once
-        # try:
-        os.remove(xn)
-        # except OSError:
-        #    pass
+        try:
+            os.remove(xn)
+        except OSError:
+            pass
 
 
 @pytest.fixture(scope="session", autouse=True)

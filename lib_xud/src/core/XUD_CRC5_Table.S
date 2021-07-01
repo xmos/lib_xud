@@ -10,7 +10,6 @@
 .type crc5Table, @object
 .cc_top crc5Table.func, crc5Table
 .align 4
-.skip 0
 crc5Table:
 .byte 0x2
 .byte 0x1d

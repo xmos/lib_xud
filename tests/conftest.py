@@ -144,8 +144,6 @@ def delete_test_specific_xn_files(
     for xn_file in xn_files:
         xn = os.path.join(src_dir, xn_file)
 
-        print("DELETE: " + str(xn))
-
         try:
             os.remove(xn)
         except OSError:

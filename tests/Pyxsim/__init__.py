@@ -7,7 +7,7 @@ This module provides functions to run tests for XMOS applications and libraries.
 """
 import sys
 import Pyxsim.pyxsim
-from Pyxsim.xmostest_subprocess import call_get_output
+from Pyxsim.xmostest_subprocess import call_get_output, call
 import platform
 import multiprocessing
 import tempfile

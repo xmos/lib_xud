@@ -8,8 +8,6 @@
     shr        r11, r11, 24                           // Shift off junk
 
     ldw        r10, r10[r11]                          // Load relevant branch address
-
-.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup, Pid_Sof_NoChan
     bau        r10
 #else //__XS3A__ 
     ldaw        r10, dp[PidJumpTable]
@@ -19,7 +17,7 @@
     {setpsc      res[RXD], r8; shr      r11, r11, 24}
 
     ldw         r11, r10[r11]
-.xtabranch  Pid_Out, Pid_Sof, Pid_In, Pid_Setup
-    bau         r11
+    bau         r11                                    // Branch to Pid_Out, Pid_Sof, Pid_In, Pid_Setup etc
+
 #endif
 

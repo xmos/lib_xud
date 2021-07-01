@@ -160,7 +160,7 @@ def worker_id(request):
 
 
 # Runs after all tests are collected, but before all tests are run
-# Note, there is one session per process, to this runs once per process...
+# Note, there is one session per process, so this runs once per process...
 @pytest.fixture(scope="session", autouse=True)
 def copy_xn_files(worker_id, request):
 
@@ -176,7 +176,7 @@ def copy_xn_files(worker_id, request):
         for item in session.items:
             full_path = item.fspath
             test_dir = Path(full_path).with_suffix("")  # Strip suffix
-            test_dir = os.path.basename(test_dir)
+            test_dir = os.path.basename(test_dir)  # Strip path leaving filename
             test_dirs.add(test_dir)
 
         for test_dir in test_dirs:

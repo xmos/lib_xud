@@ -426,7 +426,6 @@ XUD_GetData_Select_CheckPid:                    // Check PID
     bt          r11, XUD_GetData_Select_BadPkt
 
 XUD_GetData_Select_PidToggle:
-//#if (XUD_SERIES_SUPPORT==3)
 #ifdef __XS3A__
     ldc         r2, 0x88
 #else

@@ -10,15 +10,15 @@
 
 /* Check for clashes with TEST_EP and traffic EP */
 #if TEST_EP_NUM == 4
-#error
+#error TEST_EP_NUM clashes with traffic EP
 #endif
 
 #if TEST_EP_NUM == 5
-#error
+#error TEST_EP_NUM clashes with traffic EP
 #endif
 
 #if TEST_EP_NUM == 6
-#error
+#error TEST_EP_NUM clashes with traffic EP
 #endif
 
 /* Endpoint type tables */

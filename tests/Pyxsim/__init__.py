@@ -59,7 +59,6 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options="")
     for x in output:
         s = str(x)
         if s.find("Error") != -1:
-            # if x.find('Error') != -1:
             success = False
         # if re.match('xmake: \*\*\* .* Stop.', x) != None:
         if re.match(r"xmake: \*\*\* .* Stop.", s) != None:

@@ -10,7 +10,7 @@ from helpers import get_usb_clk_phy, do_usb_test
 from pathlib import Path
 import shutil
 
-XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
+XN_FILES = ["test_xs2.xn", "test_xs3_600.xn", "test_xs3_800.xn"]
 
 PARAMS = {
     "default": {
@@ -19,15 +19,15 @@ PARAMS = {
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
         "dummy_threads": [0, 4, 5],
+        "core_freq": [600, 800],
     },
     "smoke": {
         "arch": ["xs3"],
         "ep": [1],
         "address": [0],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [
-            4
-        ],  # TODO Set to 0 for speed of simulation vs higher for better quality testing..
+        "dummy_threads": [4],
+        "core_freq": [600],
     },
 }
 
@@ -82,7 +82,15 @@ def test_dummy_threads(dummy_threads: int) -> int:
 
 
 def test_RunUsbSession(
-    test_session, arch, ep, address, bus_speed, dummy_threads, test_file, capfd
+    test_session,
+    arch,
+    ep,
+    address,
+    bus_speed,
+    dummy_threads,
+    core_freq,
+    test_file,
+    capfd,
 ):
 
     tester_list = []
@@ -98,6 +106,7 @@ def test_RunUsbSession(
             address,
             bus_speed,
             dummy_threads,
+            core_freq,
             clk_60,
             usb_phy,
             [test_session],
@@ -153,7 +162,7 @@ def worker_id(request):
         return "master"
 
 
-# Runs after all tests are collected, but before all tests are run 
+# Runs after all tests are collected, but before all tests are run
 # Note, there is one session per process, to this runs once per process...
 @pytest.fixture(scope="session", autouse=True)
 def copy_xn_files(worker_id, request):
@@ -187,4 +196,4 @@ def copy_xn_files(worker_id, request):
 
     # Setup tear down
     # Deletion removed for now - doesn't seem important
-    #request.addfinalizer(delete_xn_files)
+    # request.addfinalizer(delete_xn_files)

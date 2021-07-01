@@ -114,6 +114,7 @@ def do_usb_test(
     address,
     bus_speed,
     dummy_threads,
+    core_freq,
     clk,
     phy,
     sessions,
@@ -134,8 +135,10 @@ def do_usb_test(
     testname, extension = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    binary = "{testname}/bin/{arch}/{testname}_{arch}.xe".format(
-        testname=testname, arch=arch
+    binary = (
+        "{testname}/bin/{arch}_{core_freq}/{testname}_{arch}_{core_freq}.xe".format(
+            testname=testname, arch=arch, core_freq=core_freq
+        )
     )
 
     build_success, build_output = Pyxsim._build(binary, build_options=build_options)

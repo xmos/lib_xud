@@ -338,12 +338,11 @@ class UsbSuspend(UsbEvent):
             xcvr = xsi.sample_periph_pin(usb_phy._xcvrsel)
             termsel = xsi.sample_periph_pin(usb_phy._termsel)
 
-            # Wait for DUT to move into FS mode
+            # Check DUT doesn't prematurely move out of FS mode
             if not (xcvr == 1 and termsel == 1):
                 print("ERROR: DUT moved out of FS mode unexpectly during suspend")
 
             time_ns = xsi.get_time() - suspendStartTime_ns
-            if time_ns == self._duration_ns:
-                # print("SUSPEND END: " + str(xsi.get_time()))
+            if time_ns >= self._duration_ns:
                 print("SUSPEND END")
                 break

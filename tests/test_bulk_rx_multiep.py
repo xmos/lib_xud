@@ -8,8 +8,8 @@ from copy import deepcopy
 
 # EP numbers currently fixed for this test - set in params
 PARAMS = deepcopy(PARAMS)
-PARAMS["smoke"].update({"ep": [3], "dummy_threads": [0]})
-PARAMS["default"].update({"ep": [3], "dummy_threads": [0]})
+for k in PARAMS:
+    PARAMS[k].update({"ep": [3], "dummy_threads": [0]})
 
 
 @pytest.fixture

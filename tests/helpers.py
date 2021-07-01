@@ -10,32 +10,12 @@ from usb_clock import Clock
 from usb_phy import UsbPhy
 from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
-import shutil
 from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
 args = {"arch": "xs3", "trace": False}
-XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
 clean_only = False
-
-
-def copy_common_xn_files(
-    test_dir, path=".", common_dir="shared_src", source_dir="src", xn_files=XN_FILES
-):
-    src_dir = os.path.join(test_dir, source_dir)
-    for xn_file in xn_files:
-        xn = os.path.join(common_dir, xn_file)
-        shutil.copy(xn, src_dir)
-
-
-def delete_test_specific_xn_files(
-    test_dir, path=".", source_dir="src", xn_files=XN_FILES
-):
-    src_dir = os.path.join(test_dir, source_dir)
-    for xn_file in xn_files:
-        xn = os.path.join(src_dir, xn_file)
-        os.remove(xn)
 
 
 def create_if_needed(folder):
@@ -134,6 +114,7 @@ def do_usb_test(
     address,
     bus_speed,
     dummy_threads,
+    core_freq,
     clk,
     phy,
     sessions,
@@ -154,10 +135,12 @@ def do_usb_test(
     testname, extension = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    binary = "{testname}/bin/{arch}/{testname}_{arch}.xe".format(
-        testname=testname, arch=arch
+    binary = (
+        "{testname}/bin/{arch}_{core_freq}/{testname}_{arch}_{core_freq}.xe".format(
+            testname=testname, arch=arch, core_freq=core_freq
+        )
     )
-    copy_common_xn_files(testname)
+
     build_success, build_output = Pyxsim._build(binary, build_options=build_options)
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
@@ -193,7 +176,6 @@ def do_usb_test(
     else:
         tester_list.append("Build Failed")
 
-    delete_test_specific_xn_files(testname)
     return tester_list
 
 

@@ -34,7 +34,17 @@ PARAMS = {
 
 
 def pytest_addoption(parser):
-    parser.addoption("--smoke", action="store_true", help="smoke test")
+    parser.addoption("--smoke", action="store_true", help="Smoke test")
+    parser.addoption(
+        "--enabletracing",
+        action="store_true",
+        default=False,
+        help="Run tests with tracing",
+    )
+
+
+def pytest_configure(config):
+    os.environ["enabletracing"] = str(config.getoption("enabletracing"))
 
 
 def pytest_generate_tests(metafunc):

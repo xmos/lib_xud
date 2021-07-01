@@ -23,17 +23,16 @@ int main()
                                 speed, XUD_PWR_BUS);
         }
 
-		{
-			unsigned fail = test_func(c_ep_out, c_ep_in);
+        {
+            unsigned fail = test_func(c_ep_out, c_ep_in);
 
 #ifdef XUD_SIM_RTL
             /* Note, this test relies on checking at the host side */
             if(fail)
                 TerminateFail(fail);
             else
-                TerminatePass(fail);    
+                TerminatePass(fail);
 #endif
-			
             unsafe{
                 unsigned * unsafe p = &g_dummyThreadCount;
                 *p = 0;
@@ -41,10 +40,9 @@ int main()
             if(TEST_EP_NUM != 0)
             {
                 XUD_ep ep_out_0 = XUD_InitEp(c_ep_out[0]);
-			    XUD_Kill(ep_out_0);
-			}
+                XUD_Kill(ep_out_0);
+            }
             exit(0);
-		}
 
         dummyThreads();
     }

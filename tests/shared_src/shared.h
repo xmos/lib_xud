@@ -74,7 +74,7 @@ void TerminatePass(unsigned x)
 #endif
 
 #ifndef TEST_EP_NUM
-#warning TEST_EP_NUM not defined
+#warning TEST_EP_NUM not defined, using default value
 #define TEST_EP_NUM         (1)
 #endif
 

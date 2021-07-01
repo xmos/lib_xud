@@ -10,7 +10,8 @@ from helpers import get_usb_clk_phy, do_usb_test
 from pathlib import Path
 import shutil
 
-XN_FILES = ["test_xs2.xn", "test_xs3_600.xn", "test_xs3_800.xn"]
+# Note, no current support for XS2
+XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn"]
 
 PARAMS = {
     "default": {

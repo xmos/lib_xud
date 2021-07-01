@@ -10,7 +10,6 @@
 .type crc5Table_Addr, @object
 .cc_top crc5Table_Addr.func, crc5Table_Addr
 .align 4
-.skip 0
 crc5Table_Addr:
 .byte 0x2
 .byte 0x1d

@@ -7,7 +7,7 @@ This module provides functions to run tests for XMOS applications and libraries.
 """
 import sys
 import Pyxsim.pyxsim
-from Pyxsim.xmostest_subprocess import call_get_output, call
+from Pyxsim.xmostest_subprocess import call_get_output
 import platform
 import multiprocessing
 import tempfile
@@ -46,7 +46,7 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options="")
         cmd = ["xmake", "all"]
 
     if do_clean:
-        call(["xmake", "clean"], cwd=path, env=my_env)
+        clean_output = call_get_output(["xmake", "clean"], cwd=path, env=my_env)
 
     if build_config is not None:
         cmd += ["CONFIG=%s" % build_config]

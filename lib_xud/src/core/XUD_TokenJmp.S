@@ -10,8 +10,8 @@
     ldw        r10, r10[r11]                          // Load relevant branch address
     bau        r10
 #else //__XS3A__ 
-    ldaw        r10, dp[PidJumpTable]
-    ldc         r8, 16
+    {ldw         r10, sp[STACK_PIDJUMPTABLE]
+    ldc         r8, 16}
 
     inpw        r11, res[RXD], 8                       // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
     {setpsc      res[RXD], r8; shr      r11, r11, 24}

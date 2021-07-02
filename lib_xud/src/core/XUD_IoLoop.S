@@ -51,6 +51,7 @@ suspend_t_wtwrsths:
 #define STACK_RXCRC_TAIL3       (19)
 #define STACK_TXCRC_INIT        (20)
 #define STACK_RXCRC_INIT        (21)
+#define STACK_PIDJUMPTABLE      (22)
 
 // Params
 #define STACK_VTOK_PORT     (STACK_EXTEND + 1)
@@ -257,6 +258,7 @@ ConfigSofJump:
     stw        r11, r10[r9]
 #endif
 ConfigSofJump_Done:
+    stw        r10, sp[STACK_PIDJUMPTABLE]
 
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ

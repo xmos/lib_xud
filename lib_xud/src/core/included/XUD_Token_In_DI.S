@@ -31,9 +31,9 @@ Pid_In:
 
     ldw        r11, sp[STACK_EPTYPES_IN]
     ldw        r11, r11[r10]                        // Load EP Type into R11
-    bt         r11, In_NonIso                       // If the type is non-zero then it is not isochronous
     bt         r4,  In_LoadPid                      // If the EP structure address is not 0, and the
                                                     // EP type is iso, then we are ready to send.
+    bt         r11, In_NonIso                       // Non-zero EP type means isochronous
     ldc        r11, 0xc3                            // Otherwise, create 0-length packet
     outpw      res[TXD], r11, 24
     #include "XUD_TokenJmp.S"
@@ -52,45 +52,45 @@ In_TxHandshake:
     #include "XUD_TokenJmp.S"
 
 In_LoadPid:
-    ldw         r11, r4[4]                          // Load PID from structure
+    ldw        r11, r4[4]                          // Load PID from structure
 
 InReady:
-    ldw         r8, r4[3]                           // Load buffer
-    ldw         r6, r4[7]                           // Load tail length (bytes)
-    ldw         r4, r4[6]                           // Load data length
-    bf          r4, SmallTxPacket                   // Check for "short" packet
+    ldw        r8, r4[3]                           // Load buffer
+    ldw        r6, r4[7]                           // Load tail length (bytes)
+    ldw        r4, r4[6]                           // Load data length
+    bf         r4, SmallTxPacket                   // Check for "short" packet
 
 XUD_IN_Tx:
-    outpw       res[TXD], r11, 8                    // Out PID
-    ldw         r11, r8[r4]                         // Load first data word
+    outpw      res[TXD], r11, 8                    // Out PID
+    ldw        r11, r8[r4]                         // Load first data word
 
 XUD_IN_TxPid:
-    out         res[TXD], r11
-    crc32_inc   r7, r11, r9, r4, 1
-    bf          r4, XUD_IN_TxLoopEnd
+    out        res[TXD], r11
+    crc32_inc  r7, r11, r9, r4, 1
+    bf         r4, XUD_IN_TxLoopEnd
 
 XUD_IN_TxLoop:
-    ldw         r11, r8[r4]                         // Load first data word
-    crc32_inc   r7, r11, r9, r4, 1
-    {out         res[TXD], r11;     bt       r4, XUD_IN_TxLoop}
+    ldw        r11, r8[r4]                         // Load first data word
+    crc32_inc  r7, r11, r9, r4, 1
+    {out       res[TXD], r11;     bt       r4, XUD_IN_TxLoop}
 
 XUD_IN_TxLoopEnd:
-    ldw         r11, r8[r4]                         // Load tail
-    crcn        r7, r11, r9, r6
-    outpw       res[TXD], r11, r6
+    ldw        r11, r8[r4]                         // Load tail
+    crcn       r7, r11, r9, r6
+    outpw      res[TXD], r11, r6
 
 XUD_IN_TxLoopEnd_CrcCalc:
-    crc32       r7, r4, r9                          // r4: 0 (from bf)
-    not         r7, r7
+    crc32      r7, r4, r9                          // r4: 0 (from bf)
+    not        r7, r7
 XUD_IN_TxCrc:
-    outpw       res[TXD], r7, 16                    // Output 16-bit CRC
+    outpw      res[TXD], r7, 16                    // Output 16-bit CRC
 
 .scheduling default
 
 // Wait for handshake... or timeout
 DoneTail:
     ldw         r11, sp[STACK_EPTYPES_IN]
-    ldw         r11, r11[r10]                       // Load EP Type
+    ldw         r11, r11[r10]                      // Load EP Type
     bt          r11, SetupReceiveHandShake
     bu          DoneTx
 

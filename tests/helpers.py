@@ -14,7 +14,7 @@ from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
-args = {"arch": "xs3", "trace": False}
+args = {"arch": "xs3"}
 clean_only = False
 
 
@@ -141,7 +141,11 @@ def do_usb_test(
         )
     )
 
-    build_success, build_output = Pyxsim._build(binary, build_options=build_options)
+    # Since we use the same src with different defines (setting CFLAGS) we need to clean
+    # TODO can we avoid this with build configs or similar?
+    build_success, build_output = Pyxsim._build(
+        binary, do_clean=True, build_options=build_options
+    )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
     if build_success:

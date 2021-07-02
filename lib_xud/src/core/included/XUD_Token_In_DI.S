@@ -42,7 +42,7 @@ In_NonIso:
     ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
     ldw        r11, r11[r10]                        // Load handshake PID into R11
    {bf         r4,  In_TxHandshake                  // If the EP structure address is 0, and the EP type
-                                                    // is not iso, then send the PID fro:setm the handshake table.
+                                                    // is not iso, then send the PID from the handshake table.
     ldc        r8,  USB_PIDn_STALL}                 // If the EP is ready, then compare the STALL PID
     eq         r8,  r11, r8                         // with the PID in the handshake table.
     bf         r8,  In_LoadPid                      // If it's not a STALL, then we are ready to send.

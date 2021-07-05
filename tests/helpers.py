@@ -10,32 +10,12 @@ from usb_clock import Clock
 from usb_phy import UsbPhy
 from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
-import shutil
 from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
-args = {"arch": "xs3", "trace": False}
-XN_FILES = ["test_xs2.xn", "test_xs3.xn"]
+args = {"arch": "xs3"}
 clean_only = False
-
-
-def copy_common_xn_files(
-    test_dir, path=".", common_dir="shared_src", source_dir="src", xn_files=XN_FILES
-):
-    src_dir = os.path.join(test_dir, source_dir)
-    for xn_file in xn_files:
-        xn = os.path.join(common_dir, xn_file)
-        shutil.copy(xn, src_dir)
-
-
-def delete_test_specific_xn_files(
-    test_dir, path=".", source_dir="src", xn_files=XN_FILES
-):
-    src_dir = os.path.join(test_dir, source_dir)
-    for xn_file in xn_files:
-        xn = os.path.join(src_dir, xn_file)
-        os.remove(xn)
 
 
 def create_if_needed(folder):
@@ -121,11 +101,20 @@ def run_on(**kwargs):
     return True
 
 
+FIXTURE_TO_DEFINE = {
+    "ep": "TEST_EP_NUM",
+    "address": "XUD_STARTUP_ADDRESS",
+    "dummy_threads": "DUMMY_THREAD_COUNT",
+}
+
+
 def do_usb_test(
     arch,
     ep,
     address,
     bus_speed,
+    dummy_threads,
+    core_freq,
     clk,
     phy,
     sessions,
@@ -136,21 +125,27 @@ def do_usb_test(
     verbose=False,
 ):
 
-    # TODO ideally the test would test this somehow
-    # TODO use dictionary to convert pytest params to defines
-    build_options = (
-        "CFLAGS=-DTEST_EP_NUM=" + str(ep) + " -DXUD_STARTUP_ADDRESS=" + str(address)
-    )
+    build_options_str = "CFLAGS="
+    for k, v in FIXTURE_TO_DEFINE.items():
+        build_options_str += "-D" + str(v) + "=" + str(locals()[k]) + " "
+
+    build_options = build_options_str
 
     """Shared test code for all RX tests using the test_rx application."""
     testname, extension = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    binary = "{testname}/bin/{arch}/{testname}_{arch}.xe".format(
-        testname=testname, arch=arch
+    binary = (
+        "{testname}/bin/{arch}_{core_freq}/{testname}_{arch}_{core_freq}.xe".format(
+            testname=testname, arch=arch, core_freq=core_freq
+        )
     )
-    copy_common_xn_files(testname)
-    build_success, build_output = Pyxsim._build(binary, build_options=build_options)
+
+    # Since we use the same src with different defines (setting CFLAGS) we need to clean
+    # TODO can we avoid this with build configs or similar?
+    build_success, build_output = Pyxsim._build(
+        binary, do_clean=True, build_options=build_options
+    )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
     if build_success:
@@ -185,7 +180,6 @@ def do_usb_test(
     else:
         tester_list.append("Build Failed")
 
-    delete_test_specific_xn_files(testname)
     return tester_list
 
 
@@ -220,7 +214,7 @@ def create_expect(arch, session, filename, verbose=False):
 def get_sim_args(testname, clk, phy, arch="xs2"):
     sim_args = []
 
-    if args and args.get("trace"):
+    if bool(os.getenv("enabletracing")):
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(

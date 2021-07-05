@@ -12,7 +12,7 @@ void XUD_SetCrcTableAddr(unsigned addr);
 XUD_Result_t XUD_SetDevAddr(unsigned addr)
 {
 #ifdef __XS3A__        
-    /* XS1A (XS1-G) and XS3: Modify CRC table for current address */
+    /* XS3: Modify CRC table for current address */
     XUD_SetCrcTableAddr(addr);
 #else
     /* Set device address in UIFM */

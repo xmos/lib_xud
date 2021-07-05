@@ -54,31 +54,15 @@ int TestEp_Control(XUD_ep c_ep0_out, XUD_ep c_ep0_in, int epNum)
     }
 }
 
-int main()
+unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
-    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
+    XUD_ep c_ep0_out = XUD_InitEp(c_ep_out[0]);
+    XUD_ep c_ep0_in  = XUD_InitEp(c_ep_in[0]);
 
-    par
-    {
-        
-        XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
-                                null, epTypeTableOut, epTypeTableIn,
-                                XUD_SPEED_HS, XUD_PWR_BUS);
-       
-        {
-            XUD_ep c_ep0_out = XUD_InitEp(c_ep_out[0]);
-            XUD_ep c_ep0_in  = XUD_InitEp(c_ep_in[0]);
-           
-            int fail = TestEp_Control(c_ep0_out, c_ep0_in, 0);
-       
-            XUD_Kill(c_ep0_out);
-            
-            if(fail)
-                TerminateFail(fail);
-            else
-                TerminatePass(fail);    
-        }
-    }
+    unsigned failed = TestEp_Control(c_ep0_out, c_ep0_in, 0);
 
-    return 0;
+    XUD_Kill(c_ep0_out);
+    return failed;
 }
+#include "test_main.xc"
+

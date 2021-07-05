@@ -284,7 +284,7 @@ class Xsi(object):
 
     def run(self):
         self.xe = Xe(self.xe_path)
-        self._time_step = float(pow(10, 3)) / self.xe.freq
+        self._time_step = 1000.0 / self.xe.freq
         status = XsiStatus.OK
         for simthread in self._simthreads:
             simthread.start()

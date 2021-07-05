@@ -6,7 +6,6 @@
 #include "xud.h"
 #include "XUD_USB_Defines.h"
 #include "XUD_TimingDefines.h"
-//#include "XUD_Support.h"
 #include "XUD_HAL.h"
 
 extern in  port flag0_port;
@@ -106,7 +105,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 break;
 
 #ifdef __XS3A__
-// Note, J and K definitons are reversed in XS3A
+// Note, J and K definitions are reversed in XS3A
 #define j_port flag1_port
 #define k_port flag0_port
 #else

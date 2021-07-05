@@ -1,12 +1,6 @@
 // Copyright 2011-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-/** @file       XUD_PowerSig.xc
-  * @brief      Functions for USB power signaling
-  * @author     Ross Owen, XMOS Limited
-  **/
-
 #include <xs1.h>
-
 #include "xud.h"
 #include "XUD_Support.h"
 #include "XUD_USB_Defines.h"
@@ -43,9 +37,7 @@ int XUD_Init()
    /* Wait for host */
     while (1)
     {
-
 #ifdef __XS3A__ 
-    
         XUD_LineState_t currentLs = XUD_HAL_GetLineState();
         
         switch (currentLs)
@@ -121,7 +113,7 @@ int XUD_Init()
 
 
 #ifndef __XS3A__
-/** XUD_DoSuspend
+/** XUD_Suspend
   * @brief  Function called when device is suspended. This should include any clock down code etc.
   * @return True if reset detected during resume */
 int XUD_Suspend(XUD_PwrConfig pwrConfig)

@@ -46,7 +46,7 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options="")
         cmd = ["xmake", "all"]
 
     if do_clean:
-        call(["xmake", "clean"], cwd=path, env=my_env)
+        clean_output = call_get_output(["xmake", "clean"], cwd=path, env=my_env)
 
     if build_config is not None:
         cmd += ["CONFIG=%s" % build_config]
@@ -59,7 +59,6 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options="")
     for x in output:
         s = str(x)
         if s.find("Error") != -1:
-            # if x.find('Error') != -1:
             success = False
         # if re.match('xmake: \*\*\* .* Stop.', x) != None:
         if re.match(r"xmake: \*\*\* .* Stop.", s) != None:
@@ -69,7 +68,7 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options="")
         sys.stderr.write("ERROR: build failed.\n")
         for x in output:
             s = str(x)
-            sys.stderr.write(s)
+            sys.stderr.write(s + "\n")
 
     return (success, output)
 

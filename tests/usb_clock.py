@@ -9,15 +9,12 @@ class Clock(SimThread):
 
     CLK_60MHz = 0x0
 
-    def __init__(self, port, clk):
+    def __init__(self, port, clk, coreFreq_Mhz):
         self._running = True
         self._clk = clk
         if clk == self.CLK_60MHz:
             self._period = float(1000000000.0 / 60000000.0)
-
-            # Quick hack to fix up clock freqency (hardcoded for 600MHz)
-            # TODO multiply period by core period - get freq from xe
-            self._period *= (1.0 / 600.0) * 1000
+            self._period *= (1.0 / coreFreq_Mhz) * 1000.0
             self._name = "60Mhz"
         else:
             raise ValueError("Unsupported Clock Frequency")

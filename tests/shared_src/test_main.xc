@@ -45,6 +45,7 @@ int main()
             exit(0);
 
         dummyThreads();
+    	}
     }
 
     return 0;

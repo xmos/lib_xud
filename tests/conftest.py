@@ -10,11 +10,11 @@ from helpers import get_usb_clk_phy, do_usb_test
 from pathlib import Path
 import shutil
 
-# Note, no current support for XS2
+# Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn"]
 
 PARAMS = {
-    "default": {
+    "nightly": {
         "arch": ["xs3"],
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
@@ -22,11 +22,19 @@ PARAMS = {
         "dummy_threads": [0, 4, 5],
         "core_freq": [600, 800],
     },
+    "default": {
+        "arch": ["xs3"],
+        "ep": [1, 2, 4],
+        "address": [0, 1, 127],
+        "bus_speed": ["HS", "FS"],
+        "dummy_threads": [0, 4, 5],
+        "core_freq": [600],
+    },
     "smoke": {
         "arch": ["xs3"],
-        "ep": [1],
+        "ep": [2],
         "address": [0],
-        "bus_speed": ["HS", "FS"],
+        "bus_speed": ["HS"],
         "dummy_threads": [4],
         "core_freq": [600],
     },

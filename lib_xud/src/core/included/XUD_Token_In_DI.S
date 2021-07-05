@@ -39,8 +39,8 @@ XUD_IN_TxNak:                                       // Non-Iso
 .align FUNCTION_ALIGNMENT
 Pid_In:
     #include "XUD_CrcAddrCheck.S"
-    ldaw       r3, r10[4]                           // R3 = R10 + 16
-    ldw        r4, r5[r3]                           // Load EP structure address
+    ldaw       r3, r10[4]                          // R3 = R10 + 16
+    ldw        r4, r5[r3]                          // Load EP structure address
     
     ldaw       r1, dp[g_stallTable_IN]
     ldw        r11, r1[r10]
@@ -88,12 +88,12 @@ DoneTail:
     ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
     bt          r11, SetupReceiveHandShake
-    bu          DoneTx
+    bu          XUD_IN_DoneTx
 
 SetupReceiveHandShake:
-    ldc         r11, 8
-    setpsc      res[RXD], r11                      // Set port shift count (expect 8 bit handshake)
-    eeu		     res[RXD]                           // Events on RXD always enabled - Can;t be any more due to using events on channels
+    ldc        r11, 8
+    setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
+    eeu		   res[RXD]                            // Events on RXD always enabled - Can;t be any more due to using events on channels
 
 SetupTimeout:                                      // Timeout done using another port we dont happen to already be using events on. Cunning.
 #ifdef __XS2A__
@@ -139,7 +139,7 @@ XUD_IN_RxAck:
     {bt        r9, BadHandshake}     
 #endif
 
-DoneTx:
+XUD_IN_DoneTx:
 
 ClearInEpReady:                                    // TODO Tidy this up
     ldc        r9, 0                               // TODO

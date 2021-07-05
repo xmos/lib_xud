@@ -226,9 +226,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_inv(p_usb_clk);
     set_port_sample_delay(p_usb_clk);
 
-#if defined(XUD_SIM_XSIM)
-    set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY+5);
-#else
+#if !defined(XUD_SIM_XSIM)
     //This delay controls the capture of rdy
     set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);
 

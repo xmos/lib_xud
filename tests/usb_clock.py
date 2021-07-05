@@ -14,6 +14,10 @@ class Clock(SimThread):
         self._clk = clk
         if clk == self.CLK_60MHz:
             self._period = float(1000000000.0 / 60000000.0)
+
+            # Quick hack to fix up clock freqency (hardcoded for 600MHz)
+            # TODO multiply period by core period - get freq from xe
+            self._period *= (1.0 / 600.0) * 1000
             self._name = "60Mhz"
         else:
             raise ValueError("Unsupported Clock Frequency")

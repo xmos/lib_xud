@@ -27,7 +27,6 @@ def test_session(ep, address, bus_speed, dummy_threads):
                 endpointNumber=ep,
                 endpointType="BULK",
                 direction="IN",
-                eventTime=10,
                 dataLength=pktLength,
             )
         )

@@ -553,8 +553,7 @@ XUD_SetStallByAddr:
     and         r11, r11, r0
     stw         r2, r1[r11]
 
-    ldc         r2, 0
-    ldaw        r1, dp[g_stallTable_IN]              // Mark stall table with zero entry
+    ldaw        r1, dp[g_stallTable_IN]              // Mark stall table with non-zero entry
     stw         r2, r1[r11]
     
     retsp       0
@@ -603,7 +602,8 @@ XUD_ClearStallByAddr:
     stw         r2, r1[r11]
 
     ldaw       r1, dp[g_stallTable_IN]
-    stw        r2, r1[r11]                         // Mark stable with non-zero entry      
+    ldc        r2, 0
+    stw        r2, r1[r11]                         // Mark stall with zero entry      
 
                                                    // Calc offset for data pid
     ldaw        r0, r11[4]                         // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)

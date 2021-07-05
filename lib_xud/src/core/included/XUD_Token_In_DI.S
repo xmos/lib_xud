@@ -41,12 +41,11 @@ Pid_In:
     #include "XUD_CrcAddrCheck.S"
     ldaw       r3, r10[4]                          // R3 = R10 + 16
     ldw        r4, r5[r3]                          // Load EP structure address
+    bf         r4, XUD_IN_NotReady
     
     ldaw       r1, dp[g_stallTable_IN]
     ldw        r11, r1[r10]
-    or         r11, r11, r4
-    
-    bf         r11, XUD_IN_NotReady                // Note, user could potentially stall an ISO EP.
+    bt         r11, XUD_IN_NotReady                // Note, user could potentially stall an ISO EP.
 
     ldw        r11, r4[4]                          // Load PID from structure
 

@@ -105,7 +105,7 @@ extern unsigned XUD_LLD_IoLoop(
                             int  epCount, chanend? c_sof) ;
 
 unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN];
-unsigned g_stallTable_IN[USB_MAX_NUM_EP_IN] = {1};
+unsigned g_stallTable_IN[USB_MAX_NUM_EP_IN] = {0};
 unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];
 unsigned sentReset=0;
 

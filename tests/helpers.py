@@ -214,7 +214,7 @@ def create_expect(arch, session, filename, verbose=False):
 def get_sim_args(testname, clk, phy, arch="xs2"):
     sim_args = []
 
-    if (os.getenv("enabletracing") == "True"):
+    if os.getenv("enabletracing") == "True":
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(

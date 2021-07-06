@@ -14,7 +14,7 @@ import shutil
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn"]
 
 PARAMS = {
-    "nightly": {
+    "extended": {
         "arch": ["xs3"],
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
@@ -43,6 +43,7 @@ PARAMS = {
 
 def pytest_addoption(parser):
     parser.addoption("--smoke", action="store_true", help="Smoke test")
+    parser.addoption("--extended", action="store_true", help="Extended test")
     parser.addoption(
         "--enabletracing",
         action="store_true",
@@ -60,6 +61,8 @@ def pytest_generate_tests(metafunc):
         PARAMS = metafunc.module.PARAMS
         if metafunc.config.getoption("smoke"):
             params = PARAMS.get("smoke", PARAMS["default"])
+        if metafunc.config.getoption("extended"):
+            params = PARAMS.get("extended", PARAMS["default"])
         else:
             params = PARAMS["default"]
     except AttributeError:

@@ -235,17 +235,16 @@ int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode)
     }
 }
 
-#ifndef DUMMY_THREAD_COUNT
-#error
-#warning DUMMY_THREAD_COUNT not defined
-#define DUMMY_THREAD_COUNT (0)
+#ifndef TEST_DTHREADS
+#warning TEST_DTHREADS not defined
+#define TEST_DTHREADS (0)
 #endif
 
-#if (DUMMY_THREAD_COUNT > 6)
-#error DUMMY_THREAD_COUNT too high
+#if (TEST_DTHREADS > 6)
+#error TEST_DTHREADS too high
 #endif
 
-size_t g_dummyThreadCount = DUMMY_THREAD_COUNT;
+size_t g_dummyThreadCount = TEST_DTHREADS;
 
 void dummyThread()
 {
@@ -260,8 +259,8 @@ void dummyThread()
 
 void dummyThreads()
 {
-#if (DUMMY_THREAD_COUNT > 0)
-    par(size_t i = 0; i < DUMMY_THREAD_COUNT; i++)
+#if (TEST_DTHREADS > 0)
+    par(size_t i = 0; i < TEST_DTHREADS; i++)
     {
         dummyThread();
     }

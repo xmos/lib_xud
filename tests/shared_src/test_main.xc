@@ -43,7 +43,7 @@ int main()
                 XUD_Kill(ep_out_0);
             }
             exit(0);
-		}
+        }
 
         dummyThreads();
     }

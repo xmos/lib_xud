@@ -25,6 +25,7 @@ def create_if_needed(folder):
 
 
 def get_usb_clk_phy(
+    coreFreqMhz,
     verbose=True,
     test_ctrl=None,
     do_timeout=True,
@@ -35,7 +36,7 @@ def get_usb_clk_phy(
 ):
 
     if arch == "xs2":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -57,7 +58,7 @@ def get_usb_clk_phy(
         )
 
     elif arch == "xs3":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa

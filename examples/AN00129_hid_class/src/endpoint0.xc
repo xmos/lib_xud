@@ -81,8 +81,8 @@ static unsigned char cfgDesc[] = {
     0x09,                 /* 0  bLength. Note this is currently
                                 replicated in hidDescriptor[] below */
     0x21,                 /* 1  bDescriptorType (HID) */
-    0x10,                 /* 2  bcdHID */
-    0x11,                 /* 3  bcdHID */
+    0x11,                 /* 2  bcdHID */
+    0x01,                 /* 3  bcdHID */
     0x00,                 /* 4  bCountryCode */
     0x01,                 /* 5  bNumDescriptors */
     0x22,                 /* 6  bDescriptorType[0] (Report) */
@@ -102,8 +102,8 @@ static unsigned char hidDescriptor[] =
 {
     0x09,               /* 0  bLength */
     0x21,               /* 1  bDescriptorType (HID) */
-    0x10,               /* 2  bcdHID */
-    0x11,               /* 3  bcdHID */
+    0x11,               /* 2  bcdHID */
+    0x01,               /* 3  bcdHID */
     0x00,               /* 4  bCountryCode */
     0x01,               /* 5  bNumDescriptors */
     0x22,               /* 6  bDescriptorType[0] (Report) */

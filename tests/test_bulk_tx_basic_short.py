@@ -12,9 +12,6 @@ def test_session(ep, address, bus_speed, dummy_threads):
     start_length = 0
     end_length = 7
 
-    # if dummy_threads > 3 and bus_speed == "HS":
-    #    pytest.xfail("Known failure dummy thread > 3 @ HS")
-
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )

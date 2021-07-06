@@ -128,7 +128,10 @@ class ComparisonTester:
                     )
 
         if num_expected > line_num + 1:
-            self.record_failure("Length of expected output greater than output")
+            self.record_failure(
+                "Length of expected output greater than output\nMissing:\n"
+                + "\n".join(expected[line_num + 1 :])
+            )
         output = {"output": "".join(output)}
 
         if not self.result:

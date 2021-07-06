@@ -19,7 +19,7 @@ PARAMS = {
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 4, 5],
+        "dummy_threads": [0, 5, 6],
         "core_freq": [600, 800],
     },
     "default": {
@@ -27,15 +27,15 @@ PARAMS = {
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 4, 5],
+        "dummy_threads": [0, 5, 6],
         "core_freq": [600],
     },
     "smoke": {
         "arch": ["xs3"],
-        "ep": [2],
+        "ep": [1, 2],
         "address": [0],
         "bus_speed": ["HS"],
-        "dummy_threads": [4],
+        "dummy_threads": [6],
         "core_freq": [600],
     },
 }
@@ -117,7 +117,8 @@ def test_RunUsbSession(
     testname, extension = os.path.splitext(os.path.basename(__file__))
     seed = random.randint(0, sys.maxsize)
 
-    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
+    # TODO it would be good to sanity check core_freq == xe.freq
+    (clk_60, usb_phy) = get_usb_clk_phy(core_freq, verbose=False, arch=arch)
     tester_list.extend(
         do_usb_test(
             arch,

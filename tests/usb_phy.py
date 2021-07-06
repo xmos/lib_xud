@@ -153,7 +153,7 @@ class UsbPhy(Pyxsim.SimThread):
 
         if self._do_timeout:
             # Allow time for a maximum sized packet to arrive
-            timeout_time = self._clock.get_bit_time() * 1522 * 8
+            timeout_time = self._clock.period_ns * 1024
 
             if self._expect_loopback:
                 # If looping back then take into account all the data

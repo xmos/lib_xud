@@ -103,9 +103,11 @@ def run_on(**kwargs):
 
 
 FIXTURE_TO_DEFINE = {
+    "core_freq": "TEST_FREQ",
+    "arch": "TEST_ARCH",
+    "dummy_threads": "TEST_DTHREADS",
     "ep": "TEST_EP_NUM",
     "address": "XUD_STARTUP_ADDRESS",
-    "dummy_threads": "DUMMY_THREAD_COUNT",
 }
 
 
@@ -125,27 +127,36 @@ def do_usb_test(
     extra_tasks=[],
     verbose=False,
 ):
+    build_options = []
 
+    # Flags for makefile
+    for k, v in FIXTURE_TO_DEFINE.items():
+        build_options += [str(v) + "=" + str(locals()[k])]
+
+    # Defines for DUT code
+    # TODO shoud the makefile set thease based on the above?
     build_options_str = "CFLAGS="
     for k, v in FIXTURE_TO_DEFINE.items():
         build_options_str += "-D" + str(v) + "=" + str(locals()[k]) + " "
 
-    build_options = build_options_str
+    build_options = build_options + [build_options_str]
 
     """Shared test code for all RX tests using the test_rx application."""
     testname, extension = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    binary = (
-        "{testname}/bin/{arch}_{core_freq}/{testname}_{arch}_{core_freq}.xe".format(
-            testname=testname, arch=arch, core_freq=core_freq
-        )
+    binary = "{testname}/bin/{arch}_{core_freq}_{dummy_threads}_{ep}_{address}/{testname}_{arch}_{core_freq}_{dummy_threads}_{ep}_{address}.xe".format(
+        testname=testname,
+        arch=arch,
+        core_freq=core_freq,
+        dummy_threads=dummy_threads,
+        ep=ep,
+        address=address,
     )
 
-    # Since we use the same src with different defines (setting CFLAGS) we need to clean
-    # TODO can we avoid this with build configs or similar?
+    # Do not need to clean since different build will different params go to separate binaries
     build_success, build_output = Pyxsim._build(
-        binary, do_clean=True, build_options=build_options
+        binary, do_clean=False, build_options=build_options
     )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"

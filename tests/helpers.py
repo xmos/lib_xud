@@ -151,10 +151,9 @@ def do_usb_test(
         )
     )
 
-    # Since we use the same src with different defines (setting CFLAGS) we need to clean
-    # TODO can we avoid this with build configs or similar?
+    # Do not need to clean since different build will different params go to separate binaries
     build_success, build_output = Pyxsim._build(
-        binary, do_clean=True, build_options=build_options
+        binary, do_clean=False, build_options=build_options
     )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"

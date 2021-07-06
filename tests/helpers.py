@@ -145,10 +145,12 @@ def do_usb_test(
     testname, extension = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    binary = (
-        "{testname}/bin/{arch}_{core_freq}_{dummy_threads}_{ep}/{testname}_{arch}_{core_freq}_{dummy_threads}_{ep}.xe".format(
-            testname=testname, arch=arch, core_freq=core_freq, dummy_threads=dummy_threads, ep=ep
-        )
+    binary = "{testname}/bin/{arch}_{core_freq}_{dummy_threads}_{ep}/{testname}_{arch}_{core_freq}_{dummy_threads}_{ep}.xe".format(
+        testname=testname,
+        arch=arch,
+        core_freq=core_freq,
+        dummy_threads=dummy_threads,
+        ep=ep,
     )
 
     # Do not need to clean since different build will different params go to separate binaries

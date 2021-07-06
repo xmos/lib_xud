@@ -24,6 +24,22 @@ COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
 
 TEST_FLAGS ?=
 
+ifndef TEST_ARCH
+$(error TEST_ARCH is not set)
+endif
+
+ifndef TEST_FREQ
+$(error TEST_FREQ is not set)
+endif
+
+ifndef TEST_DTHREADS
+$(error TEST_DTHREADS is not set)
+endif
+
+ifndef TEST_EP_NUM
+$(error TEST_EP_NUM is not set)
+endif
+
 XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM) = $(TEST_FLAGS) $(COMMON_FLAGS) 
 
 # The TARGET variable determines what target system the application is 

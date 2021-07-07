@@ -23,7 +23,7 @@ class UsbPhyUtmi(UsbPhy):
         verbose=False,
         do_timeout=True,
         complete_fn=None,
-        dut_exit_time=25000,
+        dut_exit_time=30000,
     ):
 
         self._do_tokens = False

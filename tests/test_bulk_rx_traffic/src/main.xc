@@ -48,6 +48,14 @@ int main()
         {
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
 
+            /* Give some time for the traffic EP transactions to be sent */
+            {
+                timer t;
+                unsigned time;
+                t :> time;
+                t when timerafter(time + 10000) :> int _;
+            }
+
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);
             

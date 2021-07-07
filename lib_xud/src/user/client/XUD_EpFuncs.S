@@ -7,7 +7,7 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_AlignmentDefines.h"
 
-#if !defined __XS2A__
+#if defined __XS2A__
 .set too_many_cores, main.maxcores > 6
 .assert 0, too_many_cores, "Warning: More than 6 cores used on a tile. Ensure this is not the case on tile running XUD."
 #endif
@@ -20,7 +20,6 @@
 ep_info_address:
 .long	ep_info
 .cc_bottom ep_info_address.data
-
 
 
 //int XUD_GetSetupData(XUD_ep e_out, unsigned buffer[], unsigned &length);

@@ -62,7 +62,7 @@ USB_PKT_TIMINGS = USB_PKT_TIMINGS_TIGHT
 
 class UsbPhy(Pyxsim.SimThread):
 
-    # Time in ns from the last packet being sent until the end of test is signalled to the DUT
+    # Time in ns from the last event packet being sent until the end of test
     END_OF_TEST_TIME = 5000
 
     def __init__(
@@ -81,14 +81,11 @@ class UsbPhy(Pyxsim.SimThread):
         clock,
         initial_delay,
         verbose,
-        test_ctrl,
         do_timeout,
         complete_fn,
-        expect_loopback,
         dut_exit_time,
     ):
         self._name = name
-        self._test_ctrl = test_ctrl
         self._rxd = rxd  # Rx data
         self._rxa = rxa  # Rx Active
         self._rxdv = rxdv  # Rx valid
@@ -105,7 +102,6 @@ class UsbPhy(Pyxsim.SimThread):
         self._verbose = verbose
         self._do_timeout = do_timeout
         self._complete_fn = complete_fn
-        self._expect_loopback = expect_loopback
         self._dut_exit_time = dut_exit_time
 
     @property
@@ -148,34 +144,10 @@ class UsbPhy(Pyxsim.SimThread):
         if self._complete_fn:
             self._complete_fn(self)
 
-        # Give the DUT a reasonable time to process the packet
+        # Give the DUT a reasonable time to process the last packet
         self.wait_until(self.xsi.get_time() + self.END_OF_TEST_TIME)
 
         if self._do_timeout:
-            # Allow time for a maximum sized packet to arrive
-            timeout_time = self._clock.period_ns * 1024
-
-            if self._expect_loopback:
-                # If looping back then take into account all the data
-                total_packet_bytes = sum(
-                    [len(packet.get_bytes()) for packet in self._session.events]
-                )
-                total_data_bits = total_packet_bytes * 8
-
-                # Allow 2 cycles per bit
-                timeout_time += 2 * total_data_bits
-
-                # The clock ticks are 2ns long
-                timeout_time *= 2
-
-                # The events are copied to and from the user application
-                timeout_time *= 2
-
-            self.wait_until(self.xsi.get_time() + timeout_time)
-
-            if self._test_ctrl:
-                # Indicate to the DUT that the test has finished
-                self.xsi.drive_port_pins(self._test_ctrl, 1)
 
             # Allow time for the DUT to exit
             self.wait_until(self.xsi.get_time() + self._dut_exit_time)

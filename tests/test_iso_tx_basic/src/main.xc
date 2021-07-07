@@ -1,90 +1,44 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-/*
- * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
- * in both directions between the ports.
- *
- * NOTE: The src/testbenches/ExampleTestbench must have been compiled for this to run without error.
- *
- */
-#include <xs1.h>
-#include <print.h>
-#include <stdio.h>
-#include "xud.h"
-#include "platform.h"
-#include "xc_ptr.h"
 
-#define XUD_EP_COUNT_OUT   4
-#define XUD_EP_COUNT_IN    4
+#ifndef EP_COUNT_OUT
+#define EP_COUNT_OUT   (6)
+#endif
 
+#ifndef EP_COUNT_IN
+#define EP_COUNT_IN    (6)
+#endif
 
-/* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
-                                                XUD_EPTYPE_BUL,
-                                                 XUD_EPTYPE_BUL,
-                                                 XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, 
-                                                XUD_EPTYPE_BUL,
-                                                XUD_EPTYPE_BUL,
+#ifndef PKT_LENGTH_START
+#define PKT_LENGTH_START 	(10)
+#endif
+
+#ifndef PKT_LENGTH_END
+#define PKT_LENGTH_END 		(14)
+#endif
+
+#include "shared.h"
+
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO};
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, 
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
                                                 XUD_EPTYPE_ISO};
 
-void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend ?c_usb_test);
-
-void exit(int);
-
-
-unsigned char g_rxDataCheck[5] = {0, 0, 0, 0, 0};
-unsigned char g_txDataCheck[5] = {0,0,0,0,0,};
-unsigned g_txLength[5] = {0,0,0,0,0};
-
-
-#pragma unsafe arrays
-void SendTxPacket(XUD_ep ep, int length, int epNum)
+unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
-    unsigned char buffer[1024];
-    unsigned char x;
+    unsigned fail = TestEp_Tx(c_ep_in[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
 
-    for (int i = 0; i < length; i++)
-    {
-        buffer[i] = g_txDataCheck[epNum]++;
-    }
-
-    XUD_SetBuffer(ep, buffer, length);
+    return fail;
 }
 
-int TestEp(chanend c_out, chanend c_in, int epNum)
-{
-    unsigned int length;
-    XUD_Result_t res;
-
-    XUD_ep ep_out = XUD_InitEp(c_out);
-    XUD_ep ep_in  = XUD_InitEp(c_in);
-
-    /* Buffer for Setup data */
-    unsigned char buffer[1024];
-
-    for(int i = 10; i <= 14; i++)
-    {    
-        SendTxPacket(ep_in, i, epNum);
-    }
-
-    exit(0);
-}
+#include "test_main.xc"
 
 
-#define USB_CORE 0
-int main()
-{
-    chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-
-    par
-    {
-        
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
-                                null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
-        TestEp(c_ep_out[3], c_ep_in[3], 1);
-    }
-
-    return 0;
-}

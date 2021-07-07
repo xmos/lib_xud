@@ -1,6 +1,6 @@
 // Copyright 2011-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifdef ARCH_L
+#if defined (__XS2A__)
 
 //  PID jump table
 .section .dp.data, "adw", @progbits
@@ -283,7 +283,7 @@ PidJumpTable:
 
 #endif
 
-#ifdef ARCH_G
+#if defined(__XS3A__)
 // Generated using genpidtable.c
 .section .dp.data, "adw", @progbits
 .globl PidJumpTable

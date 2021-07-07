@@ -1,56 +1,78 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+from usb_packet import (
+    TokenPacket,
+    TxDataPacket,
+    RxDataPacket,
+    TxHandshakePacket,
+    RxHandshakePacket,
+    USB_PID,
+)
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
+import pytest
+from conftest import PARAMS, test_RunUsbSession
+from copy import deepcopy
 
-import random
-import xmostest
-from usb_packet import AppendSetupToken, TxDataPacket, RxDataPacket, TokenPacket, RxHandshakePacket, TxHandshakePacket
-from usb_clock import Clock
-from helpers import do_rx_test, packet_processing_time, get_dut_address
-from helpers import choose_small_frame_size, check_received_packet, runall_rx
+# Only test on EP 0 - Update params
+PARAMS = deepcopy(PARAMS)
+PARAMS["default"].update({"ep": [0]})
+PARAMS["smoke"].update({"ep": [0]})
 
 
-# Single, setup transaction to EP 0
+@pytest.fixture
+def test_session(ep, address, bus_speed, dummy_threads):
 
-def do_test(arch, tx_clk, tx_phy, seed):
-    rand = random.Random()
-    rand.seed(seed)
+    ied = 500
 
-    ep = 0
+    # if bus_speed == "HS" and dummy_threads > 4:
+    #    pytest.xfail("Known fail when dummy threads > 4")
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
+    session = UsbSession(
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
+    )
 
-    AppendSetupToken(packets, ep)
+    # SETUP transaction
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["SETUP"],
+            address=address,
+            endpoint=ep,
+        )
+    )
+    session.add_event(
+        TxDataPacket(
+            dataPayload=session.getPayload_out(ep, 8),
+            pid=USB_PID["DATA0"],
+        )
+    )
+    session.add_event(RxHandshakePacket())
 
-    packets.append(TxDataPacket(rand, length=8, pid=3))
-    packets.append(RxHandshakePacket(timeout=11))
+    # OUT transaction
+    # Note, quite big gap to avoid nak
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["OUT"],
+            address=address,
+            endpoint=ep,
+            interEventDelay=10000,
+        )
+    )
+    session.add_event(
+        TxDataPacket(
+            dataPayload=session.getPayload_out(ep, 10),
+            pid=USB_PID["DATA1"],
+        )
+    )
+    session.add_event(RxHandshakePacket())
 
-    # Note, quite big gap to allow checking.
+    # Expect 0 length IN transaction
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["IN"], address=address, endpoint=ep, interEventDelay=ied
+        )
+    )
+    session.add_event(RxDataPacket(dataPayload=[], pid=USB_PID["DATA1"]))
+    session.add_event(TxHandshakePacket())
 
-    packets.append(TokenPacket( 
-        inter_pkt_gap=2000, 
-        pid=0xe1, #OUT
-        endpoint=ep))
-
-    packets.append(TxDataPacket(rand, length=10, pid=0xb))
-    
-    packets.append(RxHandshakePacket())
-
-    packets.append(TokenPacket( 
-        inter_pkt_gap=2000, 
-        pid=0x69, #IN
-        endpoint=ep))
-   
-    #Expect 0-length
-    packets.append(RxDataPacket(rand, length=0, pid=0x4b))
-
-    # Send ACK
-    packets.append(TxHandshakePacket())
-
-    do_rx_test(arch, tx_clk, tx_phy, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
-
-def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    return session

@@ -1,56 +1,74 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
+import pytest
+from conftest import PARAMS, test_RunUsbSession
 
-import random
-import xmostest
-from  usb_packet import *
-from usb_clock import Clock
-from helpers import do_rx_test, packet_processing_time, get_dut_address
-from helpers import choose_small_frame_size, check_received_packet, runall_rx
 
-def do_test(arch, clk, phy, seed):
-    
-    rand = random.Random()
-    rand.seed(seed)
+@pytest.fixture
+def test_session(ep, address, bus_speed):
 
-    ep_loopback = 3
-    ep_loopback_kill = 2
+    ep_loopback = ep
+    ep_loopback_kill = ep + 1
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
+    start_length = 200
+    end_length = 203
+    session = UsbSession(
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
+    )
 
-    dataval = 0;
-    data_pid = 0x3 #DATA0 
+    # TODO randomise packet lengths and data
+    for pktLength in range(start_length, end_length + 1):
+        session.add_event(
+            UsbTransaction(
+                session,
+                deviceAddress=address,
+                endpointNumber=ep_loopback,
+                endpointType="ISO",
+                direction="OUT",
+                dataLength=pktLength,
+            )
+        )
 
-    for pkt_length in range(200, 204):
-        
-        AppendOutToken(packets, ep_loopback)
-        packets.append(TxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid)) #DATA0
-   
-        #XXwas min IPG supported on iso loopback to not nak
-        #This was 420, had to increase when moved to lib_xud (14.1.2 tools)
+        # Was min IPG supported on iso loopback to not nak
+        # This was 420, had to increase when moved to lib_xud (14.1.2 tools)
         # increased again from 437 when SETUP/OUT checking added
-        AppendInToken(packets, ep_loopback, inter_pkt_gap=477)
-        packets.append(RxDataPacket(rand, data_start_val=dataval, length=pkt_length, pid=data_pid, timeout=9)) #DATA0
+        # increaed from 477 when adding xs3
+        session.add_event(
+            UsbTransaction(
+                session,
+                deviceAddress=address,
+                endpointNumber=ep_loopback,
+                endpointType="ISO",
+                direction="IN",
+                dataLength=pktLength,
+                interEventDelay=498,
+            )
+        )
 
-        #No toggle for Iso
+    pktLength = 10
 
-    pkt_length = 10
+    # Loopback and die..
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep_loopback_kill,
+            endpointType="ISO",
+            direction="OUT",
+            dataLength=pktLength,
+        )
+    )
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep_loopback_kill,
+            endpointType="ISO",
+            direction="IN",
+            dataLength=pktLength,
+        )
+    )
 
-    #Loopback and die..
-    AppendOutToken(packets, ep_loopback_kill)
-    packets.append(TxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
-    packets.append(RxHandshakePacket())
-   
-    AppendInToken(packets, ep_loopback_kill, inter_pkt_gap=397)
-    packets.append(RxDataPacket(rand, length=pkt_length, pid=3)) #DATA0
-    packets.append(TxHandshakePacket())
-
-
-    do_rx_test(arch, clk, phy, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
-
-def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    return session

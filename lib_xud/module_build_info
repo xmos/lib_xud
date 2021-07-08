@@ -44,12 +44,9 @@ EXCLUDE_FILES += XUD_CrcAddrCheck.S \
                  XUD_G_Crc.S \
                  XUD_PidJumpTable.S \
                  XUD_RxData.S \
-                 XUD_Token_In.S \
                  XUD_Token_In_DI.S \
-                 XUD_Token_Out.S \
                  XUD_Token_Out_DI.S \
                  XUD_Token_Ping.S \
                  XUD_Token_SOF.S \
-                 XUD_Token_Setup.S \
                  XUD_Token_Setup_DI.S \
                  XUD_TokenJmp.S

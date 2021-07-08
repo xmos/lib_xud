@@ -5,6 +5,11 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
 from conftest import PARAMS, test_RunUsbSession
+from copy import deepcopy
+
+PARAMS = deepcopy(PARAMS)
+for k in PARAMS:
+    PARAMS[k].update({"dummy_threads": [4]})
 
 
 @pytest.fixture

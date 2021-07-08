@@ -52,6 +52,7 @@ suspend_t_wtwrsths:
 #define STACK_TXCRC_INIT        (20)
 #define STACK_RXCRC_INIT        (21)
 #define STACK_PIDJUMPTABLE      (22)
+#define STACK_HANDSHAKETABLEIN  (23)
 
 // Params
 #define STACK_VTOK_PORT     (STACK_EXTEND + 1)
@@ -248,9 +249,9 @@ CrcRxResidualsOnStack:
 
 ConfigSofJump:
     ldw        r11, sp[STACK_SOFCHAN]
+    ldaw       r10, dp[PidJumpTable]
     bt         r11, ConfigSofJump_Done
     ldap       r11, Pid_Sof_NoChan
-    ldaw       r10, dp[PidJumpTable]
 #ifdef __XS2A__
     stw        r11, r10[5]
 #else
@@ -259,6 +260,8 @@ ConfigSofJump:
 #endif
 ConfigSofJump_Done:
     stw        r10, sp[STACK_PIDJUMPTABLE]
+    ldaw       r10, dp[handshakeTable_IN]           // Load handshake table
+    stw        r10, sp[STACK_HANDSHAKETABLEIN]
 
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ

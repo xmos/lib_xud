@@ -10,24 +10,32 @@ from helpers import get_usb_clk_phy, do_usb_test
 from pathlib import Path
 import shutil
 
-# Note, no current support for XS2
+# Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn"]
 
 PARAMS = {
-    "default": {
+    "extended": {
         "arch": ["xs3"],
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 4, 5],
+        "dummy_threads": [0, 5, 6],
         "core_freq": [600, 800],
+    },
+    "default": {
+        "arch": ["xs3"],
+        "ep": [1, 2],
+        "address": [0, 1],
+        "bus_speed": ["HS", "FS"],
+        "dummy_threads": [0, 6],
+        "core_freq": [600],
     },
     "smoke": {
         "arch": ["xs3"],
         "ep": [1],
-        "address": [0],
-        "bus_speed": ["HS", "FS"],
-        "dummy_threads": [4],
+        "address": [1],
+        "bus_speed": ["HS"],
+        "dummy_threads": [6],
         "core_freq": [600],
     },
 }
@@ -35,6 +43,7 @@ PARAMS = {
 
 def pytest_addoption(parser):
     parser.addoption("--smoke", action="store_true", help="Smoke test")
+    parser.addoption("--extended", action="store_true", help="Extended test")
     parser.addoption(
         "--enabletracing",
         action="store_true",
@@ -52,6 +61,8 @@ def pytest_generate_tests(metafunc):
         PARAMS = metafunc.module.PARAMS
         if metafunc.config.getoption("smoke"):
             params = PARAMS.get("smoke", PARAMS["default"])
+        if metafunc.config.getoption("extended"):
+            params = PARAMS.get("extended", PARAMS["default"])
         else:
             params = PARAMS["default"]
     except AttributeError:
@@ -109,7 +120,8 @@ def test_RunUsbSession(
     testname, extension = os.path.splitext(os.path.basename(__file__))
     seed = random.randint(0, sys.maxsize)
 
-    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
+    # TODO it would be good to sanity check core_freq == xe.freq
+    (clk_60, usb_phy) = get_usb_clk_phy(core_freq, verbose=False, arch=arch)
     tester_list.extend(
         do_usb_test(
             arch,

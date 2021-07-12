@@ -14,7 +14,7 @@ Pid_Setup:
     ldw        r1, r3[3]                        // Load buffer
 
 LoadSetupBuffer:
-    bl         doRXData			                   // RXData writes available data to buffer and does crc check.
+    bl         doRXData                         // RXData writes available data to buffer and does crc check.
                                                 // r8: Data tail size (bytes)
     {clre;     eq      r1, r6, r11}             // Check for good CRC16
     bf         r1, NextTokenAfterOut            // Check for bad crc

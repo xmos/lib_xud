@@ -56,6 +56,12 @@ def pytest_configure(config):
     os.environ["enabletracing"] = str(config.getoption("enabletracing"))
 
 
+# TODO: this is deprecated, find a better way
+def pytest_cmdline_preparse(config, args):
+    if "--smoke" in args and "--extended" in args:
+        raise pytest.UsageError('Only one of "--smoke" and "--extended" can be used')
+
+
 def pytest_generate_tests(metafunc):
     try:
         PARAMS = metafunc.module.PARAMS

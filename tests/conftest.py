@@ -61,7 +61,7 @@ def pytest_generate_tests(metafunc):
         PARAMS = metafunc.module.PARAMS
         if metafunc.config.getoption("smoke"):
             params = PARAMS.get("smoke", PARAMS["default"])
-        if metafunc.config.getoption("extended"):
+        elif metafunc.config.getoption("extended"):
             params = PARAMS.get("extended", PARAMS["default"])
         else:
             params = PARAMS["default"]

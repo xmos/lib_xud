@@ -25,13 +25,13 @@ PARAMS["extended"].update({"ep": [0]})
 def test_session(ep, address, bus_speed, dummy_threads):
 
     ied = 500
-
-    # if bus_speed == "HS" and dummy_threads > 4:
-    #    pytest.xfail("Known fail when dummy threads > 4")
+    pktLength = 10
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
+
+    #### Ctrl transaction 0
 
     # SETUP transaction
     session.add_event(
@@ -75,5 +75,83 @@ def test_session(ep, address, bus_speed, dummy_threads):
     )
     session.add_event(RxDataPacket(dataPayload=[], pid=USB_PID["DATA1"]))
     session.add_event(TxHandshakePacket())
+
+    #### Ctrl transaction 1
+
+    # SETUP transaction
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["SETUP"],
+            address=address,
+            endpoint=ep,
+            interEventDelay=10000,
+        )
+    )
+    session.add_event(
+        TxDataPacket(
+            dataPayload=session.getPayload_out(ep, 8),
+            pid=USB_PID["DATA0"],
+        )
+    )
+    session.add_event(RxHandshakePacket())
+
+    # Check that the EP is now Halted
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
+            dataLength=pktLength,
+            halted=True,
+            interEventDelay=1000,
+        )
+    )
+
+    #### Ctrl transaction 2
+
+    # SETUP transaction
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["SETUP"],
+            address=address,
+            endpoint=ep,
+            interEventDelay=10000,
+        )
+    )
+    session.add_event(
+        TxDataPacket(
+            dataPayload=session.getPayload_out(ep, 8),
+            pid=USB_PID["DATA0"],
+        )
+    )
+    session.add_event(RxHandshakePacket())
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
+            dataLength=pktLength,
+            halted=False,
+            interEventDelay=1000,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=0,
+            halted=False,
+            interEventDelay=1000,
+        )
+    )
 
     return session

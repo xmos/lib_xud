@@ -101,7 +101,7 @@ def test_session(ep, address, bus_speed, dummy_threads):
             session,
             deviceAddress=address,
             endpointNumber=ep,
-            endpointType="BULK",
+            endpointType="CONTROL",
             direction="IN",
             dataLength=pktLength,
             halted=True,
@@ -133,11 +133,12 @@ def test_session(ep, address, bus_speed, dummy_threads):
             session,
             deviceAddress=address,
             endpointNumber=ep,
-            endpointType="BULK",
+            endpointType="CONTROL",
             direction="IN",
             dataLength=pktLength,
             halted=False,
             interEventDelay=1000,
+            resetDataPid=True,
         )
     )
 
@@ -151,6 +152,7 @@ def test_session(ep, address, bus_speed, dummy_threads):
             dataLength=0,
             halted=False,
             interEventDelay=1000,
+            resetDataPid=True,
         )
     )
 

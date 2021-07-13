@@ -13,7 +13,7 @@ setuptools.setup(
     name="lib_xud",
     packages=setuptools.find_packages(),
     install_requires=[
-        "black~=21.5",
+        "black~=21.5b1",
         "pytest~=6.2",
         "pytest-xdist~=2.3",
     ],

@@ -141,7 +141,7 @@ USB Vendor Specific Class specific defines
 The USB Vendor Specific Class is configured in the file ``endpoint0.xc``. 
 Below there are a set of standard defines which are used to configure the 
 USB device descriptors to setup a USB vendor specific device running on an 
-xCORE-USB microcontroller.
+xCORE microcontroller.
 
 .. literalinclude:: endpoint0.xc
    :start-on: VENDOR_SPECIFIC_CLASS
@@ -228,7 +228,7 @@ Demo Hardware Setup
 
 To setup the demo hardware the following boards are required.
 
-  - xCORE-200 or xCORE.AI EXPLORER board
+  - xCORE-200 or xCORE.AI EXPLORER Board
   - xTAG debug adaptor
   - 1 x Micro-B USB cable
   - The xCORE-200 EXPLORER board requires an additonal USB Micro-b cable to supply power
@@ -311,7 +311,7 @@ Launching the demo application
 
 Once the demo example has been built either from the command line using
 xmake or via the build mechanism of xTIMEcomposer studio the applcation
-can be executed on the xCORE-USB sliceKIT. 
+can be executed on the xCORE-200 or xCORE.AI EXPLORER Board. 
 
 Once built there will be a ``bin`` directory within the project which
 contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
@@ -321,7 +321,7 @@ Launching from the command line
 ...............................
 
 From the command line the ``xrun`` tool is used to download code to the
-xCORE-USB device. Changing into the bin directory of the project
+xCORE device. Changing into the bin directory of the project
 the code can be executed on the xCORE microcontroller as follows::
 
 > xrun app_vendor_specific_demo.xe          <-- Download and execute the xCORE code

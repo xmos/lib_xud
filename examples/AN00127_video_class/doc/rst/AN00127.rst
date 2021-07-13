@@ -73,9 +73,9 @@ To start using the USB library, you need to add **lib_usb** to your makefile::
 
   USED_MODULES = ... lib_xud ...
 
-You can then access the USB functions in your source code via the *usb_device.h* header file::
+You can then access the USB functions in your source code via the *xud_device.h* header file::
 
-  #include <usb_device.h>
+  #include "xud_device.h"
 
 Source code files
 .................
@@ -456,31 +456,26 @@ Demo Hardware Setup
 
 To setup the demo hardware the following boards are required.
 
-  - xCORE-USB slicekKIT (XK-SK-U16-ST)
+  - xCORE-200 or xCORE.AI EXPLORER board
+  - xTAG debug adaptor
+  - 1 x Micro-B USB cable
+  - The xCORE-200 EXPLOER board requires an additonal USB Micro-b cable to supply power
 
-      - xCORE-USB Core board.
-      - USB A/B sliceCARD.
-      - xTAG-2 debug adaptor
-      - Power supply
-
-.. figure:: images/usb-slicekit.*
+.. figure:: images/explorerkit-200.*
    :scale: 110%
    :align: center
 
-   XMOS xCORE-USB sliceKIT
+   XMOS xCORE-200 EXPLORER Board
 
-The hardware should be configured as displayed above for this demo:
+The hardware should be configured as follows for this demonstration:
 
   - The XTAG debug adapter should be connected to the XSYS connector and
     the XTAG USB should be connected to the host machine.
 
-  - The USB sliceCARD should be connected to the U slot (J4 header) of the xCORE-USB Core 
-    board and the other end of USB sliceCARD should be connected to host machine using a USB 
+  - The EXPLORER board shoudl be conneted to the host machine using a USB 
     cable.
 
-  - The XLINK switch on the core board should be set to the ON position.
-
-  - The xCORE-USB core board should have the power cable connected.
+  - (The xCORE-200 EXPLOERE board should have the power supplied via the *5V IN* receptical)
 
 |newpage|
 

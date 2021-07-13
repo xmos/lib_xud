@@ -25,18 +25,17 @@ Floppy disk). This example application uses the on-board serial flash M25P16 as 
 Required tools and libraries
 ............................
 
-* xTIMEcomposer Tools - Version 14.0.0
-* XMOS USB Device Library - Version 3.1.0
+* xTIMEcomposer Tools - Version >= 15.0.0
+* XMOS USB Device Library - Version >= 2.0.0
 
 Required hardware
 .................
 
-This application note is designed to run on an XMOS xCORE-USB series device. 
+This application note is designed to run on an XMOS xCORE-200 or xCORE.AI series device. 
 
 The example code provided with the application has been implemented and tested
-on the xCORE-USB sliceKIT 1V2 (XP-SKC-U16) core board using USB AB sliceCARD 1V2 (XA-SK-USB-AB) 
-but there is no dependency on this board and it can be modified to run on any development board 
-which uses an xCORE-USB series device.
+on the xCORE.AI EXPLORER board but there is no dependency on this board and it can be modified to run on any development board 
+which uses an xCORE-200 or xCORE.AI series device.
 
 Prerequisites
 .............

@@ -27,10 +27,8 @@ def create_if_needed(folder):
 def get_usb_clk_phy(
     coreFreqMhz,
     verbose=True,
-    test_ctrl=None,
     do_timeout=True,
     complete_fn=None,
-    expect_loopback=False,
     dut_exit_time=350000,
     arch="xs2",
 ):
@@ -50,10 +48,8 @@ def get_usb_clk_phy(
             "XS1_USB_TERMSEL",
             clk,
             verbose=verbose,
-            test_ctrl=test_ctrl,
             do_timeout=do_timeout,
             complete_fn=complete_fn,
-            expect_loopback=expect_loopback,
             dut_exit_time=dut_exit_time,
         )
 
@@ -72,10 +68,8 @@ def get_usb_clk_phy(
             "XS1_USB_TERMSEL",
             clk,
             verbose=verbose,
-            test_ctrl=test_ctrl,
             do_timeout=do_timeout,
             complete_fn=complete_fn,
-            expect_loopback=expect_loopback,
             dut_exit_time=dut_exit_time,
         )
 
@@ -226,7 +220,7 @@ def create_expect(arch, session, filename, verbose=False):
 def get_sim_args(testname, clk, phy, arch="xs2"):
     sim_args = []
 
-    if bool(os.getenv("enabletracing")):
+    if eval(os.getenv("enabletracing")):
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(

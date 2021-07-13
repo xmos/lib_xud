@@ -11,9 +11,6 @@ from conftest import PARAMS, test_RunUsbSession
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    if bus_speed == "FS":
-        pytest.xfail("Known failure at FS")
-
     ied = 500
 
     trafficAddress1 = (address + 1) % 128

@@ -18,6 +18,7 @@ from copy import deepcopy
 PARAMS = deepcopy(PARAMS)
 PARAMS["default"].update({"ep": [0]})
 PARAMS["smoke"].update({"ep": [0]})
+PARAMS["extended"].update({"ep": [0]})
 
 
 @pytest.fixture

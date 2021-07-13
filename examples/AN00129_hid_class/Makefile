@@ -25,7 +25,7 @@ APP_NAME = app_hid_mouse_demo
 # These flags define two build configurations - one for U-series and one for
 # the xCORE-200 series.
 
-XCC_FLAGS_X200  = -O3 -report -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
+XCC_FLAGS_X200  = -O3 -report
 XCC_FLAGS_AI  = -O3 -report
 
 # The USED_MODULES variable lists other module used by the application. 

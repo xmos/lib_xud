@@ -404,7 +404,7 @@ To setup the demo hardware the following boards are required.
   - xCORE-200 or xCORE.AI EXPLORER board
   - xTAG debug adaptor
   - 1 x Micro-B USB cable
-  - The xCORE-200 EXPLOER board requires an additonal USB Micro-b cable to supply power
+  - The xCORE-200 EXPLORER board requires an additonal USB Micro-b cable to supply power
 
 .. figure:: images/explorerkit-200.*
    :scale: 110%

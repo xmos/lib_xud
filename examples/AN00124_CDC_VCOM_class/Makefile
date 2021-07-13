@@ -14,7 +14,7 @@ APP_NAME = app_usb_cdc_demo
 
 BUILD_FLAGS = -O3 -g -report
 
-XCC_FLAGS_X200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
+XCC_FLAGS_200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
 XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600
 
 # The TARGET variable determines what target system the application is

@@ -40,10 +40,10 @@ Required tools and libraries
 Required hardware
 .................
 
-This application note is designed to run on an XMOS xCORE-200 or xCORE.AI series devices.
+This application note is designed to run on XMOS xCORE-200 or xCORE.AI series devices.
 
-The example code provided with the application has been implemented and tested
-on the xCORE.AI EXPLORER board but there is no dependancy on this board
+The example code provided with this application note has been implemented and tested
+on the xCORE.AI EXPLORER board but there are no dependencies on this board
 and it can be modified to run on any development board which uses an xCORE-200 or xCORE.AI series device.
 
 Prerequisites

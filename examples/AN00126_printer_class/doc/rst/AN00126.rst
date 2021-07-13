@@ -73,9 +73,9 @@ To start using the USB library, you need to add ``lib_xud`` to your makefile::
 
 	USED_MODULES = ... lib_xud lib_logging
 
-You can then access the USB functions in your source code via the usb_device.h header file::
+You can then access the USB functions in your source code via the xud_device.h header file::
 
-	#include <usb_device.h>
+	#include "xud_device.h"
 
 Declaring resource and setting up the USB components
 ....................................................

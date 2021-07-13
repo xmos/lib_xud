@@ -14,8 +14,8 @@ APP_NAME = app_printer_demo
 
 BUILD_FLAGS = -O3 -report -DUSE_XSCOPE=1 -fxscope
 
-XCC_FLAGS_xcore200 = $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
-XCC_FLAGS_xcoreai = $(BUILD_FLAGS)
+XCC_FLAGS_X200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
+XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600
 
 # The TARGET variable determines what target system the application is
 # compiled for. It either refers to an XN file in the source directories

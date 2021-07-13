@@ -13,7 +13,9 @@ setuptools.setup(
     name="lib_xud",
     packages=setuptools.find_packages(),
     install_requires=[
-        "flake8~=3.8",
+        "black~=21.5",
+        "pytest~=6.2",
+        "pytest-xdist~=2.3",
     ],
     dependency_links=[],
 )

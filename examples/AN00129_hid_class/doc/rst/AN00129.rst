@@ -239,7 +239,7 @@ From this you can see the following.
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect the xCORE.AI EXPLORER board USB-B and xTAG-3/4 USB-microB
+To run the demo, connect the xCORE.AI/xCORE-200 EXPLORER board USB-B and xTAG-3/4 USB-microB
 connectors to separate USB connectors on your development PC. 
 
 .. figure:: images/explorerkit-200.*

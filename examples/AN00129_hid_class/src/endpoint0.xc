@@ -86,7 +86,7 @@ static unsigned char cfgDesc[] = {
     0x00,                 /* 4  bCountryCode */
     0x01,                 /* 5  bNumDescriptors */
     0x22,                 /* 6  bDescriptorType[0] (Report) */
-    0x48,                 /* 7  wDescriptorLength */
+    0x32,                 /* 7  wDescriptorLength */
     0x00,                 /* 8  wDescriptorLength */
 
     0x07,                 /* 0  bLength */
@@ -95,7 +95,7 @@ static unsigned char cfgDesc[] = {
     0x03,                 /* 3  bmAttributes */
     0x40,                 /* 4  wMaxPacketSize */
     0x00,                 /* 5  wMaxPacketSize */
-    0x01                  /* 6  bInterval */
+    0x0a                  /* 6  bInterval */
 };
 
 static unsigned char hidDescriptor[] =
@@ -107,50 +107,42 @@ static unsigned char hidDescriptor[] =
     0x00,               /* 4  bCountryCode */
     0x01,               /* 5  bNumDescriptors */
     0x22,               /* 6  bDescriptorType[0] (Report) */
-    0x48,               /* 7  wDescriptorLength */
+    0x32,               /* 7  wDescriptorLength */
     0x00,               /* 8  wDescriptorLength */
 };
 
 /* HID Report Descriptor */
 static unsigned char hidReportDescriptor[] =
 {
-    0x05, 0x01,          // Usage page (desktop)
-    0x09, 0x02,          // Usage (mouse)
-    0xA1, 0x01,          // Collection (app)
-    0x05, 0x09,          // Usage page (buttons)
-    0x19, 0x01,
-    0x29, 0x03,
-    0x15, 0x00,          // Logical min (0)
-    0x25, 0x01,          // Logical max (1)
-    0x95, 0x03,          // Report count (3)
-    0x75, 0x01,          // Report size (1)
-    0x81, 0x02,          // Input (Data, Absolute)
-    0x95, 0x01,          // Report count (1)
-    0x75, 0x05,          // Report size (5)
-    0x81, 0x03,          // Input (Absolute, Constant)
-    0x05, 0x01,          // Usage page (desktop)
-    0x09, 0x01,          // Usage (pointer)
-    0xA1, 0x00,          // Collection (phys)
-    0x09, 0x30,          // Usage (x)
-    0x09, 0x31,          // Usage (y)
-    0x15, 0x81,          // Logical min (-127)
-    0x25, 0x7F,          // Logical max (127)
-    0x75, 0x08,          // Report size (8)
-    0x95, 0x02,          // Report count (2)
-    0x81, 0x06,          // Input (Data, Rel=0x6, Abs=0x2)
-    0xC0,                // End collection
-    0x09, 0x38,          // Usage (Wheel)
-    0x95, 0x01,          // Report count (1)
-    0x81, 0x02,          // Input (Data, Relative)
-    0x09, 0x3C,          // Usage (Motion Wakeup)
-    0x15, 0x00,          // Logical min (0)
-    0x25, 0x01,          // Logical max (1)
-    0x75, 0x01,          // Report size (1)
-    0x95, 0x01,          // Report count (1)
-    0xB1, 0x22,          // Feature (No preferred, Variable)
-    0x95, 0x07,          // Report count (7)
-    0xB1, 0x01,          // Feature (Constant)
-    0xC0                 // End collection
+    0x05, 0x01,   /* Usage Page (Generic Desktop) */
+    0x09, 0x02,   /* Usage (Mouse) */
+    0xA1, 0x01,   /* Collection (Application) */
+        0x09, 0x01,   /* Usage (Pointer) */
+        0xA1, 0x00,   /* Collection (Physical) */
+        0x05, 0x09,   /* Usage Page (Buttons) */
+        0x19, 0x01,   /* Usage Minimum (01) */
+        0x29, 0x03,   /* Usage Maximum (03) */
+        0x15, 0x00,   /* Logical Minimum (0) */
+        0x25, 0x01,   /* Logical Maximum (1) */
+        0x95, 0x03,   /* Report Count (3) */
+        0x75, 0x01,   /* Report Size (1) */
+        0x81, 0x02,   /* Input (Data,Variable,Absolute); 3 button bits */
+        0x95, 0x01,   /* Report Count (1) */
+        0x75, 0x05,   /* Report Size (5) */
+        0x81, 0x01,   /* Input(Constant); 5 bit padding */
+        0x05, 0x01,   /* Usage Page (Generic Desktop) */
+        0x09, 0x30,   /* Usage (X) */
+        0x09, 0x31,   /* Usage (Y) */
+        0x15, 0x81,   /* Logical Minimum (-127) */
+        0x25, 0x7F,   /* Logical Maximum (127) */
+        0x75, 0x08,   /* Report Size (8) */
+        0x95, 0x02,   /* Report Count (2) */
+        0x81, 0x06,   /* Input (Data,Variable,Relative); 2 position bytes (X & Y) */
+        //0x95, 0x01,   /* Report Count (1) */
+        //0x75, 0x05,   /* Report Size (8) */
+        //0x81, 0x01,   /* Input(Constant); 8 bit padding */
+        0xC0,         /* End Collection */
+    0xC0          /* End Collection */
 };
 
 unsafe{

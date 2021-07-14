@@ -72,7 +72,7 @@ To start using the USB library, you need to add ``lib_xud`` to your ``Makefile``
 
 You can then access the USB functions in your source code via the xud_device.h header file::
 
-        #include <usb_device.h>
+        #include "xud_device.h"
 
 The application main() function
 ...............................
@@ -246,12 +246,12 @@ connectors to separate USB connectors on your development PC.
 
 	XMOS xCORE-200 EXPLORER Board
 
-The hardware should be configured as displayed above for this demo:
+The hardware should be configured as follows for this demonstration:
 
   - The XTAG debug adapter should be connected to the XSYS connector and
     the XTAG USB cable should be connected to the host machine
 
-  - The xCORE-USB core board should have a USB cable connecting the device
+  - The xCORE EXPLORER board should have a USB cable connecting the device
     to the host machine
 
 |newpage|

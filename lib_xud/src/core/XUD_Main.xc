@@ -288,7 +288,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 
 
                 /* Setup flags for power signalling - i.e. J/K/SE0 line state*/
-                XUD_HAL_Mode_PowerSig();
+                XUD_HAL_Mode_Signalling();
                 
                 if (one)
                 {

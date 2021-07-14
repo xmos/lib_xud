@@ -263,7 +263,7 @@ void XUD_HAL_EnterMode_TristateDrivers()
 }
 
 
-void XUD_HAL_Mode_PowerSig()
+void XUD_HAL_Mode_Signalling()
 {
 #ifdef __XS2A__
     /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */

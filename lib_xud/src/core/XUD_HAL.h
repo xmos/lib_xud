@@ -58,7 +58,7 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
  *
  * TODO     Should this be combined with EnterMode_PeripheralChirp()?     
  **/
-void XUD_HAL_Mode_PowerSig();
+void XUD_HAL_Mode_Signalling();
 
 /**
  *  \brief   HAL function to set xCORE into data transfer mode 

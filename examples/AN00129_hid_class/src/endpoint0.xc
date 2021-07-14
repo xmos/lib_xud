@@ -138,9 +138,6 @@ static unsigned char hidReportDescriptor[] =
         0x75, 0x08,   /* Report Size (8) */
         0x95, 0x02,   /* Report Count (2) */
         0x81, 0x06,   /* Input (Data,Variable,Relative); 2 position bytes (X & Y) */
-        //0x95, 0x01,   /* Report Count (1) */
-        //0x75, 0x05,   /* Report Size (8) */
-        //0x81, 0x01,   /* Input(Constant); 8 bit padding */
         0xC0,         /* End Collection */
     0xC0          /* End Collection */
 };

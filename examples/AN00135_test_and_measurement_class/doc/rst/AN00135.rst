@@ -240,7 +240,7 @@ The hardware should be configured as follows for this demonstration:
   - The XTAG debug adapter should be connected to the XSYS connector and
     the XTAG USB should be connected to the host machine.
 
-  - The EXPLORER board shoudl be conneted to the host machine using a USB 
+  - The EXPLORER board should be connected to the host machine using a USB 
     cable.
 
   - (The xCORE-200 EXPLORER board should have the power supplied via the *5V IN* receptical)

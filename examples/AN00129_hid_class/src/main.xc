@@ -68,10 +68,10 @@ void hid_mouse(chanend chan_ep_hid)
                 p_reportBuffer[2] = -40;
                 state = 0;
             }
-        }
 
-        /* Send the buffer off to the host.  Note this will return when complete */
-        XUD_SetBuffer(ep_hid, (char *) p_reportBuffer, 4);
+            /* Send the buffer off to the host.  Note this will return when complete */
+            XUD_SetBuffer(ep_hid, (char *) p_reportBuffer, 3);
+        }
       }
     }
 }

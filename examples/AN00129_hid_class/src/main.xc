@@ -1,6 +1,7 @@
 // Copyright 2015-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xud_device.h"
+#include "hid_defs.h" 
 
 /* Number of Endpoints used by this app */
 #define EP_COUNT_OUT   1
@@ -16,7 +17,7 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, X
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in);
 
 /* Global report buffer, global since used by Endpoint0 core */
-unsigned char g_reportBuffer[4] = {0, 0, 0, 0};
+extern unsigned char g_reportBuffer[];
 
 /*
  * This function responds to the HID requests 
@@ -30,7 +31,7 @@ void hid_mouse(chanend chan_ep_hid)
 
     XUD_ep ep_hid = XUD_InitEp(chan_ep_hid);
 
-    while (1)
+    for(;;)
     {
         /* Unsafe region so we can use shared memory. */
         unsafe {
@@ -70,7 +71,7 @@ void hid_mouse(chanend chan_ep_hid)
                 }
 
                 /* Send the buffer off to the host.  Note this will return when complete */
-                XUD_SetBuffer(ep_hid, (char *) p_reportBuffer, 3);
+                XUD_SetBuffer(ep_hid, (char *) p_reportBuffer, sizeof(g_reportBuffer));
             }
         }
     }

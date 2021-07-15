@@ -6,7 +6,6 @@
   * @brief     XMOS USB Device (XUD) Layer
   * @author    Ross Owen
   **/
-/* Error printing functions */
 #ifdef XUD_DEBUG_VERSION
 void XUD_Error(char errString[]);
 void XUD_Error_hex(char errString[], int i_err);
@@ -180,6 +179,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_use_on(flag0_port);
     set_port_use_on(flag1_port);
 #if defined(__XS2A__)
+    /* Extra flag port in XS2 */
     set_port_use_on(flag2_port);
 #endif
 
@@ -209,19 +209,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     #define TX_RISE_DELAY 5
     #define TX_FALL_DELAY 1
 #endif
-
-    // Set up USB ports. Done in ASM as read port used in both directions initially.
-    // Main difference from xevious is IFM not enabled.
-    // GLX_UIFM_PortConfig (p_usb_clk, txd, rxd, flag0_port, flag1_port, flag2_port);
-    // Xevious needed asm as non-standard usage (to avoid clogging 1-bit ports)
-    // GLX uses 1bit ports so shouldn't be needed.
+    
     // Handshaken ports need USB clock
     configure_clock_src(tx_usb_clk, p_usb_clk);
     configure_clock_src(rx_usb_clk, p_usb_clk);
 
-    //this along with the following delays forces the clock
-    //to the ports to be effectively controlled by the
-    //previous usb clock edges
+    // This, along with the following delays,  forces the clock
+    // to the ports to be effectively controlled by the
+    // previous usb clock edges
     set_port_inv(p_usb_clk);
     set_port_sample_delay(p_usb_clk);
 
@@ -590,94 +585,3 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     return 0;
 }
 
-
-/* Various messages for error cases */
-void ERR_BadToken()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("BAD TOKEN RECEVED");
-#endif
-}
-
-void ERR_BadCrc(unsigned a, unsigned b)
-{
-  while(1);
-}
-
-void ERR_SetupBuffFull()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("SETUP BUFFER FULL");
-#endif
-}
-
-void ERR_UnsupportedToken(unsigned x)
-{
-#ifdef XUD_DEBUG_VERSION
-  printstr("UNSUPPORTED TOKEN: ");
-  printhexln(x);
-#endif
-}
-
-void ERR_BadTxHandshake(unsigned x)
-{
-#ifdef XUD_DEBUG_VERSION
-  printstr("BAD TX HANDSHAKE: ");
-  printhexln(x);
-#endif
-}
-
-void ERR_GotSplit()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("ERR: Got a split");
-#endif
-}
-
-void ERR_TxHandshakeTimeout()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("WARNING: TX HANDSHAKE TIMEOUT");
-  while(1);
-#endif
-}
-
-void ERR_OutDataTimeout()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("ERR: Out data timeout");
-#endif
-}
-
-void ERR_EndIn4()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("ERR: Endin4");
-  while(1);
-
-#endif
-}
-
-void ERR_EndIn5(int x)
-{
-#ifdef XUD_DEBUG_VERSION
-  printhex(x);
-  printstrln(" ERR: Endin5");
-  while(1);
-#endif
-}
-
-void ResetDetected(int x)
-{
-#ifdef XUD_DEBUG_VERSION
-    printint(x);
-    printstr(" rrrreeeset\n");
-#endif
-}
-
-void SuspendDetected()
-{
-#ifdef XUD_DEBUG_VERSION
-    printstr("Suspend!\n");
-#endif
-}

@@ -16,8 +16,8 @@ from copy import deepcopy
 
 # Only test on EP 0 - Update params
 PARAMS = deepcopy(PARAMS)
-for k in PARAMS:
-    PARAMS[k].update({"ep": [0]})
+for v in PARAMS.values():
+    v.update({"ep": [0]})
 
 
 @pytest.fixture
@@ -25,11 +25,29 @@ def test_session(ep, address, bus_speed):
 
     ied = 500
 
+    trafficAddress1 = (address + 1) % 128
+    trafficAddress2 = (address + 127) % 128
+
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    # SETUP transaction
+    # SETUP to another address (Note, DUT would not see ACK)
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["SETUP"],
+            address=trafficAddress1,
+            endpoint=ep,
+        )
+    )
+    session.add_event(
+        TxDataPacket(
+            dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
+            pid=USB_PID["DATA0"],
+        )
+    )
+
+    # SETUP transaction to DUT
     session.add_event(
         TokenPacket(
             pid=USB_PID["SETUP"],
@@ -62,6 +80,30 @@ def test_session(ep, address, bus_speed):
         )
     )
     session.add_event(TxHandshakePacket())
+
+    # SETUP to another address (Note, DUT would not see ACK)
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["SETUP"],
+            address=trafficAddress2,
+            endpoint=ep,
+        )
+    )
+    session.add_event(
+        TxDataPacket(
+            dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
+            pid=USB_PID["DATA0"],
+        )
+    )
+
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["IN"],
+            address=trafficAddress2,
+            endpoint=ep,
+            interEventDelay=1000,
+        )
+    )
 
     # Send 0 length OUT transaction
     session.add_event(

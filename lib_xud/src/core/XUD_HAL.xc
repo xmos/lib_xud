@@ -53,7 +53,6 @@ unsigned int XUD_EnableUsbPortMux();
 void XUD_HAL_EnableUsb(unsigned pwrConfig)
 {
     /* For xCORE-200 enable USB port muxing before enabling phy etc */
-    // TODO inline ASM here
     XUD_EnableUsbPortMux(); //setps(XS1_PS_XCORE_CTRL0, UIFM_MODE);
 
 #ifndef XUD_SIM_XSIM
@@ -377,10 +376,10 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     currentLs = LinesToLineState(dp, dm);
     return 0;
 #else
-    #warning TODO for XS2A
+    //TODO XUD_HAL_WaitForLineStateChange() not implemented for XS2
+    //Note, this is not currently used for XS2
     return 1;
 #endif
-    
 }
 
 void XUD_HAL_SetDeviceAddress(unsigned char address)

@@ -12,24 +12,25 @@ APP_NAME = app_hid_mouse_demo
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to
 # xcc for the final link (mapping) stage.
 
-BUILD_FLAGS = -O3 -g -report
+# These flags define two build configurations - one for xCORE-200 and one for
+# the xCORE.AI series.
+BUILD_FLAGS = -O3 -report
 
-XCC_FLAGS_xcore200 = $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
-XCC_FLAGS_xcoreai = $(BUILD_FLAGS)
+XCC_FLAGS_200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
+XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600
 
-# The TARGET variable determines what target system the application is
+USED_MODULES = lib_xud
+
+# The TARGET variable determines what target system the application is 
 # compiled for. It either refers to an XN file in the source directories
 # or a valid argument for the --target option when compiling.
 
-ifeq ($(CONFIG),xcoreai)
-TARGET = XCORE-AI-EXPLORER-NO-DDR
+# In this case, the target depends on the build configuration.
+ifeq ($(CONFIG),AI)
+TARGET = XCORE-AI-EXPLORER
 else
 TARGET = XCORE-200-EXPLORER
 endif
-
-# The USED_MODULES variable lists other module used by the application.
-
-USED_MODULES = lib_xud
 
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure

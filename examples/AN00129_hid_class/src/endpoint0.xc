@@ -295,11 +295,3 @@ void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
         }
     }
 }
-//:
-
-
-
-
-
-
-

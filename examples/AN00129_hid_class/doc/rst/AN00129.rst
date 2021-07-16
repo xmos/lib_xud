@@ -289,8 +289,9 @@ From the command line we use the ``xrun`` tool to download code to both the
 xCORE devices. If we change into the bin directory of the project
 we can execute the code on the xCORE microcontroller as follows::
 
-> xrun app_hid_mouse_demo.ex          <-- Download and execute the xCORE code
+> xrun app_hid_mouse_demo_<ARCH>.xe   <-- Download and execute the xCORE code
 
+where <ARCH> is the xCOre architecture variant, 200 or AI.
 Once this command has executed the HID mouse device will have enumerated on 
 your host machine.
 

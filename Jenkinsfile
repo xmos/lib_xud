@@ -41,7 +41,7 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests") {
-            runPytest('--numprocesses=4 --smoke')
+            runPytest('--numprocesses=1 --smoke')
           }
         }
       }

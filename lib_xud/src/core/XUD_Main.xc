@@ -6,14 +6,6 @@
   * @brief     XMOS USB Device (XUD) Layer
   * @author    Ross Owen
   **/
-#ifdef XUD_DEBUG_VERSION
-void XUD_Error(char errString[]);
-void XUD_Error_hex(char errString[], int i_err);
-#else
-#define XUD_Error(a) /* */
-#define XUD_Error_hex(a, b) /* */
-#endif
-
 #include <xs1.h>
 #include <print.h>
 #include <xclib.h>
@@ -280,8 +272,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 XUD_HAL_EnterMode_PeripheralFullSpeed();
-
-
+ 
                 /* Setup flags for power signalling - i.e. J/K/SE0 line state*/
                 XUD_HAL_Mode_Signalling();
                 
@@ -554,7 +545,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     /* Check for control on IN/OUT 0 */
     if(epTypeTableOut[0] != XUD_EPTYPE_CTL || epTypeTableIn[0] != XUD_EPTYPE_CTL)
     {
-        XUD_Error("XUD_Manager: Ep 0 must be control for IN and OUT");
+        __builtin_trap();
     }
 
 #if 0

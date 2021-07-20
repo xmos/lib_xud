@@ -345,18 +345,20 @@ XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
 #endif
 }
 
+// TODO debounce?
 unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned timeout)
 {
+    unsigned time;
+    timer t; 
+    
+    if (timeout != null)
+        t :> time;
+
 #ifdef __XS3A__
     unsigned dp, dm;
-    timer t; 
-    unsigned time;
 
     /* Look up line values from linestate */
     {dp, dm} = LineStateToLines(currentLs);
-
-    if (timeout != null)
-        t :> time;
 
     /* Wait for change */
     select 
@@ -369,16 +371,33 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
             break;
         case timeout != null => t when timerafter(time + timeout) :> int _:
             return 1;
-
     }
 
     /* Return new linestate */
     currentLs = LinesToLineState(dp, dm);
     return 0;
 #else
-    //TODO XUD_HAL_WaitForLineStateChange() not implemented for XS2
-    //Note, this is not currently used for XS2
-    return 1;
+    unsigned se0 = currentLs == XUD_LINESTATE_SE0;
+    unsigned j = currentLs == XUD_LINESTATE_HS_K_FS_J;
+    unsigned k = currentLs == XUD_LINESTATE_HS_J_FS_K;
+
+    /* Wait for a change on any flag port */
+    select
+    {
+        case flag0_port when pinsneq(j) :> void:
+            break;
+        case flag1_port when pinsneq(k) :> void:
+            break;
+        case flag2_port when pinsneq(se0) :> void:
+            break;
+        case timeout != null => t when timerafter(time + timeout) :> int _:
+            return 1;
+    }
+
+    /* Read current line state - two lines may have change e.g k/j to SE0 */
+    currentLs = XUD_HAL_GetLineState();
+
+    return 0;
 #endif
 }
 

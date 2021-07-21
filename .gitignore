@@ -22,8 +22,15 @@ test_results.csv
 .DS_Store
 _README/**
 **/pdf/**
+**/.venv/**
 *.doctree
 sphinx.output
 Installs/
 .settings
-**/.venv/**
+tests/bin.txt
+tests/log
+tests/test_**/**test_xs2.xn
+tests/test_**/**test_xs3_600.xn
+tests/test_**/**test_xs3_800.xn
+**/venv/**
+*.gtkw

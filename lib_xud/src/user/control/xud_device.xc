@@ -191,6 +191,7 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                     break;
 
                  /* Standard Device Request: SetFeature (USB Spec 9.4.9) */
+				 /* TODO only accept these requests in HS? */
                  case USB_SET_FEATURE:
 
                     if((sp.wValue == USB_TEST_MODE) && (sp.wLength == 0))
@@ -202,7 +203,6 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                             case USB_WINDEX_TEST_K:
                             case USB_WINDEX_TEST_SE0_NAK:
                             case USB_WINDEX_TEST_PACKET:
-                            case USB_WINDEX_TEST_FORCE_ENABLE:
                             {
                                 XUD_Result_t result;
                                 if((result = XUD_DoSetRequestStatus(ep_in)) != XUD_RES_OKAY)

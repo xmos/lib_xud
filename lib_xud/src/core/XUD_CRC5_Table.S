@@ -3,7 +3,6 @@
 /** XUD_CRC5_Table.S
   * @brief     Full USB CRC5 table
   * @author    Ross Owen, XMOS Limited
-  * @version   0v9
   */
 
 .section .dp.data, "adw", @progbits

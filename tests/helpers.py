@@ -1,192 +1,252 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import xmostest
+import Pyxsim
+from Pyxsim import testers
 import os
 import random
 import sys
 from usb_clock import Clock
 from usb_phy import UsbPhy
-from usb_packet import RxPacket
+from usb_phy_shim import UsbPhyShim
+from usb_phy_utmi import UsbPhyUtmi
+from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
-args = None
+ARCHITECTURE_CHOICES = ["xs2", "xs3"]
+BUSSPEED_CHOICES = ["FS", "HS"]
+args = {"arch": "xs3"}
+clean_only = False
+
 
 def create_if_needed(folder):
     if not os.path.exists(folder):
         os.makedirs(folder)
     return folder
 
-def get_usb_clk_phy(verbose=True, test_ctrl=None, do_timeout=True,
-                       complete_fn=None, expect_loopback=False,
-                       dut_exit_time=350000, initial_del=40000, arch='xs2'):
 
-    if arch=='xs2':
-        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-        phy = UsbPhy('tile[0]:XS1_PORT_8B',
-                         'tile[0]:XS1_PORT_1F', #rxa
-                         'tile[0]:XS1_PORT_1I', #rxv
-                         'tile[0]:XS1_PORT_1G', #rxe
-                         'tile[0]:XS1_PORT_1E', #vld
-                         'tile[0]:XS1_PORT_8A', #txd
-                         'tile[0]:XS1_PORT_1K', #txv
-                         'tile[0]:XS1_PORT_1H', #txrdy
-                         clk,
-                         verbose=verbose, test_ctrl=test_ctrl,
-                         do_timeout=do_timeout, complete_fn=complete_fn,
-                         expect_loopback=expect_loopback,
-                         dut_exit_time=dut_exit_time, initial_delay=initial_del)
-  
-    if arch=='xs1':
-        clk = Clock('tile[0]:XS1_PORT_1J', Clock.CLK_60MHz)
-        phy = UsbPhy('tile[0]:XS1_PORT_8C',
-                         'tile[0]:XS1_PORT_1O', #rxa
-                         'tile[0]:XS1_PORT_1M', #rxv
-                         'tile[0]:XS1_PORT_1P', #rxe
-                         'tile[0]:XS1_PORT_1N', #vld
-                         'tile[0]:XS1_PORT_8A', #txd
-                         'tile[0]:XS1_PORT_1K', #txv
-                         'tile[0]:XS1_PORT_1H', #txrdy
-                         clk,
-                         verbose=verbose, test_ctrl=test_ctrl,
-                         do_timeout=do_timeout, complete_fn=complete_fn,
-                         expect_loopback=expect_loopback,
-                         dut_exit_time=dut_exit_time, initial_delay=initial_del)
-        
+def get_usb_clk_phy(
+    coreFreqMhz,
+    verbose=True,
+    do_timeout=True,
+    complete_fn=None,
+    dut_exit_time=350000,
+    arch="xs2",
+):
+
+    if arch == "xs2":
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
+        phy = UsbPhyUtmi(
+            "XS1_USB_RXD",
+            "XS1_USB_RXA",  # rxa
+            "XS1_USB_RXV",  # rxv
+            "XS1_USB_RXE",  # rxe
+            "tile[0]:XS1_PORT_8A",  # txd
+            "tile[0]:XS1_PORT_1K",  # txv
+            "tile[0]:XS1_PORT_1H",  # txrdy
+            "XS1_USB_LS",
+            "XS1_USB_XCVRSEL",
+            "XS1_USB_TERMSEL",
+            clk,
+            verbose=verbose,
+            do_timeout=do_timeout,
+            complete_fn=complete_fn,
+            dut_exit_time=dut_exit_time,
+        )
+
+    elif arch == "xs3":
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
+        phy = UsbPhyUtmi(
+            "XS1_USB_RXD",
+            "XS1_USB_RXA",  # rxa
+            "XS1_USB_RXV",  # rxv
+            "XS1_USB_RXE",  # rxe
+            "tile[0]:XS1_PORT_8A",  # txd
+            "tile[0]:XS1_PORT_1K",  # txv
+            "tile[0]:XS1_PORT_1H",  # txrdy
+            "XS1_USB_LS",
+            "XS1_USB_XCVRSEL",
+            "XS1_USB_TERMSEL",
+            clk,
+            verbose=verbose,
+            do_timeout=do_timeout,
+            complete_fn=complete_fn,
+            dut_exit_time=dut_exit_time,
+        )
+
+    else:
+        raise ValueError("Invalid architecture: " + arch)
+
     return (clk, phy)
 
-def run_on(**kwargs):
-    if not args:
-        return True
 
-    for name,value in kwargs.iteritems():
-        arg_value = getattr(args,name)
+def run_on_simulator(xe, simthreads, **kwargs):
+    for k in ["do_xe_prebuild", "build_env", "clean_before_build"]:
+        if k in kwargs:
+            kwargs.pop(k)
+    return Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
+
+
+def run_on(**kwargs):
+
+    for name, value in kwargs.items():
+        arg_value = args.get(name)
         if arg_value is not None and value != arg_value:
             return False
 
     return True
 
-def runall_rx(test_fn):
-    
-   
-    if run_on(arch='xs1'):
-        (tx_clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs1')
-        seed = args.seed if args.seed else random.randint(0, sys.maxint)
-        test_fn('xs1', tx_clk_60, usb_phy, seed)
-    
-    if run_on(arch='xs2'):
-        (tx_clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch='xs2')
-        seed = args.seed if args.seed else random.randint(0, sys.maxint)
-        test_fn('xs2', tx_clk_60, usb_phy, seed)
+
+FIXTURE_TO_DEFINE = {
+    "core_freq": "TEST_FREQ",
+    "arch": "TEST_ARCH",
+    "dummy_threads": "TEST_DTHREADS",
+    "ep": "TEST_EP_NUM",
+    "address": "XUD_STARTUP_ADDRESS",
+}
 
 
-def do_rx_test(arch, tx_clk, tx_phy, packets, test_file, seed,
-               level='nightly', extra_tasks=[]):
+def do_usb_test(
+    arch,
+    ep,
+    address,
+    bus_speed,
+    dummy_threads,
+    core_freq,
+    clk,
+    phy,
+    sessions,
+    test_file,
+    seed,
+    level="nightly",
+    extra_tasks=[],
+    verbose=False,
+):
+    build_options = []
 
-    """ Shared test code for all RX tests using the test_rx application.
-    """
-    testname,extension = os.path.splitext(os.path.basename(test_file))
+    # Flags for makefile
+    for k, v in FIXTURE_TO_DEFINE.items():
+        build_options += [str(v) + "=" + str(locals()[k])]
 
-    resources = xmostest.request_resource("xsim")
+    # Defines for DUT code
+    # TODO shoud the makefile set thease based on the above?
+    build_options_str = "CFLAGS="
+    for k, v in FIXTURE_TO_DEFINE.items():
+        build_options_str += "-D" + str(v) + "=" + str(locals()[k]) + " "
 
-    binary = '{testname}/bin/{arch}/{testname}_{arch}.xe'.format(testname=testname, arch=arch)
+    build_options = build_options + [build_options_str]
 
-    print binary
+    """Shared test code for all RX tests using the test_rx application."""
+    testname, extension = os.path.splitext(os.path.basename(test_file))
+    tester_list = []
 
-    if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-        print "Running {test}: {arch} arch sending {n} packets at {clk} (seed {seed})".format(
-            test=testname, n=len(packets),
-            arch=arch, clk=tx_clk.get_name(), seed=seed)
+    binary = "{testname}/bin/{arch}_{core_freq}_{dummy_threads}_{ep}_{address}/{testname}_{arch}_{core_freq}_{dummy_threads}_{ep}_{address}.xe".format(
+        testname=testname,
+        arch=arch,
+        core_freq=core_freq,
+        dummy_threads=dummy_threads,
+        ep=ep,
+        address=address,
+    )
 
-    tx_phy.set_packets(packets)
-    #rx_phy.set_expected_packets(packets)
+    # Do not need to clean since different build will different params go to separate binaries
+    build_success, build_output = Pyxsim._build(
+        binary, do_clean=False, build_options=build_options
+    )
 
-    expect_folder = create_if_needed("expect")
-    expect_filename = '{folder}/{test}_{arch}.expect'.format(
-        folder=expect_folder, test=testname, phy=tx_phy.get_name(), clk=tx_clk.get_name(), arch=arch)
-    create_expect(packets, expect_filename)
+    assert len(sessions) == 1, "Multiple sessions not yet supported"
+    if build_success:
+        for session in sessions:
 
-    tester = xmostest.ComparisonTester(open(expect_filename),
-                                      'lib_xud', 'xud_sim_tests', testname,
-                                     {'clk':tx_clk.get_name(), 'arch':arch})
+            phy.session = session
 
-    tester.set_min_testlevel(level)
+            expect_folder = create_if_needed("expect")
+            expect_filename = "{folder}/{test}_{arch}_{usb_speed}.expect".format(
+                folder=expect_folder,
+                test=testname,
+                phy=phy.name,
+                clk=clk.get_name(),
+                arch=arch,
+                usb_speed=bus_speed,
+            )
 
-    simargs = get_sim_args(testname, tx_clk, tx_phy, arch)
-    xmostest.run_on_simulator(resources['xsim'], binary,
-                              simthreads=[tx_clk, tx_phy] + extra_tasks,
-                              tester=tester,
-                              simargs=simargs)
+            create_expect(arch, session, expect_filename, verbose=verbose)
 
-def create_expect(packets, filename):
+            tester = testers.ComparisonTester(
+                open(expect_filename),
+                "lib_xud",
+                "xud_sim_tests",
+                testname,
+                {"clk": clk.get_name(), "arch": arch, "speed": bus_speed},
+            )
+
+            tester_list.append(tester)
+            simargs = get_sim_args(testname, clk, phy, arch)
+            simthreads = [clk, phy] + extra_tasks
+            run_on_simulator(binary, simthreads, simargs=simargs)
+    else:
+        tester_list.append("Build Failed")
+
+    return tester_list
+
+
+def create_expect(arch, session, filename, verbose=False):
+
+    events = session.events
+
     """ Create the expect file for what packets should be reported by the DUT
     """
-    with open(filename, 'w') as f:
-        for i,packet in enumerate(packets):
-            #if not packet.dropped:
-            if isinstance(packet, RxPacket):
-                f.write("Receiving packet {}\n".format(i))
+    with open(filename, "w") as f:
 
-                for (i, byte) in enumerate(packet.get_bytes()):
-                    f.write("Received byte: {0:#x}\n".format(byte))
-            
-            else:
-                f.write("Sending packet {}\n".format(i))
-        
+        packet_offset = 0
+
+        if verbose:
+            print("EXPECTED OUTPUT:")
+        for i, event in enumerate(events):
+
+            expect_str = event.expected_output(session.bus_speed, offset=packet_offset)
+            packet_offset += event.event_count
+
+            if verbose:
+                print(str(expect_str), end=" ")
+
+            f.write(str(expect_str))
+
         f.write("Test done\n")
 
-def get_sim_args(testname, clk, phy, arch='xs2'):
+        if verbose:
+            print("Test done\n")
+
+
+def get_sim_args(testname, clk, phy, arch="xs2"):
     sim_args = []
 
-    if args and args.trace:
+    if eval(os.getenv("enabletracing")):
         log_folder = create_if_needed("logs")
-        #if phy.get_name() == 'rgmii':
-        #arch = 'xs2'
+
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(
-            log=log_folder, test=testname,
-            clk=clk.get_name(), phy=phy.get_name(), arch=arch)
+            log=log_folder, test=testname, clk=clk.get_name(), phy=phy.name, arch=arch
+        )
 
-        sim_args += ['--trace-to', '{0}.txt'.format(filename), '--enable-fnop-tracing']
+        sim_args += ["--trace-to", "{0}.txt".format(filename), "--enable-fnop-tracing"]
 
-        vcd_args  = '-o {0}.vcd'.format(filename)
-        vcd_args += (' -tile tile[0] -ports -ports-detailed -instructions'
-                     ' -functions -cycles -clock-blocks -pads -cores')
+        vcd_args = "-o {0}.vcd".format(filename)
+        vcd_args += (
+            " -tile tile[0] -ports -ports-detailed -instructions"
+            " -functions -cycles -clock-blocks -pads -cores -usb"
+        )
 
-        # The RGMII pins are on tile[1]
-        #if phy.get_name() == 'rgmii':
-         #       vcd_args += (' -tile tile[0] -ports -ports-detailed -instructions'
-          #                   ' -functions -cycles -clock-blocks -cores')
-
-        sim_args += ['--vcd-tracing', vcd_args]
-
-#        sim_args += ['--xscope', '-offline logs/xscope.xmt']
+        sim_args += ["--vcd-tracing", vcd_args]
 
     return sim_args
 
-def packet_processing_time(phy, data_bytes):
-    """ Returns the time it takes the DUT to process a given frame
-    """
-    #if mac == 'standard':
-    #    return 4000 * phy.get_clock().get_bit_time()
-    #elif phy.get_name() == 'rgmii' and mac == 'rt':
-    return 6000 * phy.get_clock().get_bit_time()
-    ##else:
-     #   return 2000 * phy.get_clock().get_bit_time()
-
-def get_dut_address():
-    """ Returns the busaddress of the DUT
-    """
-    #todo, we need the ability to config this
-    return 1
-
-def choose_small_frame_size(rand):
-    """ Choose the size of a frame near the minimum size frame (46 data bytes)
-    """
-    return rand.randint(46, 54)
 
 def move_to_next_valid_packet(phy):
-    while (phy.expect_packet_index < phy.num_expected_packets and
-           phy.expected_packets[phy.expect_packet_index].dropped):
+    while (
+        phy.expect_packet_index < phy.num_expected_packets
+        and phy.expected_packets[phy.expect_packet_index].dropped
+    ):
         phy.expect_packet_index += 1
+
 
 def check_received_packet(packet, phy):
     if phy.expected_packets is None:
@@ -197,15 +257,18 @@ def check_received_packet(packet, phy):
     if phy.expect_packet_index < phy.num_expected_packets:
         expected = phy.expected_packets[phy.expect_packet_index]
         if packet != expected:
-            print "ERROR: packet {n} does not match expected packet".format(
-                n=phy.expect_packet_index)
+            print(
+                "ERROR: packet {n} does not match expected packet".format(
+                    n=phy.expect_packet_index
+                )
+            )
 
-            print "Received:"
+            print("Received:")
             sys.stdout.write(packet.dump())
-            print "Expected:"
+            print("Expected:")
             sys.stdout.write(expected.dump())
 
-        print "Received packet {} ok".format(phy.expect_packet_index)
+        print("Received packet {} ok".format(phy.expect_packet_index))
         # Skip this packet
         phy.expect_packet_index += 1
 
@@ -213,11 +276,10 @@ def check_received_packet(packet, phy):
         move_to_next_valid_packet(phy)
 
     else:
-        print "ERROR: received unexpected packet from DUT"
-        print "Received:"
+        print("ERROR: received unexpected packet from DUT")
+        print("Received:")
         sys.stdout.write(packet.dump())
 
     if phy.expect_packet_index >= phy.num_expected_packets:
-        print "Test done"
+        print("Test done")
         phy.xsi.terminate()
-

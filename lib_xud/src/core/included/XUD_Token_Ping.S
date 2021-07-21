@@ -1,16 +1,10 @@
 // Copyright 2011-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-.align 4
-Pid_Ping:
-#ifdef ARCH_L
-    inpw      r10, res[RXD], 8;                 // Read EP Number
-    shr       r10, r10, 24;                     // Shift off junk
+#include "XUD_AlignmentDefines.h"
 
-    in         r11, res[r1];
-    bt         r11, InvalidToken;               // VALID_TOKEN not high, ignore token 
-#else
-    #include "XUD_G_Crc.S"
-#endif
+.align FUNCTION_ALIGNMENT
+Pid_Ping:
+    #include "XUD_CrcAddrCheck.S"
 
 LoadStatTablePing:
     ldw       r11, r5[r10]                      // Load relevant EP chanend
@@ -18,9 +12,11 @@ LoadStatTablePing:
 
 .scheduling off
 PrimaryBufferEmpty_PING:                        // Send ACK
+#if (XUD_CORE_CLOCK > 400)
     nop
     nop
     nop
+#endif
     nop
     nop
     nop
@@ -30,14 +26,18 @@ PrimaryBufferEmpty_PING:                        // Send ACK
     bu           NextTokenAfterPing
 
 PrimaryBufferFull_PING:                         // Send NAK
+#if (XUD_CORE_CLOCK > 400)
     nop
     nop
     nop
+#endif
     nop
     nop
     nop
-    nop
-    ldc          r11, USB_PIDn_NAK
+    // ldc          r11, USB_PIDn_NA
+    // Load handshake (ACK or STALL)
+    ldaw         r11, dp[handshakeTable_OUT]         // Load handshake table
+    ldw          r11, r11[r10]
     outpw        res[TXD], r11, 8
     bu           NextTokenAfterPing
 .scheduling default

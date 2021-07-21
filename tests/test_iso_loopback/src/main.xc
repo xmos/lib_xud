@@ -1,34 +1,25 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-/*
- * Test the use of the ExampleTestbench. Test that the value 0 and 1 can be sent
- * in both directions between the ports.
- *
- * NOTE: The src/testbenches/ExampleTestbench must have been compiled for this to run without error.
- *
- */
 #include <xs1.h>
 #include <print.h>
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-#include "xc_ptr.h"
 
-#define XUD_EP_COUNT_OUT   5
-#define XUD_EP_COUNT_IN    5
+#define EP_COUNT_OUT   (6)
+#define EP_COUNT_IN    (6)
 
 /* Endpoint type tables */
-XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_ISO, XUD_EPTYPE_BUL};
-
-void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend ?c_usb_test);
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
 
 void exit(int);
 
+#define KILL_EP_NUM (TEST_EP_NUM +1)
 
 /* Loopback packets forever */
 #pragma unsafe arrays
-int TestEp_Bulk(chanend c_out1, chanend c_in1)
+int TestEp_LoopbackForever(chanend c_out1, chanend c_in1)
 {
     unsigned int length;
     XUD_Result_t res;
@@ -36,7 +27,6 @@ int TestEp_Bulk(chanend c_out1, chanend c_in1)
     XUD_ep ep_out1 = XUD_InitEp(c_out1);
     XUD_ep ep_in1  = XUD_InitEp(c_in1);
 
-    /* Buffer for Setup data */
     unsigned char buffer[1024];
 
     while(1)
@@ -51,39 +41,36 @@ int TestEp_Bulk(chanend c_out1, chanend c_in1)
 
 /* Loopback packet and terminate */
 #pragma unsafe arrays
-int TestEp_Bulk2(chanend c_out, chanend c_in)
+int TestEp_LoopbackOnce(chanend c_out, chanend c_in, chanend c_out_0)
 {
     unsigned int length;
     XUD_Result_t res;
 
+    XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
     XUD_ep ep_out = XUD_InitEp(c_out);
     XUD_ep ep_in  = XUD_InitEp(c_in);
 
-    /* Buffer for Setup data */
     unsigned char buffer[1024];
 
     XUD_GetBuffer(ep_out, buffer, length);
     XUD_SetBuffer(ep_in, buffer, length);
 
+    XUD_Kill(ep_out_0);
     exit(0);
 }
 
-#define USB_CORE 0
 int main()
 {
-    chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-    chan c_sync;
-    chan c_sync_iso;
+    chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
 
     par
     {
-        
-        XUD_Manager( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+        XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
-                                null, null, -1, XUD_SPEED_HS, XUD_PWR_BUS);
+                                XUD_SPEED_HS, XUD_PWR_BUS);
 
-        TestEp_Bulk(c_ep_out[3], c_ep_in[3]);
-        TestEp_Bulk2(c_ep_out[2], c_ep_in[2]);
+        TestEp_LoopbackForever(c_ep_out[TEST_EP_NUM], c_ep_in[TEST_EP_NUM]);
+        TestEp_LoopbackOnce(c_ep_out[KILL_EP_NUM], c_ep_in[KILL_EP_NUM], c_ep_out[0]);
     }
 
     return 0;

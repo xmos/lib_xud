@@ -1,104 +1,132 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Same as simple RX bulk test but some invalid tokens also included
+from usb_packet import (
+    TokenPacket,
+    TxDataPacket,
+    RxDataPacket,
+    TxHandshakePacket,
+    RxHandshakePacket,
+    USB_PID,
+)
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
+import pytest
+from conftest import PARAMS, test_RunUsbSession
 
-import random
-import xmostest
-from  usb_packet import *
-from usb_clock import Clock
-from helpers import do_rx_test, packet_processing_time, get_dut_address
-from helpers import choose_small_frame_size, check_received_packet, runall_rx
 
+@pytest.fixture
+def test_session(ep, address, bus_speed):
 
-# Single, setup transaction to EP 0
+    session = UsbSession(
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
+    )
 
-def do_test(arch, tx_clk, tx_phy, seed):
-    rand = random.Random()
-    rand.seed(seed)
+    # Reserved/Invalid PID
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["RESERVED"],
+            address=address,
+            endpoint=ep,
+        )
+    )
 
-    dev_address = get_dut_address()
-    ep = 1
+    # Valid IN but not for DUT
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["IN"],
+            address=address + 1,
+            endpoint=ep,
+        )
+    )
 
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
+    # Valid OUT but not for DUT
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["OUT"],
+            address=address + 1,
+            endpoint=ep,
+        )
+    )
 
-    dataval = 0;
-
-    # Reserved PID
-    packets.append(TokenPacket( 
-        inter_pkt_gap=2000, 
-        pid=0x0,
-        address=dev_address, 
-        endpoint=ep))
-    
-    # Valid IN but not for us..
-    packets.append(TokenPacket( 
-        inter_pkt_gap=200, 
-        pid=0x69,
-        address=dev_address, 
-        endpoint=ep,
-        valid=False))
-
-  # Valid OUT but not for us..
-    packets.append(TokenPacket( 
-        inter_pkt_gap=200, 
-        pid=0xe1,
-        address=dev_address, 
-        endpoint=ep,
-        valid=False))
-
-    AppendOutToken(packets, ep)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=10, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    # Valid OUT transaction
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=10,
+        )
+    )
 
     # Valid SETUP but not for us..
-    packets.append(TokenPacket( 
-        inter_pkt_gap=200, 
-        pid=0x2d,
-        address=dev_address, 
-        endpoint=ep,
-        valid=False))
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["SETUP"],
+            address=address + 2,
+            endpoint=ep,
+        )
+    )
 
-
-
+    # Valid OUT transaction
     # Note, quite big gap to allow checking.
-    
-    dataval += 10
-    AppendOutToken(packets, ep, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=11, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket())
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=11,
+            interEventDelay=6000,
+        )
+    )
 
     # Valid PING but not for us..
-    packets.append(TokenPacket( 
-        inter_pkt_gap=200, 
-        pid=0xb4,
-        address=dev_address, 
-        endpoint=ep,
-        valid=False))
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address + 2,
+            endpoint=ep,
+        )
+    )
 
+    # Finish with some valid transactions
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=12,
+            interEventDelay=6000,
+        )
+    )
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=13,
+            interEventDelay=6000,
+        )
+    )
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=14,
+            interEventDelay=6000,
+        )
+    )
 
-
-    dataval += 11
-    AppendOutToken(packets, ep, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=12, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
-
-    dataval += 12
-    AppendOutToken(packets, ep, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=13, pid=0xb)) #DATA1
-    packets.append(RxHandshakePacket())
-
-    dataval += 13
-    AppendOutToken(packets, ep, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=14, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
-
-
-    do_rx_test(arch, tx_clk, tx_phy, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
-
-def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    return session

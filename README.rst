@@ -11,7 +11,7 @@ that allows you to control an USB bus via xCORE ports.
 
 The library provides functionality to act as a USB *device* only.
 
-This library is aimed primarily for use with xCORE-200 Series or xCORE U-Series devices but it does also support xCORE L-Series devices with the addition of an external USB PHY device.
+This library is for use with xCORE-200 Series or xCORE-AI series devices only, previous generations of xCORE devices are no longer supported.
 
 Features
 ........
@@ -19,6 +19,12 @@ Features
  * USB 2.0 Full-speed (12Mbps) and High-speed (480Mbps)
  * Device mode
  * Bulk, control, interrupt and isochronous endpoint types supported
+
+Known Issues
+............
+ 
+  * Operation on XS3 based devices only supported at 700MHz
+  * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc)
 
 Software version and dependencies
 .................................

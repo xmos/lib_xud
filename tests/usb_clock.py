@@ -1,47 +1,52 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import xmostest
+from Pyxsim import SimThread
 import sys
 import zlib
 
-class Clock(xmostest.SimThread):
 
-    (CLK_125MHz, CLK_60MHz, CLK_2_5MHz) = (0x4, 0x2, 0x0)
+class Clock(SimThread):
 
-    def __init__(self, port, clk):
+    CLK_60MHz = 0x0
+
+    def __init__(self, port, clk, coreFreq_Mhz):
         self._running = True
         self._clk = clk
-        if clk == self.CLK_125MHz:
-            self._period = float(1000000000) / 125000000
-            self._name = '125Mhz'
-            self._min_ifg = 96
-            self._bit_time = 1
-        elif clk == self.CLK_60MHz:
-            self._period = float(1000000000) / 60000000
-            self._name = '60Mhz'
-            self._bit_time = 5 # TODO
-        elif clk == self.CLK_2_5MHz:
-            self._period = float(1000000000) / 2500000
-            self._name = '2.5Mhz'
-            self._bit_time = 100
-        self._min_ifg = 96 * self._bit_time
+        if clk == self.CLK_60MHz:
+            self._period = float(1000000000.0 / 60000000.0)
+            self._period *= (1.0 / coreFreq_Mhz) * 1000.0
+            self._name = "60Mhz"
+        else:
+            raise ValueError("Unsupported Clock Frequency")
         self._val = 0
         self._port = port
 
     def run(self):
+
+        time = self.xsi.get_time()
+
         while True:
-            self.wait_until(self.xsi.get_time() + self._period/2)
+
+            time += self._period / 2
+            self.wait_until(time)
             self._val = 1 - self._val
 
             if self._running:
-                #print "{}".format(self._val)
-                self.xsi.drive_port_pins(self._port, self._val)
+                self.xsi.drive_periph_pin(self._port, self._val)
+
+    @property
+    def period_ns(self):
+        return self._period
+
+    @property
+    def period_us(self):
+        return self._period / 1000
 
     def is_high(self):
-        return (self._val == 1)
+        return self._val == 1
 
     def is_low(self):
-        return (self._val == 0)
+        return self._val == 0
 
     def get_rate(self):
         return self._clk
@@ -49,14 +54,8 @@ class Clock(xmostest.SimThread):
     def get_name(self):
         return self._name
 
-    def get_min_ifg(self):
-        return self._min_ifg
-
-    def get_bit_time(self):
-        return self._bit_time
-
     def stop(self):
-        print "**** CLOCK STOP ****"
+        print("**** CLOCK STOP ****")
         self._running = False
 
     def start(self):

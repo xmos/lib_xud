@@ -10,11 +10,12 @@ import setuptools
 # least the same minor version as specified in the requirements.txt file.
 # The same modules should appear in the requirements.txt file as given below.
 setuptools.setup(
-    name='lib_xud',
+    name="lib_xud",
     packages=setuptools.find_packages(),
     install_requires=[
-        'flake8~=3.8',
+        "black~=21.5b1",
+        "pytest~=6.2",
+        "pytest-xdist~=2.3",
     ],
-    dependency_links=[
-    ],
+    dependency_links=[],
 )

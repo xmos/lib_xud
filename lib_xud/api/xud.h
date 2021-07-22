@@ -4,58 +4,23 @@
  * \brief     User defines and functions for XMOS USB Device library
  */
 
-#ifndef __xud_h__
-#define __xud_h__
+#ifndef _XUD_H_
+#define _XUD_H_
 
+#include <platform.h>
 
-#ifndef XUD_U_SERIES
-#define XUD_U_SERIES 1
-#endif
-
-#ifndef XUD_L_SERIES
-#define XUD_L_SERIES 2
-#endif
-
-#ifndef XUD_G_SERIES
-#define XUD_G_SERIES 3
-#endif
-
-#ifndef XUD_X200_SERIES
-#define XUD_X200_SERIES 4
-#endif
-
-#if XUD_SERIES_SUPPORT==1
-#ifndef ARCH_S
-#define ARCH_S 1
-#endif
-#ifndef ARCH_L
-#define ARCH_L 1
-#endif
-#endif
-
-#if XUD_SERIES_SUPPORT==2
-#ifndef ARCH_L
-#define ARCH_L 1
-#endif
-#endif
-
-#if XUD_SERIES_SUPPORT==3
-#ifndef ARCH_G
-#define ARCH_G 1
-#endif
-#endif
-
-#if XUD_SERIES_SUPPORT==4
-#ifndef ARCH_L
-#define ARCH_L 1
-#endif
-#ifndef ARCH_X200
-#define ARCH_X200 1
-#endif
+#if defined(__XS3A__)
+#define XUD_OPT_SOFTCRC5 (1)
+#else
+#define XUD_OPT_SOFTCRC5 (0)
 #endif
 
 #ifdef __xud_conf_h_exists__
 #include "xud_conf.h"
+#endif
+
+#ifndef XUD_STARTUP_ADDRESS
+#define XUD_STARTUP_ADDRESS (0)
 #endif
 
 #ifndef __ASSEMBLER__
@@ -69,49 +34,17 @@
   #define USB_TILE tile[0]
 #endif
 
-#if defined(PORT_USB_CLK)
+#ifndef REF_CLK_FREQ
+#define REF_CLK_FREQ 100
+#endif
 
-  /* Ports declared in the .xn file. Automatically detect device series */
-  #if defined(PORT_USB_RX_READY)
-    #if !defined(XUD_SERIES_SUPPORT)
-      #define XUD_SERIES_SUPPORT XUD_U_SERIES
-    #endif
+#ifndef XUD_CORE_CLOCK
+#warning XUD_CORE_CLOCK not defined, using default (700MHz)
+#define XUD_CORE_CLOCK (700)
+#endif
 
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
-      #error (XUD_SERIES_SUPPORT != XUD_U_SERIES) with PORT_USB_RX_READY defined
-    #endif
-
-  #else
-    #if !defined(XUD_SERIES_SUPPORT)
-      #define XUD_SERIES_SUPPORT XUD_L_SERIES
-    #endif
-
-#if (XUD_SERIES_SUPPORT != XUD_L_SERIES) && (XUD_SERIES_SUPPORT != XUD_G_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)
-      #error (XUD_SERIES_SUPPORT != XUD_L_SERIES) when PORT_USB_RX_READY not defined
-    #endif
-
-  #endif
-
-#else // PORT_USB_CLK
-
-  #if !defined(XUD_SERIES_SUPPORT)
-    // Default to U-Series if no series is defined
-    #define XUD_SERIES_SUPPORT XUD_U_SERIES
-  #endif
-
-  /* Ports have not been defined in the .xn file */
-
-  #if (XUD_SERIES_SUPPORT == XUD_U_SERIES)
-    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
-    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
-    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8C
-    #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K
-    #define PORT_USB_TX_READYIN  on USB_TILE: XS1_PORT_1H
-    #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1M
-    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
-    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
-  #elif (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+#if !defined(PORT_USB_CLK)
+    /* Ports have not been defined in the .xn file */
     #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
     #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
     #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
@@ -120,18 +53,10 @@
     #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1I
     #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1E
     #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1F
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
-  #else
-    #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1H
-    #define PORT_USB_REG_WRITE   on USB_TILE: XS1_PORT_8C
-    #define PORT_USB_REG_READ    on USB_TILE: XS1_PORT_8D
-    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
-    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
-    #define PORT_USB_STP_SUS     on USB_TILE: XS1_PORT_1E
-    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1N
-    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1O
-    #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1P
-  #endif
+    #ifdef __XS2A__
+        /* XS2A has an additional flag port */
+        #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G
+    #endif
 #endif // PORT_USB_CLK
 
 /**
@@ -165,7 +90,8 @@ typedef unsigned int XUD_ep;
 typedef enum XUD_BusSpeed
 {
     XUD_SPEED_FS = 1,
-    XUD_SPEED_HS = 2
+    XUD_SPEED_HS = 2,
+    XUD_SPEED_KILL = 3
 } XUD_BusSpeed_t;
 
 typedef enum XUD_PwrConfig
@@ -212,14 +138,6 @@ typedef enum XUD_Result
  *                            endpoints, the second array contains the
  *                            endpoint types for each of the IN
  *                            endpoints.
- * \param   p_usb_rst   The port to used to connect to an external phy reset line.
- *                      Should be ``null`` for U-Series.
- * \param   clk         The clock block to use for the p_usb_rst port -
- *                      this should not be clock block 0. Should be ``null`` for U-Series.
- * \param   rstMask     The mask to use when taking an external phy into/out of reset. The mask is
- *                      ORed into the port to disable reset, and unset when
- *                      deasserting reset. Use '-1' as a default mask if this
- *                      port is not shared.
  * \param   desiredSpeed This parameter specifies what speed the device will attempt to run at
  *                      i.e. full-speed (ie 12Mbps) or high-speed (480Mbps) if supported
  *                      by the host. Pass ``XUD_SPEED_HS`` if high-speed is desired or ``XUD_SPEED_FS``
@@ -229,14 +147,11 @@ typedef enum XUD_Result
  *                      Valid values are XUD_PWR_SELF and XUD_PWR_BUS.
  *
  */
-int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */ chanend c_epOut[], int noEpOut,
-
+int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */
+                chanend c_epOut[], int noEpOut,
                 chanend c_epIn[], int noEpIn,
                 NULLABLE_RESOURCE(chanend, c_sof),
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                NULLABLE_RESOURCE(out port, p_usb_rst),
-                NULLABLE_RESOURCE(clock, clk),
-                unsigned rstMask,
                 XUD_BusSpeed_t desiredSpeed,
                 XUD_PwrConfig pwrConfig);
 #endif
@@ -341,10 +256,21 @@ XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
  * \param   one      IN or OUT endpoint identifier to perform the reset on.
  * \param   two      Optional second IN or OUT endpoint structure to perform a reset on.
  * \return  Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
- *          at high speed, or ``XUD_SPEED_FS`` - the device is runnig at full speed.
+ *          at high speed, ``XUD_SPEED_FS`` - the device is runnig at full speed,
+ *          or ``XUD_SPEED_KILL`` to indicate that the USB stack has been shut down
+ *          by another part of the user code (using XUD_Kill). If the last value is
+ *          returned, the endpoint code should call XUD_CloseEndpoint and then
+ *          terminate.
  */
 XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
 
+/**
+ * \brief   This function closes an endpoint. It should be called when the USB stack
+ *          is shutting down. It should be called on all endpoints, either in parallel
+ *          or in numerical order, first all OUT and then all IN endpoints
+ * \param   one      endpoint to close.
+ */
+void XUD_CloseEndpoint(XUD_ep one);
 
 /**
  * \brief      Initialises an XUD_ep
@@ -406,6 +332,12 @@ void XUD_ResetEpStateByAddr(unsigned epNum);
  */
 void XUD_SetTestMode(XUD_ep ep, unsigned testMode);
 
+/**
+ * \brief   Terminate XUD core
+ * \param   ep          XUD_ep type (must be endpoint 0 in or out)
+ * \warning Must be run on same tile as XUD core
+ */
+void XUD_Kill(XUD_ep ep);
 
 /**********************************************************************************************
  * Below are prototypes for main assembly functions for data transfer to/from USB I/O thread
@@ -513,8 +445,8 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
     int tmp, tmp2;
-    int wordlength;
-    int taillength;
+    int wordLength;
+    int tailLength;
 
     int reset;
 
@@ -525,29 +457,37 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
         return XUD_RES_RST;
     }
 
-    /* Knock off the tail bits */
-    wordlength = len >>2;
-    wordlength <<=2;
+    /* Tail length bytes to bits */
+    tailLength = zext((len << 3),5);
 
-    taillength = zext((len << 5),7);
+    /* Datalength (bytes) --> datalength (words) */
+    wordLength = len >> 2;
 
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    /* If tail-length is 0 and word-length not 0. Make tail-length 32 and word-length-- */
+    if ((tailLength == 0) && (wordLength != 0))
+    {
+        wordLength = wordLength - 1;
+        tailLength = 32;
+    }
+    
+    /* Get end off buffer address */
+    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
 
-    // Get end off buffer address
-    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordlength));
+    /* Produce negative offset from end of buffer */
+    asm ("neg %0, %1":"=r"(tmp2):"r"(wordLength));
 
-    asm ("neg %0, %1":"=r"(tmp2):"r"(len>>2));            // Produce negative offset from end off buffer
+    /* Store neg index */
+    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
 
-    // Store neg index
-    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));            // Store index
-
-    // Store buffer pointer
+    /* Store buffer pointer */
     asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));
 
-    // Store tail len
-    asm ("stw %0, %1[7]"::"r"(taillength),"r"(ep));
+    /*  Store tail len */
+    asm ("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
 
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));      // Mark ready
+    /* Finally, mark ready */
+    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
     return XUD_RES_OKAY;
 }
@@ -588,11 +528,15 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
  */
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
-#endif
+#endif //__XC__ || __DOXYGEN__
 
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
 
-#endif //__XC__ || __STDC__
+#ifndef XUD_OSC_MHZ
+#define XUD_OSC_MHZ (24)
+#endif
 
-#endif // __xud_h__
+#endif //__ASSEMBLER__
+
+#endif // _XUD_H_

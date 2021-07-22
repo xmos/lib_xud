@@ -3,70 +3,124 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Basic check of PING functionality
+from usb_packet import (
+    TokenPacket,
+    TxDataPacket,
+    RxDataPacket,
+    TxHandshakePacket,
+    RxHandshakePacket,
+    USB_PID,
+)
+from usb_session import UsbSession
+from usb_transaction import UsbTransaction
+import pytest
+from conftest import PARAMS, test_RunUsbSession
 
-import random
-import xmostest
-from  usb_packet import *
-#import * AppendSetupToken, TxDataPacket, RxDataPacket, TokenPacket, RxHandshakePacket, TxHandshakePacket
-from usb_clock import Clock
-from helpers import do_rx_test, packet_processing_time, get_dut_address
-from helpers import choose_small_frame_size, check_received_packet, runall_rx
 
+@pytest.fixture
+def test_session(ep, address, bus_speed):
 
-# Single, setup transaction to EP 0
+    session = UsbSession(
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
+    )
 
-def do_test(arch, clk, phy, seed):
-    rand = random.Random()
-    rand.seed(seed)
-
-    dev_address = get_dut_address()
-    ep = 1
-
-    # The inter-frame gap is to give the DUT time to print its output
-    packets = []
-
-    dataval = 0;
-
-    # Ping EP 2, expect NAK
-    AppendPingToken(packets, 2)
-    packets.append(RxHandshakePacket(pid=0x5a))
+    # Ping test EP, expect NAK
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address,
+            endpoint=ep,
+        )
+    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
     # And again
-    AppendPingToken(packets, 2)
-    packets.append(RxHandshakePacket(pid=0x5a))
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address,
+            endpoint=ep,
+        )
+    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
+    # Send packet to "ctrl" EP, DUT should mark test EP as ready
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep + 1,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=10,
+        )
+    )
 
-    # Send packet to EP 1, xCORE should mark EP 2 as ready
-    AppendOutToken(packets, ep)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=10, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
-    
-    # Ping EP 2 again - expect ACK
-    AppendPingToken(packets, 2, inter_pkt_gap=6000)
-    packets.append(RxHandshakePacket())
+    # Ping test EP again - expect ACK
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address,
+            endpoint=ep,
+            interEventDelay=6000,
+        )
+    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["ACK"]))
 
     # And again..
-    AppendPingToken(packets, 2)
-    packets.append(RxHandshakePacket())
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address,
+            endpoint=ep,
+            interEventDelay=6000,
+        )
+    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["ACK"]))
 
     # Send out to EP 2.. expect ack
-    AppendOutToken(packets, 2, inter_pkt_gap=6000)
-    packets.append(TxDataPacket(rand, data_start_val=dataval, length=10, pid=0x3)) #DATA0
-    packets.append(RxHandshakePacket())
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=10,
+            interEventDelay=6000,
+        )
+    )
 
-   # Re-Ping EP 2, expect NAK
-    AppendPingToken(packets, 2)
-    packets.append(RxHandshakePacket(pid=0x5a))
+    # Re-Ping EP 2, expect NAK
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address,
+            endpoint=ep,
+        )
+    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
     # And again
-    AppendPingToken(packets, 2)
-    packets.append(RxHandshakePacket(pid=0x5a))
+    session.add_event(
+        TokenPacket(
+            pid=USB_PID["PING"],
+            address=address,
+            endpoint=ep,
+        )
+    )
+    session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
 
+    # Send a packet to "ctrl" EP so the DUT knows it can exit.
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep + 1,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=10,
+        )
+    )
 
-
-    do_rx_test(arch, clk, phy, packets, __file__, seed,
-               level='smoke', extra_tasks=[])
-
-def runtest():
-    random.seed(1)
-    runall_rx(do_test)
+    return session

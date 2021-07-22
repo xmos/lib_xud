@@ -1,6 +1,17 @@
 lib_xud Change Log
 ==================
 
+2.0.0
+-----
+
+  * ADDED:      Initial support for XS3A based devices
+  * ADDED:      Requirement to define XUD_CORE_CLOCK with xcore core clock speed
+    in MHz
+  * CHANGE:     Removed support for XS1-G, and XS1-L (including U series) based
+    devices
+  * RESOLVED:   Exception when Endpoint marked as disabled
+  * CHANGE:     Use common XN files for tests
+
 1.2.0
 -----
 

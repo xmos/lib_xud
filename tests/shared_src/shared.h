@@ -1,97 +1,35 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+#ifndef _SHARED_H_
+#define _SHARED_H_
+#include <xs1.h>
+#include <print.h>
+#include <stdio.h>
+#include <platform.h>
+#include <stdint.h>
+#include "xud.h"
 
-unsigned char g_rxDataCheck[7] = {0, 0, 0, 0, 0, 0, 0};
-unsigned char g_txDataCheck[5] = {0,0,0,0,0,};
-unsigned g_txLength[5] = {0,0,0,0,0};
+unsigned char g_rxDataCheck_[16] = {0};
+unsigned char g_txDataCheck_[16] = {0};
+unsigned g_txLength[16]          = {0};
 
 unsafe
 {
-    unsigned char volatile * unsafe g_rxDataCheck_ = g_rxDataCheck;
-    unsigned char volatile * unsafe g_txDataCheck_ = g_txDataCheck;
+    unsigned char volatile * unsafe g_rxDataCheck = g_rxDataCheck_;
+    unsigned char volatile * unsafe g_txDataCheck = g_txDataCheck_;
 }
 
 void exit(int);
 
-#ifndef PKT_COUNT
-#define PKT_COUNT           10
-#endif
+#define FAIL_RX_DATAERROR        1
+#define FAIL_RX_LENERROR         2
+#define FAIL_RX_EXPECTED_CTL     3   
+#define FAIL_RX_BAD_RETURN_CODE  4
+#define FAIL_RX_FRAMENUMBER      5
 
-#ifndef INITIAL_PKT_LENGTH
-#define INITIAL_PKT_LENGTH  10
-#endif
-
-
-#pragma unsafe arrays
-XUD_Result_t SendTxPacket(XUD_ep ep, int length, int epNum)
-{
-    unsigned char buffer[1024];
-
-    for (int i = 0; i < length; i++)
-    {
-        buffer[i] = g_txDataCheck[epNum]++;
-    }
-
-    return XUD_SetBuffer(ep, buffer, length);
-}
-
-#pragma unsafe arrays
-XUD_Result_t SendControlPacket(XUD_ep ep, int length, int epNum)
-{
-    unsigned char buffer[1024];
-
-    for (int i = 0; i < length; i++)
-    {
-        buffer[i] = g_txDataCheck[epNum]++;
-    }
-
-    return XUD_SetControlBuffer(ep, buffer, length);
-}
-
-
-
-#pragma unsafe arrays
-int TestEp_Bulk_Tx(chanend c_in1, int epNum1, int die)
-{
-    XUD_ep ep_in1  = XUD_InitEp(c_in1);
-    
-    unsigned char buffer[PKT_COUNT][1024];
-
-    int counter = 0;
-    int length = INITIAL_PKT_LENGTH;
-
-    for(int i = 0; i< PKT_COUNT; i++)
-    {
-        for(int j = 0; j < length; j++)
-        {
-            buffer[i][j] = counter++;
-        }
-        length++;
-    }
-
-    length = INITIAL_PKT_LENGTH;
-
-#pragma loop unroll
-    for(int i = 0; i < PKT_COUNT; i++)
-    {
-        XUD_SetBuffer(ep_in1, buffer[i], length++);
-    }
-
-
-    if(die)
-        exit(0);
-    else
-        while(1);
-}
-
-
-
-#define FAIL_RX_DATAERROR   0
-#define FAIL_RX_LENERROR    1
-#define FAIL_RX_EXPECTED_CTL 2
-#define FAIL_RX_BAD_RETURN_CODE 3
-
-unsigned fail(int x)
+#ifdef XUD_SIM_XSIM
+/* Alternatives to the RTL sim testbench functions */
+void TerminateFail(unsigned x)
 {
     switch(x)
     {
@@ -108,67 +46,224 @@ unsigned fail(int x)
             break;
         
         case FAIL_RX_BAD_RETURN_CODE:
-            printstr("\nXCORE: ### FAIL ### : Unexpcected return code\n");
+            printstr("\nXCORE: ### FAIL ### : Unexpected return code\n");
             break;
 
+        case FAIL_RX_FRAMENUMBER:
+            printstr("\nXCORE: ### FAIL ### : Received bad frame number\n");
+            break;
+    }
+    exit(x);
+}
+void TerminatePass(unsigned x)
+{
+    exit(0);
+}
+#endif
+
+#ifndef PKT_LEN_START
+#define PKT_LEN_START       (10)
+#endif
+
+#ifndef PKT_LEN_END
+#define PKT_LEN_END         (21)
+#endif
+
+#ifndef MAX_PKT_COUNT 
+#define MAX_PKT_COUNT       (50)
+#endif
+
+#ifndef TEST_EP_NUM
+#warning TEST_EP_NUM not defined, using default value
+#define TEST_EP_NUM         (1)
+#endif
+
+typedef enum t_runMode
+{
+    RUNMODE_LOOP,
+    RUNMODE_DIE
+} t_runMode;
+
+
+#pragma unsafe arrays
+XUD_Result_t SendTxPacket(XUD_ep ep, int length, int epNum)
+{
+    unsigned char buffer[1024];
+
+    
+    for (int i = 0; i < length; i++)
+    unsafe {
+        buffer[i] = g_txDataCheck[epNum]++;
     }
 
-    exit(1);
+    return XUD_SetBuffer(ep, buffer, length);
 }
 
 #pragma unsafe arrays
-unsafe int RxDataCheck(unsigned char b[], int l, int epNum)
+int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode runMode)
 {
+    XUD_ep ep_in  = XUD_InitEp(c_in);
+    
+    unsigned char buffer[MAX_PKT_COUNT][1024];
+
+    int counter = 0;
+    int length = start;
+
+    set_core_fast_mode_on();
+
+    /* Prepare packets */
+    for(int i = 0; i <= (end-start); i++)
+    {
+        for(int j = 0; j < length; j++)
+        {
+            buffer[i][j] = counter++;
+        }
+        length++;
+    }
+
+#pragma loop unroll
+    length = start;
+    for(int i = 0; i <= (end - start); i++)
+    {
+        XUD_SetBuffer(ep_in, buffer[i], length++);
+    }
+
+    if(runMode == RUNMODE_DIE)
+        return 0;
+    else
+        while(1);
+}
+
+#pragma unsafe arrays
+int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
+{
+    if (l != expectedLength)
+    {
+        printf("%d %d", (unsigned) l, expectedLength); 
+        return FAIL_RX_LENERROR;
+    }
+
     for (int i = 0; i < l; i++)
     {
         unsigned char y;
-        //read_byte_via_xc_ptr_indexed(y, p_rxDataCheck, epNum);
-        if(b[i] != g_rxDataCheck_[epNum])
+        
+        unsafe
         {
-            printstr("#### Mismatch on EP.. \n");
-            //printint(epNum); 
-            //printstr(". Got:");
-            //printhex(b[i]);
-            //printstr(" Expected:");
-            //printhexln(g_rxDataCheck[epNum]);
-            //printintln(l); // Packet length
-            printf("### Mismatch on EP: %d. Got %d, Expected %d\n", epNum, b[i], g_rxDataCheck[epNum]);
-            return 1;
-    
-        }
+            if(b[i] != g_rxDataCheck[epNum])
+            {
+#ifdef XUD_SIM_XSIM
+                printstr("#### Mismatch on EP: ");
+                printint(epNum); 
+                printstr(". Got:");
+                printhex(b[i]);
+                printstr(" Expected:");
+                printhex(g_rxDataCheck[epNum]);
+                printstr(" Pkt len: ");
+                printintln(l); // Packet length
+#endif
+                return 1;
+            }
 
-        g_rxDataCheck_[epNum]++;
+            g_rxDataCheck[epNum]++;
+        }
     }
 
     return 0;
 }
 
 #pragma unsafe arrays
-int TestEp_Bulk_Rx(chanend c_out1, int epNum1)
+int TestEp_Rx(chanend c_out, int epNum, int start, int end)
 {
-    // TODO check rx lengths
-    unsigned int length[PKT_COUNT];
-    //XUD_Result_t res;
+    unsigned int length[MAX_PKT_COUNT];
 
-    XUD_ep ep_out1 = XUD_InitEp(c_out1);
+    XUD_ep ep_out1 = XUD_InitEp(c_out);
 
     /* Buffer for Setup data */
-    unsigned char buffer[PKT_COUNT][1024];
+    unsigned char buffer[MAX_PKT_COUNT][1024];
+
+    set_core_fast_mode_on();
 
     /* Receive a bunch of packets quickly, then check them */
 #pragma loop unroll
-    for(int i = 0; i < PKT_COUNT; i++)
+    for(int i = 0; i <= (end-start); i++)
     {
         XUD_GetBuffer(ep_out1, buffer[i], length[i]);
     }
 #pragma loop unroll
-    for(int i = 0; i < PKT_COUNT; i++)
+    for(int i = 0; i <= (end-start); i++)
     {
         unsafe
         {
-            RxDataCheck(buffer[i], length[i], epNum1);       
+            unsigned expectedLength = start+i;
+            unsigned fail = RxDataCheck(buffer[i], length[i], epNum, expectedLength);
+            if (fail) 
+                return fail;
+                       
         }
     }
 
-    exit(0);
+    return 0;
 }
+
+/* Loopback packets forever */
+#pragma unsafe arrays
+int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode)
+{
+    unsigned int length;
+    XUD_Result_t res;
+    
+    set_core_fast_mode_on();
+
+    XUD_ep ep_out1 = XUD_InitEp(c_out1);
+    XUD_ep ep_in1  = XUD_InitEp(c_in1);
+
+    /* Buffer for Setup data */
+    unsigned char buffer[1024];
+
+    while(1)
+    {
+        XUD_GetBuffer(ep_out1, buffer, length);
+        XUD_SetBuffer(ep_in1, buffer, length);
+        
+        /* Loop back once and return */
+        if(runMode == RUNMODE_DIE)
+            break;
+       
+        /* Partial un-roll */ 
+        XUD_GetBuffer(ep_out1, buffer, length);
+        XUD_SetBuffer(ep_in1, buffer, length);
+    }
+}
+
+#ifndef TEST_DTHREADS
+#warning TEST_DTHREADS not defined
+#define TEST_DTHREADS (0)
+#endif
+
+#if (TEST_DTHREADS > 6)
+#error TEST_DTHREADS too high
+#endif
+
+size_t g_dummyThreadCount = TEST_DTHREADS;
+
+void dummyThread()
+{
+    unsigned x = 0;
+    set_core_fast_mode_on();
+
+    while(g_dummyThreadCount)
+    {
+        x++;
+    }
+}
+
+void dummyThreads()
+{
+#if (TEST_DTHREADS > 0)
+    par(size_t i = 0; i < TEST_DTHREADS; i++)
+    {
+        dummyThread();
+    }
+#endif
+}
+#endif

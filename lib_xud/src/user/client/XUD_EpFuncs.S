@@ -1,29 +1,37 @@
 // Copyright 2011-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /** XUD_EpFuncs.S
-  * @brief     Functions for data transfer to/from XUD
+  * @brief     ASM functions for data transfer to/from XUD
   * @author    Ross Owen, XMOS Limited
   */
 #include "XUD_USB_Defines.h"
+#include "XUD_AlignmentDefines.h"
 
-#if !defined __XS2A__
+#if defined __XS2A__
 .set too_many_cores, main.maxcores > 6
 .assert 0, too_many_cores, "Warning: More than 6 cores used on a tile. Ensure this is not the case on tile running XUD."
 #endif
 
+.section	.cp.rodata,"ac", @progbits
+.cc_top ep_info_address.data,ep_info_address
+.align FUNCTION_ALIGNMENT
+.type	ep_info_address,@object
+.size	ep_info_address, 4
+ep_info_address:
+.long	ep_info
+.cc_bottom ep_info_address.data
+
+
 //int XUD_GetSetupData(XUD_ep e_out, unsigned buffer[], unsigned &length);
 //                     r0            r1                 r2
+.text
 .globl XUD_GetSetupData
 .type XUD_GetSetupData, @function
 .cc_top XUD_GetSetupData.func
-.align 4
-XUD_GetSetupData:
-#if defined(__XS2A__)
 .issue_mode single
-  ENTSP_lu6 4
-#else
-  entsp 4
-#endif
+.align FUNCTION_ALIGNMENT
+XUD_GetSetupData:
+    ENTSP_lu6   4
     stw         r4, sp[1]
     stw         r10, sp[2]
 
@@ -52,7 +60,7 @@ XUD_GetSetupData_NoReq:                         // Entry for _NoReq
                                                 // TODO..
 
 XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
-#if (XUD_SERIES_SUPPORT==3)
+#ifdef __XS3A__
     ldc         r11, USB_PIDn_DATA1
 #else
     ldc         r11, USB_PID_DATA1
@@ -135,13 +143,13 @@ XUD_GetSetupData_Reset:
 .globl XUD_GetData
 .type XUD_GetData, @function
 .cc_top XUD_GetData.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_GetData:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-  ENTSP_lu6 4
+  ENTSP_lu6    4
 #else
-  entsp       4
+  entsp        4
 #endif
     stw         r10, sp[1]
     mov         r11, r1
@@ -188,7 +196,7 @@ XUD_GetData_PidOkay:
     bf         r11, XUD_GetData_ReturnOk        // Jump over PID toggle for ISO
 
 XUD_GetData_PidToggle:
-#if (XUD_SERIES_SUPPORT==3)
+#ifdef __XS3A__
     ldc        r11, 0x88
 #else
     ldc        r11, 8
@@ -220,8 +228,8 @@ XUD_GetData_GotSetup:
                                                 // We expect data0 else something gone wrong...
                                                 // TODO..
 
-XUD_GetDataSetupData_ResetPid:                      // We must reset PID toggling on SETUP (both IN AND OUT)
-#if (XUD_SERIES_SUPPORT==3)
+XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on SETUP (both IN AND OUT)
+#ifdef __XS3A__
     ldc         r11, USB_PIDn_DATA1
 #else
     ldc         r11, USB_PID_DATA1
@@ -272,13 +280,13 @@ XUD_GetDataSetupData_ResetPid:                      // We must reset PID togglin
 .globl XUD_SetData
 .type XUD_SetData, @function
 .cc_top XUD_SetData.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_SetData:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-  ENTSP_lu6 8
+    ENTSP_lu6  8
 #else
-  entsp       8
+    entsp      8
 #endif
     stw         r5, sp[5]
     stw         r10, sp[6]
@@ -293,15 +301,24 @@ XUD_SetData_NoReq:
     add         r1, r1, r3                      // Add start index to buffer address
 
 CalcTailLength:
-    shl         r3, r2, 5                       // Taillength: bytes to bits * 2
-    zext        r3, 7
+    shl         r3, r2, 3                       // Tail length: bytes to bits
+    zext        r3, 5
 
 SetupLoopTerm:
     shr         r2, r2, 2                       // r2: datalength (bytes) ---> r2: datalength (words)
 
+    // TODO do this a bit more effciently..
+    // If tail is 0 and word-length not 0. Make tail-length 32 and word-length--
+    bt          r3, AdjustBufferPointer
+    bf          r2, AdjustBufferPointer
+
+    sub         r2, r2, 1
+    ldc         r3, 32
+
 AdjustBufferPointer:
     shl         r5, r2, 2                       // Get end off buffer address
     add         r1, r1, r5
+   
 
 NegativeIndex:                                  // Produce negtive offset from end of buffer
     neg         r2, r2
@@ -370,9 +387,9 @@ XUD_SetData_Reset:
 .globl XUD_GetData_Select
 .type XUD_GetData_Select, @function
 .cc_top XUD_GetData_Select.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_GetData_Select:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
@@ -408,7 +425,7 @@ XUD_GetData_Select_CheckPid:                    // Check PID
     bt          r11, XUD_GetData_Select_BadPkt
 
 XUD_GetData_Select_PidToggle:
-#if (XUD_SERIES_SUPPORT==3)
+#ifdef __XS3A__
     ldc         r2, 0x88
 #else
     ldc         r2, 8
@@ -461,9 +478,9 @@ XUD_GetData_Select_Return_Reset:
 .globl XUD_SetData_Select
 .type XUD_SetData_Select, @function
 .cc_top XUD_SetData_Select.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_SetData_Select:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
@@ -519,20 +536,24 @@ XUD_SetData_Select_Reset:
 
 /* R0: ep number */
 .cc_top XUD_SetStallByAddr.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_SetStallByAddr:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
     ldc         r2, USB_PIDn_STALL
-    ldc         r11, 0x80                       // Check for IN bit
+    ldc         r11, 0x80                          // Check for IN bit
     and         r11, r11, r0
     bf          r11, XUD_SetStallByAddr_OUT
     ldaw        r1,  dp[handshakeTable_IN]
     mkmsk       r11, 7
     and         r11, r11, r0
     stw         r2, r1[r11]
+
+    ldaw        r1, dp[g_stallTable_IN]              // Mark stall table with non-zero entry
+    stw         r2, r1[r11]
+    
     retsp       0
 XUD_SetStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
@@ -565,22 +586,25 @@ XUD_SetStallByAddr_OUT:
 
 /* R0: ep number */
 .cc_top XUD_ClearStallByAddr.func
-.align 4
-XUD_ClearStallByAddr:
-#if defined(__XS2A__)
 .issue_mode single
-  ENTSP_lu6 0
-#endif
+.align FUNCTION_ALIGNMENT
+XUD_ClearStallByAddr:
+    ENTSP_lu6   0
     ldc         r2, USB_PIDn_NAK
-    ldc         r11, 0x80                       // Check for IN bit
+    ldc         r11, 0x80                          // Check for IN bit
     and         r11, r11, r0
     bf          r11, XUD_ClearStallByAddr_OUT
-    ldaw        r1,  dp[handshakeTable_IN]      // Reset Handshake
+    ldaw        r1,  dp[handshakeTable_IN]         // Reset Handshake
     mkmsk       r11, 7
     and         r11, r11, r0
     stw         r2, r1[r11]
-                                                // Calc offset for data pid
-    ldaw        r0, r11[4]                      // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
+
+    ldaw       r1, dp[g_stallTable_IN]
+    ldc        r2, 0
+    stw        r2, r1[r11]                         // Mark stall with zero entry      
+
+                                                   // Calc offset for data pid
+    ldaw        r0, r11[4]                         // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
     ldc         r1, USB_PIDn_DATA0
     bu          XUD_ClearStallByAddr_ResetDataPid
 
@@ -588,7 +612,7 @@ XUD_ClearStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
     stw         r2, r1[r0]
 
-#if(XUD_SERIES_SUPPORT==3)
+#ifdef __XS3A__
     ldc         r1, USB_PIDn_DATA0
 #else
     ldc         r1, USB_PID_DATA0
@@ -598,7 +622,7 @@ XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
 
     ldc         r2, 40                          // Size of XUD_ep_info struct TODO use sizeof() -
     mul         r0, r0, r2                      // Be careful with packing
-    ldaw        r2, dp[ep_info]
+    ldw         r2, cp[ep_info_address]
     add         r0, r2, r0
     stw         r1, r0[4]
 
@@ -631,9 +655,9 @@ XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
 
 /* R0: ep number */
 .cc_top XUD_ResetEpStateByAddr.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_ResetEpStateByAddr:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
   ENTSP_lu6 0
 #endif
@@ -643,7 +667,7 @@ XUD_ResetEpStateByAddr:
     ldc         r1, USB_PIDn_DATA0
     bu          XUD_ResetEpStateByAddr_
 XUD_ResetEpStateByAddr_OUT:
-#if(XUD_SERIES_SUPPORT==3)
+#if defined(__XS3A__) 
     ldc         r1, USB_PIDn_DATA0
 #else
     ldc         r1, USB_PID_DATA0
@@ -655,7 +679,7 @@ XUD_ResetEpStateByAddr_:
 NoOffset:
     ldc         r2, 40                          // Size of XUD_ep_info struct TODO. FIXME!
     mul         r0, r0, r2
-    ldaw        r2, dp[ep_info]
+    ldw         r2, cp[ep_info_address]
     add         r0, r2, r0
     stw         r1, r0[4]
     retsp       0
@@ -686,11 +710,11 @@ NoOffset:
 .type XUD_SetTestMode, @function
 
 .cc_top XUD_SetTestMode.func
-.align 4
+.align FUNCTION_ALIGNMENT
 XUD_SetTestMode:
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-  ENTSP_lu6 0
+    ENTSP_lu6 0
 #endif
     ldw         r0, r0[2]                       // Load our chanend ID to use
     outct       res[r0], 1

@@ -1,6 +1,4 @@
-VERSION = 1.2.0
-
-DEPENDENT_MODULES =
+VERSION = 2.0.0
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \
@@ -18,17 +16,17 @@ XCC_FLAGS_dfu_flash.xc = $(MODULE_XCC_FLAGS) -Os
 XCC_FLAGS_XUD_Client.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_Main.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_SetDevAddr.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
-XCC_FLAGS_XUD_DeviceAttach.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue -Wno-return-type
 XCC_FLAGS_XUD_PhyResetUser.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_Support.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_IOLoopCall.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
-XCC_FLAGS_XUD_PowerSig.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue -Wno-return-type
+XCC_FLAGS_XUD_Signalling.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue -Wno-return-type
 XCC_FLAGS_XUD_TestMode.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
-XCC_FLAGS_XUD_GetDone.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_SetCrcTableAddr.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_User.c = $(MODULE_XCC_FLAGS) -mno-dual-issue
 
 OPTIONAL_HEADERS += xud_conf.h
+
+DEPENDENT_MODULES =
 
 EXPORT_INCLUDE_DIRS = api \
                       src/user
@@ -42,11 +40,13 @@ SOURCE_DIRS = src/core \
               src/user/client \
               src/user/control
 
-EXCLUDE_FILES += XUD_Token_In.S \
+EXCLUDE_FILES += XUD_CrcAddrCheck.S \
+                 XUD_G_Crc.S \
+                 XUD_PidJumpTable.S \
+                 XUD_RxData.S \
+                 XUD_Token_In_DI.S \
+                 XUD_Token_Out_DI.S \
                  XUD_Token_Ping.S \
                  XUD_Token_SOF.S \
-                 XUD_Token_Out.S \
-                 XUD_Token_Setup.S \
-                 XUD_G_Crc.S \
-                 XUD_TokenJmp.S \
-                 XUD_PidJumpTable.S
+                 XUD_Token_Setup_DI.S \
+                 XUD_TokenJmp.S

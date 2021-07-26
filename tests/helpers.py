@@ -98,6 +98,7 @@ FIXTURE_TO_DEFINE = {
     "dummy_threads": "TEST_DTHREADS",
     "ep": "TEST_EP_NUM",
     "address": "XUD_STARTUP_ADDRESS",
+    "bus_speed": "BUS_SPEED",
 }
 
 
@@ -135,7 +136,7 @@ def do_usb_test(
     testname, extension = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    description = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}"
+    description = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
     binary = f"{testname}/bin/{description}/{testname}_{description}.xe"
 
     # Do not need to clean since different build will different params go to

@@ -80,7 +80,7 @@ def run_on_simulator(xe, simthreads, **kwargs):
     for k in ["do_xe_prebuild", "build_env", "clean_before_build"]:
         if k in kwargs:
             kwargs.pop(k)
-    return Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
+    Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
 
 
 def run_on(**kwargs):

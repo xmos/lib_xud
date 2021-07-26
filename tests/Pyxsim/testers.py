@@ -11,6 +11,7 @@ class TestError(Exception):
     """
 
     def __init__(self, value):
+        super().__init__(self)
         self.value = value
 
     def __str__(self):
@@ -51,13 +52,14 @@ class ComparisonTester:
         ignore=[],
         ordered=True,
     ):
-        super(ComparisonTester, self).__init__()
         # self.register_test(product, group, test, config)
         self._golden = golden
         self._test = (product, group, test, config, env)
         self._regexp = regexp
         self._ignore = ignore
         self._ordered = ordered
+        self.result = None
+        self.failures = []
 
     def record_failure(self, failure_reason):
         # Append a newline if there isn't one already
@@ -69,7 +71,7 @@ class ComparisonTester:
 
     def run(self, output):
         golden = self._golden
-        (product, group, test, config, env) = self._test
+        (_product, _group, test, config, _env) = self._test
         regexp = self._regexp
         if isinstance(golden, list):
             expected = golden
@@ -87,10 +89,10 @@ class ComparisonTester:
 
         num_expected = len(expected)
 
-        for i in range(len(output)):
+        for line in output:
             ignore = False
             for p in self._ignore:
-                if re.match(p, output[i].strip()):
+                if re.match(p, line.strip()):
                     ignore = True
                     break
             if ignore:
@@ -106,10 +108,10 @@ class ComparisonTester:
             if self._ordered:
                 if regexp:
                     match = re.match(
-                        expected[line_num] + "$", output[i].strip()
+                        expected[line_num] + "$", line.strip()
                     )
                 else:
-                    match = expected[line_num] == output[i].strip()
+                    match = expected[line_num] == line.strip()
 
                 if not match:
                     self.record_failure(
@@ -121,11 +123,11 @@ class ComparisonTester:
                         % (
                             line_num,
                             expected[line_num].strip(),
-                            output[i].strip(),
+                            line.strip(),
                         )
                     )
             else:  # Unordered testing
-                stripped = output[i].strip()
+                stripped = line.strip()
                 if regexp:
                     match = any(re.match(e + "$", stripped) for e in expected)
                 else:
@@ -137,7 +139,7 @@ class ComparisonTester:
                             "Line %d of output not found in expected\n"
                             + "  Actual  : %s"
                         )
-                        % (line_num, output[i].strip())
+                        % (line_num, line.strip())
                     )
 
         if num_expected > line_num + 1:

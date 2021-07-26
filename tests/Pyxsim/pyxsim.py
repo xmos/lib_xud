@@ -1,9 +1,6 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-import os
-import re
-import struct
 from ctypes import (
     cdll,
     byref,
@@ -12,11 +9,15 @@ from ctypes import (
     c_int,
     create_string_buffer,
 )
-from Pyxsim.xe import Xe
-from Pyxsim.testers import TestError
+import os
+import re
+import struct
+import sys
 import threading
 import traceback
-import sys
+
+from Pyxsim.xe import Xe
+from Pyxsim.testers import TestError
 from Pyxsim.xmostest_subprocess import platform_is_windows
 
 ALL_BITS = 0xFFFFFF
@@ -40,8 +41,7 @@ def xsi_is_valid_port(port):
 def xsi_get_port_width(port):
     if not xsi_is_valid_port(port):
         return None
-    else:
-        return int(re.match(r"^XS1_PORT_(\d+)\w", port).groups(0)[0])
+    return int(re.match(r"^XS1_PORT_(\d+)\w", port).groups(0)[0])
 
 
 class EnumExceptionSet:
@@ -58,6 +58,7 @@ class EnumExceptionSet:
         if value < len(self.enum_list):
             enum = self.enum_list[value]
             return enum in self.valid_list
+        raise IndexError
 
     def error_if_not_valid(self, value):
         if value < len(self.enum_list):
@@ -127,7 +128,7 @@ class SimThreadImpl(threading.Thread):
         def _fn(*args):
             st.run(*args)
 
-        super(SimThreadImpl, self).__init__()
+        super().__init__()
         self._fn = _fn
         self._args = args
         self.get_time = xsi.get_time
@@ -137,6 +138,7 @@ class SimThreadImpl(threading.Thread):
         self.had_exception = False
         self.terminate_flag = False
         st.xsi = self
+        self.resume_condition = None
 
     def _wait(self, resume_check):
         self.resume_condition = resume_check
@@ -236,20 +238,22 @@ class SimThreadImpl(threading.Thread):
         self.complete_event.set()
 
 
-class Xsi(object):
+class Xsi():
     def __init__(self, xe_path=None, simargs=[], appargs=[]):
         self.xsim = c_void_p()
         self.xe_path = xe_path
         args = " ".join(
-            ['"{}"'.format(x) for x in (simargs + [self.xe_path] + appargs)]
+            ['"{}"'.format(x) for x in simargs + [self.xe_path] + appargs]
         )
-        if platform_is_windows:
+        if platform_is_windows():
             args = args.replace("\\", "/")
         c_args = c_char_p(args.encode("utf-8"))
         xsi_lib.xsi_create(byref(self.xsim), c_args)
         self._plugins = []
         self._simthreads = []
         self._time = 0
+        self.xe = Xe(self.xe_path)
+        self._time_step = 1000.0 / self.xe.freq
 
     def register_plugin(self, plugin):
         self._plugins.append(plugin)
@@ -266,7 +270,8 @@ class Xsi(object):
         simthread.daemon = True
         self._simthreads.append(simthread)
 
-    def wait_for_simthread(self, simthread):
+    @staticmethod
+    def wait_for_simthread(simthread):
         simthread.complete_event.wait()
         simthread.complete_event.clear()
         if simthread.had_exception:
@@ -291,8 +296,6 @@ class Xsi(object):
         return self._time
 
     def run(self):
-        self.xe = Xe(self.xe_path)
-        self._time_step = 1000.0 / self.xe.freq
         status = XsiStatus.OK
         for simthread in self._simthreads:
             simthread.start()
@@ -398,8 +401,7 @@ class Xsi(object):
         XsiStatus.error_if_not_valid(status)
         if return_ctype:
             return buf
-        else:
-            return list(buf)
+        return list(buf)
 
     def read_symbol_word(self, tile, symbol, offset=0):
         address = self.xe.symtab[tile, symbol]
@@ -455,7 +457,7 @@ class Xsi(object):
         XsiStatus.error_if_not_valid(status)
 
 
-class XsiPlugin(object):
+class XsiPlugin():
     def clock(self, xsi):
         pass
 

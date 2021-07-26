@@ -6,12 +6,13 @@ Pyxsim pytest framework
 This module provides functions to run tests for XMOS applications and
 libraries.
 """
+import multiprocessing
+import os
+import re
 import sys
+
 from Pyxsim.xmostest_subprocess import call_get_output
 from . import pyxsim
-import multiprocessing
-import re
-import os
 
 clean_only = False
 
@@ -87,16 +88,9 @@ def do_run_pyxsim(xe, simargs, appargs, simthreads):
 def run_with_pyxsim(
     xe,
     simthreads,
-    xscope_io=False,
-    loopback=[],
     simargs=[],
     appargs=[],
-    suppress_multidrive_messages=False,
-    tester=None,
     timeout=600,
-    initial_delay=None,
-    start_after_started=[],
-    start_after_completed=[],
 ):
 
     p = multiprocessing.Process(
@@ -107,7 +101,6 @@ def run_with_pyxsim(
     if p.is_alive():
         sys.stderr.write("Simulator timed out\n")
         p.terminate()
-    return None
 
 
 def run_tester(caps, tester_list):
@@ -121,7 +114,7 @@ def run_tester(caps, tester_list):
     return result
 
 
-class SimThread(object):
+class SimThread():
     def run(self, xsi):
         pass
 

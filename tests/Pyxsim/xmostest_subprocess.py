@@ -1,15 +1,16 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+import errno
+import multiprocessing
+import os
 import platform
 import re
+import signal
 import subprocess
 import sys
 import tempfile
-import multiprocessing
 import time
-import os
-import signal
-import errno
+
 from Pyxsim.testers import TestError
 
 
@@ -74,18 +75,14 @@ def log_debug(msg):
 
 def platform_is_osx():
     ostype = platform.system()
-    if re.match(".*Darwin.*", ostype):
-        return True
-    else:
-        return False
+    return bool(re.match(".*Darwin.*", ostype))
 
 
 def platform_is_windows():
     ostype = platform.system()
-    if not re.match(".*Darwin.*", ostype) and re.match(".*[W|w]in.*", ostype):
-        return True
-    else:
-        return False
+    return bool(
+        not re.match(".*Darwin.*", ostype) and re.match(".*[W|w]in.*", ostype)
+    )
 
 
 if platform_is_windows():
@@ -107,8 +104,7 @@ def quote_string(s):
     """For Windows need to put quotes around arguments with spaces in them"""
     if re.search(r"\s", s):
         return '"%s"' % s
-    else:
-        return s
+    return s
 
 
 def Popen(*args, **kwargs):
@@ -124,21 +120,20 @@ def Popen(*args, **kwargs):
 
 
 def wait_with_timeout(p_and_sig, timeout):
-    (ev, pidv, process) = p_and_sig
+    (ev, _pidv, process) = p_and_sig
     process.start()
+    finished = True
     try:
-        if timeout:
+        if timeout is not None:
             finished = ev.wait(timeout)
             if not finished:
                 pstreekill(process)
-            return (not finished, 0)
         else:
             ev.wait()
-            return (False, 0)
     except KeyboardInterrupt:
         pstreekill(process)
 
-    return (False, 0)
+    return not finished
 
 
 def do_cmd(ev, pidv, *args, **kwargs):
@@ -204,7 +199,7 @@ def call(*args, **kwargs):
         kwargs["stderr"] = subprocess.STDOUT
 
         process = create_cmd_process(*args, **kwargs)
-        (timed_out, retval) = wait_with_timeout(process, timeout)
+        timed_out = wait_with_timeout(process, timeout)
         out.seek(0)
         stdout_lines = out.readlines()
         out.close()
@@ -214,7 +209,7 @@ def call(*args, **kwargs):
             log_debug("     " + line.rstrip())
     else:
         process = create_cmd_process(*args, **kwargs)
-        (timed_out, retval) = wait_with_timeout(process, timeout)
+        timed_out = wait_with_timeout(process, timeout)
         # Ensure spawned processes are not left running past this point
         # There should be no children running now (as they would be orphaned)
         process[2].terminate()
@@ -227,8 +222,8 @@ def call(*args, **kwargs):
 
     if timeout:
         return (timed_out, retval)
-    else:
-        return retval
+
+    return retval
 
 
 def call_get_output(*args, **kwargs):
@@ -253,7 +248,7 @@ def call_get_output(*args, **kwargs):
         err.close()
 
     process = create_cmd_process(*args, **kwargs)
-    (timed_out, retval) = wait_with_timeout(process, timeout)
+    timed_out = wait_with_timeout(process, timeout)
     out.seek(0)
     stdout_lines = out.readlines()
     out.close()
@@ -275,11 +270,9 @@ def call_get_output(*args, **kwargs):
     if merge:
         if timeout:
             return (timed_out, stdout_lines)
-        else:
-            return stdout_lines
+        return stdout_lines
 
-    else:
-        if timeout:
-            return (timed_out, stdout_lines, stderr_lines)
-        else:
-            return (stdout_lines, stderr_lines)
+    if timeout:
+        return (timed_out, stdout_lines, stderr_lines)
+
+    return (stdout_lines, stderr_lines)

@@ -1,12 +1,13 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+from math import gcd
+from xml.dom.minidom import parse
+import os
+import re
+import tempfile
+
 from Pyxsim.xmostest_subprocess import call, call_get_output
 from Pyxsim.testers import TestError
-import os
-import tempfile
-from xml.dom.minidom import parse
-import re
-from fractions import gcd
 
 
 def lcm(a, b):
@@ -59,11 +60,11 @@ class Xe:
                 if bitnum == bit:
                     return [(package, pin, bitnum)]
             raise TestError("Cannot find port pins")
-        else:
-            return self._port_map[port]
+        return self._port_map[port]
 
     def _get_symtab(self):
-        stdout, stderr = call_get_output(["xobjdump", "-t", self.path])
+        stdout, _stderr = call_get_output(["xobjdump", "-t", self.path])
+        call_get_output(["xobjdump", "-t", self.path])
         current_tile = None
         symtab = {}
         for line in stdout:
@@ -80,7 +81,7 @@ class Xe:
                 r"(0x[0-9a-fA-F]*).....([^ ]*) *(0x[0-9a-fA-F]*) (.*)$", line
             )
             if m and current_tile is not None:
-                (address, section, size, name) = m.groups(0)
+                (address, section, _size, name) = m.groups(0)
                 if section != "*ABS*":
                     address = int(address, 0)
                     symtab[current_tile, name] = address

@@ -238,7 +238,7 @@ class RxPacket(UsbPacket):
         timeout = self.timeout
         in_rx_packet = False
         rx_packet = []
- 
+
         while timeout != 0:
 
             wait(lambda x: usb_phy._clock.is_high())
@@ -275,7 +275,7 @@ class RxPacket(UsbPacket):
             xsi.drive_port_pins(usb_phy._txrdy, 0)
 
             # Check packet against expected
-            expected = self.get_bytes()#do_tokens=False)
+            expected = self.get_bytes()
             if len(expected) != len(rx_packet):
                 print(
                     "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(  # noqa E501

@@ -145,8 +145,12 @@ class UsbTransaction(UsbEvent):
             # Add data packet to packets list
             if not halted:
                 # Generate packet data payload
-                packetPayload = session.getPayload_in(endpointNumber, dataLength)
-                self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
+                packetPayload = session.getPayload_in(
+                    endpointNumber, dataLength
+                )
+                self._packets.append(
+                    RxDataPacket(pid=pid, dataPayload=packetPayload)
+                )
 
             if self._endpointType != "ISO" and not halted:
                 self._packets.append(TxHandshakePacket())
@@ -154,9 +158,7 @@ class UsbTransaction(UsbEvent):
             if halted:
                 self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
 
-        super().__init__(
-            time=eventTime, interEventDelay=interEventDelay
-        )
+        super().__init__(time=eventTime, interEventDelay=interEventDelay)
 
     # TODO ideally USBTransaction doesnt know about data_valid_count
     @property

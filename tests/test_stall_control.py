@@ -24,7 +24,7 @@ PARAMS["extended"].update({"ep": [0]})
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed, dummy_threads):
+def test_session(ep, address, bus_speed):
 
     ied = 500
     pktLength = 10

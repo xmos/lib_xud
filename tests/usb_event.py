@@ -1,6 +1,6 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 
 class UsbEvent(ABC):
@@ -29,7 +29,8 @@ class UsbEvent(ABC):
         pass
 
     # Note, an event might contain events
-    @abstractproperty
+    @property
+    @abstractmethod
     def event_count(self):
         pass
 

@@ -8,7 +8,7 @@ from usb_transaction import UsbTransaction
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed, dummy_threads):
+def test_session(ep, address, bus_speed):
 
     start_length = 10
     end_length = start_length + 5

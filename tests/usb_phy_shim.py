@@ -30,7 +30,7 @@ class UsbPhyShim(UsbPhy):
         # Shim adds a valid token line
         self._vld = vld
 
-        super(UsbPhyShim, self).__init__(
+        super().__init__(
             "mii",
             rxd,
             rxa,

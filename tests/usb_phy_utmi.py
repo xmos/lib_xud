@@ -26,7 +26,7 @@ class UsbPhyUtmi(UsbPhy):
 
         self._do_tokens = False
 
-        super(UsbPhyUtmi, self).__init__(
+        super().__init__(
             "UsbPhyUtmi",
             rxd,
             rxa,

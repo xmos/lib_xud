@@ -1,5 +1,10 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+from copy import deepcopy
+
+import pytest
+
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_packet import (
     TokenPacket,
     TxDataPacket,
@@ -9,9 +14,6 @@ from usb_packet import (
     USB_PID,
 )
 from usb_session import UsbSession
-import pytest
-from conftest import PARAMS, test_RunUsbSession  # noqa F401
-from copy import deepcopy
 
 # Only test on EP 0 - Update params
 PARAMS = deepcopy(PARAMS)

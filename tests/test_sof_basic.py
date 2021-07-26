@@ -1,10 +1,11 @@
 # Copyright 2019-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+import pytest
+
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_packet import CreateSofToken
-import pytest
-from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture

@@ -3,10 +3,11 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import os
 import sys
-import Pyxsim
+
 from Pyxsim import testers
 from usb_clock import Clock
 from usb_phy_utmi import UsbPhyUtmi
+import Pyxsim
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]

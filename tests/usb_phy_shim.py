@@ -1,6 +1,7 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import sys
+
 from usb_packet import RxPacket, TokenPacket
 from usb_phy import UsbPhy
 

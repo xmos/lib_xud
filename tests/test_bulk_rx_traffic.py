@@ -1,11 +1,11 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+import pytest
 
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_phy import USB_MAX_EP_ADDRESS
-import pytest
-from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture
@@ -68,8 +68,6 @@ def test_session(ep, address, bus_speed):
 
         if trafficEp1 < 0:
             trafficEp1 = USB_MAX_EP_ADDRESS
-
-        trafficEp2 + trafficEp2 + 1
 
         # Don't clash with test EP
         if trafficEp2 == ep:

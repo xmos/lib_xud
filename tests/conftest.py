@@ -1,13 +1,15 @@
 # Copyright 2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import pytest
+from pathlib import Path
 import os
 import random
+import shutil
 import sys
+
+import pytest
+
 import Pyxsim
 from helpers import get_usb_clk_phy, do_usb_test
-from pathlib import Path
-import shutil
 
 # Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn"]
@@ -53,14 +55,6 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     os.environ["enabletracing"] = str(config.getoption("enabletracing"))
-
-
-# TODO: this is deprecated, find a better way
-def pytest_cmdline_preparse(config, args):
-    if "--smoke" in args and "--extended" in args:
-        raise pytest.UsageError(
-            'Only one of "--smoke" and "--extended" can be used'
-        )
 
 
 def pytest_generate_tests(metafunc):
@@ -124,7 +118,6 @@ def test_RunUsbSession(
 
     tester_list = []
     output = []
-    testname, extension = os.path.splitext(os.path.basename(__file__))
     seed = random.randint(0, sys.maxsize)
 
     # TODO it would be good to sanity check core_freq == xe.freq
@@ -160,7 +153,6 @@ def test_RunUsbSession(
 
 def copy_common_xn_files(
     test_dir,
-    path=".",
     common_dir="shared_src",
     source_dir="src",
     xn_files=XN_FILES,
@@ -172,7 +164,7 @@ def copy_common_xn_files(
 
 
 def delete_test_specific_xn_files(
-    test_dir, path=".", source_dir="src", xn_files=XN_FILES
+    test_dir, source_dir="src", xn_files=XN_FILES
 ):
     src_dir = os.path.join(test_dir, source_dir)
     for xn_file in xn_files:
@@ -188,9 +180,8 @@ def delete_test_specific_xn_files(
 def worker_id(request):
     if hasattr(request.config, "slaveinput"):
         return request.config.slaveinput["slaveid"]
-    else:
-        # Master means not executing with multiple workers
-        return "master"
+    # Master means not executing with multiple workers
+    return "master"
 
 
 # Runs after all tests are collected, but before all tests are run
@@ -199,7 +190,7 @@ def worker_id(request):
 def copy_xn_files(worker_id, request):
 
     # Attempt to only run copy/delete once..
-    if worker_id == "master" or worker_id == "gw0":
+    if worker_id in ("master", "gw0"):
 
         session = request.node
 
@@ -219,14 +210,14 @@ def copy_xn_files(worker_id, request):
         for test_dir in test_dirs:
             copy_common_xn_files(test_dir)
 
-        def delete_xn_files():
+        #def delete_xn_files():
 
-            # Run deletion on one process only
-            if worker_id == "master" or worker_id == "gw0":
+        #    # Run deletion on one process only
+        #    if worker_id in ("master", "gw0"):
 
-                # Go through collected tests deleting XN files
-                for test_dir in test_dirs:
-                    delete_test_specific_xn_files(test_dir)
+        #        # Go through collected tests deleting XN files
+        #        for test_dir in test_dirs:
+        #            delete_test_specific_xn_files(test_dir)
 
     # Setup tear down
     # Deletion removed for now - doesn't seem important

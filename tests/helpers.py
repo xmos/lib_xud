@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import Pyxsim
-from Pyxsim import testers
 import os
 import sys
+import Pyxsim
+from Pyxsim import testers
 from usb_clock import Clock
 from usb_phy_utmi import UsbPhyUtmi
 
@@ -113,8 +113,6 @@ def do_usb_test(
     phy,
     sessions,
     test_file,
-    seed,
-    level="nightly",
     extra_tasks=[],
     verbose=False,
 ):
@@ -132,16 +130,16 @@ def do_usb_test(
 
     build_options = build_options + [build_options_str]
 
-    """Shared test code for all RX tests using the test_rx application."""
-    testname, extension = os.path.splitext(os.path.basename(test_file))
+    # Shared test code for all RX tests using the test_rx application
+    testname, _ = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    description = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
-    binary = f"{testname}/bin/{description}/{testname}_{description}.xe"
+    desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
+    binary = f"{testname}/bin/{desc}/{testname}_{desc}.xe"
 
     # Do not need to clean since different build will different params go to
     # separate binaries
-    build_success, build_output = Pyxsim._build(
+    build_success, _ = Pyxsim._build(
         binary, do_clean=False, build_options=build_options
     )
 
@@ -161,7 +159,7 @@ def do_usb_test(
                 )
             )
 
-            create_expect(arch, session, expect_filename, verbose=verbose)
+            create_expect(session, expect_filename, verbose=verbose)
 
             tester = testers.ComparisonTester(
                 open(expect_filename),
@@ -172,7 +170,7 @@ def do_usb_test(
             )
 
             tester_list.append(tester)
-            simargs = get_sim_args(testname, clk, phy, arch)
+            simargs = get_sim_args(testname, clk, arch)
             simthreads = [clk, phy] + extra_tasks
             run_on_simulator(binary, simthreads, simargs=simargs)
     else:
@@ -181,19 +179,19 @@ def do_usb_test(
     return tester_list
 
 
-def create_expect(arch, session, filename, verbose=False):
+def create_expect(session, filename, verbose=False):
+    """ Create the expect file for what packets should be reported by the DUT
+    """
 
     events = session.events
 
-    """ Create the expect file for what packets should be reported by the DUT
-    """
     with open(filename, "w") as f:
 
         packet_offset = 0
 
         if verbose:
             print("EXPECTED OUTPUT:")
-        for i, event in enumerate(events):
+        for event in events:
 
             expect_str = event.expected_output(
                 session.bus_speed, offset=packet_offset
@@ -211,7 +209,7 @@ def create_expect(arch, session, filename, verbose=False):
             print("Test done\n")
 
 
-def get_sim_args(testname, clk, phy, arch="xs2"):
+def get_sim_args(testname, clk, arch="xs2"):
     sim_args = []
 
     if eval(os.getenv("enabletracing")):

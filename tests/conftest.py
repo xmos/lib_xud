@@ -2,7 +2,6 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 from pathlib import Path
 import os
-import random
 import shutil
 import sys
 
@@ -118,7 +117,6 @@ def test_RunUsbSession(
 
     tester_list = []
     output = []
-    seed = random.randint(0, sys.maxsize)
 
     # TODO it would be good to sanity check core_freq == xe.freq
     (clk_60, usb_phy) = get_usb_clk_phy(core_freq, verbose=False, arch=arch)
@@ -134,7 +132,6 @@ def test_RunUsbSession(
             usb_phy,
             [test_session],
             test_file,
-            seed,
         )
     )
     cap_output, err = capfd.readouterr()
@@ -210,14 +207,14 @@ def copy_xn_files(worker_id, request):
         for test_dir in test_dirs:
             copy_common_xn_files(test_dir)
 
-        #def delete_xn_files():
+        # def delete_xn_files():
 
-        #    # Run deletion on one process only
-        #    if worker_id in ("master", "gw0"):
+        #     # Run deletion on one process only
+        #     if worker_id in ("master", "gw0"):
 
-        #        # Go through collected tests deleting XN files
-        #        for test_dir in test_dirs:
-        #            delete_test_specific_xn_files(test_dir)
+        #         # Go through collected tests deleting XN files
+        #         for test_dir in test_dirs:
+        #             delete_test_specific_xn_files(test_dir)
 
     # Setup tear down
     # Deletion removed for now - doesn't seem important

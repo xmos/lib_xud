@@ -1,10 +1,6 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import random
 import Pyxsim
-import sys
-import zlib
-import usb_packet
 
 USB_MAX_EP_ADDRESS = 15
 
@@ -25,12 +21,16 @@ USB_TIMINGS_SPEC = {
     "T_UCHEND": 7000,  # Upstream Chirp end time
     "T_UCH_US": 1000,  # Upstream Chirp length
     "T_WTDCH_US": 100,
-    "T_SIGATT_US": 100000,  # Maximum time from Vbus valid to when the device must signal attach
-    "T_ATTDB_US": 10,  # 100000 Debouce interval. The device now enters the HS Detection Handshake protocol
+    "T_SIGATT_US": 100000,  # Maximum time from Vbus valid to when the device
+    # must signal attach
+    "T_ATTDB_US": 10,  # 100000 Debouce interval. The device now enters the HS
+    # Detection Handshake protocol
     "T_DCHBIT_MIN_US": 40,
     "T_DCHBIT_MAX_US": 60,
-    "CHIRP_COUNT_MIN": 3,  # Minimum chirp pairs DUT must detect before moving into HS mode
-    "CHIRP_COUNT_MAX": 10,  # TODO should these chirp defines be removed and use timing?
+    "CHIRP_COUNT_MIN": 3,  # Minimum chirp pairs DUT must detect before moving
+    # into HS mode
+    "CHIRP_COUNT_MAX": 10,  # TODO should these chirp defines be removed and
+    # use timing?
 }
 
 USB_TIMINGS_SHORT = {
@@ -41,17 +41,24 @@ USB_TIMINGS_SHORT = {
     "T_UCHEND": 7000,  # Upstream Chirp end time
     "T_UCH_US": 10,  # Upstream Chirp length
     "T_WTDCH_US": 50,
-    "T_SIGATT_US": 100000,  # Maximum time from Vbus valid to when the device must signal attach
-    "T_ATTDB_US": 10,  # 100000 Debouce interval. The device now enters the HS Detection Handshake protocol
+    "T_SIGATT_US": 100000,  # Maximum time from Vbus valid to when the device
+    # must signal attach
+    "T_ATTDB_US": 10,  # 100000 Debouce interval. The device now enters the HS
+    # Detection Handshake protocol
     "T_DCHBIT_MIN_US": 4,  # Spec: 40us
     "T_DCHBIT_MAX_US": 6,  # Spec: 60us
-    "CHIRP_COUNT_MIN": 3,  # Minimum chirp pairs DUT must detect before moving into HS mode
-    "CHIRP_COUNT_MAX": 10,  # TODO should these chirp defines be removed and use timing?
+    "CHIRP_COUNT_MIN": 3,  # Minimum chirp pairs DUT must detect before moving
+    # into HS mode
+    "CHIRP_COUNT_MAX": 10,  # TODO should these chirp defines be removed and
+    # use timing?
 }
 
 
 USB_PKT_TIMINGS_TIGHT = {
-    "TX_TO_RX_PACKET_TIMEOUT": 14,  # Timeout between sending DUT a packet and the expected response (in USB clocks). This is SIE decision time in UTMI spec
+    "TX_TO_RX_PACKET_TIMEOUT": 14,  # Timeout between sending DUT a packet
+    # and the expected response (in USB
+    # clocks). This is SIE decision time in
+    # UTMI spec
     "TX_TO_TX_PACKET_DELAY": 4,  # Delay between transmitting two packets
 }
 
@@ -171,10 +178,8 @@ class UsbPhy(Pyxsim.SimThread):
 
     def run(self):
 
-        xsi = self.xsi
-
-        # TODO ideally each session could have it's own start up delay rather than modifying the
-        # phy start up delay
+        # TODO ideally each session could have it's own start up delay rather
+        # than modifying the phy start up delay
         if self._session.initial_delay is not None:
             self._initial_delay = self._session.initial_delay
 

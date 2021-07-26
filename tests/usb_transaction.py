@@ -17,6 +17,7 @@ INTER_TRANSACTION_DELAY = 500
 USB_DIRECTIONS = ["OUT", "IN"]
 USB_EP_TYPES = ["CONTROL", "BULK", "ISO", "INTERRUPT"]
 
+
 # TODO UsbTransaction_IN and UsbTransaction_OUT
 class UsbTransaction(UsbEvent):
     def __init__(
@@ -53,7 +54,8 @@ class UsbTransaction(UsbEvent):
         # Populate packet list for a (valid) transaction
         self._packets = []
 
-        # TODO would it be better to generate packets on the fly in drive() rather than create a packet list?
+        # TODO would it be better to generate packets on the fly in drive()
+        # rather than create a packet list?
         if direction == "OUT":
 
             packets = []
@@ -146,8 +148,12 @@ class UsbTransaction(UsbEvent):
             # Add data packet to packets list
             if not halted:
                 # Generate packet data payload
-                packetPayload = session.getPayload_in(endpointNumber, dataLength)
-                self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
+                packetPayload = session.getPayload_in(
+                    endpointNumber, dataLength
+                )
+                self._packets.append(
+                    RxDataPacket(pid=pid, dataPayload=packetPayload)
+                )
 
             if self._endpointType != "ISO" and not halted:
                 self._packets.append(TxHandshakePacket())

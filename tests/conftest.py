@@ -5,7 +5,6 @@ import os
 import random
 import sys
 import Pyxsim
-from Pyxsim import testers
 from helpers import get_usb_clk_phy, do_usb_test
 from pathlib import Path
 import shutil
@@ -59,12 +58,14 @@ def pytest_configure(config):
 # TODO: this is deprecated, find a better way
 def pytest_cmdline_preparse(config, args):
     if "--smoke" in args and "--extended" in args:
-        raise pytest.UsageError('Only one of "--smoke" and "--extended" can be used')
+        raise pytest.UsageError(
+            'Only one of "--smoke" and "--extended" can be used'
+        )
 
 
 def pytest_generate_tests(metafunc):
     try:
-        PARAMS = metafunc.module.PARAMS
+        PARAMS = metafunc.module.PARAMS  # noqa F401
         if metafunc.config.getoption("smoke"):
             params = PARAMS.get("smoke", PARAMS["default"])
         elif metafunc.config.getoption("extended"):
@@ -158,7 +159,11 @@ def test_RunUsbSession(
 
 
 def copy_common_xn_files(
-    test_dir, path=".", common_dir="shared_src", source_dir="src", xn_files=XN_FILES
+    test_dir,
+    path=".",
+    common_dir="shared_src",
+    source_dir="src",
+    xn_files=XN_FILES,
 ):
     src_dir = os.path.join(test_dir, source_dir)
     for xn_file in xn_files:
@@ -198,14 +203,17 @@ def copy_xn_files(worker_id, request):
 
         session = request.node
 
-        # There will be duplicates (same test name with different params) so treat as set
+        # There will be duplicates (same test name with different params) sos
+        # treat as set
         test_dirs = set([])
 
         # Go through collected tests and copy over XN files
         for item in session.items:
             full_path = item.fspath
             test_dir = Path(full_path).with_suffix("")  # Strip suffix
-            test_dir = os.path.basename(test_dir)  # Strip path leaving filename
+            test_dir = os.path.basename(
+                test_dir
+            )  # Strip path leaving filename
             test_dirs.add(test_dir)
 
         for test_dir in test_dirs:

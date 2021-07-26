@@ -3,12 +3,10 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Directed test for (github) issue #58
-from usb_packet import *
-import usb_packet
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture

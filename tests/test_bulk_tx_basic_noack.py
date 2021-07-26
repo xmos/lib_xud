@@ -4,7 +4,7 @@ from usb_packet import USB_PID, TokenPacket, RxDataPacket
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture
@@ -30,7 +30,9 @@ def test_session(ep, address, bus_speed):
             )
             session.add_event(
                 RxDataPacket(
-                    dataPayload=session.getPayload_in(ep, pktLength, resend=True)
+                    dataPayload=session.getPayload_in(
+                        ep, pktLength, resend=True
+                    )
                 )
             )
             # Missing ACK - simulate CRC fail at host

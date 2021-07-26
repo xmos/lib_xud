@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # Copyright 2019-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-from usb_packet import TokenPacket, USB_PID, CreateSofToken
+from usb_packet import CreateSofToken
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture

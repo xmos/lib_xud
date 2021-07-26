@@ -13,7 +13,8 @@ class UsbEvent(ABC):
     def time(self):
         return self._time
 
-    # NOTE: its not always sensible for an event to used the IED - for example an Rx Packet
+    # NOTE: its not always sensible for an event to used the IED - for example
+    # an Rx Packet
     @property
     def interEventDelay(self):
         return self._interEventDelay

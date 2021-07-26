@@ -4,13 +4,9 @@
 import Pyxsim
 from Pyxsim import testers
 import os
-import random
 import sys
 from usb_clock import Clock
-from usb_phy import UsbPhy
-from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
-from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
@@ -139,16 +135,11 @@ def do_usb_test(
     testname, extension = os.path.splitext(os.path.basename(test_file))
     tester_list = []
 
-    binary = "{testname}/bin/{arch}_{core_freq}_{dummy_threads}_{ep}_{address}/{testname}_{arch}_{core_freq}_{dummy_threads}_{ep}_{address}.xe".format(
-        testname=testname,
-        arch=arch,
-        core_freq=core_freq,
-        dummy_threads=dummy_threads,
-        ep=ep,
-        address=address,
-    )
+    description = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}"
+    binary = f"{testname}/bin/{description}/{testname}_{description}.xe"
 
-    # Do not need to clean since different build will different params go to separate binaries
+    # Do not need to clean since different build will different params go to
+    # separate binaries
     build_success, build_output = Pyxsim._build(
         binary, do_clean=False, build_options=build_options
     )
@@ -160,13 +151,13 @@ def do_usb_test(
             phy.session = session
 
             expect_folder = create_if_needed("expect")
-            expect_filename = "{folder}/{test}_{arch}_{usb_speed}.expect".format(
-                folder=expect_folder,
-                test=testname,
-                phy=phy.name,
-                clk=clk.get_name(),
-                arch=arch,
-                usb_speed=bus_speed,
+            expect_filename = (
+                "{folder}/{test}_{arch}_{usb_speed}.expect".format(
+                    folder=expect_folder,
+                    test=testname,
+                    arch=arch,
+                    usb_speed=bus_speed,
+                )
             )
 
             create_expect(arch, session, expect_filename, verbose=verbose)
@@ -203,7 +194,9 @@ def create_expect(arch, session, filename, verbose=False):
             print("EXPECTED OUTPUT:")
         for i, event in enumerate(events):
 
-            expect_str = event.expected_output(session.bus_speed, offset=packet_offset)
+            expect_str = event.expected_output(
+                session.bus_speed, offset=packet_offset
+            )
             packet_offset += event.event_count
 
             if verbose:
@@ -224,10 +217,17 @@ def get_sim_args(testname, clk, phy, arch="xs2"):
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(
-            log=log_folder, test=testname, clk=clk.get_name(), phy=phy.name, arch=arch
+            log=log_folder,
+            test=testname,
+            clk=clk.get_name(),
+            arch=arch,
         )
 
-        sim_args += ["--trace-to", "{0}.txt".format(filename), "--enable-fnop-tracing"]
+        sim_args += [
+            "--trace-to",
+            "{0}.txt".format(filename),
+            "--enable-fnop-tracing",
+        ]
 
         vcd_args = "-o {0}.vcd".format(filename)
         vcd_args += (

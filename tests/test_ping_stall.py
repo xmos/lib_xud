@@ -5,7 +5,7 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_packet import TokenPacket, USB_PID, RxHandshakePacket
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture

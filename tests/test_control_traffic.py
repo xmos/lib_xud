@@ -9,9 +9,8 @@ from usb_packet import (
     USB_PID,
 )
 from usb_session import UsbSession
-from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from copy import deepcopy
 
 # Only test on EP 0 - Update params
@@ -108,7 +107,10 @@ def test_session(ep, address, bus_speed):
     # Send 0 length OUT transaction
     session.add_event(
         TokenPacket(
-            pid=USB_PID["OUT"], address=address, endpoint=ep, interEventDelay=ied
+            pid=USB_PID["OUT"],
+            address=address,
+            endpoint=ep,
+            interEventDelay=ied,
         )
     )
     session.add_event(TxDataPacket(length=0, pid=USB_PID["DATA1"]))

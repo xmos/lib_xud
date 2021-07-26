@@ -5,14 +5,12 @@ from usb_signalling import UsbSuspend, UsbResume
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    start_length = 10
-    end_length = 12
     pktLength = 10
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
 

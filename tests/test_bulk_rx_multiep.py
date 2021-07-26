@@ -3,7 +3,7 @@
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from copy import deepcopy
 
 # EP numbers currently fixed for this test - set in params

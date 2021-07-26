@@ -25,16 +25,18 @@ class ComparisonTester:
      :param golden:   The expected data to compare the output against.
                       Can be a list of strings, a string split on new lines,
                       or a file to read.
-     :param product:  The name of the product that is being tested e.g. 'lib_uart'
+     :param product:  The name of the product that is being
+                      tested e.g. 'lib_uart'
      :param group:    The group that the test belongs to
      :param test:     The name of the test
      :param config:   A dictionary representing the configuration of the test.
-     :param env:      A dictionary representing the environment the test was run under.
+     :param env:      A dictionary representing the environment the test was
+                      run under.
      :param regexp:   A bool that controls whether the expect lines are treated
                       as regular expressions or not.
      :param ignore:   A list of regular expressions to ignore
-     :param ordered:  A bool that determines whether the expected input needs to
-                      be matched in an ordered manner or not.
+     :param ordered:  A bool that determines whether the expected input needs
+                      to be matched in an ordered manner or not.
     """
 
     def __init__(
@@ -96,12 +98,16 @@ class ComparisonTester:
             line_num += 1
 
             if line_num >= num_expected:
-                self.record_failure("Length of expected output less than output")
+                self.record_failure(
+                    "Length of expected output less than output"
+                )
                 break
 
             if self._ordered:
                 if regexp:
-                    match = re.match(expected[line_num] + "$", output[i].strip())
+                    match = re.match(
+                        expected[line_num] + "$", output[i].strip()
+                    )
                 else:
                     match = expected[line_num] == output[i].strip()
 
@@ -112,7 +118,11 @@ class ComparisonTester:
                             + "  Expected: %s\n"
                             + "  Actual  : %s"
                         )
-                        % (line_num, expected[line_num].strip(), output[i].strip())
+                        % (
+                            line_num,
+                            expected[line_num].strip(),
+                            output[i].strip(),
+                        )
                     )
             else:  # Unordered testing
                 stripped = output[i].strip()
@@ -123,14 +133,17 @@ class ComparisonTester:
 
                 if not match:
                     self.record_failure(
-                        ("Line %d of output not found in expected\n" + "  Actual  : %s")
+                        (
+                            "Line %d of output not found in expected\n"
+                            + "  Actual  : %s"
+                        )
                         % (line_num, output[i].strip())
                     )
 
         if num_expected > line_num + 1:
             self.record_failure(
                 "Length of expected output greater than output\nMissing:\n"
-                + "\n".join(expected[line_num + 1 :])
+                + "\n".join(expected[line_num + 1 :])  # noqa E203
             )
         output = {"output": "".join(output)}
 

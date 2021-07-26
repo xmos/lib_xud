@@ -3,21 +3,23 @@
 """
 Pyxsim pytest framework
 
-This module provides functions to run tests for XMOS applications and libraries.
+This module provides functions to run tests for XMOS applications and
+libraries.
 """
 import sys
-import Pyxsim.pyxsim
 from Pyxsim.xmostest_subprocess import call_get_output
-import platform
+from . import pyxsim
 import multiprocessing
-import tempfile
 import re
 import os
 
 clean_only = False
 
+
 # This function is called automatically by the runners
-def _build(xe_path, build_config=None, env={}, do_clean=False, build_options=[]):
+def _build(
+    xe_path, build_config=None, env={}, do_clean=False, build_options=[]
+):
 
     # Work out the Makefile path
     path = None
@@ -46,7 +48,9 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options=[])
         cmd = ["xmake", "all"]
 
     if do_clean:
-        clean_output = call_get_output(["xmake", "clean"], cwd=path, env=my_env)
+        call_get_output(
+            ["xmake", "clean"], cwd=path, env=my_env
+        )
 
     if build_config is not None:
         cmd += ["CONFIG=%s" % build_config]
@@ -60,8 +64,7 @@ def _build(xe_path, build_config=None, env={}, do_clean=False, build_options=[])
         s = str(x)
         if s.find("Error") != -1:
             success = False
-        # if re.match('xmake: \*\*\* .* Stop.', x) != None:
-        if re.match(r"xmake: \*\*\* .* Stop.", s) != None:
+        if re.match(r"xmake: \*\*\* .* Stop.", s) is not None:
             success = False
 
     if not success:

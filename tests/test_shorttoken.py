@@ -5,7 +5,8 @@ from usb_packet import TxPacket, USB_PID
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
+
 
 # TODO Can this be moved?
 @pytest.fixture
@@ -38,7 +39,8 @@ def test_session(ep, address, bus_speed, arch):
         )
     )
 
-    # tmp hack for xs2 - for xs2 the shim will throw away the short token and it will never be seen by the xCORE
+    # tmp hack for xs2 - for xs2 the shim will throw away the short token and
+    # it will never be seen by the xCORE
     if arch == "xs3":
         # Create a short token, only PID and 2nd byte
         shorttoken = TxPacket(

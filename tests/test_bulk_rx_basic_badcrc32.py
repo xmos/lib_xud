@@ -3,13 +3,14 @@
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    # The large inter-event delays are to give the DUT time to do checking on the fly
+    # The large inter-event delays are to give the DUT time to do checking on
+    # the fly
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -54,7 +55,8 @@ def test_session(ep, address, bus_speed):
         )
     )
 
-    # Due to bad CRC, XUD will not ACK and expect a resend of the same packet - DATA PID won't be toggled
+    # Due to bad CRC, XUD will not ACK and expect a resend of the same
+    # packet - DATA PID won't be toggled
     session.add_event(
         UsbTransaction(
             session,

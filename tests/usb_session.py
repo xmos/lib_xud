@@ -2,17 +2,16 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 from usb_packet import USB_DATA_VALID_COUNT
-import usb_transaction
 import usb_packet
 
 # TODO should EP numbers include the IN bit?
 
 
 def CounterByte(startVal=0, length=0):
-    l = startVal
-    while l < length:
-        yield l % 256
-        l += 1
+    i = startVal
+    while i < length:
+        yield i % 256
+        i += 1
 
 
 class UsbSession(object):
@@ -35,7 +34,7 @@ class UsbSession(object):
         self._dataGen_in = [0] * 16
         self._dataGen_out = [0] * 16
 
-        assert run_enumeration == False, "Not yet supported"
+        assert run_enumeration is False, "Not yet supported"
 
     @property
     def initial_delay(self):
@@ -72,7 +71,8 @@ class UsbSession(object):
 
     def getPayload_in(self, n, length, resend=False):
         payload = [
-            (x & 0xFF) for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)
+            (x & 0xFF)
+            for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)
         ]
         if not resend:
             self._dataGen_in[n] += length

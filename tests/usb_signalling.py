@@ -14,7 +14,9 @@ class UsbDeviceAttach(UsbEvent):
 
     def expected_output(self, bus_speed, offset=0):
 
-        expected = self.__str__() + "\nDUT entered FS\nReceived upstream chirp\n"
+        expected = (
+            self.__str__() + "\nDUT entered FS\nReceived upstream chirp\n"
+        )
 
         if bus_speed == "HS":
             expected += "DUT entered HS mode\n"
@@ -49,7 +51,9 @@ class UsbDeviceAttach(UsbEvent):
         while True:
 
             if (time() - tConnect_ns) > USB_TIMINGS["T_SIGATT_US"]:
-                print("ERROR: DUT didnt not assert XcvrSel & TermSel quickly enough")
+                print(
+                    "ERROR: DUT didnt not assert XcvrSel & TermSel quickly enough"  # noqa E501
+                )
 
             # Check device asserts XcvrSel and TermSel before T_SIGATT
             xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
@@ -70,7 +74,8 @@ class UsbDeviceAttach(UsbEvent):
 
         xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["IDLE"])
 
-        # Check DUT enables HS Transceiver and asserts Chirp K on the bus (XcvrSel low, TxValid high)
+        # Check DUT enables HS Transceiver and asserts Chirp K on the bus
+        # (XcvrSel low, TxValid high)
         # (This needs to be done before T_UCHEND - T_UCH)
         while True:
             xcvrsel = xsi.sample_periph_pin(usb_phy._xcvrsel)
@@ -123,13 +128,16 @@ class UsbDeviceAttach(UsbEvent):
                 xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_K"])
                 wait_until_ns(time() + USB_TIMINGS["T_DCHBIT_MIN_US"] * 1000)
 
-                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp K to chirp J
+                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp K to
+                # chirp J
                 xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_J"])
                 wait_until_ns(time() + USB_TIMINGS["T_DCHBIT_MIN_US"] * 1000)
 
-                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp J to chirp K
+                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp J to
+                # chirp K
 
-            # After atleast 3 chirp pairs ensure DUT de-asserts TermSel to enter HS mode
+            # After atleast 3 chirp pairs ensure DUT de-asserts TermSel to
+            # enter HS mode
             if xsi.sample_periph_pin(usb_phy._termsel) != 0:
                 print("ERROR: DUT didnt enter HS as expected")
             else:
@@ -143,11 +151,13 @@ class UsbDeviceAttach(UsbEvent):
                 xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_K"])
                 wait_until_ns(time() + USB_TIMINGS["T_DCHBIT_MIN_US"] * 1000)
 
-                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp K to chirp J
+                # After between T_DCHBIT_MIN and T_DCHBIT_MAX toogle chirp K
+                # to chirp J
                 xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_J"])
                 wait_until_ns(time() + USB_TIMINGS["T_DCHBIT_MIN_US"] * 1000)
 
-            # Terminate downstream chirp K-J Sequence (between T_DCHSE0_MAX and T_DCHSE0_MIN
+            # Terminate downstream chirp K-J Sequence (between T_DCHSE0_MAX and
+            # T_DCHSE0_MIN
 
             # Ensure DUT enters HS before T0 + T_DRST
 
@@ -174,7 +184,9 @@ class UsbDeviceAttach(UsbEvent):
 
 
 class UsbResume(UsbEvent):
-    def __init__(self, duration=USB_TIMINGS["RESUME_FSK_MIN_US"], interEventDelay=0):
+    def __init__(
+        self, duration=USB_TIMINGS["RESUME_FSK_MIN_US"], interEventDelay=0
+    ):
         self._duration = duration
         super().__init__(interEventDelay=interEventDelay)
 
@@ -255,7 +267,8 @@ class UsbResume(UsbEvent):
 
 class UsbSuspend(UsbEvent):
 
-    # TODO create instance of Suspend with duracton in seconds and convert to clks?
+    # TODO create instance of Suspend with duracton in seconds and convert to
+    # clks?
     def __init__(self, duration_ns, interEventDelay=0):
         self._duration_ns = duration_ns
         super().__init__(interEventDelay=interEventDelay)
@@ -310,7 +323,7 @@ class UsbSuspend(UsbEvent):
 
                 fsTime_ns = xsi.get_time()
                 timeToFs_ns = fsTime_ns - suspendStartTime_ns
-                # print("DEVICE ENTERED FS AT TIME " + str(fsTime_ns/1000) + "(after " + str(timeToFs_ns/1000) +" uS)")
+                # print("DEVICE ENTERED FS AT TIME " + str(fsTime_ns/1000) + "(after " + str(timeToFs_ns/1000) +" uS)")  # noqa F401
                 print("DEVICE ENTERED FS MODE")
 
                 if bus_speed == "HS":
@@ -340,7 +353,9 @@ class UsbSuspend(UsbEvent):
 
             # Check DUT doesn't prematurely move out of FS mode
             if not (xcvr == 1 and termsel == 1):
-                print("ERROR: DUT moved out of FS mode unexpectly during suspend")
+                print(
+                    "ERROR: DUT moved out of FS mode unexpectly during suspend"
+                )
 
             time_ns = xsi.get_time() - suspendStartTime_ns
             if time_ns >= self._duration_ns:

@@ -22,25 +22,32 @@ def pstreekill(process):
         timeout = time.time() + 10  # Timeout in seconds
         while time.time() < timeout:
             # Check the current status of the process
-            status = subprocess.call(["tasklist", "/nh", "/fi", '"PID eq %s"' % pid])
+            status = subprocess.call(
+                ["tasklist", "/nh", "/fi", '"PID eq %s"' % pid]
+            )
             if status.startswith(
                 "INFO: No tasks are running which match the specified criteria"
             ):
                 # Process has shutdown
                 confirmed_termination = True
                 break
-            time.sleep(0.1)  # Avoid spinning too fast while in the timeout loop
+            time.sleep(
+                0.1
+            )  # Avoid spinning too fast while in the timeout loop
         if not confirmed_termination:
             # If the process hasn't shutdown politely yet kill it
-            sys.stdout.write("Force kill PID %d that hasn't responded to kill\n" % pid)
+            sys.stdout.write(
+                "Force kill PID %d that hasn't responded to kill\n" % pid
+            )
             subprocess.call(["taskkill", "/t", "/f", "/pid", str(pid)])
     else:
         # Send SIGINT to the process group to notify all processes that we
         # are going down now
         os.killpg(os.getpgid(pid), signal.SIGINT)
 
-        # Now terminate and join the main process.  If the join has not returned
-        # within 10 seconds then we will have to forcibly kill the process group
+        # Now terminate and join the main process.  If the join has not
+        # returned within 10 seconds then we will have to forcibly kill the
+        # process group
         process.terminate()
         process.join(timeout=10)
 
@@ -48,7 +55,8 @@ def pstreekill(process):
             # If the process hasn't shutdown politely yet kill it
             try:
                 sys.stderr.write(
-                    "Sending SIGKILL to PID %d that hasn't responded to SIGINT\n" % pid
+                    "Sending SIGKILL to PID %d that hasn't responded to SIGINT\n"  # noqa E501
+                    % pid
                 )
                 os.killpg(os.getpgid(pid), signal.SIGKILL)
             except OSError as err:
@@ -57,7 +65,7 @@ def pstreekill(process):
                     raise
 
 
-## Annoying OS incompatability, not sure why this is needed
+# Annoying OS incompatability, not sure why this is needed
 
 
 def log_debug(msg):
@@ -86,7 +94,7 @@ if platform_is_windows():
     # Windows version of Python 2.7 doesn't support SIGINT
     if sys.version_info < (3, 0):
         raise TestError(
-            "Doesn't support Python version < 3, please upgrade to Python 3 or higher."
+            "Doesn't support Python version < 3, please upgrade to Python 3 or higher."  # noqa E501
         )
     SIGINT = signal.SIGTERM
 else:
@@ -178,8 +186,10 @@ def remove(name):
 
 
 def call(*args, **kwargs):
-    """If silent, then create temporary files to pass stdout and stderr to since
-    on Windows the less/more-like behaviour waits for a keypress if it goes to stdout.
+    """
+    If silent, then create temporary files to pass stdout and stderr to since
+    on Windows the less/more-like behaviour waits for a keypress if it goes
+    to stdout.
     """
     silent = kwargs.pop("silent", False)
     retval = 0
@@ -210,7 +220,9 @@ def call(*args, **kwargs):
         process[2].terminate()
         process[2].join(timeout=0.1)  # Avoid always printing wait message
         while process[2].is_alive():
-            sys.stdout.write("Waiting for PID %d to terminate\n" % process[2].pid)
+            sys.stdout.write(
+                "Waiting for PID %d to terminate\n" % process[2].pid
+            )
             process[2].join(timeout=1.0)
 
     if timeout:

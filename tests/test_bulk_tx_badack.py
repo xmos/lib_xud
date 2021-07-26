@@ -5,7 +5,7 @@ from usb_packet import TokenPacket, RxDataPacket, TxHandshakePacket, USB_PID
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 
 
 @pytest.fixture
@@ -31,7 +31,9 @@ def test_session(ep, address, bus_speed):
             )
             session.add_event(
                 RxDataPacket(
-                    dataPayload=session.getPayload_in(ep, pktLength, resend=True),
+                    dataPayload=session.getPayload_in(
+                        ep, pktLength, resend=True
+                    ),
                     pid=USB_PID["DATA0"],
                 )
             )

@@ -65,7 +65,9 @@ import usb_phy
 USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 
 # In USB clocks
-RXA_END_DELAY = 2  # Pad delay not currently simulated in xsim for USB or OTP, so add this delay here
+# Pad delay not currently simulated in xsim for USB or OTP, so add this
+# delay here
+RXA_END_DELAY = 2
 RXA_START_DELAY = 5  # Taken from RTL sim
 
 # TODO shoud we have a PID class?
@@ -192,7 +194,9 @@ def create_data_expect_same(args):
 class BusReset(object):
     def __init__(self, **kwargs):
         self.duration_ms = kwargs.pop("duraton", 10)  # Duration of reset
-        self.bus_speed = kwargs.pop("bus_speed", "high")  # Bus speed to reset into
+        self.bus_speed = kwargs.pop(
+            "bus_speed", "high"
+        )  # Bus speed to reset into
 
 
 # Lowest base class for all packets. All USB packets have:
@@ -263,10 +267,10 @@ class RxPacket(UsbPacket):
                 in_rx_packet = True
                 break
 
-        if in_rx_packet == False:
+        if not in_rx_packet:
             print("ERROR: Timed out waiting for packet")
         else:
-            while in_rx_packet == True:
+            while in_rx_packet:
 
                 # TODO txrdy pulsing
                 xsi.drive_port_pins(usb_phy._txrdy, 1)
@@ -289,7 +293,7 @@ class RxPacket(UsbPacket):
             expected = self.get_bytes(do_tokens=False)
             if len(expected) != len(rx_packet):
                 print(
-                    "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(
+                    "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(  # noqa E501
                         len(expected), len(rx_packet)
                     )
                 )
@@ -314,13 +318,16 @@ class TxPacket(UsbPacket):
         self.rxe_assert_length = kwargs.pop("rxe_assert_length", 1)
 
         ied = kwargs.pop(
-            "interEventDelay", usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
+            "interEventDelay",
+            usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"],
         )
         super(TxPacket, self).__init__(**kwargs, interEventDelay=ied)
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "Packet:\tHOST -> DEVICE\n"
-        expected_output += "\tPID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
+        expected_output += "\tPID: {} ({:#x})\n".format(
+            self.get_pid_str(), self.pid
+        )
         return expected_output
 
     def drive(self, usb_phy, bus_speed, verbose=True):
@@ -375,8 +382,9 @@ class TxPacket(UsbPacket):
                 rxv_count = rxv_count - 1
 
                 # xCore should not be trying to send if we are trying to send..
-                # We assume that the Phy internally blocks the TXValid signal to the Transmit State Machine
-                # until the Rx packet has completed
+                # We assume that the Phy internally blocks the TXValid signal
+                # to the Transmit State Machine until the Rx packet has
+                # completed
 
                 # if xsi.sample_port_pins(usb_phy._txv) == 1:
                 #    print("ERROR: Unexpected packet from xCORE (TxPacket 2)")
@@ -399,8 +407,8 @@ class TxPacket(UsbPacket):
             rxa_end_delay = rxa_end_delay - 1
 
             # xCore should not be trying to send if we are trying to send..
-            # We assume that the Phy internally blocks the TXValid signal to the Transmit State Machine
-            # until the Rx packet has completed
+            # We assume that the Phy internally blocks the TXValid signal to
+            # the Transmit State Machine # until the Rx packet has completed
 
             # if xsi.sample_port_pins(usb_phy._txv) == 1:
             #    print("ERROR: Unexpected packet from xCORE (TxPacket 3)")
@@ -448,7 +456,7 @@ class DataPacket(UsbPacket):
         for byte in packet_bytes:
             bytes.append(byte)
 
-        if self.bad_crc == True:
+        if self.bad_crc:
             crc = 0xBEEF
         else:
             crc = self.get_crc(packet_bytes)
@@ -506,7 +514,9 @@ class TokenPacket(TxPacket):
         self.address = kwargs.pop("address", 0)
 
         # Generate correct crc5
-        crc5 = GenCrc5(((self.endpoint & 0xF) << 7) | ((self.address & 0x7F) << 0))
+        crc5 = GenCrc5(
+            ((self.endpoint & 0xF) << 7) | ((self.address & 0x7F) << 0)
+        )
 
         # Correct crc5 can be overridden
         self.crc5 = kwargs.pop("crc5", crc5)
@@ -559,7 +569,8 @@ class RxHandshakePacket(HandshakePacket, RxPacket):
         self.pid = kwargs.pop(
             "pid", 0xD2
         )  # Default to ACK (not expect inverted bits on Rx)
-        # self._timeout = kwargs.pop("timeout", RX_TX_DELAY)  # TODO handled by Super()
+        # self._timeout = kwargs.pop("timeout", RX_TX_DELAY)
+        # TODO handled by Super()
 
     def __str__(self):
         return (

@@ -11,7 +11,7 @@ from usb_packet import (
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 import pytest
-from conftest import PARAMS, test_RunUsbSession
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from copy import deepcopy
 
 # Only test on EP 0 - Update params
@@ -31,7 +31,7 @@ def test_session(ep, address, bus_speed, dummy_threads):
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    #### Ctrl transaction 0
+    # Ctrl transaction 0
 
     # SETUP transaction
     session.add_event(
@@ -70,13 +70,16 @@ def test_session(ep, address, bus_speed, dummy_threads):
     # Expect 0 length IN transaction
     session.add_event(
         TokenPacket(
-            pid=USB_PID["IN"], address=address, endpoint=ep, interEventDelay=ied
+            pid=USB_PID["IN"],
+            address=address,
+            endpoint=ep,
+            interEventDelay=ied,
         )
     )
     session.add_event(RxDataPacket(dataPayload=[], pid=USB_PID["DATA1"]))
     session.add_event(TxHandshakePacket())
 
-    #### Ctrl transaction 1
+    # Ctrl transaction 1
 
     # SETUP transaction
     session.add_event(
@@ -109,7 +112,7 @@ def test_session(ep, address, bus_speed, dummy_threads):
         )
     )
 
-    #### Ctrl transaction 2
+    # Ctrl transaction 2
 
     # SETUP transaction
     session.add_event(

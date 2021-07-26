@@ -1,8 +1,6 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import random
 import sys
-import zlib
 from usb_packet import RxPacket, TokenPacket
 from usb_phy import UsbPhy
 
@@ -77,11 +75,11 @@ class UsbPhyShim(UsbPhy):
                         in_rx_packet = True
                         break
 
-                if in_rx_packet == False:
+                if not in_rx_packet:
                     print("ERROR: Timed out waiting for packet")
 
                 else:
-                    while in_rx_packet == True:
+                    while in_rx_packet:
 
                         # TODO txrdy pulsing
                         xsi.drive_port_pins(self._txrdy, 1)
@@ -104,7 +102,7 @@ class UsbPhyShim(UsbPhy):
                     expected = packet.get_bytes(do_tokens=True)
                     if len(expected) != len(rx_packet):
                         print(
-                            "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(
+                            "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(  # noqa E501
                                 len(expected), len(rx_packet)
                             )
                         )
@@ -147,7 +145,8 @@ class UsbPhyShim(UsbPhy):
 
                 for (i, byte) in enumerate(packet.get_bytes(do_tokens=True)):
 
-                    # xCore should not be trying to send if we are trying to send..
+                    # xCore should not be trying to send if we are trying to
+                    # send..
                     if xsi.sample_port_pins(self._txv) == 1:
                         print("ERROR: Unexpected packet from xCORE")
 
@@ -158,7 +157,9 @@ class UsbPhyShim(UsbPhy):
                     xsi.drive_port_pins(self._rxdv, 1)
                     xsi.drive_port_pins(self._rxd, byte)
 
-                    if (packet.rxe_assert_time != 0) and (packet.rxe_assert_time == i):
+                    if (packet.rxe_assert_time != 0) and (
+                        packet.rxe_assert_time == i
+                    ):
                         xsi.drive_port_pins(self._rxer, 1)
 
                     while rxv_count != 0:
@@ -167,7 +168,8 @@ class UsbPhyShim(UsbPhy):
                         xsi.drive_port_pins(self._rxdv, 0)
                         rxv_count = rxv_count - 1
 
-                        # xCore should not be trying to send if we are trying to send..
+                        # xCore should not be trying to send if we are trying
+                        # to send..
                         if xsi.sample_port_pins(self._txv) == 1:
                             print("ERROR: Unexpected packet from xCORE")
 
@@ -194,7 +196,8 @@ class UsbPhyShim(UsbPhy):
                     self.wait(lambda x: self._clock.is_low())
                     rxa_end_delay = rxa_end_delay - 1
 
-                    # xCore should not be trying to send if we are trying to send..
+                    # xCore should not be trying to send if we are trying to
+                    # send..
                     if xsi.sample_port_pins(self._txv) == 1:
                         print("ERROR: Unexpected packet from xCORE")
 

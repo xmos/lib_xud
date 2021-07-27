@@ -328,8 +328,8 @@ void XUD_HAL_Mode_DataTransfer()
 
 /* In full-speed and low-speed mode, LineState(0) always reflects DP and LineState(1) reflects DM */
 /* Note, this port ordering is the opposide of what might be expected - but linestate is swapped in the USB shim */
-#define dp_port flag1_port      // DP: LINESTATE[0]
-#define dm_port flag0_port      // DM: LINESTATE[1]
+#define dp_port flag0_port      // DP: LINESTATE[0]
+#define dm_port flag1_port      // DM: LINESTATE[1]
 
 {unsigned, unsigned} LineStateToLines(XUD_LineState_t ls)
 {

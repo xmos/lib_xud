@@ -102,9 +102,8 @@ extern unsigned XUD_LLD_IoLoop(
                             XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
                             int  epCount, chanend? c_sof) ;
 
-unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN];
-unsigned g_stallTable_IN[USB_MAX_NUM_EP_IN] = {0};
-unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];
+unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN] = {0}; // 0 or STALL
+unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];     // NAK or STALL
 unsigned sentReset=0;
 
 unsigned crcmask = 0b11111111111;
@@ -184,6 +183,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #endif
 
 #if defined(__XS3A__)
+    
     #ifndef XUD_CORE_CLOCK
         #error XUD_CORE_CLOCK not defined (in MHz)
     #endif
@@ -505,7 +505,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
     for(int i = 0; i < USB_MAX_NUM_EP_IN; i++)
     {
-        handshakeTable_IN[i] = USB_PIDn_NAK;
+        handshakeTable_IN[i] = 0;//USB_PIDn_NAK;
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
     }

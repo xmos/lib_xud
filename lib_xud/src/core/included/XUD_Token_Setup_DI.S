@@ -16,18 +16,16 @@ Pid_Setup:
 LoadSetupBuffer:
     bl         doRXData                         // RXData writes available data to buffer and does crc check.
                                                 // r8: Data tail size (bytes)
-    {clre;     eq      r1, r6, r11}             // Check for good CRC16
-    bf         r1, NextTokenAfterOut            // Check for bad crc
+    xor        r1, r6, r11                      // Check for good CRC16
+    {clre;
+    bt         r1, XUD_SETUP_NotReady}          // Branch based on CRC good/bad
 
 ClearStall:                                     // CRC OK
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint.
     ldaw       r11, dp[handshakeTable_OUT]      // Note, we can speed this up by assuming SETUP only received on EP 0
     ldc        r6, USB_PIDn_NAK
     stw        r6, r11[r10]
-    {ldw       r11, sp[STACK_HANDSHAKETABLEIN]
-    ldc        r1, 0}
-    stw        r6, r11[r10]
-    ldaw       r11, dp[g_stallTable_IN]
+    ldw        r11, sp[STACK_HANDSHAKETABLEIN]
     stw        r1, r11[r10]
 
 SendSetupAck:
@@ -47,4 +45,9 @@ SBuffFull:
     in         r11, res[r10]                    // RXA event cond = 0 TODO: Wait for RXA high first?
     endin      r11, res[RXD]
     in         r11, res[RXD]
+    bu         NextTokenAfterOut
+
+
+.align FUNCTION_ALIGNMENT
+XUD_SETUP_NotReady:
     bu         NextTokenAfterOut

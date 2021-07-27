@@ -1,10 +1,11 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+import pytest
+
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_packet import USB_PID, TokenPacket, RxDataPacket
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-import pytest
-from conftest import PARAMS, test_RunUsbSession
 
 
 @pytest.fixture
@@ -30,7 +31,9 @@ def test_session(ep, address, bus_speed):
             )
             session.add_event(
                 RxDataPacket(
-                    dataPayload=session.getPayload_in(ep, pktLength, resend=True)
+                    dataPayload=session.getPayload_in(
+                        ep, pktLength, resend=True
+                    )
                 )
             )
             # Missing ACK - simulate CRC fail at host

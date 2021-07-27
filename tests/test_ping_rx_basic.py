@@ -3,18 +3,16 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Basic check of PING functionality
+import pytest
+
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_packet import (
     TokenPacket,
-    TxDataPacket,
-    RxDataPacket,
-    TxHandshakePacket,
     RxHandshakePacket,
     USB_PID,
 )
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-import pytest
-from conftest import PARAMS, test_RunUsbSession
 
 
 @pytest.fixture

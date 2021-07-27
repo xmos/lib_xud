@@ -1,14 +1,23 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-import os, re, struct
-from ctypes import cdll, byref, c_void_p, c_char_p, c_int, create_string_buffer
-from Pyxsim.xe import Xe
-from Pyxsim.testers import TestError
+from ctypes import (
+    cdll,
+    byref,
+    c_void_p,
+    c_char_p,
+    c_int,
+    create_string_buffer,
+)
+import os
+import re
+import struct
+import sys
 import threading
 import traceback
-import Pyxsim
-import sys
+
+from Pyxsim.xe import Xe
+from Pyxsim.testers import TestError
 from Pyxsim.xmostest_subprocess import platform_is_windows
 
 ALL_BITS = 0xFFFFFF
@@ -26,14 +35,13 @@ xsi_lib = cdll.LoadLibrary(xsi_lib_path)
 
 
 def xsi_is_valid_port(port):
-    return re.match(r"XS1_PORT_\d+\w", port) != None
+    return re.match(r"XS1_PORT_\d+\w", port) is not None
 
 
 def xsi_get_port_width(port):
     if not xsi_is_valid_port(port):
         return None
-    else:
-        return int(re.match(r"^XS1_PORT_(\d+)\w", port).groups(0)[0])
+    return int(re.match(r"^XS1_PORT_(\d+)\w", port).groups(0)[0])
 
 
 class EnumExceptionSet:
@@ -44,17 +52,18 @@ class EnumExceptionSet:
     def __getattr__(self, name):
         if name in self.enum_list:
             return self.enum_list.index(name)
-        raise AttributeErr
+        raise AttributeError
 
     def is_valid(self, value):
         if value < len(self.enum_list):
             enum = self.enum_list[value]
             return enum in self.valid_list
+        raise IndexError
 
     def error_if_not_valid(self, value):
         if value < len(self.enum_list):
             enum = self.enum_list[value]
-            if not enum in self.valid_list:
+            if enum not in self.valid_list:
                 raise type("XSI_ERROR_" + enum, (Exception,), {})
 
     def error(self, value):
@@ -92,11 +101,11 @@ def parse_port(p):
         bit = m.groups(0)[2]
         if bit == "":
             bit = None
-        if bit != None:
+        if bit is not None:
             bit = int(bit)
     else:
         raise TestError("Cannot parse port: %s" % p)
-    if bit != None:
+    if bit is not None:
         mask = 1 << bit
     else:
         mask = ALL_BITS
@@ -119,7 +128,7 @@ class SimThreadImpl(threading.Thread):
         def _fn(*args):
             st.run(*args)
 
-        super(SimThreadImpl, self).__init__()
+        super().__init__()
         self._fn = _fn
         self._args = args
         self.get_time = xsi.get_time
@@ -129,6 +138,7 @@ class SimThreadImpl(threading.Thread):
         self.had_exception = False
         self.terminate_flag = False
         st.xsi = self
+        self.resume_condition = None
 
     def _wait(self, resume_check):
         self.resume_condition = resume_check
@@ -219,7 +229,7 @@ class SimThreadImpl(threading.Thread):
         args = self._args
         try:
             self._fn(*args)
-        except:
+        except:  ## noqa E722
             self.had_exception = True
             sys.stderr.write("---------Exception in simthread--------------\n")
             traceback.print_exc()
@@ -228,20 +238,22 @@ class SimThreadImpl(threading.Thread):
         self.complete_event.set()
 
 
-class Xsi(object):
+class Xsi():
     def __init__(self, xe_path=None, simargs=[], appargs=[]):
         self.xsim = c_void_p()
         self.xe_path = xe_path
         args = " ".join(
-            ['"{}"'.format(x) for x in (simargs + [self.xe_path] + appargs)]
+            ['"{}"'.format(x) for x in simargs + [self.xe_path] + appargs]
         )
-        if platform_is_windows:
+        if platform_is_windows():
             args = args.replace("\\", "/")
         c_args = c_char_p(args.encode("utf-8"))
-        status = xsi_lib.xsi_create(byref(self.xsim), c_args)
+        xsi_lib.xsi_create(byref(self.xsim), c_args)
         self._plugins = []
         self._simthreads = []
         self._time = 0
+        self.xe = Xe(self.xe_path)
+        self._time_step = 1000.0 / self.xe.freq
 
     def register_plugin(self, plugin):
         self._plugins.append(plugin)
@@ -258,7 +270,8 @@ class Xsi(object):
         simthread.daemon = True
         self._simthreads.append(simthread)
 
-    def wait_for_simthread(self, simthread):
+    @staticmethod
+    def wait_for_simthread(simthread):
         simthread.complete_event.wait()
         simthread.complete_event.clear()
         if simthread.had_exception:
@@ -283,8 +296,6 @@ class Xsi(object):
         return self._time
 
     def run(self):
-        self.xe = Xe(self.xe_path)
-        self._time_step = 1000.0 / self.xe.freq
         status = XsiStatus.OK
         for simthread in self._simthreads:
             simthread.start()
@@ -302,7 +313,9 @@ class Xsi(object):
         c_package = c_char_p(package)
         c_pin = c_char_p(pin)
         c_value = c_int()
-        status = xsi_lib.xsi_sample_pin(self.xsim, c_package, c_pin, byref(c_value))
+        status = xsi_lib.xsi_sample_pin(
+            self.xsim, c_package, c_pin, byref(c_value)
+        )
         XsiStatus.error_if_not_valid(status)
         return c_value.value
 
@@ -329,7 +342,9 @@ class Xsi(object):
         c_port = c_char_p(port.encode("utf-8"))
         c_mask = c_int(mask)
         c_value = c_int(value)
-        status = xsi_lib.xsi_drive_port_pins(self.xsim, c_tile, c_port, c_mask, c_value)
+        status = xsi_lib.xsi_drive_port_pins(
+            self.xsim, c_tile, c_port, c_mask, c_value
+        )
         XsiStatus.error_if_not_valid(status)
 
     # TOOD make this pin*s*
@@ -359,7 +374,9 @@ class Xsi(object):
         c_package = c_char_p(package)
         c_pin = c_char_p(pin)
         c_value = c_int()
-        status = xsi_lib.xsi_is_pin_driving(self.xsim, c_package, c_pin, byref(c_value))
+        status = xsi_lib.xsi_is_pin_driving(
+            self.xsim, c_package, c_pin, byref(c_value)
+        )
         XsiStatus.error_if_not_valid(status)
         return c_value.value
 
@@ -378,12 +395,13 @@ class Xsi(object):
         c_address = c_int(address)
         c_num_bytes = c_int(num_bytes)
         buf = create_string_buffer(num_bytes)
-        status = xsi_lib.xsi_read_mem(self.xsim, c_tile, c_address, c_num_bytes, buf)
+        status = xsi_lib.xsi_read_mem(
+            self.xsim, c_tile, c_address, c_num_bytes, buf
+        )
         XsiStatus.error_if_not_valid(status)
         if return_ctype:
             return buf
-        else:
-            return list(buf)
+        return list(buf)
 
     def read_symbol_word(self, tile, symbol, offset=0):
         address = self.xe.symtab[tile, symbol]
@@ -402,7 +420,9 @@ class Xsi(object):
         c_address = c_int(address)
         c_num_bytes = c_int(num_bytes)
         buf = create_string_buffer(data)
-        status = xsi_lib.xsi_write_mem(self.xsim, c_tile, c_address, c_num_bytes, buf)
+        status = xsi_lib.xsi_write_mem(
+            self.xsim, c_tile, c_address, c_num_bytes, buf
+        )
         XsiStatus.error_if_not_valid(status)
 
     def write_symbol_word(self, tile, symbol, value, offset=0):
@@ -431,11 +451,13 @@ class Xsi(object):
         c_tile = c_char_p(tile)
         c_reg_num = c_int(reg_num)
         c_value = c_int(value)
-        status = xsi_lib.xsi_write_pswitch_reg(self.xsim, c_tile, c_reg_num, c_value)
+        status = xsi_lib.xsi_write_pswitch_reg(
+            self.xsim, c_tile, c_reg_num, c_value
+        )
         XsiStatus.error_if_not_valid(status)
 
 
-class XsiPlugin(object):
+class XsiPlugin():
     def clock(self, xsi):
         pass
 
@@ -452,11 +474,11 @@ class XsiLoopbackPlugin(XsiPlugin):
         self.from_port = from_port
         self.to_port = to_port
         self.tile = tile
-        if from_mask == None:
+        if from_mask is None:
             self.from_mask = (1 << (xsi_get_port_width(from_port))) - 1
         else:
             self.from_mask = from_mask
-        if to_mask == None:
+        if to_mask is None:
             self.to_mask = (1 << (xsi_get_port_width(from_port))) - 1
         else:
             self.to_mask = to_mask

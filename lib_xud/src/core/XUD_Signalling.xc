@@ -17,18 +17,8 @@
 #define T_FILTSE0          250
 
 #ifndef SUSPEND_VBUS_POLL_TIMER_TICKS
-#define SUSPEND_VBUS_POLL_TIMER_TICKS 500000
+#define SUSPEND_VBUS_POLL_TIMER_TICKS (500000)
 #endif
-
-//extern buffered in  port:32 p_usb_clk;
-//extern in  port reg_read_port;
-//extern in  port flag0_port;
-//extern in  port flag1_port;
-
-//extern in  port flag2_port;
-
-//extern out port p_usb_txd;
-//extern in buffered port:32 p_usb_rxd;
 
 extern unsigned g_curSpeed;
 

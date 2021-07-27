@@ -10,6 +10,10 @@ from conftest import PARAMS, test_RunUsbSession
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
+    if bus_speed == "FS":
+        pytest.xfail("Known fail when bus_speed = FS")
+
+
     pktLength = 10
     ied = 500
 

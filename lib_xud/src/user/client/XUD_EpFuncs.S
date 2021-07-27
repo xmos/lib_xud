@@ -543,7 +543,7 @@ XUD_SetStallByAddr:
   ENTSP_lu6 0
 #endif
     ldc         r2, USB_PIDn_STALL
-    ldc         r11, 0x80                          // Check for IN bit
+    ldc         r11, 0x80                           // Check for IN bit
     and         r11, r11, r0
     bf          r11, XUD_SetStallByAddr_OUT
     ldaw        r1,  dp[handshakeTable_IN]
@@ -551,9 +551,6 @@ XUD_SetStallByAddr:
     and         r11, r11, r0
     stw         r2, r1[r11]
 
-    ldaw        r1, dp[g_stallTable_IN]              // Mark stall table with non-zero entry
-    stw         r2, r1[r11]
-    
     retsp       0
 XUD_SetStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
@@ -597,19 +594,16 @@ XUD_ClearStallByAddr:
     ldaw        r1,  dp[handshakeTable_IN]         // Reset Handshake
     mkmsk       r11, 7
     and         r11, r11, r0
+    ldc         r2, 0                              // Clear with 0 (differs to OUT)
     stw         r2, r1[r11]
-
-    ldaw       r1, dp[g_stallTable_IN]
-    ldc        r2, 0
-    stw        r2, r1[r11]                         // Mark stall with zero entry      
-
                                                    // Calc offset for data pid
     ldaw        r0, r11[4]                         // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
     ldc         r1, USB_PIDn_DATA0
     bu          XUD_ClearStallByAddr_ResetDataPid
 
 XUD_ClearStallByAddr_OUT:
-    ldaw        r1,  dp[handshakeTable_OUT]
+    ldc         r2, USB_PIDn_NAK
+    ldaw        r1, dp[handshakeTable_OUT]
     stw         r2, r1[r0]
 
 #ifdef __XS3A__
@@ -619,13 +613,11 @@ XUD_ClearStallByAddr_OUT:
 #endif
 
 XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
-
     ldc         r2, 40                          // Size of XUD_ep_info struct TODO use sizeof() -
     mul         r0, r0, r2                      // Be careful with packing
     ldw         r2, cp[ep_info_address]
     add         r0, r2, r0
     stw         r1, r0[4]
-
     retsp       0
 
 

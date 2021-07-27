@@ -31,8 +31,8 @@ XUD_IN_NotReady:
     #include "XUD_TokenJmp.S"
 
 XUD_IN_TxHandshake:                                // Non-Iso
-    ldaw       r1, dp[handshakeTable_IN]           // Load handshake table
-    ldw        r11, r1[r10]                        // Load handshake PID (or 0)
+    ldaw       r11, dp[handshakeTable_IN]          // Load handshake table
+    ldw        r11, r11[r10]                       // Load handshake PID (or 0)
     bf         r11, XUD_IN_TxNak
     outpw     res[TXD], r11, 8                     // Output STALL
     #include "XUD_TokenJmp.S"
@@ -53,8 +53,8 @@ Pid_In:
     ldw        r4, r5[r3]                          // Load EP structure address
     bf         r4, XUD_IN_NotReady
     
-    ldaw       r1, dp[handshakeTable_IN]           // Load handshake table
-    ldw        r11, r1[r10]
+    ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
+    ldw        r11, r11[r10]
     bt         r11, XUD_IN_TxStall                 // Note, user could potentially stall an ISO EP.
 
     ldw        r11, r4[4]                          // Load PID from structure

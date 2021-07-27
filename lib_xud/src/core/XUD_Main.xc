@@ -491,7 +491,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
     for(int i = 0; i < USB_MAX_NUM_EP_IN; i++)
     {
-        handshakeTable_IN[i] = 0;//USB_PIDn_NAK;
+        handshakeTable_IN[i] = 0;
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
     }

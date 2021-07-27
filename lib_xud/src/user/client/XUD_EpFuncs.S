@@ -613,13 +613,11 @@ XUD_ClearStallByAddr_OUT:
 #endif
 
 XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
-
     ldc         r2, 40                          // Size of XUD_ep_info struct TODO use sizeof() -
     mul         r0, r0, r2                      // Be careful with packing
     ldw         r2, cp[ep_info_address]
     add         r0, r2, r0
     stw         r1, r0[4]
-
     retsp       0
 
 

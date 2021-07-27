@@ -2,27 +2,25 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 from usb_packet import USB_DATA_VALID_COUNT
-import usb_transaction
 import usb_packet
 
 # TODO should EP numbers include the IN bit?
 
 
 def CounterByte(startVal=0, length=0):
-    l = startVal
-    while l < length:
-        yield l % 256
-        l += 1
+    i = startVal
+    while i < length:
+        yield i % 256
+        i += 1
 
 
-class UsbSession(object):
+class UsbSession():
     def __init__(
         self,
         bus_speed="HS",
         run_enumeration=False,
         device_address=0,
-        initial_delay=None,
-        **kwargs
+        initial_delay=None
     ):
         self._initial_delay = initial_delay
         self._bus_speed = bus_speed
@@ -35,7 +33,7 @@ class UsbSession(object):
         self._dataGen_in = [0] * 16
         self._dataGen_out = [0] * 16
 
-        assert run_enumeration == False, "Not yet supported"
+        assert run_enumeration is False, "Not yet supported"
 
     @property
     def initial_delay(self):
@@ -72,13 +70,15 @@ class UsbSession(object):
 
     def getPayload_in(self, n, length, resend=False):
         payload = [
-            (x & 0xFF) for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)
+            (x & 0xFF)
+            for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)
         ]
         if not resend:
             self._dataGen_in[n] += length
         return payload
 
-    def _pid_toggle(self, pid_table, n):
+    @staticmethod
+    def _pid_toggle(pid_table, n):
 
         if pid_table[n] == usb_packet.USB_PID["DATA0"]:
             pid_table[n] = usb_packet.USB_PID["DATA1"]
@@ -123,8 +123,9 @@ class UsbSession(object):
 
         self._events.append(e)
 
-    def pop_event(self, e):
+    def pop_event(self):
         self.events.pop(0)
 
-    def _sort_events_by_time(self, events):
+    @staticmethod
+    def _sort_events_by_time(events):
         return sorted(events, key=lambda x: x.time, reverse=True)

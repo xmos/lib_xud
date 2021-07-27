@@ -1,7 +1,5 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-from usb_packet import RxPacket, TokenPacket
-import usb_packet
 from usb_phy import UsbPhy
 
 
@@ -28,7 +26,7 @@ class UsbPhyUtmi(UsbPhy):
 
         self._do_tokens = False
 
-        super(UsbPhyUtmi, self).__init__(
+        super().__init__(
             "UsbPhyUtmi",
             rxd,
             rxa,

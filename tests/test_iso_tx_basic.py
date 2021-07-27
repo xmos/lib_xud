@@ -1,16 +1,17 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+import pytest
+
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-import pytest
-from conftest import PARAMS, test_RunUsbSession
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed, dummy_threads):
+def test_session(ep, address, bus_speed):
 
     start_length = 10
-    end_length = 14
+    end_length = start_length + 5
 
     session = UsbSession(
         bus_speed=bus_speed,
@@ -19,7 +20,7 @@ def test_session(ep, address, bus_speed, dummy_threads):
         initial_delay=100000,
     )
 
-    for pktLength in range(10, end_length + 1):
+    for pktLength in range(start_length, end_length):
         session.add_event(
             UsbTransaction(
                 session,

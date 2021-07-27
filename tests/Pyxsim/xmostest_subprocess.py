@@ -1,15 +1,16 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+import errno
+import multiprocessing
+import os
 import platform
 import re
+import signal
 import subprocess
 import sys
 import tempfile
-import multiprocessing
 import time
-import os
-import signal
-import errno
+
 from Pyxsim.testers import TestError
 
 
@@ -22,25 +23,32 @@ def pstreekill(process):
         timeout = time.time() + 10  # Timeout in seconds
         while time.time() < timeout:
             # Check the current status of the process
-            status = subprocess.call(["tasklist", "/nh", "/fi", '"PID eq %s"' % pid])
+            status = subprocess.call(
+                ["tasklist", "/nh", "/fi", '"PID eq %s"' % pid]
+            )
             if status.startswith(
                 "INFO: No tasks are running which match the specified criteria"
             ):
                 # Process has shutdown
                 confirmed_termination = True
                 break
-            time.sleep(0.1)  # Avoid spinning too fast while in the timeout loop
+            time.sleep(
+                0.1
+            )  # Avoid spinning too fast while in the timeout loop
         if not confirmed_termination:
             # If the process hasn't shutdown politely yet kill it
-            sys.stdout.write("Force kill PID %d that hasn't responded to kill\n" % pid)
+            sys.stdout.write(
+                "Force kill PID %d that hasn't responded to kill\n" % pid
+            )
             subprocess.call(["taskkill", "/t", "/f", "/pid", str(pid)])
     else:
         # Send SIGINT to the process group to notify all processes that we
         # are going down now
         os.killpg(os.getpgid(pid), signal.SIGINT)
 
-        # Now terminate and join the main process.  If the join has not returned
-        # within 10 seconds then we will have to forcibly kill the process group
+        # Now terminate and join the main process.  If the join has not
+        # returned within 10 seconds then we will have to forcibly kill the
+        # process group
         process.terminate()
         process.join(timeout=10)
 
@@ -48,7 +56,8 @@ def pstreekill(process):
             # If the process hasn't shutdown politely yet kill it
             try:
                 sys.stderr.write(
-                    "Sending SIGKILL to PID %d that hasn't responded to SIGINT\n" % pid
+                    "Sending SIGKILL to PID %d that hasn't responded to SIGINT\n"  # noqa E501
+                    % pid
                 )
                 os.killpg(os.getpgid(pid), signal.SIGKILL)
             except OSError as err:
@@ -57,7 +66,7 @@ def pstreekill(process):
                     raise
 
 
-## Annoying OS incompatability, not sure why this is needed
+# Annoying OS incompatability, not sure why this is needed
 
 
 def log_debug(msg):
@@ -66,18 +75,14 @@ def log_debug(msg):
 
 def platform_is_osx():
     ostype = platform.system()
-    if re.match(".*Darwin.*", ostype):
-        return True
-    else:
-        return False
+    return bool(re.match(".*Darwin.*", ostype))
 
 
 def platform_is_windows():
     ostype = platform.system()
-    if not re.match(".*Darwin.*", ostype) and re.match(".*[W|w]in.*", ostype):
-        return True
-    else:
-        return False
+    return bool(
+        not re.match(".*Darwin.*", ostype) and re.match(".*[W|w]in.*", ostype)
+    )
 
 
 if platform_is_windows():
@@ -86,7 +91,7 @@ if platform_is_windows():
     # Windows version of Python 2.7 doesn't support SIGINT
     if sys.version_info < (3, 0):
         raise TestError(
-            "Doesn't support Python version < 3, please upgrade to Python 3 or higher."
+            "Doesn't support Python version < 3, please upgrade to Python 3 or higher."  # noqa E501
         )
     SIGINT = signal.SIGTERM
 else:
@@ -99,8 +104,7 @@ def quote_string(s):
     """For Windows need to put quotes around arguments with spaces in them"""
     if re.search(r"\s", s):
         return '"%s"' % s
-    else:
-        return s
+    return s
 
 
 def Popen(*args, **kwargs):
@@ -116,21 +120,20 @@ def Popen(*args, **kwargs):
 
 
 def wait_with_timeout(p_and_sig, timeout):
-    (ev, pidv, process) = p_and_sig
+    (ev, _pidv, process) = p_and_sig
     process.start()
+    finished = True
     try:
-        if timeout:
+        if timeout is not None:
             finished = ev.wait(timeout)
             if not finished:
                 pstreekill(process)
-            return (not finished, 0)
         else:
             ev.wait()
-            return (False, 0)
     except KeyboardInterrupt:
         pstreekill(process)
 
-    return (False, 0)
+    return not finished
 
 
 def do_cmd(ev, pidv, *args, **kwargs):
@@ -178,8 +181,10 @@ def remove(name):
 
 
 def call(*args, **kwargs):
-    """If silent, then create temporary files to pass stdout and stderr to since
-    on Windows the less/more-like behaviour waits for a keypress if it goes to stdout.
+    """
+    If silent, then create temporary files to pass stdout and stderr to since
+    on Windows the less/more-like behaviour waits for a keypress if it goes
+    to stdout.
     """
     silent = kwargs.pop("silent", False)
     retval = 0
@@ -194,7 +199,7 @@ def call(*args, **kwargs):
         kwargs["stderr"] = subprocess.STDOUT
 
         process = create_cmd_process(*args, **kwargs)
-        (timed_out, retval) = wait_with_timeout(process, timeout)
+        timed_out = wait_with_timeout(process, timeout)
         out.seek(0)
         stdout_lines = out.readlines()
         out.close()
@@ -204,19 +209,21 @@ def call(*args, **kwargs):
             log_debug("     " + line.rstrip())
     else:
         process = create_cmd_process(*args, **kwargs)
-        (timed_out, retval) = wait_with_timeout(process, timeout)
+        timed_out = wait_with_timeout(process, timeout)
         # Ensure spawned processes are not left running past this point
         # There should be no children running now (as they would be orphaned)
         process[2].terminate()
         process[2].join(timeout=0.1)  # Avoid always printing wait message
         while process[2].is_alive():
-            sys.stdout.write("Waiting for PID %d to terminate\n" % process[2].pid)
+            sys.stdout.write(
+                "Waiting for PID %d to terminate\n" % process[2].pid
+            )
             process[2].join(timeout=1.0)
 
     if timeout:
         return (timed_out, retval)
-    else:
-        return retval
+
+    return retval
 
 
 def call_get_output(*args, **kwargs):
@@ -241,7 +248,7 @@ def call_get_output(*args, **kwargs):
         err.close()
 
     process = create_cmd_process(*args, **kwargs)
-    (timed_out, retval) = wait_with_timeout(process, timeout)
+    timed_out = wait_with_timeout(process, timeout)
     out.seek(0)
     stdout_lines = out.readlines()
     out.close()
@@ -263,11 +270,9 @@ def call_get_output(*args, **kwargs):
     if merge:
         if timeout:
             return (timed_out, stdout_lines)
-        else:
-            return stdout_lines
+        return stdout_lines
 
-    else:
-        if timeout:
-            return (timed_out, stdout_lines, stderr_lines)
-        else:
-            return (stdout_lines, stderr_lines)
+    if timeout:
+        return (timed_out, stdout_lines, stderr_lines)
+
+    return (stdout_lines, stderr_lines)

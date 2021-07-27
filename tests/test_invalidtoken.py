@@ -2,18 +2,12 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Same as simple RX bulk test but some invalid tokens also included
-from usb_packet import (
-    TokenPacket,
-    TxDataPacket,
-    RxDataPacket,
-    TxHandshakePacket,
-    RxHandshakePacket,
-    USB_PID,
-)
+import pytest
+
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
+from usb_packet import TokenPacket, USB_PID
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-import pytest
-from conftest import PARAMS, test_RunUsbSession
 
 
 @pytest.fixture

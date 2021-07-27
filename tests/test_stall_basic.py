@@ -1,9 +1,10 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+import pytest
+
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-import pytest
-from conftest import PARAMS, test_RunUsbSession
 
 
 @pytest.fixture
@@ -106,6 +107,7 @@ def test_session(ep, address, bus_speed):
 
 
 #   for result in RunUsbTest(
-#        gen_test_session, test_arch, test_ep, test_address, test_bus_speed, __file__
+#        gen_test_session, test_arch, test_ep, test_address,
+#        test_bus_speed, __file__
 #    ):
 #        assert result

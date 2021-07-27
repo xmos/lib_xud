@@ -110,7 +110,7 @@ unsigned sentReset=0;
 unsigned crcmask = 0b11111111111;
 unsigned chanArray;
 
-#define RESET_TIME_us               5 // 5us
+#define RESET_TIME_us               (5)
 #define RESET_TIME                  (RESET_TIME_us * REF_CLK_FREQ)
 
 #if (XUD_OPT_SOFTCRC5 == 1)
@@ -187,21 +187,39 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     #ifndef XUD_CORE_CLOCK
         #error XUD_CORE_CLOCK not defined (in MHz)
     #endif
-    #if (XUD_CORE_CLOCK > 500)
-        #define RX_RISE_DELAY 2
-        #define RX_FALL_DELAY 5
-        #define TX_RISE_DELAY 2
+
+    #ifdef XUD_SIM_XSIM
+        #if (XUD_CORE_CLOCK > 500)
+            #define RX_RISE_DELAY 2
+            #define RX_FALL_DELAY 5
+            #define TX_RISE_DELAY 2
+            #define TX_FALL_DELAY 3
+        #elif (XUD_CORE_CLOCK > 400)
+            #define RX_RISE_DELAY 5
+            #define RX_FALL_DELAY 5
+            #define TX_RISE_DELAY 2
         #define TX_FALL_DELAY 3
-    #elif (XUD_CORE_CLOCK > 400)
-        #define RX_RISE_DELAY 5
-        #define RX_FALL_DELAY 5
-        #define TX_RISE_DELAY 2
-        #define TX_FALL_DELAY 3
-    #else /* 400 */
-        #define RX_RISE_DELAY 3
-        #define RX_FALL_DELAY 5
-        #define TX_RISE_DELAY 3  
-        #define TX_FALL_DELAY 3
+        #else /* 400 */
+            #define RX_RISE_DELAY 3
+            #define RX_FALL_DELAY 5
+            #define TX_RISE_DELAY 3  
+            #define TX_FALL_DELAY 3
+        #endif
+    #else
+        #if (XUD_CORE_CLOCK >= 600)
+            #define RX_RISE_DELAY 1
+            #define RX_FALL_DELAY 1
+            #define TX_RISE_DELAY 1
+            #define TX_FALL_DELAY 1
+
+        #elif (XUD_CORE_CLOCK >= 500)
+            #define RX_RISE_DELAY 1
+            #define RX_FALL_DELAY 0
+            #define TX_RISE_DELAY 1
+            #define TX_FALL_DELAY 1
+        #else
+            #error XUD_CORE_CLOCK must be >= 500
+        #endif
     #endif
 #else
     #define RX_RISE_DELAY 5

@@ -9,6 +9,7 @@
 #ifdef __XS2A__
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
+#include "XUD_USBTile_Support.h"
 extern in port flag0_port;
 extern in port flag1_port;
 extern in port flag2_port;
@@ -197,10 +198,30 @@ void XUD_HAL_EnterMode_PeripheralHighSpeed()
 #endif
 }
 
+#ifdef __XS2A__
+/* Special case for XSA when exiting resume back to HS - breaks standard HAL API */
+unsafe chanend c;
+void XUD_HAL_EnterMode_PeripheralHighSpeed_Start()
+{
+    unsafe
+    {
+        asm("getr %0, 2" : "=r"(c)); // XS1_RES_TYPE_CHANEND=2 (no inline assembly immediate operands in xC)
+        write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,  XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0);
+    }
+}
+void XUD_HAL_EnterMode_PeripheralHighSpeed_Complete()
+{
+    unsafe
+    {                                
+        write_periph_word_two_part_end((chanend)c, 0);
+        asm("freer res[%0]" :: "r"(c));
+    }
+}
+#endif
+
 void XUD_HAL_EnterMode_PeripheralTestJTestK()
 {
 #ifdef __XS3A__
-
   /* From ULPI Specification Revsion 1.1, table 41 
      * XcvrSelect:  00b
      * TermSelect:  0b
@@ -335,9 +356,9 @@ XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
     flag2_port :> se0;
 
     if(j) 
-        return XUD_LINESTATE_J;
+        return XUD_LINESTATE_HS_J_FS_K;
     if(k)
-        return XUD_LINESTATE_K;
+        return XUD_LINESTATE_HS_K_FS_J;
     if(se0)
         return XUD_LINESTATE_SE0;
 
@@ -378,8 +399,8 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     return 0;
 #else
     unsigned se0 = currentLs == XUD_LINESTATE_SE0;
-    unsigned j = currentLs == XUD_LINESTATE_HS_K_FS_J;
-    unsigned k = currentLs == XUD_LINESTATE_HS_J_FS_K;
+    unsigned j = currentLs == XUD_LINESTATE_HS_J_FS_K;
+    unsigned k = currentLs == XUD_LINESTATE_HS_K_FS_J;
 
     /* Wait for a change on any flag port */
     select

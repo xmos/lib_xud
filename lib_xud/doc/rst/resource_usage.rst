@@ -172,7 +172,7 @@ Clock Blocks
 ------------
 
 The XUD library uses two clock blocks, one for receive and one for transmit. 
-Clocks blocks 2 and 3 are used respectively.  These clock blocks are configured such
+Clocks blocks 4 and 5 are used respectively.  These clock blocks are configured such
 that they are clocked by the 60MHz clock from the UTMI transceiver.
 The ports used by lib_xud are in turn clocked from these clock blocks.
 

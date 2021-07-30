@@ -7,7 +7,7 @@
 #include "XUD_USB_Defines.h"
 #include "XUD_AlignmentDefines.h"
 
-#if !defined __XS2A__
+#if defined __XS2A__
 .set too_many_cores, main.maxcores > 6
 .assert 0, too_many_cores, "Warning: More than 6 cores used on a tile. Ensure this is not the case on tile running XUD."
 #endif
@@ -20,7 +20,6 @@
 ep_info_address:
 .long	ep_info
 .cc_bottom ep_info_address.data
-
 
 
 //int XUD_GetSetupData(XUD_ep e_out, unsigned buffer[], unsigned &length);
@@ -285,9 +284,9 @@ XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on
 XUD_SetData:
 #if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-  ENTSP_lu6 8
+    ENTSP_lu6  8
 #else
-  entsp       8
+    entsp      8
 #endif
     stw         r5, sp[5]
     stw         r10, sp[6]
@@ -426,7 +425,6 @@ XUD_GetData_Select_CheckPid:                    // Check PID
     bt          r11, XUD_GetData_Select_BadPkt
 
 XUD_GetData_Select_PidToggle:
-//#if (XUD_SERIES_SUPPORT==3)
 #ifdef __XS3A__
     ldc         r2, 0x88
 #else
@@ -545,13 +543,17 @@ XUD_SetStallByAddr:
   ENTSP_lu6 0
 #endif
     ldc         r2, USB_PIDn_STALL
-    ldc         r11, 0x80                       // Check for IN bit
+    ldc         r11, 0x80                          // Check for IN bit
     and         r11, r11, r0
     bf          r11, XUD_SetStallByAddr_OUT
     ldaw        r1,  dp[handshakeTable_IN]
     mkmsk       r11, 7
     and         r11, r11, r0
     stw         r2, r1[r11]
+
+    ldaw        r1, dp[g_stallTable_IN]              // Mark stall table with non-zero entry
+    stw         r2, r1[r11]
+    
     retsp       0
 XUD_SetStallByAddr_OUT:
     ldaw        r1,  dp[handshakeTable_OUT]
@@ -589,15 +591,20 @@ XUD_SetStallByAddr_OUT:
 XUD_ClearStallByAddr:
     ENTSP_lu6   0
     ldc         r2, USB_PIDn_NAK
-    ldc         r11, 0x80                       // Check for IN bit
+    ldc         r11, 0x80                          // Check for IN bit
     and         r11, r11, r0
     bf          r11, XUD_ClearStallByAddr_OUT
-    ldaw        r1,  dp[handshakeTable_IN]      // Reset Handshake
+    ldaw        r1,  dp[handshakeTable_IN]         // Reset Handshake
     mkmsk       r11, 7
     and         r11, r11, r0
     stw         r2, r1[r11]
-                                                // Calc offset for data pid
-    ldaw        r0, r11[4]                      // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
+
+    ldaw       r1, dp[g_stallTable_IN]
+    ldc        r2, 0
+    stw        r2, r1[r11]                         // Mark stall with zero entry      
+
+                                                   // Calc offset for data pid
+    ldaw        r0, r11[4]                         // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
     ldc         r1, USB_PIDn_DATA0
     bu          XUD_ClearStallByAddr_ResetDataPid
 

@@ -1,9 +1,12 @@
 // Copyright 2016-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+#ifndef _SHARED_H_
+#define _SHARED_H_
 #include <xs1.h>
 #include <print.h>
 #include <stdio.h>
 #include <platform.h>
+#include <stdint.h>
 #include "xud.h"
 
 unsigned char g_rxDataCheck_[16] = {0};
@@ -59,18 +62,21 @@ void TerminatePass(unsigned x)
 #endif
 
 #ifndef PKT_LEN_START
-#define PKT_LEN_START  10
+#define PKT_LEN_START       (10)
 #endif
 
 #ifndef PKT_LEN_END
-#define PKT_LEN_END    21
+#define PKT_LEN_END         (21)
 #endif
 
 #ifndef MAX_PKT_COUNT 
-#define MAX_PKT_COUNT (50)
+#define MAX_PKT_COUNT       (50)
 #endif
 
-#define XUD_Manager XUD_Main
+#ifndef TEST_EP_NUM
+#warning TEST_EP_NUM not defined, using default value
+#define TEST_EP_NUM         (1)
+#endif
 
 typedef enum t_runMode
 {
@@ -102,6 +108,8 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
 
     int counter = 0;
     int length = start;
+
+    set_core_fast_mode_on();
 
     /* Prepare packets */
     for(int i = 0; i <= (end-start); i++)
@@ -173,6 +181,8 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     /* Buffer for Setup data */
     unsigned char buffer[MAX_PKT_COUNT][1024];
 
+    set_core_fast_mode_on();
+
     /* Receive a bunch of packets quickly, then check them */
 #pragma loop unroll
     for(int i = 0; i <= (end-start); i++)
@@ -195,3 +205,65 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
     return 0;
 }
 
+/* Loopback packets forever */
+#pragma unsafe arrays
+int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode)
+{
+    unsigned int length;
+    XUD_Result_t res;
+    
+    set_core_fast_mode_on();
+
+    XUD_ep ep_out1 = XUD_InitEp(c_out1);
+    XUD_ep ep_in1  = XUD_InitEp(c_in1);
+
+    /* Buffer for Setup data */
+    unsigned char buffer[1024];
+
+    while(1)
+    {
+        XUD_GetBuffer(ep_out1, buffer, length);
+        XUD_SetBuffer(ep_in1, buffer, length);
+        
+        /* Loop back once and return */
+        if(runMode == RUNMODE_DIE)
+            break;
+       
+        /* Partial un-roll */ 
+        XUD_GetBuffer(ep_out1, buffer, length);
+        XUD_SetBuffer(ep_in1, buffer, length);
+    }
+}
+
+#ifndef TEST_DTHREADS
+#warning TEST_DTHREADS not defined
+#define TEST_DTHREADS (0)
+#endif
+
+#if (TEST_DTHREADS > 6)
+#error TEST_DTHREADS too high
+#endif
+
+size_t g_dummyThreadCount = TEST_DTHREADS;
+
+void dummyThread()
+{
+    unsigned x = 0;
+    set_core_fast_mode_on();
+
+    while(g_dummyThreadCount)
+    {
+        x++;
+    }
+}
+
+void dummyThreads()
+{
+#if (TEST_DTHREADS > 0)
+    par(size_t i = 0; i < TEST_DTHREADS; i++)
+    {
+        dummyThread();
+    }
+#endif
+}
+#endif

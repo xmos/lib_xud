@@ -77,7 +77,6 @@ void hid_mouse(chanend chan_ep_hid)
 }
 
 
-
 /* The main function runs three cores: the XUD manager, Endpoint 0, and a HID endpoint. An array of
  * channels is used for both IN and OUT endpoints, endpoint zero requires both, HID requires just an
  * IN endpoint to send HID reports to the host.

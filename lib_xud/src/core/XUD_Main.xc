@@ -25,7 +25,7 @@ void XUD_Error_hex(char errString[], int i_err);
 #include "XUD_Support.h"
 
 #include "XUD_DeviceAttach.h"
-#include "XUD_PowerSig.h"
+#include "XUD_Signalling.h"
 #include "XUD_HAL.h"
 #include "XUD_TimingDefines.h"
 
@@ -39,8 +39,6 @@ void XUD_Error_hex(char errString[], int i_err);
 void XUD_UserSuspend();
 void XUD_UserResume();
 void XUD_PhyReset_User();
-
-#include "xta_pragmas.h"
 
 #define HS_TX_HANDSHAKE_TIMEOUT (167)
 #define FS_TX_HANDSHAKE_TIMEOUT (5000)
@@ -105,6 +103,7 @@ extern unsigned XUD_LLD_IoLoop(
                             int  epCount, chanend? c_sof) ;
 
 unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN];
+unsigned g_stallTable_IN[USB_MAX_NUM_EP_IN] = {0};
 unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];
 unsigned sentReset=0;
 
@@ -226,9 +225,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_inv(p_usb_clk);
     set_port_sample_delay(p_usb_clk);
 
-#if defined(XUD_SIM_XSIM)
-    set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY+5);
-#else
+#if !defined(XUD_SIM_XSIM)
     //This delay controls the capture of rdy
     set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);
 
@@ -243,11 +240,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
 #ifdef __XS3A__
     set_pad_delay(flag1_port, 3);
 #else
-	set_pad_delay(flag1_port, 2);
+    set_pad_delay(flag1_port, 2);
 #endif
         
     start_clock(tx_usb_clk);
-  	start_clock(rx_usb_clk);
+    start_clock(rx_usb_clk);
 
  	configure_out_port_handshake(p_usb_txd, tx_readyin, tx_readyout, tx_usb_clk, 0);
   	configure_in_port_strobed_slave(p_usb_rxd, rx_rdy, rx_usb_clk);
@@ -421,7 +418,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag0_port, flag2_port, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
             
             set_thread_fast_mode_off();
-  	   
+ 
             if(!noExit)
                 break;
         }

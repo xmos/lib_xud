@@ -17,8 +17,14 @@ def CounterByte(startVal=0, length=0):
 
 class UsbSession(object):
     def __init__(
-        self, bus_speed="HS", run_enumeration=False, device_address=0, **kwargs
+        self,
+        bus_speed="HS",
+        run_enumeration=False,
+        device_address=0,
+        initial_delay=None,
+        **kwargs
     ):
+        self._initial_delay = initial_delay
         self._bus_speed = bus_speed
         self._events = []
         self._enumerate = run_enumeration
@@ -30,6 +36,10 @@ class UsbSession(object):
         self._dataGen_out = [0] * 16
 
         assert run_enumeration == False, "Not yet supported"
+
+    @property
+    def initial_delay(self):
+        return self._initial_delay
 
     @property
     def bus_speed(self):
@@ -75,13 +85,25 @@ class UsbSession(object):
         else:
             pid_table[n] = usb_packet.USB_PID["DATA0"]
 
-    def data_pid_in(self, n, togglePid=True):
+    def data_pid_in(self, n, togglePid=True, resetDataPid=False):
+
+        if resetDataPid:
+            self._pidTable_in[n] = usb_packet.USB_PID["DATA1"]
+            pid = self._pidTable_in[n]
+            return pid
+
         pid = self._pidTable_in[n]
         if togglePid:
             self._pid_toggle(self._pidTable_in, n)
         return pid
 
-    def data_pid_out(self, n, togglePid=True):
+    def data_pid_out(self, n, togglePid=True, resetDataPid=False):
+
+        if resetDataPid:
+            self._pidTable_out[n] = usb_packet.USB_PID["DATA1"]
+            pid = self._pidTable_out[n]
+            return pid
+
         pid = self._pidTable_out[n]
         if togglePid:
             self._pid_toggle(self._pidTable_out, n)

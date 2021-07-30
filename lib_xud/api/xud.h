@@ -15,12 +15,12 @@
 #define XUD_OPT_SOFTCRC5 (0)
 #endif
 
-#ifndef XUD_STARTUP_ADDRESS
-#define XUD_STARTUP_ADDRESS (0)
-#endif
-
 #ifdef __xud_conf_h_exists__
 #include "xud_conf.h"
+#endif
+
+#ifndef XUD_STARTUP_ADDRESS
+#define XUD_STARTUP_ADDRESS (0)
 #endif
 
 #ifndef __ASSEMBLER__
@@ -39,8 +39,8 @@
 #endif
 
 #ifndef XUD_CORE_CLOCK
-#warning XUD_CORE_CLOCK not defined, using default (700MHz)
-#define XUD_CORE_CLOCK (700)
+#warning XUD_CORE_CLOCK not defined, using default (600MHz)
+#define XUD_CORE_CLOCK (600)
 #endif
 
 #if !defined(PORT_USB_CLK)

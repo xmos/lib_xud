@@ -1,7 +1,7 @@
-#!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import xmostest
+
+# Same as simple RX bulk test but some invalid tokens also included
 from usb_packet import (
     TokenPacket,
     TxDataPacket,
@@ -10,20 +10,17 @@ from usb_packet import (
     RxHandshakePacket,
     USB_PID,
 )
-from helpers import do_usb_test, RunUsbTest
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+import pytest
+from conftest import PARAMS, test_RunUsbSession
 
-# Same as simple RX bulk test but some invalid tokens also included
 
-
-def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
-
-    address = 1
-    ep = 1
+@pytest.fixture
+def test_session(ep, address, bus_speed):
 
     session = UsbSession(
-        bus_speed=usb_speed, run_enumeration=False, device_address=address
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
     # Reserved/Invalid PID
@@ -132,18 +129,4 @@ def do_test(arch, clk, phy, usb_speed, seed, verbose=False):
         )
     )
 
-    do_usb_test(
-        arch,
-        clk,
-        phy,
-        usb_speed,
-        [session],
-        __file__,
-        seed,
-        level="smoke",
-        extra_tasks=[],
-    )
-
-
-def runtest():
-    RunUsbTest(do_test)
+    return session

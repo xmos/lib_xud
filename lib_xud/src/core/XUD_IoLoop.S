@@ -51,6 +51,8 @@ suspend_t_wtwrsths:
 #define STACK_RXCRC_TAIL3       (19)
 #define STACK_TXCRC_INIT        (20)
 #define STACK_RXCRC_INIT        (21)
+#define STACK_PIDJUMPTABLE      (22)
+#define STACK_HANDSHAKETABLEIN  (23)
 
 // Params
 #define STACK_VTOK_PORT     (STACK_EXTEND + 1)
@@ -247,9 +249,9 @@ CrcRxResidualsOnStack:
 
 ConfigSofJump:
     ldw        r11, sp[STACK_SOFCHAN]
+    ldaw       r10, dp[PidJumpTable]
     bt         r11, ConfigSofJump_Done
     ldap       r11, Pid_Sof_NoChan
-    ldaw       r10, dp[PidJumpTable]
 #ifdef __XS2A__
     stw        r11, r10[5]
 #else
@@ -257,6 +259,9 @@ ConfigSofJump:
     stw        r11, r10[r9]
 #endif
 ConfigSofJump_Done:
+    stw        r10, sp[STACK_PIDJUMPTABLE]
+    ldaw       r10, dp[handshakeTable_IN]           // Load handshake table
+    stw        r10, sp[STACK_HANDSHAKETABLEIN]
 
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ
@@ -266,19 +271,6 @@ ConfigRxErrEventVector:
     ldc        r11, 1
     setd       res[r3], r11                 // Set event cond data to 1
     eeu        res[r3]
-
-#if 0
-SetupOutTimer:
-    getr       r1, XS1_RES_TYPE_TIMER
-    ecallf     r1
-
-    ldap       r11, OutDataTimeOut
-    setv       res[r1], r11
-    setc       res[r1], XS1_SETC_COND_AFTER
-
-    stw        r1, sp[STACK_OUT_TIMER]
-#endif
-
 
 SetupSuspendResetTimer:
     getr       r10, XS1_RES_TYPE_TIMER

@@ -1,10 +1,9 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import random
-import xmostest
+import Pyxsim
 import sys
 import zlib
-from usb_packet import RxPacket, TokenPacket, USB_PID
 import usb_packet
 
 USB_MAX_EP_ADDRESS = 15
@@ -50,12 +49,20 @@ USB_TIMINGS_SHORT = {
     "CHIRP_COUNT_MAX": 10,  # TODO should these chirp defines be removed and use timing?
 }
 
+
+USB_PKT_TIMINGS_TIGHT = {
+    "TX_TO_RX_PACKET_TIMEOUT": 14,  # Timeout between sending DUT a packet and the expected response (in USB clocks). This is SIE decision time in UTMI spec
+    "TX_TO_TX_PACKET_DELAY": 4,  # Delay between transmitting two packets
+}
+
+
 USB_TIMINGS = USB_TIMINGS_SHORT
+USB_PKT_TIMINGS = USB_PKT_TIMINGS_TIGHT
 
 
-class UsbPhy(xmostest.SimThread):
+class UsbPhy(Pyxsim.SimThread):
 
-    # Time in ns from the last packet being sent until the end of test is signalled to the DUT
+    # Time in ns from the last event packet being sent until the end of test
     END_OF_TEST_TIME = 5000
 
     def __init__(
@@ -74,14 +81,11 @@ class UsbPhy(xmostest.SimThread):
         clock,
         initial_delay,
         verbose,
-        test_ctrl,
         do_timeout,
         complete_fn,
-        expect_loopback,
         dut_exit_time,
     ):
         self._name = name
-        self._test_ctrl = test_ctrl
         self._rxd = rxd  # Rx data
         self._rxa = rxa  # Rx Active
         self._rxdv = rxdv  # Rx valid
@@ -98,7 +102,6 @@ class UsbPhy(xmostest.SimThread):
         self._verbose = verbose
         self._do_timeout = do_timeout
         self._complete_fn = complete_fn
-        self._expect_loopback = expect_loopback
         self._dut_exit_time = dut_exit_time
 
     @property
@@ -141,34 +144,10 @@ class UsbPhy(xmostest.SimThread):
         if self._complete_fn:
             self._complete_fn(self)
 
-        # Give the DUT a reasonable time to process the packet
+        # Give the DUT a reasonable time to process the last packet
         self.wait_until(self.xsi.get_time() + self.END_OF_TEST_TIME)
 
         if self._do_timeout:
-            # Allow time for a maximum sized packet to arrive
-            timeout_time = self._clock.get_bit_time() * 1522 * 8
-
-            if self._expect_loopback:
-                # If looping back then take into account all the data
-                total_packet_bytes = sum(
-                    [len(packet.get_bytes()) for packet in self._session.events]
-                )
-                total_data_bits = total_packet_bytes * 8
-
-                # Allow 2 cycles per bit
-                timeout_time += 2 * total_data_bits
-
-                # The clock ticks are 2ns long
-                timeout_time *= 2
-
-                # The events are copied to and from the user application
-                timeout_time *= 2
-
-            self.wait_until(self.xsi.get_time() + timeout_time)
-
-            if self._test_ctrl:
-                # Indicate to the DUT that the test has finished
-                self.xsi.drive_port_pins(self._test_ctrl, 1)
 
             # Allow time for the DUT to exit
             self.wait_until(self.xsi.get_time() + self._dut_exit_time)
@@ -182,9 +161,22 @@ class UsbPhy(xmostest.SimThread):
     def drive_error(self, value):
         self.xsi.drive_port_pins(self._rxer, value)
 
+    def wait_for_clocks(self, clockCount):
+
+        delay = clockCount
+        while delay >= 0:
+            self.wait(lambda x: self._clock.is_high())
+            self.wait(lambda x: self._clock.is_low())
+            delay = delay - 1
+
     def run(self):
 
         xsi = self.xsi
+
+        # TODO ideally each session could have it's own start up delay rather than modifying the
+        # phy start up delay
+        if self._session.initial_delay is not None:
+            self._initial_delay = self._session.initial_delay
 
         self.start_test()
 

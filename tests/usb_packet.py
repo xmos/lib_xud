@@ -59,28 +59,29 @@ Packet Class Hierarchy
 """
 
 from usb_event import UsbEvent
+import usb_phy
+
 
 USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 
 # In USB clocks
-RX_TX_DELAY = 20
 RXA_END_DELAY = 2  # Pad delay not currently simulated in xsim for USB or OTP, so add this delay here
 RXA_START_DELAY = 5  # Taken from RTL sim
-RX_RX_DELAY = 40
 
 # TODO shoud we have a PID class?
 # TODO remove the inverted check bits
 USB_PID = {
     "OUT": 0xE1,
-    "IN": 0x69,
-    "SETUP": 0x2D,
+    "ACK": 0xD2,
+    "DATA0": 0xC3,
+    "PING": 0xB4,
     "SOF": 0xA5,
     "DATA1": 0x4B,
-    "DATA0": 0xC3,
-    "ACK": 0xD2,
-    "PING": 0xB4,
-    "RESERVED": 0x0F,
+    "IN": 0x69,
     "NAK": 0x5A,
+    "SETUP": 0x2D,
+    "STALL": 0x1E,
+    "RESERVED": 0x0F,
 }
 
 
@@ -119,59 +120,38 @@ def reflect(val, numBits):
     return valRef
 
 
-def GenCrc16(args):
-
-    data = args
-
+def GenCrc16(data: bytes):
+    poly = 0xA001
     crc = 0xFFFF
-    poly = 0x8005
-
-    for byte in data:
-        topBit = 1 << 15
-        crc ^= reflect(int(byte) & int(0xFF), 8) << 8
-
-        for k in range(0, 8):
-            if crc & topBit:
-                crc = (crc << 1) ^ poly
+    for b in data:
+        crc ^= 0xFF & b
+        for _ in range(0, 8):
+            if crc & 0x0001:
+                crc = (crc >> 1) ^ poly
             else:
-                crc <<= 1
+                crc >>= 1
 
-    # //crc = crc ^0xffff;
-    crc = reflect(crc, 16)
-    crc = ~crc
-    crc = crc & 0xFFFF
-    # print "CRC: : {0:#x}".format(crc)
-    return crc
+    return crc ^ 0xFFFF
 
 
 def GenCrc5(args):
-    intSize = 32
-    elevenBits = args
+    poly = 0x14
+    crc = 0x1F
+    n = args & 0x7FF
+    i = 11
 
-    poly5 = 0x05 << (intSize - 5)
-    crc5 = 0x1F << (intSize - 5)
-    udata = elevenBits << (intSize - 11)
-    # crc over 11 bits
-
-    iBitcnt = 11
-
-    while iBitcnt > 0:
-        if (udata ^ crc5) & (0x1 << (intSize - 1)):  # bit4 != bit4?
-            crc5 <<= 1
-            crc5 ^= poly5
+    while i > 0:
+        if (n ^ crc) & 1:
+            crc = (crc >> 1) ^ poly
         else:
-            crc5 <<= 1
-        udata <<= 1
-        iBitcnt = iBitcnt - 1
-
-    # Shift back into position
-    crc5 >>= intSize - 5
+            crc >>= 1
+        i -= 1
+        n >>= 1
 
     # Invert contents to generate crc field
-    crc5 ^= 0x1F
+    crc ^= 0x1F
 
-    crc5 = reflect(crc5, 5)
-    return crc5
+    return crc
 
 
 # Functions for creating the data contents of packets
@@ -224,7 +204,7 @@ class UsbPacket(UsbEvent):
         self.data_bytes = kwargs.pop("data_bytes", None)
         self.num_data_bytes = kwargs.pop("length", 0)
         self.bad_crc = kwargs.pop("bad_crc", False)
-        ied = kwargs.pop("interEventDelay", 500)  # TODO RM magic number
+        ied = kwargs.pop("interEventDelay", None)
         super(UsbPacket, self).__init__(interEventDelay=ied)
 
     @property
@@ -244,7 +224,9 @@ class UsbPacket(UsbEvent):
 # Rx to host i.e. xCORE Tx
 class RxPacket(UsbPacket):
     def __init__(self, **kwargs):
-        self._timeout = kwargs.pop("timeout", 25)
+        self._timeout = kwargs.pop(
+            "timeout", usb_phy.USB_PKT_TIMINGS["TX_TO_RX_PACKET_TIMEOUT"]
+        )
         super(RxPacket, self).__init__(**kwargs)
 
     @property
@@ -330,7 +312,11 @@ class TxPacket(UsbPacket):
         self.rxa_end_delay = kwargs.pop("rxa_end_delay", RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop("rxe_assert_time", 0)
         self.rxe_assert_length = kwargs.pop("rxe_assert_length", 1)
-        super(TxPacket, self).__init__(**kwargs)
+
+        ied = kwargs.pop(
+            "interEventDelay", usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
+        )
+        super(TxPacket, self).__init__(**kwargs, interEventDelay=ied)
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "Packet:\tHOST -> DEVICE\n"
@@ -348,7 +334,7 @@ class TxPacket(UsbPacket):
 
         rxv_count = USB_DATA_VALID_COUNT[bus_speed]
 
-        usb_phy.wait_until(xsi.get_time() + self.interEventDelay)
+        usb_phy.wait_for_clocks(self.interEventDelay)
 
         print(
             "Packet:\tHOST -> DEVICE\n\tPID: {0} ({1:#x})".format(
@@ -500,7 +486,7 @@ class TxDataPacket(DataPacket, TxPacket):
     def __str__(self):
         return (
             super(DataPacket, self).__str__()
-            + ": RX DataPacket: "
+            + ": TX DataPacket: "
             + super(DataPacket, self).get_pid_str()
             + " "
             + str(self.data_bytes)
@@ -520,9 +506,7 @@ class TokenPacket(TxPacket):
         self.address = kwargs.pop("address", 0)
 
         # Generate correct crc5
-        crc5 = GenCrc5(
-            reflect(((self.endpoint & 0xF) << 7) | ((self.address & 0x7F) << 0), 11)
-        )
+        crc5 = GenCrc5(((self.endpoint & 0xF) << 7) | ((self.address & 0x7F) << 0))
 
         # Correct crc5 can be overridden
         self.crc5 = kwargs.pop("crc5", crc5)
@@ -575,7 +559,7 @@ class RxHandshakePacket(HandshakePacket, RxPacket):
         self.pid = kwargs.pop(
             "pid", 0xD2
         )  # Default to ACK (not expect inverted bits on Rx)
-        self._timeout = kwargs.pop("timeout", RX_TX_DELAY)  # TODO handled by Super()
+        # self._timeout = kwargs.pop("timeout", RX_TX_DELAY)  # TODO handled by Super()
 
     def __str__(self):
         return (

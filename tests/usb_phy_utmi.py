@@ -1,6 +1,5 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import xmostest
 from usb_packet import RxPacket, TokenPacket
 import usb_packet
 from usb_phy import UsbPhy
@@ -22,11 +21,9 @@ class UsbPhyUtmi(UsbPhy):
         clock,
         initial_delay=60000,
         verbose=False,
-        test_ctrl=None,
         do_timeout=True,
         complete_fn=None,
-        expect_loopback=True,
-        dut_exit_time=25000,
+        dut_exit_time=30000,
     ):
 
         self._do_tokens = False
@@ -46,9 +43,7 @@ class UsbPhyUtmi(UsbPhy):
             clock,
             initial_delay,
             verbose,
-            test_ctrl,
             do_timeout,
             complete_fn,
-            expect_loopback,
             dut_exit_time,
         )

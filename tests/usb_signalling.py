@@ -13,12 +13,12 @@ class UsbDeviceAttach(UsbEvent):
         return "DeviceAttach"
 
     def expected_output(self, bus_speed, offset=0):
-            
+
         expected = self.__str__() + "\nDUT entered FS\nReceived upstream chirp\n"
 
         if bus_speed == "HS":
             expected += "DUT entered HS mode\n"
-        
+
         return expected
 
     @property
@@ -171,8 +171,6 @@ class UsbDeviceAttach(UsbEvent):
 
                 wait(lambda x: usb_phy._clock.is_high())
                 wait(lambda x: usb_phy._clock.is_low())
-
-
 
 
 class UsbResume(UsbEvent):
@@ -340,12 +338,11 @@ class UsbSuspend(UsbEvent):
             xcvr = xsi.sample_periph_pin(usb_phy._xcvrsel)
             termsel = xsi.sample_periph_pin(usb_phy._termsel)
 
-            # Wait for DUT to move into FS mode
+            # Check DUT doesn't prematurely move out of FS mode
             if not (xcvr == 1 and termsel == 1):
                 print("ERROR: DUT moved out of FS mode unexpectly during suspend")
 
             time_ns = xsi.get_time() - suspendStartTime_ns
-            if time_ns == self._duration_ns:
-                # print("SUSPEND END: " + str(xsi.get_time()))
+            if time_ns >= self._duration_ns:
                 print("SUSPEND END")
                 break

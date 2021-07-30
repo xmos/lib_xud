@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-import xmostest
+import Pyxsim
+from Pyxsim import testers
 import os
 import random
 import sys
@@ -11,10 +12,10 @@ from usb_phy_shim import UsbPhyShim
 from usb_phy_utmi import UsbPhyUtmi
 from usb_packet import RxPacket, USB_DATA_VALID_COUNT
 
-args = None
-
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
+args = {"arch": "xs3"}
+clean_only = False
 
 
 def create_if_needed(folder):
@@ -24,17 +25,16 @@ def create_if_needed(folder):
 
 
 def get_usb_clk_phy(
+    coreFreqMhz,
     verbose=True,
-    test_ctrl=None,
     do_timeout=True,
     complete_fn=None,
-    expect_loopback=False,
     dut_exit_time=350000,
     arch="xs2",
 ):
 
     if arch == "xs2":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -48,15 +48,13 @@ def get_usb_clk_phy(
             "XS1_USB_TERMSEL",
             clk,
             verbose=verbose,
-            test_ctrl=test_ctrl,
             do_timeout=do_timeout,
             complete_fn=complete_fn,
-            expect_loopback=expect_loopback,
             dut_exit_time=dut_exit_time,
         )
 
     elif arch == "xs3":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -70,10 +68,8 @@ def get_usb_clk_phy(
             "XS1_USB_TERMSEL",
             clk,
             verbose=verbose,
-            test_ctrl=test_ctrl,
             do_timeout=do_timeout,
             complete_fn=complete_fn,
-            expect_loopback=expect_loopback,
             dut_exit_time=dut_exit_time,
         )
 
@@ -83,42 +79,41 @@ def get_usb_clk_phy(
     return (clk, phy)
 
 
+def run_on_simulator(xe, simthreads, **kwargs):
+    for k in ["do_xe_prebuild", "build_env", "clean_before_build"]:
+        if k in kwargs:
+            kwargs.pop(k)
+    return Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
+
+
 def run_on(**kwargs):
-    if not args:
-        return True
 
     for name, value in kwargs.items():
-        arg_value = getattr(args, name)
+        arg_value = args.get(name)
         if arg_value is not None and value != arg_value:
             return False
 
     return True
 
 
-def RunUsbTest(test_fn):
-
-    seed = args.seed if args.seed else random.randint(0, sys.maxsize)
-
-    for _arch in ARCHITECTURE_CHOICES:
-        for _busspeed in BUSSPEED_CHOICES:
-            if run_on(arch=_arch):
-                if run_on(busspeed=_busspeed):
-                    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=_arch)
-                    test_fn(
-                        _arch,
-                        clk_60,
-                        usb_phy,
-                        _busspeed,
-                        seed,
-                        verbose=args.verbose,
-                    )
+FIXTURE_TO_DEFINE = {
+    "core_freq": "TEST_FREQ",
+    "arch": "TEST_ARCH",
+    "dummy_threads": "TEST_DTHREADS",
+    "ep": "TEST_EP_NUM",
+    "address": "XUD_STARTUP_ADDRESS",
+}
 
 
 def do_usb_test(
     arch,
+    ep,
+    address,
+    bus_speed,
+    dummy_threads,
+    core_freq,
     clk,
     phy,
-    usb_speed,
     sessions,
     test_file,
     seed,
@@ -126,69 +121,72 @@ def do_usb_test(
     extra_tasks=[],
     verbose=False,
 ):
+    build_options = []
 
-    """Shared test code for all usb tests."""
+    # Flags for makefile
+    for k, v in FIXTURE_TO_DEFINE.items():
+        build_options += [str(v) + "=" + str(locals()[k])]
+
+    # Defines for DUT code
+    # TODO shoud the makefile set thease based on the above?
+    build_options_str = "CFLAGS="
+    for k, v in FIXTURE_TO_DEFINE.items():
+        build_options_str += "-D" + str(v) + "=" + str(locals()[k]) + " "
+
+    build_options = build_options + [build_options_str]
+
+    """Shared test code for all RX tests using the test_rx application."""
     testname, extension = os.path.splitext(os.path.basename(test_file))
+    tester_list = []
 
-    resources = xmostest.request_resource("xsim")
-
-    binary = "{testname}/bin/{arch}/{testname}_{arch}.xe".format(
-        testname=testname, arch=arch
+    binary = "{testname}/bin/{arch}_{core_freq}_{dummy_threads}_{ep}_{address}/{testname}_{arch}_{core_freq}_{dummy_threads}_{ep}_{address}.xe".format(
+        testname=testname,
+        arch=arch,
+        core_freq=core_freq,
+        dummy_threads=dummy_threads,
+        ep=ep,
+        address=address,
     )
 
-    print(binary)
+    # Do not need to clean since different build will different params go to separate binaries
+    build_success, build_output = Pyxsim._build(
+        binary, do_clean=False, build_options=build_options
+    )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
+    if build_success:
+        for session in sessions:
 
-    for session in sessions:
+            phy.session = session
 
-        if args.verbose:
-            print("Session " + str(sessions.index(session)))
-            print(str(session))
-
-        if xmostest.testlevel_is_at_least(xmostest.get_testlevel(), level):
-            print(
-                "Running {test}: {arch} arch sending {n} event(s) at {clk} using {speed} (seed {seed})".format(
-                    test=testname,
-                    n=len(session.events),
-                    arch=arch,
-                    clk=clk.get_name(),
-                    speed=usb_speed,
-                    seed=seed,
-                )
+            expect_folder = create_if_needed("expect")
+            expect_filename = "{folder}/{test}_{arch}_{usb_speed}.expect".format(
+                folder=expect_folder,
+                test=testname,
+                phy=phy.name,
+                clk=clk.get_name(),
+                arch=arch,
+                usb_speed=bus_speed,
             )
 
-        phy.session = session
+            create_expect(arch, session, expect_filename, verbose=verbose)
 
-        expect_folder = create_if_needed("expect")
-        expect_filename = "{folder}/{test}_{arch}.expect".format(
-            folder=expect_folder,
-            test=testname,
-            phy=phy.name,
-            clk=clk.get_name(),
-            arch=arch,
-        )
+            tester = testers.ComparisonTester(
+                open(expect_filename),
+                "lib_xud",
+                "xud_sim_tests",
+                testname,
+                {"clk": clk.get_name(), "arch": arch, "speed": bus_speed},
+            )
 
-        create_expect(arch, session, expect_filename, verbose=verbose)
+            tester_list.append(tester)
+            simargs = get_sim_args(testname, clk, phy, arch)
+            simthreads = [clk, phy] + extra_tasks
+            run_on_simulator(binary, simthreads, simargs=simargs)
+    else:
+        tester_list.append("Build Failed")
 
-        tester = xmostest.ComparisonTester(
-            open(expect_filename),
-            "lib_xud",
-            "xud_sim_tests",
-            testname,
-            {"clk": clk.get_name(), "arch": arch, "speed": usb_speed},
-        )
-
-        tester.set_min_testlevel(level)
-
-        simargs = get_sim_args(testname, clk, phy, arch)
-        xmostest.run_on_simulator(
-            resources["xsim"],
-            binary,
-            simthreads=[clk, phy] + extra_tasks,
-            tester=tester,
-            simargs=simargs,
-        )
+    return tester_list
 
 
 def create_expect(arch, session, filename, verbose=False):
@@ -222,7 +220,7 @@ def create_expect(arch, session, filename, verbose=False):
 def get_sim_args(testname, clk, phy, arch="xs2"):
     sim_args = []
 
-    if args and args.trace:
+    if eval(os.getenv("enabletracing")):
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(

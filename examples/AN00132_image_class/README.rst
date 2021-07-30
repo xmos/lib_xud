@@ -18,17 +18,16 @@ Commands for image capture are sent from a host application to the device. The e
 Required tools and libraries
 ............................
 
-* xTIMEcomposer Tools - Version 14.0.0
-* XMOS USB Device Library - Version 3.1.0
+* xTIMEcomposer Tools - Version >= 15.0.0
+* XMOS USB Device Library - Version >= 2.0.0
 
 Required hardware
 .................
 
-This application note is designed to run on an XMOS xCORE-USB series device. 
+This application note is designed to run on an XMOS xCORE.AI or xCORE-200 series device. 
 The example code provided with the application has been implemented and tested
-on the xCORE-USB sliceKIT (XP-SKC-U16 1V2) with USB AB slice (XA-SK-USB-AB 1V2) 
-but there is no dependency on this board and it can be
-modified to run on any development board which uses an xCORE-USB series device.
+on the xCORE.AI EXPLORER Board but there is no dependency on this board and it can be
+modified to run on any development board which uses an xCORE-200 or xCORE.AI series device.
 
 Prerequisites
 .............

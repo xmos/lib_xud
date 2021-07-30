@@ -171,9 +171,10 @@ For example, the other tile on an dual-core device is unaffected by this restric
 Clock Blocks
 ------------
 
-The XUD library uses two clock blocks (clock block 2 & 3) and configures these
-clock block to be clocked by the 60MHz clock from the UTMI transceiver.
-The ports it uses are in turn clocked from the clock block.
+The XUD library uses two clock blocks, one for receive and one for transmit. 
+Clocks blocks 4 and 5 are used respectively.  These clock blocks are configured such
+that they are clocked by the 60MHz clock from the UTMI transceiver.
+The ports used by lib_xud are in turn clocked from these clock blocks.
 
 Timers
 ------

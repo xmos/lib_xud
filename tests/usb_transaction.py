@@ -34,6 +34,7 @@ class UsbTransaction(UsbEvent):
         resend=False,
         rxeAssertDelay_data=0,
         halted=False,
+        resetDataPid=False,
     ):  # TODO Enums when we move to py3
 
         self._deviceAddress = deviceAddress
@@ -97,7 +98,9 @@ class UsbTransaction(UsbEvent):
                 endpointNumber, dataLength, resend=resend
             )
 
-            pid = session.data_pid_out(endpointNumber, togglePid=togglePid)
+            pid = session.data_pid_out(
+                endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
+            )
 
             # Add data packet to packets list
             packets.append(

@@ -18,7 +18,7 @@ Control Model (ACM) is defined to support legacy modem devices and an advantage
 of ACM is the Serial emulation feature. Serial emulation of a USB device eases the development of 
 host PC application, provides software compatibility with RS-232 based legacy devices, enables USB to RS-232 conversions and gives good abstraction over the USB for application developers.
 
-In this application note, the USB CDC implementation on xCORE-USB device is explained in detail which will help you in two ways. First, it acts as reference for you to build your own USB CDC class device, second, it gives you
+In this application note, the USB CDC implementation on xCORE-200/xCORE.AI device is explained in detail which will help you in two ways. First, it acts as reference for you to build your own USB CDC class device, second, it gives you
 an idea of how to use this virtual serial port code in your application.
 
 The standard USB CDC class specification can be found in the USB-IF website.
@@ -75,9 +75,9 @@ To start using the USB library, you need to add **lib_xud** to your makefile::
 
   USED_MODULES = ... lib_xud ...
 
-You can then access the USB functions in your source code via the *usb_device.h* header file::
+You can then access the USB functions in your source code via the *xud_device.h* header file::
 
-  #include <usb_device.h>
+  #include "xud_device.h"
 
 Source code files
 .................
@@ -339,30 +339,25 @@ Demo Hardware Setup
 
 To setup the demo hardware the following boards are required.
 
-  - xCORE-USB slicekKIT (XK-SK-U16-ST)
+  - xCORE-200 or xCORE.AI EXPLORER board
 
-      - xCORE-USB Core board.
-      - USB A/B sliceCARD.
-      - xTAG-2 debug adaptor
-      - Power supply
+      - xTAG debug adaptor
+      - 1 x USB cables (A to micro-b)
+      - Additional USB cable or power supply if using the xCORE-200 board
 
-.. figure:: images/usb-slicekit.*
+.. figure:: images/explorerkit-200.*
   :scale: 110%
 
-  XMOS xCORE-USB sliceKIT 
+  XMOS xCORE-200 EXPLORER Board
 
 The hardware should be configured as displayed above for this demo:
 
   - The XTAG debug adapter should be connected to the XSYS connector and
     the XTAG USB should be connected to the host machine.
 
-  - The USB sliceCARD should be connected to the U slot (J4 header) of the xCORE-USB Core 
-    board and the other end of USB sliceCARD should be connected to host machine using a USB 
-    cable.
+  - Connect a USB cable from the USB receptical on the EXPLORER board to the host PC
 
-  - The XLINK switch on the core board should be set on ON position.
-
-  - The xCORE-USB core board should have the power cable connected.
+  - The XCORE-200 EXPLORER board requires power via the *5V IN* USB Micro-B receptical
 
 |newpage|
 

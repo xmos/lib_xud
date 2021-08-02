@@ -41,7 +41,7 @@ USB HID Class application note
 
 The example in this application note uses the XMOS USB device library and shows a simple program that creates a basic mouse device which controls the mouse pointer on the host PC.
 
-For the USB HID device class application example, the system comprises three tasks running on separate logical cores of a xCORE-USB multicore microcontroller. 
+For the USB HID device class application example, the system comprises three tasks running on separate logical cores of a xCORE multicore microcontroller. 
 
 The tasks perform the following operations.
 
@@ -70,15 +70,9 @@ To start using the USB library, you need to add ``lib_xud`` to your ``Makefile``
 
         USED_MODULES = ... lib_xud
 
-You also have to add a define to the build to say which variant of the
-USB library you want. In this case, the example is for the U-Series
-USB library. So the following is in the ``Makefile``::
+You can then access the USB functions in your source code via the xud_device.h header file::
 
-       XCC_FLAGS = ... -DXUD_SERIES_SUPPORT=XUD_U_SERIES
-
-You can then access the USB functions in your source code via the usb.h header file::
-
-        #include <usb_device.h>
+        #include "xud_device.h"
 
 The application main() function
 ...............................
@@ -122,7 +116,7 @@ The USB ID values used for vendor id, product id and device version number are d
 USB HID Class specific defines
 ..............................
 
-The USB HID Class is configured in the file ``endpoint0.xc``. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB HID class device running on an xCORE-USB microcontroller.
+The USB HID Class is configured in the file ``endpoint0.xc``. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB HID class device running on an xCORE microcontroller.
 
 .. literalinclude:: endpoint0.xc
    :start-on: Standard HID
@@ -245,29 +239,20 @@ From this you can see the following.
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect the xCORE-USB sliceKIT USB-B and xTAG-2 USB-A
-connectors to separate USB connectors on your development PC. 
+To run the demo, connect the xCORE.AI/xCORE-200 EXPLORER board and xTAG USB-microB
+connectors to separate USB connectors on your development PC via a USB cable. 
 
-On the xCORE-USB sliceKIT ensure that the xCONNECT LINK switch is set to ON, as per the image, 
-to allow xSCOPE to function. The use of xSCOPE is required in this application so 
-that the print messages that are generated on the device as part of the demo
-do not interfere with the real-time behavior of the USB device.
+.. figure:: images/explorerkit-200.*
 
-.. figure:: images/usb-slicekit.*
+	XMOS xCORE-200 EXPLORER Board
 
-	XMOS xCORE-USB sliceKIT
-
-The hardware should be configured as displayed above for this demo:
+The hardware should be configured as follows for this demonstration:
 
   - The XTAG debug adapter should be connected to the XSYS connector and
     the XTAG USB cable should be connected to the host machine
 
-  - The xCORE-USB core board should have a USB cable connecting the device
+  - The xCORE EXPLORER board should have a USB cable connecting the device
     to the host machine
-
-  - The xSCOPE switch on the board should be set to the on position
-
-  - The xCORE-USB core board should have the power cable connected
 
 |newpage|
 
@@ -276,7 +261,7 @@ Launching the demo application
 
 Once the demo example has been built either from the command line using
 xmake or via the build mechanism of xTIMEcomposer studio we can execute
-the application on the xCORE-USB sliceKIT. 
+the application on the xCORE.AI EXPLORER board. 
 
 Once built there will be a ``bin`` directory within the project which
 contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
@@ -289,8 +274,9 @@ From the command line we use the ``xrun`` tool to download code to both the
 xCORE devices. If we change into the bin directory of the project
 we can execute the code on the xCORE microcontroller as follows::
 
-> xrun app_hid_mouse_demo.ex          <-- Download and execute the xCORE code
+> xrun app_hid_mouse_demo_<ARCH>.xe   <-- Download and execute the xCORE code
 
+where <ARCH> is the xcore architecture variant, 200 or AI.
 Once this command has executed the HID mouse device will have enumerated on 
 your host machine.
 

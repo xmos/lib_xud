@@ -30,18 +30,17 @@ by this application example a host driver is not required to interact with libus
 Required tools and libraries
 ............................
 
-* xTIMEcomposer Tools - Version 14.0.0
-* XMOS USB library - Version 3.1.0
+* xTIMEcomposer Tools - Version >= 15.0.0
+* XMOS USB library - Version >= 2.0.0
 
 Required hardware
 .................
 
-This application note is designed to run on an XMOS xCORE-USB series device. 
+This application note is designed to run on XMOS xCORE-200 or xCORE.AI series devices.
 
-The example code provided with the application has been implemented and tested
-on the xCORE-USB sliceKIT (XK-SK-U16-ST) but there is no dependancy on this
-board and it can be modified to run on any development board which uses an 
-xCORE-USB series device.
+The example code provided with this application note has been implemented and tested
+on the xCORE.AI EXPLORER board but there are no dependencies on this board
+and it can be modified to run on any development board which uses an xCORE-200 or xCORE.AI series device.
 
 Prerequisites
 .............
@@ -51,7 +50,7 @@ Prerequisites
   - For descriptions of XMOS related terms found in this document please see
     the XMOS Glossary [#]_.
 
-  - For the full API listing of the XMOS USB Device (XUD) Library please see the    the document XMOS USB Device (XUD) Library [#]_. 
+  - For the full API listing of the XMOS USB Device (XUD) Library please see the document XMOS USB Device (XUD) Library [#]_. 
 
   - For information on designing USB devices using the XUD library please see 
     the XMOS USB Device Design Guide for reference [#]_. 

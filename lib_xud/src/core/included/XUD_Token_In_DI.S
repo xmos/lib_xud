@@ -92,7 +92,7 @@ DoneTail:
 SetupReceiveHandShake:
     ldc        r11, 8
     setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
-    eeu		   res[RXD]                            // Events on RXD always enabled - Can;t be any more due to using events on channels
+    eeu        res[RXD]                            // Events on RXD always enabled - Can;t be any more due to using events on channels
 
 SetupTimeout:                                      // Timeout done using another port we dont happen to already be using events on. Cunning.
 #ifdef __XS2A__

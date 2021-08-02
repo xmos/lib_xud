@@ -21,11 +21,9 @@ class UsbPhyUtmi(UsbPhy):
         clock,
         initial_delay=60000,
         verbose=False,
-        test_ctrl=None,
         do_timeout=True,
         complete_fn=None,
-        expect_loopback=True,
-        dut_exit_time=25000,
+        dut_exit_time=30000,
     ):
 
         self._do_tokens = False
@@ -45,9 +43,7 @@ class UsbPhyUtmi(UsbPhy):
             clock,
             initial_delay,
             verbose,
-            test_ctrl,
             do_timeout,
             complete_fn,
-            expect_loopback,
             dut_exit_time,
         )

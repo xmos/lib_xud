@@ -129,10 +129,10 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                     XUD_HAL_EnterMode_PeripheralHighSpeed_Start();
                 }
 #endif
-                XUD_HAL_WaitForLineStateChange(currentLs, 0);
-
                 while(1)
                 {
+                    XUD_HAL_WaitForLineStateChange(currentLs, 0);
+                
                     switch(currentLs)
                     {
                         /* J, unexpected, return */

@@ -10,6 +10,7 @@ USB_LINESTATE = {
     "FS_K": 1,
     "HS_J": 1,
     "HS_K": 2,
+    "SE_1": 3,
 }
 
 # TODO want two sets of these, one "spec" and one "fast" for testing

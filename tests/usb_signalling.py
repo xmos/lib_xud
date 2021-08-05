@@ -225,7 +225,7 @@ class UsbResume(UsbEvent):
 
         # Drive out any glitches mid resume signalling
         # TODO we could make the drive time a param
-        glitchTime = (USB_TIMINGS["RESUME_FSK_MIN_US"] / 2) * 1000
+        glitchTime = (USB_TIMINGS["RESUME_FSK_MIN_US"] * 1000) / 2
 
         # Drive resume signalling
         xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_K"])
@@ -257,7 +257,7 @@ class UsbResume(UsbEvent):
 
                             currentTime_ns = xsi.get_time()
 
-                            if currentTime_ns >= resumeStartTime_ns + duration:
+                            if currentTime_ns >= glitchTime + duration:
                                 break
 
                     # Back to driving resume signalling

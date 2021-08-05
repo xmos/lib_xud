@@ -14,9 +14,7 @@ class UsbDeviceAttach(UsbEvent):
 
     def expected_output(self, bus_speed, offset=0):
 
-        expected = (
-            self.__str__() + "\nDUT entered FS\nReceived upstream chirp\n"
-        )
+        expected = self.__str__() + "\nDUT entered FS\nReceived upstream chirp\n"
 
         if bus_speed == "HS":
             expected += "DUT entered HS mode\n"
@@ -185,9 +183,13 @@ class UsbDeviceAttach(UsbEvent):
 
 class UsbResume(UsbEvent):
     def __init__(
-        self, duration=USB_TIMINGS["RESUME_FSK_MIN_US"], interEventDelay=0
+        self,
+        duration=USB_TIMINGS["RESUME_FSK_MIN_US"],
+        interEventDelay=0,
+        glitches=[],
     ):
         self._duration = duration
+        self._glitches = glitches
         super().__init__(interEventDelay=interEventDelay)
 
     def expected_output(self, bus_speed, offset=0):
@@ -211,6 +213,7 @@ class UsbResume(UsbEvent):
     def drive(self, usb_phy, bus_speed):
         xsi = usb_phy.xsi
         wait = usb_phy.wait
+        wait_for_clocks = usb_phy.wait_for_clocks
 
         # xCore should not be trying to send if we are trying to send..
         if xsi.sample_port_pins(usb_phy._txv) == 1:
@@ -218,24 +221,56 @@ class UsbResume(UsbEvent):
 
         resumeStartTime_ns = xsi.get_time()
 
-        # print("RESUME: " + str(resumeStartTime_ns))
         print("RESUME")
+
+        # Drive out any glitches mid resume signalling
+        # TODO we could make the drive time a param
+        glitchTime = (USB_TIMINGS["RESUME_FSK_MIN_US"] / 2) * 1000
 
         # Drive resume signalling
         xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_K"])
 
+        glitchTimeMet = False
+
         while True:
-            wait(lambda x: usb_phy._clock.is_high())
-            wait(lambda x: usb_phy._clock.is_low())
+
+            wait_for_clocks(1)
 
             currentTime_ns = xsi.get_time()
+
+            if (
+                currentTime_ns >= (resumeStartTime_ns + glitchTime)
+                and not glitchTimeMet
+            ):
+
+                glitchTimeMet = True
+
+                if self._glitches:
+
+                    for ls, duration in self._glitches:
+
+                        # Drive the glitch
+                        xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE[ls])
+
+                        while True:
+                            wait_for_clocks(1)
+
+                            currentTime_ns = xsi.get_time()
+
+                            if currentTime_ns >= resumeStartTime_ns + duration:
+                                break
+
+                    # Back to driving resume signalling
+                    xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_K"])
+
             if currentTime_ns >= resumeStartTime_ns + (
                 USB_TIMINGS["RESUME_FSK_MIN_US"] * 1000
             ):
                 break
 
         endResumeStartTime_ns = xsi.get_time()
-        # print("TB SE0: " + str(endResumeStartTime_ns))
+
+        # Drive end of resume signalling
         xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["IDLE"])
 
         while True:
@@ -249,7 +284,6 @@ class UsbResume(UsbEvent):
                 break
 
         print("RESUME END")
-        # print("RESUME END: " + str(currentTime_ns))
 
         if bus_speed == "HS":
             # Check that the DUT has re-entered HS
@@ -353,9 +387,7 @@ class UsbSuspend(UsbEvent):
 
             # Check DUT doesn't prematurely move out of FS mode
             if not (xcvr == 1 and termsel == 1):
-                print(
-                    "ERROR: DUT moved out of FS mode unexpectly during suspend"
-                )
+                print("ERROR: DUT moved out of FS mode unexpectly during suspend")
 
             time_ns = xsi.get_time() - suspendStartTime_ns
             if time_ns >= self._duration_ns:

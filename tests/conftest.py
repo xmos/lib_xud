@@ -160,9 +160,7 @@ def copy_common_xn_files(
         shutil.copy(xn, src_dir)
 
 
-def delete_test_specific_xn_files(
-    test_dir, source_dir="src", xn_files=XN_FILES
-):
+def delete_test_specific_xn_files(test_dir, source_dir="src", xn_files=XN_FILES):
     src_dir = os.path.join(test_dir, source_dir)
     for xn_file in xn_files:
         xn = os.path.join(src_dir, xn_file)
@@ -199,9 +197,7 @@ def copy_xn_files(worker_id, request):
         for item in session.items:
             full_path = item.fspath
             test_dir = Path(full_path).with_suffix("")  # Strip suffix
-            test_dir = os.path.basename(
-                test_dir
-            )  # Strip path leaving filename
+            test_dir = os.path.basename(test_dir)  # Strip path leaving filename
             test_dirs.add(test_dir)
 
         for test_dir in test_dirs:

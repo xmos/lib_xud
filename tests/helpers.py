@@ -151,13 +151,11 @@ def do_usb_test(
             phy.session = session
 
             expect_folder = create_if_needed("expect")
-            expect_filename = (
-                "{folder}/{test}_{arch}_{usb_speed}.expect".format(
-                    folder=expect_folder,
-                    test=testname,
-                    arch=arch,
-                    usb_speed=bus_speed,
-                )
+            expect_filename = "{folder}/{test}_{arch}_{usb_speed}.expect".format(
+                folder=expect_folder,
+                test=testname,
+                arch=arch,
+                usb_speed=bus_speed,
             )
 
             create_expect(session, expect_filename, verbose=verbose)
@@ -181,8 +179,7 @@ def do_usb_test(
 
 
 def create_expect(session, filename, verbose=False):
-    """ Create the expect file for what packets should be reported by the DUT
-    """
+    """Create the expect file for what packets should be reported by the DUT"""
 
     events = session.events
 
@@ -194,9 +191,7 @@ def create_expect(session, filename, verbose=False):
             print("EXPECTED OUTPUT:")
         for event in events:
 
-            expect_str = event.expected_output(
-                session.bus_speed, offset=packet_offset
-            )
+            expect_str = event.expected_output(session.bus_speed, offset=packet_offset)
             packet_offset += event.event_count
 
             if verbose:

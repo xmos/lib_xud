@@ -31,9 +31,7 @@ def test_session(ep, address, bus_speed):
             )
             session.add_event(
                 RxDataPacket(
-                    dataPayload=session.getPayload_in(
-                        ep, pktLength, resend=True
-                    )
+                    dataPayload=session.getPayload_in(ep, pktLength, resend=True)
                 )
             )
             # Missing ACK - simulate CRC fail at host

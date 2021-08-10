@@ -14,13 +14,13 @@ def CounterByte(startVal=0, length=0):
         i += 1
 
 
-class UsbSession():
+class UsbSession:
     def __init__(
         self,
         bus_speed="HS",
         run_enumeration=False,
         device_address=0,
-        initial_delay=None
+        initial_delay=None,
     ):
         self._initial_delay = initial_delay
         self._bus_speed = bus_speed
@@ -70,8 +70,7 @@ class UsbSession():
 
     def getPayload_in(self, n, length, resend=False):
         payload = [
-            (x & 0xFF)
-            for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)
+            (x & 0xFF) for x in range(self._dataGen_in[n], self._dataGen_in[n] + length)
         ]
         if not resend:
             self._dataGen_in[n] += length

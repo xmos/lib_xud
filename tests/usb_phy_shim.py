@@ -158,9 +158,7 @@ class UsbPhyShim(UsbPhy):
                     xsi.drive_port_pins(self._rxdv, 1)
                     xsi.drive_port_pins(self._rxd, byte)
 
-                    if (packet.rxe_assert_time != 0) and (
-                        packet.rxe_assert_time == i
-                    ):
+                    if (packet.rxe_assert_time != 0) and (packet.rxe_assert_time == i):
                         xsi.drive_port_pins(self._rxer, 1)
 
                     while rxv_count != 0:

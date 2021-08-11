@@ -4,8 +4,9 @@ lib_xud Change Log
 HEAD
 ----
 
-  * RESOLVED:   Intermittent enumeration issues at full-speed on XS3A based devices  
+  * CHANGE:     Shared test code moved to test_support repo
   * CHANGE:     Clock-blocks 4 & 5 now used (was 2 & 3)
+  * RESOLVED:   Intermittent enumeration issues at full-speed on XS3A based devices  
 
 
 2.0.0

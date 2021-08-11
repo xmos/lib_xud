@@ -1,6 +1,13 @@
 lib_xud Change Log
 ==================
 
+HEAD
+----
+
+  * RESOLVED:   Intermittent enumeration issues at full-speed on XS3A based devices  
+  * CHANGE:     Clock-blocks 4 & 5 now used (was 2 & 3)
+
+
 2.0.0
 -----
 
@@ -15,13 +22,12 @@ lib_xud Change Log
 1.2.0
 -----
 
-  * CHANGED: Use XMOS Public Licence Version 1
+  * CHANGE:     Use XMOS Public Licence Version 1
 
 1.1.2
 -----
 
-  * CHANGED: Pin Python package versions
-  * REMOVED: not necessary cpanfile
+  * CHANGE:     Pin Python package versions
 
 1.1.1
 -----

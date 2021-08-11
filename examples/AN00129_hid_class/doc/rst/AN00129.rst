@@ -191,7 +191,7 @@ USB HID Class requests
 Inside ``endpoint0.xc`` there is a function for handling the USB HID device class specific requests. The code for handling these requests is shown as follows:
 
 .. literalinclude:: endpoint0.xc
-   :lines: 167-224
+   :lines: 142-198
 
 These HID specific requests are implemented by the application as they do not form part of the standard requests which have to be accepted by all device classes via endpoint0.
 
@@ -203,7 +203,7 @@ USB HID Class Endpoint0
 The function ``Endpoint0()`` contains the code for dealing with device requests made from the host to the standard endpoint0 which is present in all USB devices. In addition to requests required for all devices, the code handles the requests specific to the HID class.
 
 .. literalinclude:: endpoint0.xc
-   :lines: 260-306
+   :lines: 201-301
 
 |newpage|
 
@@ -213,7 +213,7 @@ Reporting HID mouse data to the host
 The application endpoint for reporting mouse movement data to the host machine is implemented in the file ``main.xc``. This is contained within the function ``hid_mouse()`` which is shown below:
 
 .. literalinclude:: main.xc
-   :lines: 22-81
+   :lines: 24-80
 
 From this you can see the following.
 

@@ -6,32 +6,12 @@
 #include <xs1.h>
 #include "xud_device.h"
 #include "hid.h"
+#include "hid_defs.h"
 
 /* USB HID Device Product Defines */
 #define BCD_DEVICE   0x1000
 #define VENDOR_ID    0x20B1
 #define PRODUCT_ID   0x1010
-
-/* Standard HID Request Defines */
-
-/* 7. Requests */
-
-/* 7.1 Standard Requests  - Class Descriptor Types - High byte of wValue
- * The following defines valid types of Class descriptors */
-
-#define HID_HID                   0x2100
-#define HID_REPORT                0x2200
-#define HID_PHYSICAL_DESCRIPTOR   0x2300
-/* 0x24 - 0x2F: Reserved */
-
-/* 7.2 Class-Specific Requests - bRequest values */
-#define HID_GET_REPORT            0x01           /* Mandatory */
-#define HID_GET_IDLE              0x02
-#define HID_GET_PROTOCOL          0x03           /* Required only for boot devices */
-/* Ox04 - 0x08 reserved */
-#define HID_SET_REPORT            0x09
-#define HID_SET_IDLE              0x0A
-#define HID_SET_PROTOCOL          0x0B           /* Required only for boot devices */
 
 /* Device Descriptor */
 static unsigned char devDesc[] =
@@ -81,12 +61,12 @@ static unsigned char cfgDesc[] = {
     0x09,                 /* 0  bLength. Note this is currently
                                 replicated in hidDescriptor[] below */
     0x21,                 /* 1  bDescriptorType (HID) */
-    0x10,                 /* 2  bcdHID */
-    0x11,                 /* 3  bcdHID */
+    0x11,                 /* 2  bcdHID */
+    0x01,                 /* 3  bcdHID */
     0x00,                 /* 4  bCountryCode */
     0x01,                 /* 5  bNumDescriptors */
     0x22,                 /* 6  bDescriptorType[0] (Report) */
-    0x48,                 /* 7  wDescriptorLength */
+    0x32,                 /* 7  wDescriptorLength */
     0x00,                 /* 8  wDescriptorLength */
 
     0x07,                 /* 0  bLength */
@@ -95,62 +75,51 @@ static unsigned char cfgDesc[] = {
     0x03,                 /* 3  bmAttributes */
     0x40,                 /* 4  wMaxPacketSize */
     0x00,                 /* 5  wMaxPacketSize */
-    0x01                  /* 6  bInterval */
+    0x0a                  /* 6  bInterval */
 };
 
 static unsigned char hidDescriptor[] =
 {
     0x09,               /* 0  bLength */
     0x21,               /* 1  bDescriptorType (HID) */
-    0x10,               /* 2  bcdHID */
-    0x11,               /* 3  bcdHID */
+    0x11,               /* 2  bcdHID */
+    0x01,               /* 3  bcdHID */
     0x00,               /* 4  bCountryCode */
     0x01,               /* 5  bNumDescriptors */
     0x22,               /* 6  bDescriptorType[0] (Report) */
-    0x48,               /* 7  wDescriptorLength */
+    0x32,               /* 7  wDescriptorLength */
     0x00,               /* 8  wDescriptorLength */
 };
 
 /* HID Report Descriptor */
 static unsigned char hidReportDescriptor[] =
 {
-    0x05, 0x01,          // Usage page (desktop)
-    0x09, 0x02,          // Usage (mouse)
-    0xA1, 0x01,          // Collection (app)
-    0x05, 0x09,          // Usage page (buttons)
-    0x19, 0x01,
-    0x29, 0x03,
-    0x15, 0x00,          // Logical min (0)
-    0x25, 0x01,          // Logical max (1)
-    0x95, 0x03,          // Report count (3)
-    0x75, 0x01,          // Report size (1)
-    0x81, 0x02,          // Input (Data, Absolute)
-    0x95, 0x01,          // Report count (1)
-    0x75, 0x05,          // Report size (5)
-    0x81, 0x03,          // Input (Absolute, Constant)
-    0x05, 0x01,          // Usage page (desktop)
-    0x09, 0x01,          // Usage (pointer)
-    0xA1, 0x00,          // Collection (phys)
-    0x09, 0x30,          // Usage (x)
-    0x09, 0x31,          // Usage (y)
-    0x15, 0x81,          // Logical min (-127)
-    0x25, 0x7F,          // Logical max (127)
-    0x75, 0x08,          // Report size (8)
-    0x95, 0x02,          // Report count (2)
-    0x81, 0x06,          // Input (Data, Rel=0x6, Abs=0x2)
-    0xC0,                // End collection
-    0x09, 0x38,          // Usage (Wheel)
-    0x95, 0x01,          // Report count (1)
-    0x81, 0x02,          // Input (Data, Relative)
-    0x09, 0x3C,          // Usage (Motion Wakeup)
-    0x15, 0x00,          // Logical min (0)
-    0x25, 0x01,          // Logical max (1)
-    0x75, 0x01,          // Report size (1)
-    0x95, 0x01,          // Report count (1)
-    0xB1, 0x22,          // Feature (No preferred, Variable)
-    0x95, 0x07,          // Report count (7)
-    0xB1, 0x01,          // Feature (Constant)
-    0xC0                 // End collection
+    0x05, 0x01,   /* Usage Page (Generic Desktop) */
+    0x09, 0x02,   /* Usage (Mouse) */
+    0xA1, 0x01,   /* Collection (Application) */
+    0x09, 0x01,   /* Usage (Pointer) */
+    0xA1, 0x00,   /* Collection (Physical) */
+    0x05, 0x09,   /* Usage Page (Buttons) */
+    0x19, 0x01,   /* Usage Minimum (01) */
+    0x29, 0x03,   /* Usage Maximum (03) */
+    0x15, 0x00,   /* Logical Minimum (0) */
+    0x25, 0x01,   /* Logical Maximum (1) */
+    0x95, 0x03,   /* Report Count (3) */
+    0x75, 0x01,   /* Report Size (1) */
+    0x81, 0x02,   /* Input (Data,Variable,Absolute); 3 button bits */
+    0x95, 0x01,   /* Report Count (1) */
+    0x75, 0x05,   /* Report Size (5) */
+    0x81, 0x01,   /* Input(Constant); 5 bit padding */
+    0x05, 0x01,   /* Usage Page (Generic Desktop) */
+    0x09, 0x30,   /* Usage (X) */
+    0x09, 0x31,   /* Usage (Y) */
+    0x15, 0x81,   /* Logical Minimum (-127) */
+    0x25, 0x7F,   /* Logical Maximum (127) */
+    0x75, 0x08,   /* Report Size (8) */
+    0x95, 0x02,   /* Report Count (2) */
+    0x81, 0x06,   /* Input (Data,Variable,Relative); 2 position bytes (X & Y) */
+    0xC0,         /* End Collection */
+    0xC0          /* End Collection */
 };
 
 unsafe{
@@ -164,7 +133,10 @@ static char * unsafe stringDescriptors[]=
 };
 }
 
-extern unsigned char g_reportBuffer[4];
+/* It is essential that HID_REPORT_BUFFER_SIZE, defined in hid_defs.h, matches the   */
+/* infered length of the report described in hidReportDescriptor above. In this case */
+/* it is three bytes, three button bits padded to a byte, plus a byte each for X & Y */
+unsigned char g_reportBuffer[HID_REPORT_BUFFER_SIZE] = {0, 0, 0};
 
 /* HID Class Requests */
 XUD_Result_t HidInterfaceClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t sp)
@@ -327,11 +299,3 @@ void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
         }
     }
 }
-//:
-
-
-
-
-
-
-

@@ -11,6 +11,7 @@ class TestError(Exception):
     """
 
     def __init__(self, value):
+        super().__init__(self)
         self.value = value
 
     def __str__(self):
@@ -25,16 +26,18 @@ class ComparisonTester:
      :param golden:   The expected data to compare the output against.
                       Can be a list of strings, a string split on new lines,
                       or a file to read.
-     :param product:  The name of the product that is being tested e.g. 'lib_uart'
+     :param product:  The name of the product that is being
+                      tested e.g. 'lib_uart'
      :param group:    The group that the test belongs to
      :param test:     The name of the test
      :param config:   A dictionary representing the configuration of the test.
-     :param env:      A dictionary representing the environment the test was run under.
+     :param env:      A dictionary representing the environment the test was
+                      run under.
      :param regexp:   A bool that controls whether the expect lines are treated
                       as regular expressions or not.
      :param ignore:   A list of regular expressions to ignore
-     :param ordered:  A bool that determines whether the expected input needs to
-                      be matched in an ordered manner or not.
+     :param ordered:  A bool that determines whether the expected input needs
+                      to be matched in an ordered manner or not.
     """
 
     def __init__(
@@ -49,13 +52,14 @@ class ComparisonTester:
         ignore=[],
         ordered=True,
     ):
-        super(ComparisonTester, self).__init__()
         # self.register_test(product, group, test, config)
         self._golden = golden
         self._test = (product, group, test, config, env)
         self._regexp = regexp
         self._ignore = ignore
         self._ordered = ordered
+        self.result = None
+        self.failures = []
 
     def record_failure(self, failure_reason):
         # Append a newline if there isn't one already
@@ -67,7 +71,7 @@ class ComparisonTester:
 
     def run(self, output):
         golden = self._golden
-        (product, group, test, config, env) = self._test
+        (_product, _group, test, config, _env) = self._test
         regexp = self._regexp
         if isinstance(golden, list):
             expected = golden
@@ -85,10 +89,10 @@ class ComparisonTester:
 
         num_expected = len(expected)
 
-        for i in range(len(output)):
+        for line in output:
             ignore = False
             for p in self._ignore:
-                if re.match(p, output[i].strip()):
+                if re.match(p, line.strip()):
                     ignore = True
                     break
             if ignore:
@@ -96,14 +100,18 @@ class ComparisonTester:
             line_num += 1
 
             if line_num >= num_expected:
-                self.record_failure("Length of expected output less than output")
+                self.record_failure(
+                    "Length of expected output less than output"
+                )
                 break
 
             if self._ordered:
                 if regexp:
-                    match = re.match(expected[line_num] + "$", output[i].strip())
+                    match = re.match(
+                        expected[line_num] + "$", line.strip()
+                    )
                 else:
-                    match = expected[line_num] == output[i].strip()
+                    match = expected[line_num] == line.strip()
 
                 if not match:
                     self.record_failure(
@@ -112,10 +120,14 @@ class ComparisonTester:
                             + "  Expected: %s\n"
                             + "  Actual  : %s"
                         )
-                        % (line_num, expected[line_num].strip(), output[i].strip())
+                        % (
+                            line_num,
+                            expected[line_num].strip(),
+                            line.strip(),
+                        )
                     )
             else:  # Unordered testing
-                stripped = output[i].strip()
+                stripped = line.strip()
                 if regexp:
                     match = any(re.match(e + "$", stripped) for e in expected)
                 else:
@@ -123,14 +135,17 @@ class ComparisonTester:
 
                 if not match:
                     self.record_failure(
-                        ("Line %d of output not found in expected\n" + "  Actual  : %s")
-                        % (line_num, output[i].strip())
+                        (
+                            "Line %d of output not found in expected\n"
+                            + "  Actual  : %s"
+                        )
+                        % (line_num, line.strip())
                     )
 
         if num_expected > line_num + 1:
             self.record_failure(
                 "Length of expected output greater than output\nMissing:\n"
-                + "\n".join(expected[line_num + 1 :])
+                + "\n".join(expected[line_num + 1 :])  # noqa E203
             )
         output = {"output": "".join(output)}
 

@@ -6,15 +6,6 @@
   * @brief     XMOS USB Device (XUD) Layer
   * @author    Ross Owen
   **/
-/* Error printing functions */
-#ifdef XUD_DEBUG_VERSION
-void XUD_Error(char errString[]);
-void XUD_Error_hex(char errString[], int i_err);
-#else
-#define XUD_Error(a) /* */
-#define XUD_Error_hex(a, b) /* */
-#endif
-
 #include <xs1.h>
 #include <print.h>
 #include <xclib.h>
@@ -65,8 +56,8 @@ out port tx_readyout           = PORT_USB_TX_READYOUT;
 in port tx_readyin             = PORT_USB_TX_READYIN;
 in port rx_rdy                 = PORT_USB_RX_READY;
 
-on USB_TILE: clock tx_usb_clk  = XS1_CLKBLK_2;
-on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_3;
+on USB_TILE: clock tx_usb_clk  = XS1_CLKBLK_4;
+on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_5;
 
 XUD_chan epChans[USB_MAX_NUM_EP];
 XUD_chan epChans0[USB_MAX_NUM_EP];
@@ -102,15 +93,14 @@ extern unsigned XUD_LLD_IoLoop(
                             XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
                             int  epCount, chanend? c_sof) ;
 
-unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN];
-unsigned g_stallTable_IN[USB_MAX_NUM_EP_IN] = {0};
-unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];
+unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN] = {0}; // 0 or STALL
+unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];     // NAK or STALL
 unsigned sentReset=0;
 
 unsigned crcmask = 0b11111111111;
 unsigned chanArray;
 
-#define RESET_TIME_us               5 // 5us
+#define RESET_TIME_us               (5)
 #define RESET_TIME                  (RESET_TIME_us * REF_CLK_FREQ)
 
 #if (XUD_OPT_SOFTCRC5 == 1)
@@ -180,28 +170,48 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_use_on(flag0_port);
     set_port_use_on(flag1_port);
 #if defined(__XS2A__)
+    /* Extra flag port in XS2 */
     set_port_use_on(flag2_port);
 #endif
 
 #if defined(__XS3A__)
+    
     #ifndef XUD_CORE_CLOCK
         #error XUD_CORE_CLOCK not defined (in MHz)
     #endif
-    #if (XUD_CORE_CLOCK > 500)
-        #define RX_RISE_DELAY 2
-        #define RX_FALL_DELAY 5
-        #define TX_RISE_DELAY 2
+
+    #ifdef XUD_SIM_XSIM
+        #if (XUD_CORE_CLOCK > 500)
+            #define RX_RISE_DELAY 2
+            #define RX_FALL_DELAY 5
+            #define TX_RISE_DELAY 2
+            #define TX_FALL_DELAY 3
+        #elif (XUD_CORE_CLOCK > 400)
+            #define RX_RISE_DELAY 5
+            #define RX_FALL_DELAY 5
+            #define TX_RISE_DELAY 2
         #define TX_FALL_DELAY 3
-    #elif (XUD_CORE_CLOCK > 400)
-        #define RX_RISE_DELAY 5
-        #define RX_FALL_DELAY 5
-        #define TX_RISE_DELAY 2
-        #define TX_FALL_DELAY 3
-    #else /* 400 */
-        #define RX_RISE_DELAY 3
-        #define RX_FALL_DELAY 5
-        #define TX_RISE_DELAY 3  
-        #define TX_FALL_DELAY 3
+        #else /* 400 */
+            #define RX_RISE_DELAY 3
+            #define RX_FALL_DELAY 5
+            #define TX_RISE_DELAY 3  
+            #define TX_FALL_DELAY 3
+        #endif
+    #else
+        #if (XUD_CORE_CLOCK >= 600)
+            #define RX_RISE_DELAY 1
+            #define RX_FALL_DELAY 1
+            #define TX_RISE_DELAY 1
+            #define TX_FALL_DELAY 1
+
+        #elif (XUD_CORE_CLOCK >= 500)
+            #define RX_RISE_DELAY 1
+            #define RX_FALL_DELAY 0
+            #define TX_RISE_DELAY 1
+            #define TX_FALL_DELAY 1
+        #else
+            #error XUD_CORE_CLOCK must be >= 500
+        #endif
     #endif
 #else
     #define RX_RISE_DELAY 5
@@ -209,19 +219,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     #define TX_RISE_DELAY 5
     #define TX_FALL_DELAY 1
 #endif
-
-    // Set up USB ports. Done in ASM as read port used in both directions initially.
-    // Main difference from xevious is IFM not enabled.
-    // GLX_UIFM_PortConfig (p_usb_clk, txd, rxd, flag0_port, flag1_port, flag2_port);
-    // Xevious needed asm as non-standard usage (to avoid clogging 1-bit ports)
-    // GLX uses 1bit ports so shouldn't be needed.
+    
     // Handshaken ports need USB clock
     configure_clock_src(tx_usb_clk, p_usb_clk);
     configure_clock_src(rx_usb_clk, p_usb_clk);
 
-    //this along with the following delays forces the clock
-    //to the ports to be effectively controlled by the
-    //previous usb clock edges
+    // This, along with the following delays,  forces the clock
+    // to the ports to be effectively controlled by the
+    // previous usb clock edges
     set_port_inv(p_usb_clk);
     set_port_sample_delay(p_usb_clk);
 
@@ -285,10 +290,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 XUD_HAL_EnterMode_PeripheralFullSpeed();
-
-
+ 
                 /* Setup flags for power signalling - i.e. J/K/SE0 line state*/
-                XUD_HAL_Mode_PowerSig();
+                XUD_HAL_Mode_Signalling();
                 
                 if (one)
                 {
@@ -487,7 +491,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
     for(int i = 0; i < USB_MAX_NUM_EP_IN; i++)
     {
-        handshakeTable_IN[i] = USB_PIDn_NAK;
+        handshakeTable_IN[i] = 0;
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
     }
@@ -559,7 +563,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     /* Check for control on IN/OUT 0 */
     if(epTypeTableOut[0] != XUD_EPTYPE_CTL || epTypeTableIn[0] != XUD_EPTYPE_CTL)
     {
-        XUD_Error("XUD_Manager: Ep 0 must be control for IN and OUT");
+        __builtin_trap();
     }
 
 #if 0
@@ -590,94 +594,3 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     return 0;
 }
 
-
-/* Various messages for error cases */
-void ERR_BadToken()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("BAD TOKEN RECEVED");
-#endif
-}
-
-void ERR_BadCrc(unsigned a, unsigned b)
-{
-  while(1);
-}
-
-void ERR_SetupBuffFull()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("SETUP BUFFER FULL");
-#endif
-}
-
-void ERR_UnsupportedToken(unsigned x)
-{
-#ifdef XUD_DEBUG_VERSION
-  printstr("UNSUPPORTED TOKEN: ");
-  printhexln(x);
-#endif
-}
-
-void ERR_BadTxHandshake(unsigned x)
-{
-#ifdef XUD_DEBUG_VERSION
-  printstr("BAD TX HANDSHAKE: ");
-  printhexln(x);
-#endif
-}
-
-void ERR_GotSplit()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("ERR: Got a split");
-#endif
-}
-
-void ERR_TxHandshakeTimeout()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("WARNING: TX HANDSHAKE TIMEOUT");
-  while(1);
-#endif
-}
-
-void ERR_OutDataTimeout()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("ERR: Out data timeout");
-#endif
-}
-
-void ERR_EndIn4()
-{
-#ifdef XUD_DEBUG_VERSION
-  printstrln("ERR: Endin4");
-  while(1);
-
-#endif
-}
-
-void ERR_EndIn5(int x)
-{
-#ifdef XUD_DEBUG_VERSION
-  printhex(x);
-  printstrln(" ERR: Endin5");
-  while(1);
-#endif
-}
-
-void ResetDetected(int x)
-{
-#ifdef XUD_DEBUG_VERSION
-    printint(x);
-    printstr(" rrrreeeset\n");
-#endif
-}
-
-void SuspendDetected()
-{
-#ifdef XUD_DEBUG_VERSION
-    printstr("Suspend!\n");
-#endif
-}

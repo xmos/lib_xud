@@ -176,12 +176,10 @@ def create_data_expect_same(args):
     return "Value = {0}\n".format(value)
 
 
-class BusReset():
+class BusReset:
     def __init__(self, **kwargs):
         self.duration_ms = kwargs.pop("duraton", 10)  # Duration of reset
-        self.bus_speed = kwargs.pop(
-            "bus_speed", "high"
-        )  # Bus speed to reset into
+        self.bus_speed = kwargs.pop("bus_speed", "high")  # Bus speed to reset into
 
 
 # Lowest base class for all packets. All USB packets have:
@@ -310,9 +308,7 @@ class TxPacket(UsbPacket):
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "Packet:\tHOST -> DEVICE\n"
-        expected_output += "\tPID: {} ({:#x})\n".format(
-            self.get_pid_str(), self.pid
-        )
+        expected_output += "\tPID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
         return expected_output
 
     def drive(self, usb_phy, bus_speed):
@@ -452,9 +448,7 @@ class RxDataPacket(RxPacket, DataPacket):
         _pid = self.pid = kwargs.pop("pid", 0x3)  # DATA0
 
         # Re-construct full PID - xCORE sends out full PIDn | PID on Tx
-        super().__init__(
-            pid=(_pid & 0xF) | (((~_pid) & 0xF) << 4), **kwargs
-        )
+        super().__init__(pid=(_pid & 0xF) | (((~_pid) & 0xF) << 4), **kwargs)
 
     def __str__(self):
         return (
@@ -493,9 +487,7 @@ class TokenPacket(TxPacket):
         self.address = kwargs.pop("address", 0)
 
         # Generate correct crc5
-        crc5 = GenCrc5(
-            ((self.endpoint & 0xF) << 7) | ((self.address & 0x7F) << 0)
-        )
+        crc5 = GenCrc5(((self.endpoint & 0xF) << 7) | ((self.address & 0x7F) << 0))
 
         # Correct crc5 can be overridden
         self.crc5 = kwargs.pop("crc5", crc5)
@@ -520,11 +512,7 @@ class TokenPacket(TxPacket):
         return byte_list
 
     def __str__(self):
-        return (
-            super().__str__()
-            + ": TokenPacket: "
-            + super().get_pid_str()
-        )
+        return super().__str__() + ": TokenPacket: " + super().get_pid_str()
 
     # Token valid
     def get_token_valid(self):
@@ -552,15 +540,10 @@ class RxHandshakePacket(HandshakePacket, RxPacket):
         # TODO handled by Super()
 
     def __str__(self):
-        return (
-            super().__str__()
-            + ": RX HandshakePacket: "
-            + super().get_pid_str()
-        )
+        return super().__str__() + ": RX HandshakePacket: " + super().get_pid_str()
 
 
 class TxHandshakePacket(HandshakePacket, TxPacket):
-
     def get_bytes(self, do_tokens=False):
         byte_list = []
         if do_tokens:
@@ -570,8 +553,4 @@ class TxHandshakePacket(HandshakePacket, TxPacket):
         return byte_list
 
     def __str__(self):
-        return (
-            super().__str__()
-            + ": TX HandshakePacket: "
-            + super().get_pid_str()
-        )
+        return super().__str__() + ": TX HandshakePacket: " + super().get_pid_str()

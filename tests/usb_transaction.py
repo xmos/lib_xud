@@ -145,12 +145,8 @@ class UsbTransaction(UsbEvent):
             # Add data packet to packets list
             if not halted:
                 # Generate packet data payload
-                packetPayload = session.getPayload_in(
-                    endpointNumber, dataLength
-                )
-                self._packets.append(
-                    RxDataPacket(pid=pid, dataPayload=packetPayload)
-                )
+                packetPayload = session.getPayload_in(endpointNumber, dataLength)
+                self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
 
             if self._endpointType != "ISO" and not halted:
                 self._packets.append(TxHandshakePacket())

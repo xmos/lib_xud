@@ -336,7 +336,7 @@ class TxPacket(UsbPacket):
         # Wait for RXA start delay
         rxa_start_delay = RXA_START_DELAY
 
-        while rxa_start_delay != 0:
+        while rxa_start_delay > 1:
             wait(lambda x: usb_phy._clock.is_high())
             wait(lambda x: usb_phy._clock.is_low())
             rxa_start_delay = rxa_start_delay - 1
@@ -347,7 +347,6 @@ class TxPacket(UsbPacket):
             if xsi.sample_port_pins(usb_phy._txv) == 1:
                 print("ERROR: Unexpected packet from xCORE (TxPacket 1)")
 
-            wait(lambda x: usb_phy._clock.is_low())
             wait(lambda x: usb_phy._clock.is_high())
             wait(lambda x: usb_phy._clock.is_low())
             xsi.drive_periph_pin(usb_phy._rxdv, 1)

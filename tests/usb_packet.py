@@ -67,7 +67,7 @@ USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 # In USB clocks
 # Pad delay not currently simulated in xsim for USB or OTP, so add this
 # delay here
-RXA_END_DELAY = 2
+RXA_END_DELAY = 0 # Taken from RTl sim
 RXA_START_DELAY = 5  # Taken from RTL sim
 
 # TODO shoud we have a PID class?
@@ -295,7 +295,7 @@ class RxPacket(UsbPacket):
 # Tx from host i.e. xCORE Rx
 class TxPacket(UsbPacket):
     def __init__(self, **kwargs):
-        self.rxa_start_delay = kwargs.pop("rxa_start_delay", 2)
+        self.rxa_start_delay = kwargs.pop("rxa_start_delay", RXA_START_DELAY)
         self.rxa_end_delay = kwargs.pop("rxa_end_delay", RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop("rxe_assert_time", 0)
         self.rxe_assert_length = kwargs.pop("rxe_assert_length", 1)

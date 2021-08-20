@@ -6,19 +6,23 @@ lib_xud Change Log
 
   * CHANGE:     Shared test code moved to test_support repo
   * CHANGE:     Clock-blocks 4 & 5 now used (was 2 & 3)
-  * RESOLVED:   Intermittent enumeration issues at full-speed on XS3A based devices  
-
+  * CHANGE:     Most differences required to support different architectures are
+    now handled in a Hardware Abstraction Layer
+  * RESOLVED:   Intermittent enumeration issues at full-speed on XS3A based
+    devices (#259)
 
 2.0.0
 -----
 
   * ADDED:      Initial support for XS3A based devices
-  * ADDED:      Requirement to define XUD_CORE_CLOCK with xcore core clock speed
+  * ADDED:      Requirement to define XUD_CORE_CLOCK with xCORE core clock speed
     in MHz
   * CHANGE:     Removed support for XS1-G, and XS1-L (including U series) based
     devices
   * RESOLVED:   Exception when Endpoint marked as disabled
-  * CHANGE:     Use common XN files for tests
+  * RESOLVED:   A halted endpoint does not issue a STALL when PINGed (#59)
+  * RESOLVED:   A halted endpoint does not issue a STALL if the endpoint is
+    marked ready (#58)
 
 1.2.0
 -----
@@ -28,7 +32,7 @@ lib_xud Change Log
 1.1.2
 -----
 
-  * CHANGE:     Pin Python package versions
+  * CHANGE:     Python package pinned to versions
 
 1.1.1
 -----
@@ -45,7 +49,7 @@ lib_xud Change Log
 1.0.0
 -----
 
-  * CHANGE:     Version for first major release.
+  * CHANGE:     First major release.
 
 0.2.0
 -----

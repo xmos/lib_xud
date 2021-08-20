@@ -23,8 +23,8 @@ Features
 Known Issues
 ............
  
-  * Operation on XS3 based devices only supported at 700MHz
   * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc)
+  * Documentation not updated for removal of XS1 and addition of XS3 based devices
 
 Software version and dependencies
 .................................

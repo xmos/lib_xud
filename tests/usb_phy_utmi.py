@@ -17,7 +17,7 @@ class UsbPhyUtmi(UsbPhy):
         xcvrsel,
         termsel,
         clock,
-        initial_delay=64000,
+        initial_delay=70000,
         verbose=False,
         do_timeout=True,
         complete_fn=None,

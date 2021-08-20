@@ -1,0 +1,4 @@
+
+TEST_FLAGS = -DSUSPEND_TIMEOUT_us=300 -DSUSPEND_T_WTWRSTHS_us=20 -DXUD_BYPASS_RESET=1
+
+include ../test_makefile.mak

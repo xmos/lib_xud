@@ -17,6 +17,7 @@ INTER_TRANSACTION_DELAY = 500
 USB_DIRECTIONS = ["OUT", "IN"]
 USB_EP_TYPES = ["CONTROL", "BULK", "ISO", "INTERRUPT"]
 
+
 # TODO UsbTransaction_IN and UsbTransaction_OUT
 class UsbTransaction(UsbEvent):
     def __init__(
@@ -53,7 +54,8 @@ class UsbTransaction(UsbEvent):
         # Populate packet list for a (valid) transaction
         self._packets = []
 
-        # TODO would it be better to generate packets on the fly in drive() rather than create a packet list?
+        # TODO would it be better to generate packets on the fly in drive()
+        # rather than create a packet list?
         if direction == "OUT":
 
             packets = []
@@ -78,15 +80,12 @@ class UsbTransaction(UsbEvent):
             else:
                 togglePid = True
 
-            if (
+            expectHandshake = (
                 (not self._badDataCrc)
                 and (not self._rxeAssertDelay_data)
                 and (deviceAddress == session.deviceAddress)
                 and (self._endpointType != "ISO")
-            ):
-                expectHandshake = True
-            else:
-                expectHandshake = False
+            )
 
             if expectHandshake or self._endpointType == "ISO":
                 resend = False
@@ -155,18 +154,12 @@ class UsbTransaction(UsbEvent):
             if halted:
                 self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
 
-        super(UsbTransaction, self).__init__(
-            time=eventTime, interEventDelay=interEventDelay
-        )
+        super().__init__(time=eventTime, interEventDelay=interEventDelay)
 
     # TODO ideally USBTransaction doesnt know about data_valid_count
     @property
     def data_valid_count(self):
         return USB_DATA_VALID_COUNT[self.bus_speed]
-
-    @property
-    def endpointAddress(self):
-        return self._endpointAddress
 
     @property
     def endpointType(self):
@@ -200,7 +193,7 @@ class UsbTransaction(UsbEvent):
     def expected_output(self, bus_speed, offset=0):
         expected_output = ""
 
-        for i, p in enumerate(self.packets):
+        for p in self.packets:
             expected_output += p.expected_output(bus_speed)
 
         return expected_output
@@ -212,5 +205,5 @@ class UsbTransaction(UsbEvent):
         return s
 
     def drive(self, usb_phy, bus_speed):
-        for i, p in enumerate(self.packets):
+        for p in self.packets:
             p.drive(usb_phy, bus_speed)

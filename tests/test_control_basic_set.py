@@ -1,5 +1,10 @@
 # Copyright 2016-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+from copy import deepcopy
+
+import pytest
+
+from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_packet import (
     TokenPacket,
     TxDataPacket,
@@ -9,10 +14,6 @@ from usb_packet import (
     USB_PID,
 )
 from usb_session import UsbSession
-from usb_transaction import UsbTransaction
-import pytest
-from conftest import PARAMS, test_RunUsbSession
-from copy import deepcopy
 
 # Only test on EP 0 - Update params
 PARAMS = deepcopy(PARAMS)
@@ -21,7 +22,7 @@ for k in PARAMS:
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed, dummy_threads):
+def test_session(ep, address, bus_speed):
 
     ied = 500
 
@@ -69,7 +70,10 @@ def test_session(ep, address, bus_speed, dummy_threads):
     # Expect 0 length IN transaction
     session.add_event(
         TokenPacket(
-            pid=USB_PID["IN"], address=address, endpoint=ep, interEventDelay=ied
+            pid=USB_PID["IN"],
+            address=address,
+            endpoint=ep,
+            interEventDelay=ied,
         )
     )
     session.add_event(RxDataPacket(dataPayload=[], pid=USB_PID["DATA1"]))

@@ -30,6 +30,8 @@ Installs/
 tests/bin.txt
 tests/log
 tests/test_**/**test_xs2.xn
+tests/test_**/**test_xs3_500.xn
+tests/test_**/**test_xs3_540.xn
 tests/test_**/**test_xs3_600.xn
 tests/test_**/**test_xs3_800.xn
 **/venv/**

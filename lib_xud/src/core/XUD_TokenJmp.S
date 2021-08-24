@@ -2,7 +2,7 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef __XS3A__
-    ldaw        r10, dp[PidJumpTable]                 // TODO Could load from sp here
+    ldaw       r10, dp[PidJumpTable]                  // TODO Could load from sp here
                                                       // We receive: | 0000 4-bit EP | 0000 4-bit PID |
     inpw       r11, res[RXD], 8                       // Read 8 bit PID
     shr        r11, r11, 24                           // Shift off junk

@@ -65,7 +65,9 @@ import usb_phy
 USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 
 # In USB clocks
-RXA_END_DELAY = 2  # Pad delay not currently simulated in xsim for USB or OTP, so add this delay here
+# Pad delay not currently simulated in xsim for USB or OTP, so add this
+# delay here
+RXA_END_DELAY = 2
 RXA_START_DELAY = 5  # Taken from RTL sim
 
 # TODO shoud we have a PID class?
@@ -97,27 +99,12 @@ def CreateSofToken(frameNumber, badCrc=False, interEventDelay=1000):
             crc5=0xFF,
             interEventDelay=interEventDelay,
         )
-    else:
-        return TokenPacket(
-            pid=USB_PID["SOF"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=interEventDelay,
-        )
-
-
-def reflect(val, numBits):
-
-    valRef = 0
-    for i in range(numBits):
-        valRef <<= 1
-
-        if val & 1:
-            valRef |= 1
-
-        val >>= 1
-
-    return valRef
+    return TokenPacket(
+        pid=USB_PID["SOF"],
+        address=address,
+        endpoint=ep,
+        interEventDelay=interEventDelay,
+    )
 
 
 def GenCrc16(data: bytes):
@@ -180,16 +167,16 @@ def create_data_expect(args):
 
 
 def create_data_expect_step(args):
-    step, num_data_bytes = args
+    step, _num_data_bytes = args
     return "Step = {0}\n".format(step)
 
 
 def create_data_expect_same(args):
-    value, num_data_bytes = args
+    value, _num_data_bytes = args
     return "Value = {0}\n".format(value)
 
 
-class BusReset(object):
+class BusReset:
     def __init__(self, **kwargs):
         self.duration_ms = kwargs.pop("duraton", 10)  # Duration of reset
         self.bus_speed = kwargs.pop("bus_speed", "high")  # Bus speed to reset into
@@ -205,7 +192,7 @@ class UsbPacket(UsbEvent):
         self.num_data_bytes = kwargs.pop("length", 0)
         self.bad_crc = kwargs.pop("bad_crc", False)
         ied = kwargs.pop("interEventDelay", None)
-        super(UsbPacket, self).__init__(interEventDelay=ied)
+        super().__init__(interEventDelay=ied)
 
     @property
     def event_count(self):
@@ -227,7 +214,7 @@ class RxPacket(UsbPacket):
         self._timeout = kwargs.pop(
             "timeout", usb_phy.USB_PKT_TIMINGS["TX_TO_RX_PACKET_TIMEOUT"]
         )
-        super(RxPacket, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     @property
     def timeout(self):
@@ -236,7 +223,7 @@ class RxPacket(UsbPacket):
     def expected_output(self, bus_speed, offset=0):
         expected_output = "Packet:\tDEVICE -> HOST\n"
 
-        for (i, byte) in enumerate(self.get_bytes()):
+        for byte in self.get_bytes():
             expected_output += "\tRX byte: {0:#x}\n".format(byte)
 
         return expected_output
@@ -263,10 +250,10 @@ class RxPacket(UsbPacket):
                 in_rx_packet = True
                 break
 
-        if in_rx_packet == False:
+        if not in_rx_packet:
             print("ERROR: Timed out waiting for packet")
         else:
-            while in_rx_packet == True:
+            while in_rx_packet:
 
                 # TODO txrdy pulsing
                 xsi.drive_port_pins(usb_phy._txrdy, 1)
@@ -286,10 +273,10 @@ class RxPacket(UsbPacket):
             xsi.drive_port_pins(usb_phy._txrdy, 0)
 
             # Check packet against expected
-            expected = self.get_bytes(do_tokens=False)
+            expected = self.get_bytes()
             if len(expected) != len(rx_packet):
                 print(
-                    "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(
+                    "ERROR: Rx packet length bad. Expecting: {} actual: {}".format(  # noqa E501
                         len(expected), len(rx_packet)
                     )
                 )
@@ -314,16 +301,17 @@ class TxPacket(UsbPacket):
         self.rxe_assert_length = kwargs.pop("rxe_assert_length", 1)
 
         ied = kwargs.pop(
-            "interEventDelay", usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
+            "interEventDelay",
+            usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"],
         )
-        super(TxPacket, self).__init__(**kwargs, interEventDelay=ied)
+        super().__init__(**kwargs, interEventDelay=ied)
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "Packet:\tHOST -> DEVICE\n"
         expected_output += "\tPID: {} ({:#x})\n".format(self.get_pid_str(), self.pid)
         return expected_output
 
-    def drive(self, usb_phy, bus_speed, verbose=True):
+    def drive(self, usb_phy, bus_speed):
 
         xsi = usb_phy.xsi
         wait = usb_phy.wait
@@ -375,8 +363,9 @@ class TxPacket(UsbPacket):
                 rxv_count = rxv_count - 1
 
                 # xCore should not be trying to send if we are trying to send..
-                # We assume that the Phy internally blocks the TXValid signal to the Transmit State Machine
-                # until the Rx packet has completed
+                # We assume that the Phy internally blocks the TXValid signal
+                # to the Transmit State Machine until the Rx packet has
+                # completed
 
                 # if xsi.sample_port_pins(usb_phy._txv) == 1:
                 #    print("ERROR: Unexpected packet from xCORE (TxPacket 2)")
@@ -399,8 +388,8 @@ class TxPacket(UsbPacket):
             rxa_end_delay = rxa_end_delay - 1
 
             # xCore should not be trying to send if we are trying to send..
-            # We assume that the Phy internally blocks the TXValid signal to the Transmit State Machine
-            # until the Rx packet has completed
+            # We assume that the Phy internally blocks the TXValid signal to
+            # the Transmit State Machine # until the Rx packet has completed
 
             # if xsi.sample_port_pins(usb_phy._txv) == 1:
             #    print("ERROR: Unexpected packet from xCORE (TxPacket 3)")
@@ -409,55 +398,49 @@ class TxPacket(UsbPacket):
 
     # Implemented such that we can generate malformed packets
     def get_bytes(self, do_tokens=False):
-        bytes = []
+        byte_list = []
         if do_tokens:
-            bytes.append(self.pid)
+            byte_list.append(self.pid)
         else:
-            bytes.append(self.pid | ((~self.pid) << 4))
-            for x in range(len(self.data_bytes)):
-                bytes.append(self.data_bytes[x])
-        return bytes
+            byte_list.append(self.pid | ((~self.pid) << 4))
+            for b in self.data_bytes:
+                byte_list.append(b)
+        return byte_list
 
 
 # DataPacket class, inherits from Usb Packet
 class DataPacket(UsbPacket):
     def __init__(self, dataPayload=[], **kwargs):
-        super(DataPacket, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.pid = kwargs.pop("pid", 0x3)  # DATA0
         self.data_bytes = dataPayload
 
     def get_packet_bytes(self):
-        packet_bytes = []
-        packet_bytes = self.data_bytes
-        return packet_bytes
-
-    def get_crc(self, packet_bytes):
-        crc = GenCrc16(packet_bytes)
-        return crc
+        return self.data_bytes
 
     def get_bytes(self, do_tokens=False):
 
-        bytes = []
+        byte_list = []
 
         if do_tokens:
-            bytes.append(self.pid)
+            byte_list.append(self.pid)
         else:
-            bytes.append(self.pid | (((~self.pid) & 0xF) << 4))
+            byte_list.append(self.pid | (((~self.pid) & 0xF) << 4))
 
         packet_bytes = self.get_packet_bytes()
         for byte in packet_bytes:
-            bytes.append(byte)
+            byte_list.append(byte)
 
-        if self.bad_crc == True:
+        if self.bad_crc:
             crc = 0xBEEF
         else:
-            crc = self.get_crc(packet_bytes)
+            crc = GenCrc16(packet_bytes)
 
         # Append the 2 bytes of CRC onto the packet
         for i in range(0, 2):
-            bytes.append((crc >> (8 * i)) & 0xFF)
+            byte_list.append((crc >> (8 * i)) & 0xFF)
 
-        return bytes
+        return byte_list
 
 
 class RxDataPacket(RxPacket, DataPacket):
@@ -465,15 +448,13 @@ class RxDataPacket(RxPacket, DataPacket):
         _pid = self.pid = kwargs.pop("pid", 0x3)  # DATA0
 
         # Re-construct full PID - xCORE sends out full PIDn | PID on Tx
-        super(RxDataPacket, self).__init__(
-            pid=(_pid & 0xF) | (((~_pid) & 0xF) << 4), **kwargs
-        )
+        super().__init__(pid=(_pid & 0xF) | (((~_pid) & 0xF) << 4), **kwargs)
 
     def __str__(self):
         return (
-            super(DataPacket, self).__str__()
+            super().__str__()
             + ": RX DataPacket: "
-            + super(DataPacket, self).get_pid_str()
+            + super().get_pid_str()
             + " "
             + str(self.data_bytes)
         )
@@ -481,13 +462,13 @@ class RxDataPacket(RxPacket, DataPacket):
 
 class TxDataPacket(DataPacket, TxPacket):
     def __init__(self, **kwargs):
-        super(TxDataPacket, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def __str__(self):
         return (
-            super(DataPacket, self).__str__()
+            super().__str__()
             + ": TX DataPacket: "
-            + super(DataPacket, self).get_pid_str()
+            + super().get_pid_str()
             + " "
             + str(self.data_bytes)
             + " Valid CRC: "
@@ -500,7 +481,7 @@ class TxDataPacket(DataPacket, TxPacket):
 # Always TX
 class TokenPacket(TxPacket):
     def __init__(self, **kwargs):
-        super(TokenPacket, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.endpoint = kwargs.pop("endpoint", 0)
         self.valid = kwargs.pop("valid", 1)
         self.address = kwargs.pop("address", 0)
@@ -514,28 +495,24 @@ class TokenPacket(TxPacket):
         # TODO Always override data_valid count to match IFM for archs < XS3
 
     def get_bytes(self, do_tokens=False):
-        bytes = []
+        byte_list = []
 
         if do_tokens:
-            bytes.append(self.pid & 0xF)
-            bytes.append(self.endpoint)
+            byte_list.append(self.pid & 0xF)
+            byte_list.append(self.endpoint)
         else:
-            bytes.append(self.pid)
+            byte_list.append(self.pid)
 
             tokenbyte0 = self.address | ((self.endpoint & 1) << 7)
             tokenbyte1 = (self.endpoint >> 1) | (self.crc5 << 3)
 
-            bytes.append(tokenbyte0)
-            bytes.append(tokenbyte1)
+            byte_list.append(tokenbyte0)
+            byte_list.append(tokenbyte1)
 
-        return bytes
+        return byte_list
 
     def __str__(self):
-        return (
-            super(TokenPacket, self).__str__()
-            + ": TokenPacket: "
-            + super(TokenPacket, self).get_pid_str()
-        )
+        return super().__str__() + ": TokenPacket: " + super().get_pid_str()
 
     # Token valid
     def get_token_valid(self):
@@ -544,46 +521,36 @@ class TokenPacket(TxPacket):
 
 class HandshakePacket(UsbPacket):
     def __init__(self, **kwargs):
-        super(HandshakePacket, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.pid = kwargs.pop("pid", USB_PID["ACK"])  # Default to ACK
 
-    def get_bytes(self, do_tokens=False):
-        bytes = []
-        bytes.append(self.pid)
-        return bytes
+    def get_bytes(self):
+        byte_list = []
+        byte_list.append(self.pid)
+        return byte_list
 
 
 class RxHandshakePacket(HandshakePacket, RxPacket):
     def __init__(self, **kwargs):
-        super(RxHandshakePacket, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.pid = kwargs.pop(
             "pid", 0xD2
         )  # Default to ACK (not expect inverted bits on Rx)
-        # self._timeout = kwargs.pop("timeout", RX_TX_DELAY)  # TODO handled by Super()
+        # self._timeout = kwargs.pop("timeout", RX_TX_DELAY)
+        # TODO handled by Super()
 
     def __str__(self):
-        return (
-            super(RxHandshakePacket, self).__str__()
-            + ": RX HandshakePacket: "
-            + super(RxHandshakePacket, self).get_pid_str()
-        )
+        return super().__str__() + ": RX HandshakePacket: " + super().get_pid_str()
 
 
 class TxHandshakePacket(HandshakePacket, TxPacket):
-    def __init__(self, **kwargs):
-        super(TxHandshakePacket, self).__init__(**kwargs)
-
     def get_bytes(self, do_tokens=False):
-        bytes = []
+        byte_list = []
         if do_tokens:
-            bytes.append(self.pid)
+            byte_list.append(self.pid)
         else:
-            bytes.append(self.pid | ((~self.pid) << 4))
-        return bytes
+            byte_list.append(self.pid | ((~self.pid) << 4))
+        return byte_list
 
     def __str__(self):
-        return (
-            super(TxHandshakePacket, self).__str__()
-            + ": TX HandshakePacket: "
-            + super(TxHandshakePacket, self).get_pid_str()
-        )
+        return super().__str__() + ": TX HandshakePacket: " + super().get_pid_str()

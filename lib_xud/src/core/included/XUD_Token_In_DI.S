@@ -24,15 +24,25 @@
 .align FUNCTION_ALIGNMENT
 XUD_IN_NotReady:
     ldw         r11, sp[STACK_EPTYPES_IN]
-    ldw         r11, r11[r10]                       // Load EP Type
-    bt          r11, XUD_IN_TxNak
-    ldc         r11, 0xc3                           // Create 0-length packet
+    ldw         r11, r11[r10]                      // Load EP Type
+    bt          r11, XUD_IN_TxHandshake
+    ldc         r11, 0xc3                          // Create 0-length packet
     outpw       res[TXD], r11, 24
     #include "XUD_TokenJmp.S"
 
-XUD_IN_TxNak:                                       // Non-Iso
-    ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
-    ldw        r11, r11[r10]                        // Load handshake PID
+XUD_IN_TxHandshake:                                // Non-Iso
+    ldaw       r11, dp[handshakeTable_IN]          // Load handshake table
+    ldw        r11, r11[r10]                       // Load handshake PID (or 0)
+    bf         r11, XUD_IN_TxNak
+    outpw     res[TXD], r11, 8                     // Output STALL
+    #include "XUD_TokenJmp.S"
+
+XUD_IN_TxNak:
+    ldc        r11, USB_PIDn_NAK
+    outpw     res[TXD], r11, 8
+    #include "XUD_TokenJmp.S"
+
+XUD_IN_TxStall:
     outpw     res[TXD], r11, 8
     #include "XUD_TokenJmp.S"
 
@@ -43,9 +53,9 @@ Pid_In:
     ldw        r4, r5[r3]                          // Load EP structure address
     bf         r4, XUD_IN_NotReady
     
-    ldaw       r1, dp[g_stallTable_IN]
-    ldw        r11, r1[r10]
-    bt         r11, XUD_IN_NotReady                // Note, user could potentially stall an ISO EP.
+    ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
+    ldw        r11, r11[r10]
+    bt         r11, XUD_IN_TxStall                 // Note, user could potentially stall an ISO EP.
 
     ldw        r11, r4[4]                          // Load PID from structure
 

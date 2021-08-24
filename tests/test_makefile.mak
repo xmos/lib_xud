@@ -44,7 +44,7 @@ ifndef XUD_STARTUP_ADDRESS
 $(error XUD_STARTUP_ADDRESS is not set)
 endif
 
-XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM)_$(XUD_STARTUP_ADDRESS) = $(TEST_FLAGS) $(COMMON_FLAGS) 
+XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM)_$(XUD_STARTUP_ADDRESS)_$(BUS_SPEED) = $(TEST_FLAGS) $(COMMON_FLAGS) 
 
 # The TARGET variable determines what target system the application is 
 # compiled for. It either refers to an XN file in the source directories

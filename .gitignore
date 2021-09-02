@@ -36,3 +36,11 @@ tests/test_**/**test_xs3_600.xn
 tests/test_**/**test_xs3_800.xn
 **/venv/**
 *.gtkw
+**/tests/build/**
+**/tests/doc/**
+**/build/html/**
+**/tests/assets/**
+**/build/docstrees/**
+tests/report.html
+tests/testplan.rst
+build/doctrees/environment.pickle

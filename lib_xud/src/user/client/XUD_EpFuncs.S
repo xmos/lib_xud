@@ -89,7 +89,7 @@ XUD_GetSetupData_GotOut:                        // Got an OUT instead not a SETU
 
 XUD_GetSetupData_CheckPid:
     ldw         r11, r0[6]                      // Load received PID from EP structure
-    shr         r11, r11, 24                    // Shift down due to inpw
+    //shr         r11, r11, 24                    // Shift down due to inpw
     ldw         r10, r0[4]                      // Load expected PID
 
     xor         r11, r10, r11                   // Do the comparison
@@ -185,7 +185,7 @@ XUD_GetDataCalcDataLength:
 
 XUD_GetData_CheckPid:
     ldw        r11, r0[6]                       // Load received PID from EP structure
-    shr        r11, r11, 24                     // Shift down due to inpw
+    //shr        r11, r11, 24                     // Shift down due to inpw
     ldw        r10, r0[4]                       // Load expected PID
 
     xor        r11, r10, r11                    // Do the comparison
@@ -416,7 +416,7 @@ XUD_GetData_CheckDataLength:
 
 XUD_GetData_Select_CheckPid:                    // Check PID
     ldw         r11, r1[6]                      // Load received PID from EP structure
-    shr         r11, r11, 24                    // Shift off junk
+    //shr         r11, r11, 24                    // Shift off junk
 
                                                 // Note: We can't just jump back to XUD_GetData_Select since other EP's might need service
 

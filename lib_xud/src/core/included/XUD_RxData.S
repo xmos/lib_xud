@@ -1,25 +1,22 @@
 // Copyright 2019-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-
 #define PASTER(x,y) x ## _ ## y
 #define EVALUATOR(x,y)  PASTER(x,y)
-//#define LABEL(fun) EVALUATOR(fun, LABELNO)
 #define LABEL(fun) fun
 
 // r0: RXD: Rx Data port
 // r1: Buffer 
 // r2: Tx Port 
 // r3: Ep structure
-// r4: zero
-// r5: buffer address
-// r5: ep structures array
-// r6: crc rx init
-// r7: crc tx init
-// r9: crc poly
-// r8: 
-// r10: ep number
-// r11: scratch
+// r4: Zero (set in XUD_CrcAddCheck.S) then buffer index
+// r5: EP structures array
+// r6: CRC Rx init
+// r7: CRC Tx init
+// r9: CRC poly
+// r8: Scratch
+// r10: EP number
+// r11: Scratch
 
 doRXData_badPid:
   ldc       r8, 16                                        // Note, this is a cut-down version of XUD_TokenJump.S
@@ -33,8 +30,8 @@ LABEL(doRXData):
 
     // If pid != DATAx then jump and handle as a token. DATA0, DATA1, DATA2 & MDATA all of the form 0bxx11.
     // This is a fast alternative to a "timeout"
-    {shr    r7, r8, 24;    mkmsk    r11, 2}
-    and     r11, r11, r7
+    {shr    r8, r8, 24;    mkmsk    r11, 2}
+    and     r11, r11, r8
     eq      r11, r11, 3
     bf      r11, doRXData_badPid
     {setsr  1;             ldw      r7, sp[STACK_RXA_PORT]}             // Load RxA Port ID
@@ -61,7 +58,7 @@ LABEL(NextRxWord):
 .align 32
 .skip 20
 RxALow:
-    {stw       r8, r3[6];    in          r7, res[r7]}       // Store (NON-SHIFTED) PID into EP structure,
+    {stw       r8, r3[6];    in          r7, res[r7]}       // Store PID into EP structure,
                                                             // Clear event data on RXA
     endin       r8, res[r0]
 LABEL(RxTail):

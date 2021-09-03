@@ -181,29 +181,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     #endif
 
     #ifdef XUD_SIM_XSIM
-        #if (XUD_CORE_CLOCK > 500)
-            #define RX_RISE_DELAY 2
-            #define RX_FALL_DELAY 5
-            #define TX_RISE_DELAY 2
-            #define TX_FALL_DELAY 3
-        #elif (XUD_CORE_CLOCK > 400)
-            #define RX_RISE_DELAY 5
-            #define RX_FALL_DELAY 5
-            #define TX_RISE_DELAY 2
-        #define TX_FALL_DELAY 3
-        #else /* 400 */
-            #define RX_RISE_DELAY 3
-            #define RX_FALL_DELAY 5
-            #define TX_RISE_DELAY 3  
-            #define TX_FALL_DELAY 3
-        #endif
+            #define RX_RISE_DELAY 0
+            #define RX_FALL_DELAY 0
+            #define TX_RISE_DELAY 0
+            #define TX_FALL_DELAY 5
     #else
         #if (XUD_CORE_CLOCK >= 600)
             #define RX_RISE_DELAY 1
             #define RX_FALL_DELAY 1
             #define TX_RISE_DELAY 1
             #define TX_FALL_DELAY 1
-
         #elif (XUD_CORE_CLOCK >= 500)
             #define RX_RISE_DELAY 1
             #define RX_FALL_DELAY 0
@@ -230,17 +217,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_inv(p_usb_clk);
     set_port_sample_delay(p_usb_clk);
 
-#if !defined(XUD_SIM_XSIM)
-    //This delay controls the capture of rdy
+    // This delay controls the capture of rdy
     set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);
 
-    //this delay controls the launch of data.
+    // This delay controls the launch of data.
     set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY);
 
-    //this delay th capture of the rdyIn and data.
+    // This delay the capture of the rdyIn and data.
     set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
-#endif
 
 #ifdef __XS3A__
     set_pad_delay(flag1_port, 3);

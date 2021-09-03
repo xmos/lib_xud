@@ -26,7 +26,7 @@ def test_session(ep, address, bus_speed):
         bus_speed=bus_speed,
         run_enumeration=False,
         device_address=address,
-        initial_delay=19000,
+        initial_delay=19000 * 1000,
     )
 
     session.add_event(UsbDeviceAttach())

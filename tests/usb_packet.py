@@ -67,10 +67,10 @@ USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
 # In USB clocks
 # Pad delay not currently simulated in xsim for USB or OTP, so add this
 # delay here
-RXA_END_DELAY = 0 # Taken from RTl sim
+RXA_END_DELAY = 0  # Taken from RTL sim
 RXA_START_DELAY = 5  # Taken from RTL sim
 
-# TODO shoud we have a PID class?
+# TODO should we have a PID class?
 # TODO remove the inverted check bits
 USB_PID = {
     "OUT": 0xE1,

@@ -18,28 +18,33 @@
 // r10: EP number
 // r11: Scratch
 
-doRXData_badPid:
-  ldc       r8, 16                                        // Note, this is a cut-down version of XUD_TokenJump.S
-  ldaw      r10, dp[PidJumpTable]
-  ldw       r11, r10[r7]
-  {bau      r11;              setpsc      res[RXD], r8}
+// On exit require:
+// r4: Datalength (words)
+// r8: Taillength (bits)
+// r11: Expected CRC
 
-LABEL(doRXData):
+doRXData_badPid:
+  ldaw      r10, dp[PidJumpTable]
+  ldw       r11, r10[r8]
+  ldc       r8, 16                                        // Note, this is a cut-down version of XUD_TokenJump.S
+  {bau      r11;              setpsc      res[RXD], r8}   // XUD_CrcAddrCheck.S requires 16 in r8
+
+doRXData:
 
     inpw       r8, res[r0], 8                               // Input PID
 
     // If pid != DATAx then jump and handle as a token. DATA0, DATA1, DATA2 & MDATA all of the form 0bxx11.
     // This is a fast alternative to a "timeout"
     {shr    r8, r8, 24;    mkmsk    r11, 2}
-    and     r11, r11, r8
+    {stw    r8, r3[6];     and     r11, r11, r8}            // Store PID into EP structure,
     eq      r11, r11, 3
     bf      r11, doRXData_badPid
-    {setsr  1;             ldw      r7, sp[STACK_RXA_PORT]}             // Load RxA Port ID
+    {setsr  1;             ldw      r8, sp[STACK_RXA_PORT]} // Load RxA Port ID
 
-LABEL(GotRxPid):
-    eeu        res[r7]                                      // Enable events on RxA
+GotRxPid:
+    eeu        res[r8]                                      // Enable events on RxA
 
-LABEL(NextRxWord):				                                    
+NextRxWord:				                                    
     in 	        r11, res[r0]
     stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
@@ -58,8 +63,7 @@ LABEL(NextRxWord):
 .align 32
 .skip 20
 RxALow:
-    {stw       r8, r3[6];    in          r7, res[r7]}       // Store PID into EP structure,
-                                                            // Clear event data on RXA
+    in          r8, res[r8]                                 // Clear event data on RXA
     endin       r8, res[r0]
 LABEL(RxTail):
     {in          r11, res[r0];      bru      r8}  

@@ -9,6 +9,7 @@ import pytest
 
 from helpers import get_usb_clk_phy, do_usb_test
 import Pyxsim
+from xcoverage.xcov import handler_process, handler_combine
 
 # Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn", "test_xs3_540.xn", "test_xs3_500.xn"]
@@ -44,6 +45,7 @@ PARAMS = {
 def pytest_addoption(parser):
     parser.addoption("--smoke", action="store_true", help="Smoke test")
     parser.addoption("--extended", action="store_true", help="Extended test")
+    parser.addoption("--xcov", action="store", help="Enable xcov, set a limit for test coverage", type=int, default=0)
     parser.addoption(
         "--enabletracing",
         action="store_true",
@@ -65,6 +67,10 @@ def pytest_generate_tests(metafunc):
             params = PARAMS.get("extended", PARAMS["default"])
         else:
             params = PARAMS["default"]
+        if metafunc.config.getoption("xcov"):
+            params["xcov"] = [metafunc.config.getoption("xcov")]
+        else:
+            params["xcov"] = [0]
     except AttributeError:
         params = {}
 
@@ -111,6 +117,7 @@ def test_RunUsbSession(
     bus_speed,
     dummy_threads,
     core_freq,
+    xcov,
     test_file,
     capfd,
 ):
@@ -130,21 +137,36 @@ def test_RunUsbSession(
             core_freq,
             clk_60,
             usb_phy,
+            xcov,
             [test_session],
             test_file,
         )
     )
+
+    testname, _ = os.path.splitext(os.path.basename(test_file))
+    desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
+    disasm = f"{testname}/bin/{desc}/{testname}_{desc}.dump"
+    trace = f"logs/xsim_trace_{testname}_{desc}.txt"
+    xcov_dir = f"{testname}/bin/{desc}"
+
     cap_output, err = capfd.readouterr()
     output.append(cap_output.split("\n"))
 
     sys.stdout.write("\n")
     results = Pyxsim.run_tester(output, tester_list)
 
+    # calculate code coverage for each tests
+    coverage = handler_process(disasm,trace,xcov_dir)
+    # generate coverage file for each source code included
+    handler_combine(xcov_dir)
+
     # TODO only one result
     for result in results:
         if not result:
             print(cap_output)
             sys.stderr.write(err)
+        if coverage < xcov:
+            assert False
         assert result
 
 

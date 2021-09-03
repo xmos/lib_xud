@@ -13,13 +13,13 @@
 // R10: EP number  (used here)
 // R9 : CRC16 Poly (used here)
 // R8 :
-// R7 :
+// R7 : Tx CRC init
 // R6 : ep_pid_sequence_table_IN_A
-// R5 : Channel Array
+// R5 : EP structures array
 // R4 :
 // R3 : 0
 // R2 : TXD
-// R1 : Valid Token Port (XS2 only)
+// R1 : XS2: Valid Token Port, XS3: Spare!
 // R0 : RXD
 .align FUNCTION_ALIGNMENT
 XUD_IN_NotReady:
@@ -69,7 +69,7 @@ XUD_IN_Tx:
     outpw      res[TXD], r11, 8                    // Out PID
     ldw        r11, r8[r4]                         // Load first data word
 
-XUD_IN_TxPid:
+XUD_IN_Loop0:
     out         res[TXD], r11
     crc32_inc   r7, r11, r9, r4, 1
     bf          r4, XUD_IN_TxLoopEnd

@@ -53,11 +53,11 @@ Pid_In:
     ldw        r4, r5[r3]                          // Load EP structure address
     bf         r4, XUD_IN_NotReady
     
-    ldaw       r11, dp[handshakeTable_IN]           // Load handshake table
+    ldaw       r11, dp[handshakeTable_IN]          // Load handshake table
     ldw        r11, r11[r10]
     bt         r11, XUD_IN_TxStall                 // Note, user could potentially stall an ISO EP.
 
-    ldw        r11, r4[4]                          // Load PID from structure
+    ldw        r1, r4[4]                           // Load PID from structure
 
 XUD_IN_Ready:
     ldw        r8, r4[3]                           // Load buffer
@@ -66,12 +66,12 @@ XUD_IN_Ready:
     bf         r4, XUD_IN_SmallTxPacket            // Check for Short packet
 
 XUD_IN_Tx:
-    outpw      res[TXD], r11, 8                    // Out PID
     ldw        r11, r8[r4]                         // Load first data word
+    outpw      res[TXD], r1, 8                     // Out PID
 
 XUD_IN_Loop0:
-    out         res[TXD], r11
     crc32_inc   r7, r11, r9, r4, 1
+    out         res[TXD], r11
     bf          r4, XUD_IN_TxLoopEnd
 
 XUD_IN_TxLoop:
@@ -174,46 +174,46 @@ TxTail0s:                                          // We know this is a < 4 byte
                                                    // So crc = 0. Note our normal crc calculation works for this, it is
                                                    // Not a special CRC case, but helps with timing.
 XUD_IN_TxPid_TailS0:
-    outpw      res[TXD], r11, 8                    // PID
+    outpw      res[TXD], r1, 8                      // PID
 XUD_IN_TxCrc_TailS0:
-    outpw      res[TXD], r4, 16                    // Output CRC
+    outpw      res[TXD], r4, 16                     // Output CRC
     bu         DoneTail
 
 .align 32
 .skip 0
-TxTail1s:                                          // One tail byte
-    shl        r6, r8, 8                           // Concat PID and Data
-    or         r11, r11, r6
+TxTail1s:                                           // One tail byte
+    shl        r6, r8, 8                            // Concat PID and Data
     crc8       r7, r8, r8, r9
-    crc32      r7, r4, r9                          // r4: 0
-    not        r7, r7
+    crc32      r7, r4, r9                           // r4: 0
+    {not       r7, r7;     or      r1, r1, r6}
 XUD_IN_TxPid_TailS1:
-    outpw      res[TXD], r11, 16                   // PID
+    outpw      res[TXD], r1, 16                     // PID | DATA
 XUD_IN_TxCrc_TailS1:
     outpw      res[TXD], r7, 16
     bu         DoneTail
 
 .align 32
 .skip 0
-TxTail2s:                                       // Two tail byte
+TxTail2s:                                           // Two tail byte
     crcn        r7, r8, r9, r6
     shl         r6, r8, 8
-    crc32       r7, r4, r9                      // r4: 0
-    {not        r7, r7;         or          r11, r11, r6}
+    or          r1, r1, r6
 XUD_IN_TxPid_TailS2:
-    outpw       res[TXD], r11, 24               // Output PID and 2 bytes of data
+    outpw       res[TXD], r1, 24                    // Output PID and 2 bytes of data
+    crc32       r7, r4, r9                          // r4: 0
+    not         r7, r7
 XUD_IN_TxCrc_TailS2:
-    outpw       res[TXD], r7, 16                // Output CRC16
+    outpw       res[TXD], r7, 16                    // Output CRC16
     bu          DoneTail
 
 .align 32
 .skip 0
-TxTail3s:                                       // Three tail byte
+TxTail3s:                                           // Three tail byte
 XUD_IN_TxPid_TailS3:
-    outpw       res[TXD], r11, 8                // PID
+    outpw       res[TXD], r1, 8                     // PID
     outpw       res[TXD], r8, 24
     crcn        r7, r8, r9, r6
-    crc32       r7, r4, r9                      // r4: 0
+    crc32       r7, r4, r9                          // r4: 0
     not         r7, r7
 XUD_IN_TxCrc_TailS3:
     outpw       res[TXD], r7, 16
@@ -221,12 +221,12 @@ XUD_IN_TxCrc_TailS3:
 
 .align 32
 .skip 0
-TxTail4s:                                       // Four tail byte
+TxTail4s:                                           // Four tail byte
 XUD_IN_TxPid_TailS4:
-    outpw       res[TXD], r11, 8                // PID
+    outpw       res[TXD], r1, 8                     // PID
     out         res[TXD], r8
     crc32       r7, r8, r9
-    crc32       r7, r4, r9                      // r4: 0
+    crc32       r7, r4, r9                          // r4: 0
     not         r7, r7
 XUD_IN_TxCrc_TailS4:
     outpw       res[TXD], r7, 16

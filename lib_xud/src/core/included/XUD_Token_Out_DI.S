@@ -43,7 +43,6 @@ doRXDataReturn_NonIso:
    {ldw        r11, r6[r10]                     // Get the handshake PID for this EP
     ldc        r1,  USB_PIDn_STALL}             // as well as the STALL PID
     eq         r1,  r11, r1                     // and compare them.
-    nop                                         // NOP to ensure minimum interpacket delay.
     bt         r1,  XUD_TokenOut_Handshake      // If the handshake PID for this EP is STALL, then
                                                 // go and send the handshake without clearing ready
                                                 // or communicating back to the application that

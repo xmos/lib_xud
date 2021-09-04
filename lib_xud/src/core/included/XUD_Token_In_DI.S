@@ -182,12 +182,12 @@ XUD_IN_TxCrc_TailS0:
 .align 32
 .skip 0
 TxTail1s:                                           // One tail byte
-    shl        r6, r8, 8                            // Concat PID and Data
     crc8       r7, r8, r8, r9
     crc32      r7, r4, r9                           // r4: 0
-    {not       r7, r7;     or      r1, r1, r6}
 XUD_IN_TxPid_TailS1:
-    outpw      res[TXD], r1, 16                     // PID | DATA
+    outpw      res[TXD], r1, 8                      // Output PID
+    outpw      res[TXD], r4, 8                      // Output data[0]
+    not        r7, r7
 XUD_IN_TxCrc_TailS1:
     outpw      res[TXD], r7, 16
     bu         DoneTail
@@ -196,11 +196,10 @@ XUD_IN_TxCrc_TailS1:
 .skip 0
 TxTail2s:                                           // Two tail byte
     crcn        r7, r8, r9, r6
-    shl         r6, r8, 8
-    or          r1, r1, r6
-XUD_IN_TxPid_TailS2:
-    outpw       res[TXD], r1, 24                    // Output PID and 2 bytes of data
     crc32       r7, r4, r9                          // r4: 0
+XUD_IN_TxPid_TailS2:
+    outpw       res[TXD], r1, 8                     // Output PID 
+    outpw       res[TXD], r8, 16                    // Output data[0:1]
     not         r7, r7
 XUD_IN_TxCrc_TailS2:
     outpw       res[TXD], r7, 16                    // Output CRC16

@@ -11,15 +11,22 @@ from helpers import get_usb_clk_phy, do_usb_test
 import Pyxsim
 
 # Note, no current support for XS2 so don't copy XS2 xn files
-XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn", "test_xs3_540.xn", "test_xs3_500.xn", "test_xs3_700.xn"]
+XN_FILES = [
+    "test_xs3_600.xn",
+    "test_xs3_540.xn",
+    "test_xs3_500.xn",
+    "test_xs3_700.xn",
+    "test_xs3_800.xn",
+]
 
+#Note, HS tests will be skipped unless 85MIPS are available to lib_xud
 PARAMS = {
     "extended": {
         "arch": ["xs3"],
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 5, 6],
+        "dummy_threads": [0, 3, 4], # Note, plus 2 for test cores
         "core_freq": [600, 800],
     },
     "default": {
@@ -27,7 +34,7 @@ PARAMS = {
         "ep": [1, 2],
         "address": [0, 1],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 5, 6],
+        "dummy_threads": [0, 4], # Note, plus 2 for test cores
         "core_freq": [600],
     },
     "smoke": {
@@ -35,7 +42,7 @@ PARAMS = {
         "ep": [1],
         "address": [1],
         "bus_speed": ["HS"],
-        "dummy_threads": [4],  # Note, plus 2 cores for test
+        "dummy_threads": [4],  # Note, plus 2 for test cores
         "core_freq": [600],
     },
 }

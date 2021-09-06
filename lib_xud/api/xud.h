@@ -154,6 +154,17 @@ int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 XUD_BusSpeed_t desiredSpeed,
                 XUD_PwrConfig pwrConfig);
+
+/* Legacy API support */
+__attribute__((deprecated)) int XUD_Manager(chanend c_epOut[], int noEpOut,
+                chanend c_epIn[], int noEpIn,
+                NULLABLE_RESOURCE(chanend, c_sof),
+                XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
+                NULLABLE_RESOURCE(out port, p_usb_rst),
+                NULLABLE_RESOURCE(clock, clk),
+                unsigned rstMask,
+                XUD_BusSpeed_t desiredSpeed,
+                XUD_PwrConfig pwrConfig);
 #endif
 
 /**

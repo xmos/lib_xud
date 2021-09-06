@@ -594,17 +594,5 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     return 0;
 }
 
-/* Legacy API support */
-int XUD_Manager(chanend c_epOut[], int noEpOut,
-                chanend c_epIn[], int noEpIn,
-                NULLABLE_RESOURCE(chanend, c_sof),
-                XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                NULLABLE_RESOURCE(out port, p_usb_rst),
-                NULLABLE_RESOURCE(clock, clk),
-                unsigned rstMask,
-                XUD_BusSpeed_t desiredSpeed,
-                XUD_PwrConfig pwrConfig)
-{
-        XUD_Main(c_xud_out, noEpOut, c_xud_in, noEpIn, c_sof, epTypeTableOut, epTypeTableIn, desiredSpeed, pwrConfig);
-}
+
 

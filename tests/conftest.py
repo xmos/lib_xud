@@ -45,7 +45,13 @@ PARAMS = {
 def pytest_addoption(parser):
     parser.addoption("--smoke", action="store_true", help="Smoke test")
     parser.addoption("--extended", action="store_true", help="Extended test")
-    parser.addoption("--xcov", action="store", help="Enable xcov, set a limit for test coverage", type=int, default=0)
+    parser.addoption(
+        "--xcov",
+        action="store",
+        help="Enable xcov, set a limit for test coverage",
+        type=int,
+        default=0,
+    )
     parser.addoption(
         "--enabletracing",
         action="store_true",
@@ -156,7 +162,7 @@ def test_RunUsbSession(
     results = Pyxsim.run_tester(output, tester_list)
 
     # calculate code coverage for each tests
-    coverage = handler_process(disasm,trace,xcov_dir)
+    coverage = handler_process(disasm, trace, xcov_dir)
     # generate coverage file for each source code included
     handler_combine(xcov_dir)
 

@@ -93,8 +93,11 @@ def run_on(**kwargs):
 
     return True
 
+
 def generate_elf_disasm(binary, split_dir, disasm):
-    cmd_elf = "xobjdump --split " + binary + " --split-dir " + split_dir + " > /dev/null 2>&1"
+    cmd_elf = (
+        "xobjdump --split " + binary + " --split-dir " + split_dir + " > /dev/null 2>&1"
+    )
     cmd_disasm = "xobjdump -S " + binary + " -o " + disasm
     try:
         subprocess.run(cmd_elf, shell=True, check=True)
@@ -102,6 +105,7 @@ def generate_elf_disasm(binary, split_dir, disasm):
     except:
         print("Error running build disasm")
         sys.exit(1)
+
 
 FIXTURE_TO_DEFINE = {
     "core_freq": "TEST_FREQ",

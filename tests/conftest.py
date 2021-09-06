@@ -12,9 +12,9 @@ import Pyxsim
 
 # Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = [
-    "test_xs3_600.xn",
-    "test_xs3_540.xn",
     "test_xs3_500.xn",
+    "test_xs3_540.xn",
+    "test_xs3_600.xn",
     "test_xs3_700.xn",
     "test_xs3_800.xn",
 ]

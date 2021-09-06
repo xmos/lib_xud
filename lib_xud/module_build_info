@@ -29,7 +29,8 @@ OPTIONAL_HEADERS += xud_conf.h
 DEPENDENT_MODULES =
 
 EXPORT_INCLUDE_DIRS = api \
-                      src/user
+                      src/user \
+                      api/legacy
 
 INCLUDE_DIRS = $(EXPORT_INCLUDE_DIRS) \
                src/core \

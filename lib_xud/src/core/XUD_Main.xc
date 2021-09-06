@@ -181,10 +181,17 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     #endif
 
     #ifdef XUD_SIM_XSIM
+        #if XUD_CORE_CLOCK <= 600
             #define RX_RISE_DELAY 0
             #define RX_FALL_DELAY 0
             #define TX_RISE_DELAY 0
             #define TX_FALL_DELAY 5
+        #else
+            #define RX_RISE_DELAY 0
+            #define RX_FALL_DELAY 0
+            #define TX_RISE_DELAY 0
+            #define TX_FALL_DELAY 7
+        #endif
     #else
         #if (XUD_CORE_CLOCK >= 600)
             #define RX_RISE_DELAY 1

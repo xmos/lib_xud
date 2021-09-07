@@ -1,5 +1,4 @@
 #include "xud.h"
-#include "xccompat.h"
 
 /* Legacy API support */
 __attribute__((deprecated)) int XUD_Manager(chanend c_epOut[], int noEpOut,

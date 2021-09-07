@@ -14,7 +14,7 @@ APP_NAME = app_hid_mouse_demo
 
 # These flags define two build configurations - one for xCORE-200 and one for
 # the xCORE.AI series.
-BUILD_FLAGS = -O3 -report -fxscope
+BUILD_FLAGS = -O3 -report -fxscope -DXCORE_USE_LEGACY_CLOCK_NAMING=1
 
 XCC_FLAGS_200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
 XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600

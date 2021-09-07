@@ -12,16 +12,16 @@ APP_NAME = app_mass_storage_demo
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to
 # xcc for the final link (mapping) stage.
 
-BUILD_FLAGS = -O3 -report -DUSE_XSCOPE=1 -fxscope -lflash
+BUILD_FLAGS = -O3 -report -DUSE_XSCOPE=1 -fxscope -lflash -DXCORE_USE_LEGACY_CLOCK_NAMING=1
 
-XCC_FLAGS_xcore200 = $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
-XCC_FLAGS_xcoreai = $(BUILD_FLAGS)
+XCC_FLAGS_200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
+XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600
 
 # The TARGET variable determines what target system the application is
 # compiled for. It either refers to an XN file in the source directories
 # or a valid argument for the --target option when compiling.
 
-ifeq ($(CONFIG),xcoreai)
+ifeq ($(CONFIG),AI)
 TARGET = XCORE-AI-EXPLORER
 else
 TARGET = XCORE-200-EXPLORER

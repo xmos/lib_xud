@@ -5,7 +5,8 @@ MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -DREF_CLK_FREQ=100 \
                    -fasm-linenum \
                    -fcomment-asm \
-                   -DXUD_FULL_PIDTABLE=1
+                   -DXUD_FULL_PIDTABLE=1 \
+                   -DXCORE_USE_LEGACY_CLOCK_NAMING=1
 
 XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule -g0
 

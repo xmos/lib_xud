@@ -26,8 +26,8 @@
 doRXData_badPid:
   ldaw      r10, dp[PidJumpTable]
   ldw       r11, r10[r8]
-  ldc       r8, 16                                        // Note, this is a cut-down version of XUD_TokenJump.S
-  {bau      r11;              setpsc      res[RXD], r8}   // XUD_CrcAddrCheck.S requires 16 in r8
+  ldc       r8, 16                                          // Note, this is a cut-down version of XUD_TokenJump.S
+  {bau      r11;              setpsc      res[RXD], r8}     // XUD_CrcAddrCheck.S requires 16 in r8
 
 doRXData:
 
@@ -44,7 +44,7 @@ doRXData:
 GotRxPid:
     eeu        res[r8]                                      // Enable events on RxA
 
-NextRxWord:				                                    
+NextRxWord:				                                    // Partially un-rolled to assist with timing           
     in 	        r11, res[r0]
     stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
@@ -57,7 +57,19 @@ NextRxWord:
     in 	        r11, res[r0]
     stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
-    bu          LABEL(NextRxWord)
+    in 	        r11, res[r0]
+    stw         r11, r1[r4]
+    crc32_inc   r6, r11, r9, r4, 1 
+    in 	        r11, res[r0]
+    stw         r11, r1[r4]
+    crc32_inc   r6, r11, r9, r4, 1 
+    in 	        r11, res[r0]
+    stw         r11, r1[r4]
+    crc32_inc   r6, r11, r9, r4, 1 
+    in 	        r11, res[r0]
+    stw         r11, r1[r4]
+    crc32_inc   r6, r11, r9, r4, 1 
+    bu          NextRxWord
 
 /////////////////////////////////////////////////////////////////////////////
 .align 32

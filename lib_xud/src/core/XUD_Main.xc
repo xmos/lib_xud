@@ -237,7 +237,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
 
 #ifdef __XS3A__
-    set_pad_delay(flag1_port, 3);
+    set_pad_delay(flag1_port, 2);
 #else
     set_pad_delay(flag1_port, 2);
 #endif

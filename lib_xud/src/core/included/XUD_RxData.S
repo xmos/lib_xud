@@ -24,58 +24,64 @@
 // r11: Expected CRC
 
 doRXData_badPid:
-  ldaw      r10, dp[PidJumpTable]
-  ldw       r11, r10[r8]
-  ldc       r8, 16                                          // Note, this is a cut-down version of XUD_TokenJump.S
-  {bau      r11;              setpsc      res[RXD], r8}     // XUD_CrcAddrCheck.S requires 16 in r8
+    ldaw      r10, dp[PidJumpTable]
+    ldw       r11, r10[r8]
+    ldc       r8, 16                                            // Note, this is a cut-down version of XUD_TokenJump.S
+    {bau      r11;                  setpsc      res[RXD], r8}   // XUD_CrcAddrCheck.S requires 16 in r8
 
 doRXData:
 
-    inpw       r8, res[r0], 8                               // Input PID
+    {mkmsk r11, 2; ldw              r8, sp[STACK_RXA_PORT]}     // Init buffer index to -1
+    
+    inpw        r4, res[r0], 8                                  // Input PID
 
     // If pid != DATAx then jump and handle as a token. DATA0, DATA1, DATA2 & MDATA all of the form 0bxx11.
     // This is a fast alternative to a "timeout"
-    {shr    r8, r8, 24;    mkmsk    r11, 2}
-    {stw    r8, r3[6];     and     r11, r11, r8}            // Store PID into EP structure,
-    eq      r11, r11, 3
-    bf      r11, doRXData_badPid
-    {setsr  1;             ldw      r8, sp[STACK_RXA_PORT]} // Load RxA Port ID
+    shr         r4, r4, 24
+    {stw        r4, r3[6];          and     r11, r11, r4}       // Store PID into EP structure,
+    eq          r11, r11, 3
+    {setsr 1;                       bf      r11, doRXData_badPid}
 
 GotRxPid:
-    eeu        res[r8]                                      // Enable events on RxA
+    {eeu        res[r8]; mkmsk r4, 32}                          // Enable events on RxA
+                                                                // Init buffer index to -1
 
-NextRxWord:				                                    // Partially un-rolled to assist with timing           
-    in 	        r11, res[r0]
-    stw         r11, r1[r4]
+NextRxWord:				                                        // Partially un-rolled to assist with timing           
+    in          r11, res[r0]
     crc32_inc   r6, r11, r9, r4, 1 
-    in 	        r11, res[r0]
     stw         r11, r1[r4]
-    crc32_inc   r6, r11, r9, r4, 1 
     in 	        r11, res[r0]
-    stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
+    stw         r11, r1[r4]
     in 	        r11, res[r0]
-    stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
+    stw         r11, r1[r4]
     in 	        r11, res[r0]
-    stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
+    stw         r11, r1[r4]
     in 	        r11, res[r0]
-    stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
+    stw         r11, r1[r4]
     in 	        r11, res[r0]
-    stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
+    stw         r11, r1[r4]
     in 	        r11, res[r0]
-    stw         r11, r1[r4]
     crc32_inc   r6, r11, r9, r4, 1 
+    stw         r11, r1[r4]
+    in 	        r11, res[r0]
+    crc32_inc   r6, r11, r9, r4, 1 
+    stw         r11, r1[r4]
+    in 	        r11, res[r0]
+    crc32_inc   r6, r11, r9, r4, 1 
+    stw         r11, r1[r4]
     bu          NextRxWord
 
 /////////////////////////////////////////////////////////////////////////////
 .align 32
-.skip 20
+.skip 16
 RxALow:
-    in          r8, res[r8]                                 // Clear event data on RXA
+    stw         r11, r1[r4]                                 // Extra stw, if not enough MIPS STW in loop above may not have chance to run             
+    {in         r8, res[r8];        add r4, r4, 1}          // Clear event data on RXA
     endin       r8, res[r0]
 LABEL(RxTail):
     {in          r11, res[r0];      bru      r8}  

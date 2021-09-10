@@ -24,10 +24,7 @@ class Clock(SimThread):
 
         while True:
 
-            new_time = time +  self._period_ps / 2
-            
-            assert((new_time - time) > 8000)
-            time = new_time
+            time += self._period_ps / 2
             self.wait_until(time)
             self._val = 1 - self._val
 

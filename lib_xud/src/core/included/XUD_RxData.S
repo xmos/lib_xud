@@ -25,8 +25,7 @@
 
 doRXData_badPid:
     ldaw      r10, dp[PidJumpTable]
-    ldw       r11, r10[r8]
-    ldc       r8, 16                                            // Note, this is a cut-down version of XUD_TokenJump.S
+    {ldw      r11, r10[r4];         ldc r8, 16}
     {bau      r11;                  setpsc      res[RXD], r8}   // XUD_CrcAddrCheck.S requires 16 in r8
 
 doRXData:
@@ -40,10 +39,11 @@ doRXData:
     shr         r4, r4, 24
     {stw        r4, r3[6];          and     r11, r11, r4}       // Store PID into EP structure,
     eq          r11, r11, 3
-    {setsr 1;                       bf      r11, doRXData_badPid}
+    {bf         r11, doRXData_badPid}
+    setsr       1
 
 GotRxPid:
-    {eeu        res[r8]; mkmsk r4, 32}                          // Enable events on RxA
+    {eeu        res[r8];            mkmsk r4, 32}               // Enable events on RxA
                                                                 // Init buffer index to -1
 
 NextRxWord:				                                        // Partially un-rolled to assist with timing           

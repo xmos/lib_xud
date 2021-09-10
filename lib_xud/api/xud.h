@@ -34,13 +34,19 @@
   #define USB_TILE tile[0]
 #endif
 
+// TODO use PLATFORM_REFERENCE_MHZ from platform.h
 #ifndef REF_CLK_FREQ
 #define REF_CLK_FREQ 100
 #endif
 
 #ifndef XUD_CORE_CLOCK
-#warning XUD_CORE_CLOCK not defined, using default (700MHz)
-#define XUD_CORE_CLOCK (700)
+    #ifdef __XS2A__
+        //#warning XUD_CORE_CLOCK not defined, using default (500MHz)
+        #define XUD_CORE_CLOCK (500)
+    #else
+        //#warning XUD_CORE_CLOCK not defined, using default (600MHz)
+        #define XUD_CORE_CLOCK (600)
+    #endif
 #endif
 
 #if !defined(PORT_USB_CLK)

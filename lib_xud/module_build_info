@@ -43,6 +43,7 @@ SOURCE_DIRS = src/core \
 EXCLUDE_FILES += XUD_CrcAddrCheck.S \
                  XUD_G_Crc.S \
                  XUD_PidJumpTable.S \
+                 XUD_PidJumpTable_RxData.S \
                  XUD_RxData.S \
                  XUD_Token_In_DI.S \
                  XUD_Token_Out_DI.S \

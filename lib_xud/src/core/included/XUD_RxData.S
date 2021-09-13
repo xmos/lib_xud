@@ -23,7 +23,7 @@
 // r8: Taillength (bits)
 // r11: Expected CRC
 
-doRXData_badPid:
+Pid_Bad_RxData:
     ldaw      r10, dp[PidJumpTable]
     {ldw      r11, r10[r4];         ldc r8, 16}
     {bau      r11;                  setpsc      res[RXD], r8}   // XUD_CrcAddrCheck.S requires 16 in r8
@@ -34,12 +34,25 @@ doRXData:
     
     inpw        r4, res[r0], 8                                  // Input PID
 
+#ifdef __XS2A__
     // If pid != DATAx then jump and handle as a token. DATA0, DATA1, DATA2 & MDATA all of the form 0bxx11.
     // This is a fast alternative to a "timeout"
+    // Note, this doesn't check that PID[0:3] = ~PID[4:7] - which is an issue for XS3
     shr         r4, r4, 24
     {stw        r4, r3[6];          and     r11, r11, r4}       // Store PID into EP structure,
     eq          r11, r11, 3
-    {bf         r11, doRXData_badPid}
+    {bf         r11, Pid_Bad_RxData}
+#else
+    {shr        r4, r4, 24;         ldw     r11, sp[STACK_PIDJUMPTABLE_RXDATA]}
+    stw        r4, r3[6]                                        // Store PID into EP structure,
+    ldw         r11, r11[r4]
+    bau         r11
+#endif
+
+Pid_Datam_RxData:
+Pid_Data0_RxData:
+Pid_Data1_RxData:
+Pid_Data2_RxData:
     setsr       1
 
 GotRxPid:

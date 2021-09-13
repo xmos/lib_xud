@@ -46,8 +46,8 @@ def test_session(ep, address, bus_speed):
 
     session.add_event(
         TxDataPacket(
-            dataPayload=session.getPayload_out(ep, 11),
-            pid=USB_PID["DATA0"] & 0xF,
+            dataPayload=session.getPayload_out(ep, 11, resend=True),
+            pid=USB_PID["DATA1"] & 0xF,
         )
     )
 
@@ -59,9 +59,19 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep,
             endpointType="BULK",
             direction="OUT",
+            dataLength=11,
+            interEventDelay=interEventDelay,
+        )
+    )
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
             dataLength=12,
             interEventDelay=interEventDelay,
-            resend=True,
         )
     )
     session.add_event(
@@ -72,17 +82,6 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             direction="OUT",
             dataLength=13,
-            interEventDelay=interEventDelay,
-        )
-    )
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="BULK",
-            direction="OUT",
-            dataLength=14,
             interEventDelay=interEventDelay,
         )
     )

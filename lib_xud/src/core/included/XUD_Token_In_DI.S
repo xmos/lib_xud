@@ -67,12 +67,11 @@ XUD_IN_Ready:
 
 XUD_IN_Tx:
     ldw        r11, r8[r4]                         // Load first data word
+    crc32_inc  r7, r11, r9, r4, 1
     outpw      res[TXD], r1, 8                     // Out PID
 
 XUD_IN_Loop0:
-    crc32_inc   r7, r11, r9, r4, 1
-    out         res[TXD], r11
-    bf          r4, XUD_IN_TxLoopEnd
+    {out         res[TXD], r11;     bf        r4, XUD_IN_TxLoopEnd}
 
 XUD_IN_TxLoop:
     ldw         r11, r8[r4]                         // Load first data word
@@ -186,8 +185,8 @@ TxTail1s:                                           // One tail byte
     crc32      r7, r4, r9                           // r4: 0
 XUD_IN_TxPid_TailS1:
     outpw      res[TXD], r1, 8                      // Output PID
-    outpw      res[TXD], r4, 8                      // Output data[0]
     not        r7, r7
+    outpw      res[TXD], r4, 8                      // Output data[0]
 XUD_IN_TxCrc_TailS1:
     outpw      res[TXD], r7, 16
     bu         DoneTail

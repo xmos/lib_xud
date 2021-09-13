@@ -10,7 +10,7 @@
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END     (14)
+#define PKT_LENGTH_END     (13)
 #endif
 
 #include "shared.h"

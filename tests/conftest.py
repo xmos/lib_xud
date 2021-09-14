@@ -9,7 +9,7 @@ import pytest
 
 from helpers import get_usb_clk_phy, do_usb_test
 import Pyxsim
-from xcoverage.xcov import handler_process, handler_combine
+from xcoverage.xcov import xcov_process, xcov_combine
 
 # Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn", "test_xs3_540.xn", "test_xs3_500.xn"]
@@ -162,17 +162,18 @@ def test_RunUsbSession(
     results = Pyxsim.run_tester(output, tester_list)
 
     # calculate code coverage for each tests
-    coverage = handler_process(disasm, trace, xcov_dir)
+    coverage = xcov_process(disasm, trace, xcov_dir)
     # generate coverage file for each source code included
-    handler_combine(xcov_dir)
+    xcov_combine(xcov_dir)
 
     # TODO only one result
     for result in results:
         if not result:
             print(cap_output)
             sys.stderr.write(err)
-        if coverage < xcov:
-            assert False
+        else:
+            if coverage < xcov:
+                assert False
         assert result
 
 

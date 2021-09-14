@@ -306,7 +306,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Sample line state and check for reset (or suspend) */
                     XUD_LineState_t ls = XUD_HAL_GetLineState();
                     if(ls == XUD_LINESTATE_SE0)
-                        reset == 1;
+                        reset = 1;
                     else
                         reset = 0;
                 }
@@ -331,7 +331,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Test if coming back from reset or suspend */
                 if(reset == 1)
                 {
-
                     if(!sentReset)
                     {
                         SendResetToEps(epChans0, epChans, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);

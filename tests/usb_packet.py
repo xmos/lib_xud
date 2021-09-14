@@ -401,7 +401,7 @@ class TxPacket(UsbPacket):
         if do_tokens:
             byte_list.append(self.pid)
         else:
-            byte_list.append(self.pid) #| ((~self.pid) << 4))
+            byte_list.append(self.pid)  # | ((~self.pid) << 4))
             for b in self.data_bytes:
                 byte_list.append(b)
         return byte_list
@@ -424,7 +424,7 @@ class DataPacket(UsbPacket):
         if do_tokens:
             byte_list.append(self.pid)
         else:
-            byte_list.append(self.pid)# | (((~self.pid) & 0xF) << 4))
+            byte_list.append(self.pid)  # | (((~self.pid) & 0xF) << 4))
 
         packet_bytes = self.get_packet_bytes()
         for byte in packet_bytes:

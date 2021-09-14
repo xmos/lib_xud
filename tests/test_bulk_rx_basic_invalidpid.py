@@ -11,6 +11,7 @@ from usb_packet import (
     USB_PID,
 )
 
+
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 

@@ -54,6 +54,7 @@ suspend_t_wtwrsths:
 #define STACK_PIDJUMPTABLE      (22)
 #define STACK_PIDJUMPTABLE_RXDATA (23)
 #define STACK_HANDSHAKETABLEIN    (24)
+#define STACK_CRC5TABLE_ADDR      (25)
 
 // Params
 #define STACK_VTOK_PORT     (STACK_EXTEND + 1)
@@ -266,6 +267,10 @@ ConfigSofJump_Done:
 
     ldaw       r10, dp[PidJumpTable_RxData]
     stw        r10, sp[STACK_PIDJUMPTABLE_RXDATA]
+    
+    ldaw       r10, dp[crc5Table_Addr]
+    stw        r10, sp[STACK_CRC5TABLE_ADDR]
+
 
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ

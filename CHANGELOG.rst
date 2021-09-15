@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+2.0.2
+-----
+
+  * ADDED:      Legacy API wrapper functions/header files
+
 2.0.1
 -----
 

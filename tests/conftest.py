@@ -9,7 +9,7 @@ import pytest
 
 from helpers import get_usb_clk_phy, do_usb_test
 import Pyxsim
-from xcoverage.xcov import xcov_process, xcov_combine
+from xcoverage.xcov import xcov_process, xcov_combine, combine_tests
 
 # Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn", "test_xs3_540.xn", "test_xs3_500.xn"]
@@ -47,10 +47,8 @@ def pytest_addoption(parser):
     parser.addoption("--extended", action="store_true", help="Extended test")
     parser.addoption(
         "--xcov",
-        action="store",
-        help="Enable xcov, set a limit for test coverage",
-        type=int,
-        default=0,
+        action="store_true",
+        help="Enable xcov",
     )
     parser.addoption(
         "--enabletracing",
@@ -75,8 +73,6 @@ def pytest_generate_tests(metafunc):
             params = PARAMS["default"]
         if metafunc.config.getoption("xcov"):
             params["xcov"] = [metafunc.config.getoption("xcov")]
-        else:
-            params["xcov"] = [0]
     except AttributeError:
         params = {}
 
@@ -105,7 +101,7 @@ def test_arch(arch: str) -> str:
     return arch
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_file(request):
     return str(request.node.fspath)
 
@@ -161,21 +157,19 @@ def test_RunUsbSession(
     sys.stdout.write("\n")
     results = Pyxsim.run_tester(output, tester_list)
 
-    # calculate code coverage for each tests
-    coverage = xcov_process(disasm, trace, xcov_dir)
-    # generate coverage file for each source code included
-    xcov_combine(xcov_dir)
-
     # TODO only one result
     for result in results:
         if not result:
             print(cap_output)
             sys.stderr.write(err)
         else:
-            if coverage < xcov:
-                assert False
+            if xcov:
+                # calculate code coverage for each tests
+                coverage = xcov_process(disasm, trace, xcov_dir)
+                # generate coverage file for each source code included
+                xcov_combine(xcov_dir)
+                # delete_logs(trace)
         assert result
-
 
 def copy_common_xn_files(
     test_dir,
@@ -188,6 +182,15 @@ def copy_common_xn_files(
         xn = os.path.join(common_dir, xn_file)
         shutil.copy(xn, src_dir)
 
+# def delete_logs(logsfile):
+#     if os.path.isfile(logsfile):
+#         try:
+#             print("delete %s" % logsfile)
+#             os.remove(logsfile)
+#         except Exception as e:
+#             print(e)
+#     else:
+#         print("%s not found" % logsfile)
 
 def delete_test_specific_xn_files(test_dir, source_dir="src", xn_files=XN_FILES):
     src_dir = os.path.join(test_dir, source_dir)
@@ -220,14 +223,16 @@ def copy_xn_files(worker_id, request):
 
         # There will be duplicates (same test name with different params) sos
         # treat as set
+        global test_dirs
         test_dirs = set([])
-
+        # test_dir_list = []
         # Go through collected tests and copy over XN files
         for item in session.items:
             full_path = item.fspath
             test_dir = Path(full_path).with_suffix("")  # Strip suffix
             test_dir = os.path.basename(test_dir)  # Strip path leaving filename
             test_dirs.add(test_dir)
+            # test_dir_list.append(test_dir)
 
         for test_dir in test_dirs:
             copy_common_xn_files(test_dir)
@@ -244,3 +249,13 @@ def copy_xn_files(worker_id, request):
     # Setup tear down
     # Deletion removed for now - doesn't seem important
     # request.addfinalizer(delete_xn_files)
+
+@pytest.fixture(scope="session", autouse=True)
+def xcoverage_combination(worker_id, request):
+    #run xcoverage combine test at the end of pytest
+    def run_combination():
+        global test_dirs
+        if worker_id in ("master", "gw0"):
+            current_path = os.getcwd()
+            coverage = combine_tests(current_path,test_dirs)
+    request.addfinalizer(run_combination)

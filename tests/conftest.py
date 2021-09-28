@@ -168,8 +168,8 @@ def test_RunUsbSession(
                 coverage = xcov_process(disasm, trace, xcov_dir)
                 # generate coverage file for each source code included
                 xcov_combine(xcov_dir)
-                # delete_logs(trace)
         assert result
+
 
 def copy_common_xn_files(
     test_dir,
@@ -182,15 +182,6 @@ def copy_common_xn_files(
         xn = os.path.join(common_dir, xn_file)
         shutil.copy(xn, src_dir)
 
-# def delete_logs(logsfile):
-#     if os.path.isfile(logsfile):
-#         try:
-#             print("delete %s" % logsfile)
-#             os.remove(logsfile)
-#         except Exception as e:
-#             print(e)
-#     else:
-#         print("%s not found" % logsfile)
 
 def delete_test_specific_xn_files(test_dir, source_dir="src", xn_files=XN_FILES):
     src_dir = os.path.join(test_dir, source_dir)
@@ -250,12 +241,14 @@ def copy_xn_files(worker_id, request):
     # Deletion removed for now - doesn't seem important
     # request.addfinalizer(delete_xn_files)
 
+
 @pytest.fixture(scope="session", autouse=True)
 def xcoverage_combination(worker_id, request):
-    #run xcoverage combine test at the end of pytest
+    # run xcoverage combine test at the end of pytest
     def run_combination():
         global test_dirs
         if worker_id in ("master", "gw0"):
             current_path = os.getcwd()
-            coverage = combine_tests(current_path,test_dirs)
+            coverage = combine_tests(current_path, test_dirs)
+
     request.addfinalizer(run_combination)

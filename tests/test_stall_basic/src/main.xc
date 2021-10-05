@@ -33,12 +33,16 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
     unsigned failed = 0;
     uint8_t outBuffer[128];
-    uint8_t inBuffer[128];
+    uint8_t inBuffer0[128];
+    uint8_t inBuffer1[128];
     unsigned length;
     XUD_Result_t result;
     
-    for(size_t i = 0; i < sizeof(outBuffer); i++)
-        inBuffer[i] = i;
+    for(size_t i = 0; i < PKT_LENGTH_START; i++)
+    {
+        inBuffer0[i] = i;
+        inBuffer1[i] = i + PKT_LENGTH_START;
+    }
 
     /* Stall EPs */
     XUD_ep ep_out = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
@@ -61,7 +65,25 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
     
-    result = XUD_SetBuffer(ep_in, inBuffer, PKT_LENGTH_START);
+    result = XUD_SetBuffer(ep_in, inBuffer0, PKT_LENGTH_START);
+    failed |= (result != XUD_RES_OKAY);
+
+    /* Stall both EP's using Addr */  
+    XUD_SetStallByAddr(TEST_EP_NUM);
+    XUD_SetStallByAddr(TEST_EP_NUM | 0x80);
+
+    /* Valid transaction on another EP, clear STALL on the test EP's */
+    result = XUD_GetBuffer(ep_ctrl, outBuffer, length);
+    failed = (result != XUD_RES_OKAY);
+
+    XUD_ClearStallByAddr(TEST_EP_NUM);
+    XUD_ClearStallByAddr(TEST_EP_NUM | 0x80);
+
+    /* Ensure test EP's now operate as expected */
+    result = XUD_GetBuffer(ep_out, outBuffer, length);
+    failed |= (result != XUD_RES_OKAY);
+    
+    result = XUD_SetBuffer(ep_in, inBuffer1, PKT_LENGTH_START);
     failed |= (result != XUD_RES_OKAY);
 
     return failed;

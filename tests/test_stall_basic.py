@@ -80,6 +80,7 @@ def test_session(ep, address, bus_speed):
         )
     )
 
+    # Check EP no working as normal
     session.add_event(
         UsbTransaction(
             session,
@@ -103,11 +104,68 @@ def test_session(ep, address, bus_speed):
         )
     )
 
+    # EP now re-halted
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=pktLength,
+            halted=True,
+            interEventDelay=1000,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
+            halted=True,
+        )
+    )
+    
+    # Valid transaction to another EP informing test code to clear stall
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep_ctrl,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=pktLength,
+        )
+    )
+
+  # Check EP now working as normal
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="OUT",
+            dataLength=pktLength,
+            interEventDelay=1000,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            direction="IN",
+            dataLength=pktLength,
+            interEventDelay=1000,
+        )
+    )
+
+
     return session
 
-
-#   for result in RunUsbTest(
-#        gen_test_session, test_arch, test_ep, test_address,
-#        test_bus_speed, __file__
-#    ):
-#        assert result

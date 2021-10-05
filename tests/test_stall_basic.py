@@ -28,7 +28,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             halted=True,
         )
@@ -40,7 +40,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             halted=True,
         )
@@ -52,7 +52,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             halted=True,
         )
     )
@@ -63,7 +63,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             halted=True,
         )
     )
@@ -75,7 +75,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep_ctrl,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
         )
     )
@@ -87,7 +87,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             interEventDelay=1000,
         )
@@ -99,7 +99,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             dataLength=pktLength,
         )
     )
@@ -111,7 +111,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             halted=True,
             interEventDelay=1000,
@@ -124,11 +124,11 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             halted=True,
         )
     )
-    
+
     # Valid transaction to another EP informing test code to clear stall
     session.add_event(
         UsbTransaction(
@@ -136,19 +136,19 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep_ctrl,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
         )
     )
 
-  # Check EP now working as normal
+    # Check EP now working as normal
     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             interEventDelay=1000,
         )
@@ -160,12 +160,10 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             dataLength=pktLength,
             interEventDelay=1000,
         )
     )
-
 
     return session
-

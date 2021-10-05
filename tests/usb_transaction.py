@@ -14,9 +14,8 @@ from usb_packet import USB_DATA_VALID_COUNT
 
 INTER_TRANSACTION_DELAY = 500
 
-USB_DIRECTIONS = ["OUT", "IN"]
+USB_TRANS_TYPES = ["OUT", "IN", "SETUP"]
 USB_EP_TYPES = ["CONTROL", "BULK", "ISO", "INTERRUPT"]
-
 
 # TODO UsbTransaction_IN and UsbTransaction_OUT
 class UsbTransaction(UsbEvent):
@@ -26,7 +25,7 @@ class UsbTransaction(UsbEvent):
         deviceAddress=0,
         endpointNumber=0,
         endpointType="BULK",
-        direction="OUT",
+        transType="OUT",
         bus_speed="HS",
         eventTime=0,
         dataLength=0,
@@ -36,12 +35,12 @@ class UsbTransaction(UsbEvent):
         rxeAssertDelay_data=0,
         halted=False,
         resetDataPid=False,
-    ):  # TODO Enums when we move to py3
+    ):
 
         self._deviceAddress = deviceAddress
         self._endpointNumber = endpointNumber
         self._endpointType = endpointType
-        self._direction = direction
+        self._transType = transType
         self._datalength = dataLength
         self._bus_speed = bus_speed
         self._badDataCrc = badDataCrc
@@ -49,20 +48,20 @@ class UsbTransaction(UsbEvent):
         self._halted = halted
 
         assert endpointType in USB_EP_TYPES
-        assert direction in USB_DIRECTIONS
+        assert transType in USB_TRANS_TYPES
 
         # Populate packet list for a (valid) transaction
         self._packets = []
 
         # TODO would it be better to generate packets on the fly in drive()
         # rather than create a packet list?
-        if direction == "OUT":
+        if transType in ["OUT", "SETUP"]:
 
             packets = []
             packets.append(
                 TokenPacket(
                     interEventDelay=interEventDelay,
-                    pid=USB_PID["OUT"],
+                    pid=USB_PID[transType],
                     address=self._deviceAddress,
                     endpoint=self._endpointNumber,
                     data_valid_count=self.data_valid_count,
@@ -79,6 +78,9 @@ class UsbTransaction(UsbEvent):
                 togglePid = False
             else:
                 togglePid = True
+
+            if halted:
+                resetDataPid = True
 
             expectHandshake = (
                 (not self._badDataCrc)
@@ -100,6 +102,12 @@ class UsbTransaction(UsbEvent):
             pid = session.data_pid_out(
                 endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
             )
+
+            # If SETUP trans then we need to toggle the corresponding IN EP's PID also
+            if transType == "SETUP":
+                in_pid = session.data_pid_in(
+                    endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
+                )
 
             # Add data packet to packets list
             packets.append(

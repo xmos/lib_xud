@@ -28,7 +28,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             halted=True,
         )
@@ -40,7 +40,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             halted=True,
         )
@@ -52,7 +52,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             halted=True,
         )
     )
@@ -63,7 +63,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             halted=True,
         )
     )
@@ -75,7 +75,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep_ctrl,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
         )
     )
@@ -88,7 +88,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
         )
     )
@@ -99,7 +99,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             dataLength=pktLength,
         )
     )

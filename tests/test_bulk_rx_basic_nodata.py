@@ -32,7 +32,7 @@ def test_session(ep, address, bus_speed, core_freq, dummy_threads):
                 deviceAddress=address,
                 endpointNumber=ep,
                 endpointType="BULK",
-                direction="OUT",
+                transType="OUT",
                 dataLength=length,
                 interEventDelay=ied,
             )

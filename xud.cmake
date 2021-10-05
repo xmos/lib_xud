@@ -30,7 +30,7 @@ set(XUD_ASM_SRCS
   ${CMAKE_BINARY_DIR}/lib_xud/lib_xud/src/core/XUD_TestMode.S
 )
 set(XUD_SRCS ${XUD_XC_SRCS} ${XUD_C_SRCS} ${XUD_ASM_SRCS})
-set(SUD_INCLUDE_DIRS
+set(XUD_INCLUDE_DIRS
   ${CMAKE_BINARY_DIR}/lib_xud/lib_xud/api
   ${CMAKE_BINARY_DIR}/lib_xud/lib_xud/src/core
   ${CMAKE_BINARY_DIR}/lib_xud/lib_xud/src/user

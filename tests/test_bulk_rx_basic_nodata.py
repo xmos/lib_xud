@@ -11,7 +11,11 @@ from usb_packet import TokenPacket, USB_PID
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed):
+def test_session(ep, address, bus_speed, core_freq, dummy_threads):
+
+    total_threads = dummy_threads + 2  # 1 thread for xud another for test code
+    if (core_freq / total_threads < 100.0) and bus_speed == "HS":
+        pytest.xfail("Test doesn't pass without 100MIPS (issue #277)")
 
     # The large inter-event delay is to give the DUT time to perform checking
     ied = 500

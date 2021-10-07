@@ -537,6 +537,26 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 #define XUD_OSC_MHZ (24)
 #endif
 
-#endif //__ASSEMBLER__
 
+
+/* TODO pack this to save mem
+ * TODO size of this hardcoded in ResetRpStateByAddr_
+ */
+typedef struct XUD_ep_info
+{
+    unsigned int chan_array_ptr;       // 0
+    unsigned int ep_xud_chanend;       // 1
+    unsigned int ep_client_chanend;    // 2
+    unsigned int scratch;              // 3 used for datalength in
+    unsigned int pid;                  // 4 Expected out PID
+    unsigned int epType;               // 5 Data
+    unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.
+    unsigned int tailLength;           // 7 "tail" length for IN (bytes)
+    unsigned int epAddress;            // 8 EP address assigned by XUD (Used for marking stall etc)
+    unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
+    unsigned int handshake;            // 10 NAK or STALL
+} XUD_ep_info;
+
+
+#endif //__ASSEMBLER__
 #endif // _XUD_H_

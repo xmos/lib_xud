@@ -62,22 +62,7 @@ on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_5;
 XUD_chan epChans[USB_MAX_NUM_EP];
 XUD_chan epChans0[USB_MAX_NUM_EP];
 
-/* TODO pack this to save mem
- * TODO size of this hardcoded in ResetRpStateByAddr_
- */
-typedef struct XUD_ep_info
-{
-    unsigned int chan_array_ptr;       // 0
-    unsigned int ep_xud_chanend;       // 1
-    unsigned int ep_client_chanend;    // 2
-    unsigned int scratch;              // 3 used for datalength in
-    unsigned int pid;                  // 4 Expected out PID
-    unsigned int epType;               // 5 Data
-    unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.
-    unsigned int tailLength;           // 7 "tail" length for IN (bytes)
-    unsigned int epAddress;            // 8 EP address assigned by XUD (Used for marking stall etc)
-    unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
-} XUD_ep_info;
+
 
 XUD_ep_info ep_info[USB_MAX_NUM_EP];
 
@@ -93,8 +78,8 @@ extern unsigned XUD_LLD_IoLoop(
                             XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
                             int  epCount, chanend? c_sof) ;
 
-unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN] = {0}; // 0 or STALL
-unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];     // NAK or STALL
+unsigned ep_addr[USB_MAX_NUM_EP];
+
 unsigned sentReset=0;
 
 unsigned crcmask = 0b11111111111;
@@ -477,16 +462,16 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
     for(int i = 0; i < USB_MAX_NUM_EP_OUT; i++)
     {
-        handshakeTable_OUT[i] = USB_PIDn_NAK;
         ep_info[i].epAddress = i;
         ep_info[i].resetting = 0;
+        ep_info[i].handshake = USB_PIDn_NAK;
     }
 
     for(int i = 0; i < USB_MAX_NUM_EP_IN; i++)
     {
-        handshakeTable_IN[i] = 0;
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
+        ep_info[USB_MAX_NUM_EP_OUT+i].handshake = 0;
     }
 
     /* Populate arrays of channels and status flag tabes */
@@ -508,6 +493,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"(i*sizeof(XUD_ep_info)/sizeof(unsigned)));
         outuint(c_ep_out[i], x);
+        ep_addr[i] = x;
 
         epStatFlagTableOut[i] = epTypeTableOut[i] & XUD_STATUS_ENABLE;
         epTypeTableOut[i] = epTypeTableOut[i] & 0x7FFFFFFF;
@@ -541,6 +527,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
 
         outuint(c_ep_in[i], x);
+        ep_addr[USB_MAX_NUM_EP_OUT+i] = x;
 
         ep_info[USB_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
 

@@ -7,7 +7,7 @@
 
 #include <xs1.h>
 #include "xud.h"
-
+#include "XUD_USB_Defines.h"
 
 static inline int min(int x, int y)
 {
@@ -119,22 +119,76 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
 
 void XUD_SetStall(XUD_ep ep)
 {
-    /* Get EP address from XUD_ep structure */
-    unsigned int epAddress;
+    asm volatile ("stw %0, %1[10]"::"r"(USB_PIDn_STALL), "r"(ep));
+}
 
-    asm ("ldw %0, %1[8]":"=r"(epAddress):"r"(ep));
+extern XUD_ep_info ep_info[USB_MAX_NUM_EP];
+unsafe
+{
+    XUD_ep_info * unsafe ep_info_ = ep_info;
+}
 
-    XUD_SetStallByAddr(epAddress);
+void XUD_SetStallByAddr(int epNum)
+{
+    if(epNum & 0x80)
+    {
+        epNum &= 0x7f;
+        epNum += 16;
+    }
+
+    unsafe
+    {
+        ep_info_[epNum].handshake = USB_PIDn_STALL;
+    }
 }
 
 void XUD_ClearStall(XUD_ep ep)
 {
-    /* Get EP address from XUD_ep structure */
-    unsigned int epAddress;
+    // Load EP addr and check for IN or OUT
+    unsigned epAddr;
 
-    asm ("ldw %0, %1[8]":"=r"(epAddress):"r"(ep));
+    asm volatile("ldw %0, %1[8]":"=r"(epAddr):"r"(ep));             // Load our chanend
+    
+    if(epAddr & 0x80)
+    {
+        asm volatile ("stw %0, %1[10]"::"r"(0), "r"(ep));
+    }
+    else
+    {
+        asm volatile ("stw %0, %1[10]"::"r"(USB_PIDn_NAK), "r"(ep));
+    }
+}
 
-    XUD_ClearStallByAddr(epAddress);
+void XUD_ClearStallByAddr(int epNum)
+{
+    unsigned dataPid = USB_PIDn_DATA0;
+    unsigned handshake = USB_PIDn_NAK;
+
+    XUD_ResetEpStateByAddr(epNum);
+
+    if(epNum & 0x80)
+    {
+        epNum &= 0x7f;
+        epNum += 16;
+        handshake = 0;
+    }
+    else
+    {
+#ifdef __XS2A__
+        dataPid = USB_PID_DATA0;
+#endif
+    }
+
+    unsafe
+    {
+        ep_info_[epNum].handshake = handshake;
+
+        /* Clearing HALT should be done via a SETUP and thus 
+         * data PIDs should be already reset, but just in case...
+         */
+        ep_info_[epNum].pid = dataPid;
+    }
+
 }
 
 void XUD_CloseEndpoint(XUD_ep one)

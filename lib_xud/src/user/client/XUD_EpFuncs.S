@@ -67,7 +67,7 @@ XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on
 #endif
     stw         r11, r0[4]                      // Reset OUT toggle
 
-    ldc         r11, 640                        // Assuming MAX_NUM_EPS is 16 and struct size is 40 here!
+    ldc         r11, 704                        // Assuming MAX_NUM_EPS is 16 and struct size is 44 here!
     add         r11, r0, r11
 
     ldc         r10, USB_PIDn_DATA1
@@ -236,7 +236,7 @@ XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on
 #endif
     stw         r11, r0[4]                      // Reset OUT toggle
 
-    ldc         r11, 640                        // Assuming MAX_NUM_EPS is 16 and struct size is 40 here!
+    ldc         r11, 704                        // Assuming MAX_NUM_EPS is 16 and struct size is 44 here!
     add         r11, r0, r11
 
     ldc         r10, USB_PIDn_DATA1
@@ -531,117 +531,6 @@ XUD_SetData_Select_Reset:
 .set XUD_SetData_Select.locnonotificationselect, 1
 
 
-.globl XUD_SetStallByAddr
-.type XUD_SetStallByAddr, @function
-
-/* R0: ep number */
-.cc_top XUD_SetStallByAddr.func
-.align FUNCTION_ALIGNMENT
-XUD_SetStallByAddr:
-#if defined(__XS2A__) || defined(__XS3A__)
-.issue_mode single
-  ENTSP_lu6 0
-#endif
-    ldc         r2, USB_PIDn_STALL
-    ldc         r11, 0x80                           // Check for IN bit
-    and         r11, r11, r0
-    bf          r11, XUD_SetStallByAddr_OUT
-    ldaw        r1,  dp[handshakeTable_IN]
-    mkmsk       r11, 7
-    and         r11, r11, r0
-    stw         r2, r1[r11]
-
-    retsp       0
-XUD_SetStallByAddr_OUT:
-    ldaw        r1,  dp[handshakeTable_OUT]
-    stw         r2, r1[r0]
-    retsp       0
-.size XUD_SetStallByAddr, .-XUD_SetStallByAddr
-.cc_bottom XUD_SetStallByAddr.func
-.globl XUD_SetStallByAddr.nstackwords
-.globl XUD_SetStallByAddr.maxchanends
-.globl XUD_SetStallByAddr.maxtimers
-.globl XUD_SetStallByAddr.maxcores
-.set XUD_SetStallByAddr.nstackwords, 0
-.set XUD_SetStallByAddr.maxchanends, 0
-.set XUD_SetStallByAddr.maxtimers, 0
-.set XUD_SetStallByAddr.maxcores, 1
-.globl XUD_SetStallByAddr.locnoside
-.globl XUD_SetStallByAddr.locnochandec
-.globl XUD_SetStallByAddr.locnoglobalaccess
-.globl XUD_SetStallByAddr.locnointerfaceaccess
-.globl XUD_SetStallByAddr.locnonotificationselect
-.set XUD_SetStallByAddr.locnoside, 1
-.set XUD_SetStallByAddr.locnochandec, 1
-.set XUD_SetStallByAddr.locnoglobalaccess, 1
-.set XUD_SetStallByAddr.locnointerfaceaccess, 1
-.set XUD_SetStallByAddr.locnonotificationselect, 1
-
-
-.globl XUD_ClearStallByAddr
-.type XUD_ClearStallByAddr, @function
-
-/* R0: ep number */
-.cc_top XUD_ClearStallByAddr.func
-.issue_mode single
-.align FUNCTION_ALIGNMENT
-XUD_ClearStallByAddr:
-    ENTSP_lu6   0
-    ldc         r2, USB_PIDn_NAK
-    ldc         r11, 0x80                          // Check for IN bit
-    and         r11, r11, r0
-    bf          r11, XUD_ClearStallByAddr_OUT
-    ldaw        r1,  dp[handshakeTable_IN]         // Reset Handshake
-    mkmsk       r11, 7
-    and         r11, r11, r0
-    ldc         r2, 0                              // Clear with 0 (differs to OUT)
-    stw         r2, r1[r11]
-                                                   // Calc offset for data pid
-    ldaw        r0, r11[4]                         // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
-    ldc         r1, USB_PIDn_DATA0
-    bu          XUD_ClearStallByAddr_ResetDataPid
-
-XUD_ClearStallByAddr_OUT:
-    ldc         r2, USB_PIDn_NAK
-    ldaw        r1, dp[handshakeTable_OUT]
-    stw         r2, r1[r0]
-
-#ifdef __XS3A__
-    ldc         r1, USB_PIDn_DATA0
-#else
-    ldc         r1, USB_PID_DATA0
-#endif
-
-XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
-    ldc         r2, 40                          // Size of XUD_ep_info struct TODO use sizeof() -
-    mul         r0, r0, r2                      // Be careful with packing
-    ldw         r2, cp[ep_info_address]
-    add         r0, r2, r0
-    stw         r1, r0[4]
-    retsp       0
-
-
-.size XUD_ClearStallByAddr, .-XUD_ClearStallByAddr
-.cc_bottom XUD_ClearStallByAddr.func
-.globl XUD_ClearStallByAddr.nstackwords
-.globl XUD_ClearStallByAddr.maxchanends
-.globl XUD_ClearStallByAddr.maxtimers
-.globl XUD_ClearStallByAddr.maxcores
-.set XUD_ClearStallByAddr.nstackwords, 0
-.set XUD_ClearStallByAddr.maxchanends, 0
-.set XUD_ClearStallByAddr.maxtimers, 0
-.set XUD_ClearStallByAddr.maxcores, 1
-.globl XUD_ClearStallByAddr.locnoside
-.globl XUD_ClearStallByAddr.locnochandec
-.globl XUD_ClearStallByAddr.locnoglobalaccess
-.globl XUD_ClearStallByAddr.locnointerfaceaccess
-.globl XUD_ClearStallByAddr.locnonotificationselect
-.set XUD_ClearStallByAddr.locnoside, 1
-.set XUD_ClearStallByAddr.locnochandec, 1
-.set XUD_ClearStallByAddr.locnoglobalaccess, 1
-.set XUD_ClearStallByAddr.locnointerfaceaccess, 1
-.set XUD_ClearStallByAddr.locnonotificationselect, 1
-
 .globl XUD_ResetEpStateByAddr
 .type XUD_ResetEpStateByAddr, @function
 
@@ -649,27 +538,25 @@ XUD_ClearStallByAddr_ResetDataPid:              // Reset DATA PID to DATA0
 .cc_top XUD_ResetEpStateByAddr.func
 .align FUNCTION_ALIGNMENT
 XUD_ResetEpStateByAddr:
-#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-  ENTSP_lu6 0
-#endif
+    ENTSP_lu6   0
     ldc         r1, 0x80
     and         r2, r0, r1
     bf          r2, XUD_ResetEpStateByAddr_OUT
     ldc         r1, USB_PIDn_DATA0
     bu          XUD_ResetEpStateByAddr_
 XUD_ResetEpStateByAddr_OUT:
-#if defined(__XS3A__) 
-    ldc         r1, USB_PIDn_DATA0
-#else
+#if defined(__XS2A__) 
     ldc         r1, USB_PID_DATA0
+#else
+    ldc         r1, USB_PIDn_DATA0
 #endif
 XUD_ResetEpStateByAddr_:
     zext        r0, 7                           // Check for IN bit set
     bf          r2, NoOffset
     ldaw        r0, r0[4]                       // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
 NoOffset:
-    ldc         r2, 40                          // Size of XUD_ep_info struct TODO. FIXME!
+    ldc         r2, 44                          // Size of XUD_ep_info struct TODO. FIXME!
     mul         r0, r0, r2
     ldw         r2, cp[ep_info_address]
     add         r0, r2, r0

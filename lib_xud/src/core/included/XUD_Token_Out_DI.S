@@ -39,14 +39,12 @@ DoOutNonIso:
 doRXDataReturn_NonIso:
     bf         r1, NextTokenAfterOut            // Check for bad crc
 
-    ldaw       r6,  dp[handshakeTable_OUT]      // Load the handshake table.
-   {ldw        r11, r6[r10]                     // Get the handshake PID for this EP
-    ldc        r1,  USB_PIDn_STALL}             // as well as the STALL PID
-    eq         r1,  r11, r1                     // and compare them.
-    bt         r1,  XUD_TokenOut_Handshake      // If the handshake PID for this EP is STALL, then
-                                                // go and send the handshake without clearing ready
-                                                // or communicating back to the application that
-                                                // the packet has been received.
+    ldaw       r11, dp[ep_addr]                 // Check if EP was stalled (and also ready)
+    ldw        r11, r11[r10]
+    {ldw       r11, r11[10]
+    ldc        r1,  USB_PIDn_STALL}
+    eq         r1,  r11, r1
+    bt         r1,  XUD_TokenOut_Handshake
 
     ldc        r11, USB_PIDn_ACK                // Data CRC good, EP not Iso, and EP not halted: Send Ack
     outpw      res[TXD], r11, 8
@@ -93,9 +91,11 @@ XUD_TokenOut_WaitForPacketEnd:                  // Wait for end of data then sen
 #endif
 
   // Load handshake (ACK or STALL)
-  ldaw      r6, dp[handshakeTable_OUT]          // Load handshake table
 XUD_TokenOut_Handshake:
-  ldw       r11, r6[r10]
+  ldaw      r6, dp[ep_addr]
+  ldw       r6, r6[r10]
+  ldw       r11, r6[10]
+
   outpw     res[TXD], r11, 8
   syncr     res[TXD]
 

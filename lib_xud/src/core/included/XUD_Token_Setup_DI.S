@@ -31,6 +31,7 @@ XUD_SETUP_ClearStall:                           // CRC OK
     
     ldw          r11, r6[r10]
     ldc          r6, USB_PIDn_NAK
+    stw          r6, r11[10]
 
 XUD_SETUP_SendSetupAck:
     ldc        r11, USB_PIDn_ACK

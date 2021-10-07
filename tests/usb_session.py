@@ -88,24 +88,24 @@ class UsbSession:
 
         if resetDataPid:
             self._pidTable_in[n] = usb_packet.USB_PID["DATA0"]
-            pid = self._pidTable_in[n]
-            return pid
 
         pid = self._pidTable_in[n]
+
         if togglePid:
             self._pid_toggle(self._pidTable_in, n)
+
         return pid
 
     def data_pid_out(self, n, togglePid=True, resetDataPid=False):
 
         if resetDataPid:
             self._pidTable_out[n] = usb_packet.USB_PID["DATA0"]
-            pid = self._pidTable_out[n]
-            return pid
 
         pid = self._pidTable_out[n]
+
         if togglePid:
             self._pid_toggle(self._pidTable_out, n)
+
         return pid
 
     def __str__(self):

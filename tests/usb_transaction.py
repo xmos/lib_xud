@@ -99,13 +99,18 @@ class UsbTransaction(UsbEvent):
                 endpointNumber, dataLength, resend=resend
             )
 
-            pid = session.data_pid_out(
-                endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
-            )
-
-            # If SETUP trans then we need to toggle the corresponding IN EP's PID also
+            # Reset data PID's on SETUP transaction
             if transType == "SETUP":
+                pid = session.data_pid_out(
+                    endpointNumber, togglePid=True, resetDataPid=True
+                )
+
+                # If SETUP trans then we need to reset and toggle the corresponding IN EP's PID also
                 in_pid = session.data_pid_in(
+                    endpointNumber, togglePid=True, resetDataPid=True
+                )
+            else:
+                pid = session.data_pid_out(
                     endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
                 )
 

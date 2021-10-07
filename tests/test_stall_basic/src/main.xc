@@ -56,7 +56,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     /* Valid transaction on another EP, clear STALL on the test EP's */
     result = XUD_GetBuffer(ep_ctrl, outBuffer, length);
     failed = (result != XUD_RES_OKAY);
-   
+  
     /* Clear stall on the test EP's */ 
     XUD_ClearStall(ep_out);
     XUD_ClearStall(ep_in);
@@ -76,6 +76,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     result = XUD_GetBuffer(ep_ctrl, outBuffer, length);
     failed = (result != XUD_RES_OKAY);
 
+    /* Clear stall on both EPs using Addr */
     XUD_ClearStallByAddr(TEST_EP_NUM);
     XUD_ClearStallByAddr(TEST_EP_NUM | 0x80);
 

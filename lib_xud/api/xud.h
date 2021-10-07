@@ -256,7 +256,7 @@ XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
  * \param   one      IN or OUT endpoint identifier to perform the reset on.
  * \param   two      Optional second IN or OUT endpoint structure to perform a reset on.
  * \return  Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
- *          at high speed, ``XUD_SPEED_FS`` - the device is runnig at full speed,
+ *          at high speed, ``XUD_SPEED_FS`` - the device is running at full speed,
  *          or ``XUD_SPEED_KILL`` to indicate that the USB stack has been shut down
  *          by another part of the user code (using XUD_Kill). If the last value is
  *          returned, the endpoint code should call XUD_CloseEndpoint and then

@@ -21,6 +21,29 @@ def test_session(ep, address, bus_speed):
 
     ep_ctrl = ep + 1
 
+    # Valid transactions on test EP's
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="IN",
+            dataLength=pktLength,
+        )
+    )
+
     # Expect test EP's to be halted
     session.add_event(
         UsbTransaction(
@@ -114,7 +137,6 @@ def test_session(ep, address, bus_speed):
             transType="OUT",
             dataLength=pktLength,
             halted=True,
-            interEventDelay=1000,
         )
     )
 
@@ -150,7 +172,6 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=1000,
         )
     )
 
@@ -162,7 +183,6 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="IN",
             dataLength=pktLength,
-            interEventDelay=1000,
         )
     )
 

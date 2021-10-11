@@ -35,6 +35,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     uint8_t outBuffer[128];
     uint8_t inBuffer0[128];
     uint8_t inBuffer1[128];
+    uint8_t inBuffer2[128];
     unsigned length;
     XUD_Result_t result;
     
@@ -42,16 +43,24 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     {
         inBuffer0[i] = i;
         inBuffer1[i] = i + PKT_LENGTH_START;
+        inBuffer2[i] = i + PKT_LENGTH_START + PKT_LENGTH_START;
     }
 
-    /* Stall EPs */
     XUD_ep ep_out = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
-    XUD_SetStall(ep_out);
-    
     XUD_ep ep_in = XUD_InitEp(c_ep_in[TEST_EP_NUM]);
-    XUD_SetStall(ep_in);
-
     XUD_ep ep_ctrl = XUD_InitEp(c_ep_out[CTRL_EP_NUM]);
+    
+    /* Valid transaction on test OUT EP */
+    /* This is somewhat important as this will toggle the expected PID - which should be reset on an un-stall */
+    result = XUD_GetBuffer(ep_out, outBuffer, length);
+    failed = (result != XUD_RES_OKAY);
+    
+    result = XUD_SetBuffer(ep_in, inBuffer0, PKT_LENGTH_START);
+    failed |= (result != XUD_RES_OKAY);
+
+    /* Stall test EPs */
+    XUD_SetStall(ep_in);
+    XUD_SetStall(ep_out);
 
     /* Valid transaction on another EP, clear STALL on the test EP's */
     result = XUD_GetBuffer(ep_ctrl, outBuffer, length);
@@ -65,7 +74,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
     
-    result = XUD_SetBuffer(ep_in, inBuffer0, PKT_LENGTH_START);
+    result = XUD_SetBuffer(ep_in, inBuffer1, PKT_LENGTH_START);
     failed |= (result != XUD_RES_OKAY);
 
     /* Stall both EP's using Addr */  
@@ -84,7 +93,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
     
-    result = XUD_SetBuffer(ep_in, inBuffer1, PKT_LENGTH_START);
+    result = XUD_SetBuffer(ep_in, inBuffer2, PKT_LENGTH_START);
     failed |= (result != XUD_RES_OKAY);
 
     return failed;

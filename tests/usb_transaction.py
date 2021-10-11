@@ -148,12 +148,18 @@ class UsbTransaction(UsbEvent):
                 self._badDataCrc
                 or self._rxeAssertDelay_data
                 or self._endpointType == "ISO"
+                or halted
             ):
                 togglePid = False
             else:
                 togglePid = True
 
-            pid = session.data_pid_in(endpointNumber, togglePid=togglePid)
+            if halted:
+                resetDataPid = True
+
+            pid = session.data_pid_in(
+                endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
+            )
 
             # Add data packet to packets list
             if not halted:

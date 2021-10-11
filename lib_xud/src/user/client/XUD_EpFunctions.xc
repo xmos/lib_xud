@@ -157,6 +157,8 @@ void XUD_ClearStall(XUD_ep ep)
     {
         asm volatile ("stw %0, %1[10]"::"r"(USB_PIDn_NAK), "r"(ep));
     }
+    
+    XUD_ResetEpStateByAddr(epAddr);
 }
 
 void XUD_ClearStallByAddr(int epNum)

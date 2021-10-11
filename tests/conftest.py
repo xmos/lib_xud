@@ -13,6 +13,8 @@ from xcoverage.xcov import xcov_process, xcov_combine, combine_tests
 
 # Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn", "test_xs3_540.xn", "test_xs3_500.xn"]
+combine_test = combine_tests(os.path.dirname(os.path.abspath(__file__)))
+xcov_comb = xcov_combine()
 
 PARAMS = {
     "extended": {
@@ -167,7 +169,10 @@ def test_RunUsbSession(
                 # calculate code coverage for each tests
                 coverage = xcov_process(disasm, trace, xcov_dir)
                 # generate coverage file for each source code included
-                xcov_combine(xcov_dir)
+                xcov_comb.run_combine(xcov_dir)
+                #delete trace file and disasm file
+                if os.path.exists(trace):
+                    os.remove(trace)
         assert result
 
 
@@ -209,9 +214,8 @@ def copy_xn_files(worker_id, request):
 
     # Attempt to only run copy/delete once..
     if worker_id in ("master", "gw0"):
-
         session = request.node
-
+        combine_test.remove_tmp_testresult(combine_test.tpath)
         # There will be duplicates (same test name with different params) sos
         # treat as set
         global test_dirs
@@ -248,7 +252,11 @@ def xcoverage_combination(worker_id, request):
     def run_combination():
         global test_dirs
         if worker_id in ("master", "gw0"):
-            current_path = os.getcwd()
-            coverage = combine_tests(current_path, test_dirs)
+            # current_path = os.getcwd()
+            coverage = combine_test.do_combine_test(test_dirs)
+            combine_test.generate_merge_src("result")
+            combine_test.close_fd()
+            # teardowm - remove tmp file
+            combine_test.remove_tmp_testresult(combine_test.tpath)
 
     request.addfinalizer(run_combination)

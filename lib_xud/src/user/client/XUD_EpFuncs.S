@@ -145,12 +145,8 @@ XUD_GetSetupData_Reset:
 .cc_top XUD_GetData.func
 .align FUNCTION_ALIGNMENT
 XUD_GetData:
-#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-  ENTSP_lu6    4
-#else
-  entsp        4
-#endif
+    ENTSP_lu6    4
     stw         r10, sp[1]
     mov         r11, r1
 
@@ -282,12 +278,8 @@ XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on
 .cc_top XUD_SetData.func
 .align FUNCTION_ALIGNMENT
 XUD_SetData:
-#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
     ENTSP_lu6  8
-#else
-    entsp      8
-#endif
     stw         r5, sp[5]
     stw         r10, sp[6]
 

@@ -3,17 +3,21 @@
 from pathlib import Path
 import os
 import shutil
+import psutil
+import time
 import sys
+import re
+from filelock import FileLock
 
 import pytest
 
 from helpers import get_usb_clk_phy, do_usb_test
 import Pyxsim
-from xcoverage.xcov import xcov_process, xcov_combine, combine_tests
+from xcoverage.xcov import xcov_process, xcov_combine, combine_process
 
 # Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn", "test_xs3_540.xn", "test_xs3_500.xn"]
-combine_test = combine_tests(os.path.dirname(os.path.abspath(__file__)))
+combine_test = combine_process(os.path.dirname(os.path.abspath(__file__)))
 xcov_comb = xcov_combine()
 
 PARAMS = {
@@ -170,7 +174,7 @@ def test_RunUsbSession(
                 coverage = xcov_process(disasm, trace, xcov_dir)
                 # generate coverage file for each source code included
                 xcov_comb.run_combine(xcov_dir)
-                #delete trace file and disasm file
+                # delete trace file and disasm file
                 if os.path.exists(trace):
                     os.remove(trace)
         assert result
@@ -247,7 +251,7 @@ def copy_xn_files(worker_id, request):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def xcoverage_combination(worker_id, request):
+def xcoverage_combination(tmp_path_factory, worker_id, request):
     # run xcoverage combine test at the end of pytest
     def run_combination():
         global test_dirs
@@ -258,5 +262,29 @@ def xcoverage_combination(worker_id, request):
             combine_test.close_fd()
             # teardowm - remove tmp file
             combine_test.remove_tmp_testresult(combine_test.tpath)
+            return
+
+        # get the temp directory shared by all workers
+        root_tmp_dir = tmp_path_factory.getbasetemp().parent
+
+        fn = root_tmp_dir / "data.json"
+        with FileLock(str(fn) + ".lock"):
+            if fn.is_file():
+                pass
+            else:
+                # runs after all other process finished
+                pid_re = re.compile("tmp_testresult_(.*).txt")
+                for tmp_testfile in combine_test.find_testresult(combine_test.tpath):
+                    pid = pid_re.match(tmp_testfile)
+                    pid = pid.group(1)
+                    if pid != os.getpid():
+                        while(psutil.pid_exists(pid)):
+                            time.sleep(0.05)
+
+                coverage = combine_test.do_combine_test(test_dirs)
+                combine_test.generate_merge_src("result")
+                combine_test.close_fd()
+                # teardowm - remove tmp file
+                combine_test.remove_tmp_testresult(combine_test.tpath)
 
     request.addfinalizer(run_combination)

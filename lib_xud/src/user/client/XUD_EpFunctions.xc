@@ -16,11 +16,6 @@ static inline int min(int x, int y)
     return y;
 }
 
-XUD_Result_t XUD_GetBuffer(XUD_ep c, unsigned char buffer[], unsigned &datalength)
-{
-    return XUD_GetData(c, buffer, datalength);
-}
-
 // To be deprecated - In favour of XUD_GetControlBuffer()
 XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned &length)
 {

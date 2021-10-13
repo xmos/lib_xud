@@ -544,10 +544,10 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
  */
 typedef struct XUD_ep_info
 {
-    unsigned int chan_array_ptr;       // 0
+    unsigned int array_ptr;            // 0
     unsigned int ep_xud_chanend;       // 1
-    unsigned int ep_client_chanend;    // 2
-    unsigned int scratch;              // 3 used for datalength in
+    unsigned int client_chanend;       // 2
+    unsigned int buffer;               // 3
     unsigned int pid;                  // 4 Expected out PID
     unsigned int epType;               // 5 Data
     unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.

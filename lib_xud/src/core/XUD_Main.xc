@@ -483,13 +483,13 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         epChans0[i] = XUD_Sup_GetResourceId(c_ep_out[i]);
 
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(i));
-        ep_info[i].chan_array_ptr = x;
+        ep_info[i].array_ptr = x;
 
         asm("mov %0, %1":"=r"(x):"r"(c_ep_out[i]));
         ep_info[i].ep_xud_chanend = x;
 
         asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_out[i]));
-        ep_info[i].ep_client_chanend = x;
+        ep_info[i].client_chanend = x;
 
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"(i*sizeof(XUD_ep_info)/sizeof(unsigned)));
         outuint(c_ep_out[i], x);
@@ -516,13 +516,13 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         epChans0[i+USB_MAX_NUM_EP_OUT] = XUD_Sup_GetResourceId(c_ep_in[i]);
 
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(USB_MAX_NUM_EP_OUT+i));
-        ep_info[USB_MAX_NUM_EP_OUT+i].chan_array_ptr = x;
+        ep_info[USB_MAX_NUM_EP_OUT+i].array_ptr = x;
 
         asm("mov %0, %1":"=r"(x):"r"(c_ep_in[i]));
         ep_info[USB_MAX_NUM_EP_OUT+i].ep_xud_chanend = x;
 
         asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_in[i]));
-        ep_info[USB_MAX_NUM_EP_OUT+i].ep_client_chanend = x;
+        ep_info[USB_MAX_NUM_EP_OUT+i].client_chanend = x;
 
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
 

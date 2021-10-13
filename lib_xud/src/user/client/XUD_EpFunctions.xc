@@ -142,7 +142,7 @@ void XUD_ClearStall(XUD_ep ep)
     // Load EP addr and check for IN or OUT
     unsigned epAddr;
 
-    asm volatile("ldw %0, %1[8]":"=r"(epAddr):"r"(ep));             // Load our chanend
+    asm volatile("ldw %0, %1[8]":"=r"(epAddr):"r"(ep));             // Load EP chanend
     
     if(epAddr & 0x80)
     {
@@ -153,14 +153,15 @@ void XUD_ClearStall(XUD_ep ep)
         asm volatile ("stw %0, %1[10]"::"r"(USB_PIDn_NAK), "r"(ep));
     }
     
+    /* Reset data PID */
     XUD_ResetEpStateByAddr(epAddr);
 }
 
 void XUD_ClearStallByAddr(int epNum)
 {
-    unsigned dataPid = USB_PIDn_DATA0;
     unsigned handshake = USB_PIDn_NAK;
 
+    /* Reset data PID */
     XUD_ResetEpStateByAddr(epNum);
 
     if(epNum & 0x80)
@@ -169,23 +170,11 @@ void XUD_ClearStallByAddr(int epNum)
         epNum += 16;
         handshake = 0;
     }
-    else
-    {
-#ifdef __XS2A__
-        dataPid = USB_PID_DATA0;
-#endif
-    }
 
     unsafe
     {
         ep_info_[epNum].handshake = handshake;
-
-        /* Clearing HALT should be done via a SETUP and thus 
-         * data PIDs should be already reset, but just in case...
-         */
-        ep_info_[epNum].pid = dataPid;
     }
-
 }
 
 void XUD_CloseEndpoint(XUD_ep one)

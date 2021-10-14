@@ -277,8 +277,8 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
                 for tmp_testfile in combine_test.find_testresult(combine_test.tpath):
                     pid = pid_re.match(tmp_testfile)
                     pid = pid.group(1)
-                    if pid != os.getpid():
-                        while(psutil.pid_exists(pid)):
+                    if int(pid) != os.getpid():
+                        while(psutil.pid_exists(int(pid))):
                             time.sleep(0.05)
 
                 coverage = combine_test.do_combine_test(test_dirs)

@@ -1,12 +1,11 @@
-#include <xud.h>
-#include <print.h>
+#include "xud.h"
+#include "XUD_USB_Defines.h"
 
-XUD_Result_t XUD_GetBufferr(XUD_ep e, unsigned char buffer[], unsigned *datalength);
 
 XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
 {
 
-    XUD_ep_info * ep = (XUD_ep_info*) e;
+    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
     unsigned isReset;
     unsigned length;
     unsigned lengthTail;

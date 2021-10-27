@@ -253,38 +253,19 @@ def copy_xn_files(worker_id, request):
 @pytest.fixture(scope="session", autouse=True)
 def xcoverage_combination(tmp_path_factory, worker_id, request):
     # run xcoverage combine test at the end of pytest
-    def run_combination():
-        global test_dirs
-        if worker_id in ("master", "gw0"):
-            # current_path = os.getcwd()
-            coverage = combine_test.do_combine_test(test_dirs)
-            combine_test.generate_merge_src("result")
-            combine_test.close_fd()
-            # teardowm - remove tmp file
-            combine_test.remove_tmp_testresult(combine_test.tpath)
-            return
+    def run_at_end():
+        coverage = combine_test.do_combine_test(test_dirs)
+        combine_test.generate_merge_src("result")
+        combine_test.close_fd()
+        # teardowm - remove tmp file
+        combine_test.remove_tmp_testresult(combine_test.tpath)
 
-        # get the temp directory shared by all workers
-        root_tmp_dir = tmp_path_factory.getbasetemp().parent
+    root_tmp_dir = tmp_path_factory.getbasetemp().parent
 
-        fn = root_tmp_dir / "data.json"
-        with FileLock(str(fn) + ".lock"):
-            if fn.is_file():
-                pass
-            else:
-                # runs after all other process finished
-                pid_re = re.compile("tmp_testresult_(.*).txt")
-                for tmp_testfile in combine_test.find_testresult(combine_test.tpath):
-                    pid = pid_re.match(tmp_testfile)
-                    pid = pid.group(1)
-                    if int(pid) != os.getpid():
-                        while(psutil.pid_exists(int(pid))):
-                            time.sleep(0.05)
-
-                coverage = combine_test.do_combine_test(test_dirs)
-                combine_test.generate_merge_src("result")
-                combine_test.close_fd()
-                # teardowm - remove tmp file
-                combine_test.remove_tmp_testresult(combine_test.tpath)
-
-    request.addfinalizer(run_combination)
+    fn = root_tmp_dir / "data.json"
+    with FileLock(str(fn) + ".lock"):
+        if fn.is_file():
+            pass
+        else:
+            fn.write_text(str(os.getpid()))
+            request.addfinalizer(run_at_end)

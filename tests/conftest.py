@@ -255,7 +255,7 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
     # run xcoverage combine test at the end of pytest
     def run_at_end():
         coverage = combine_test.do_combine_test(test_dirs)
-        combine_test.generate_merge_src("result")
+        combine_test.generate_merge_src()
         combine_test.close_fd()
         # teardowm - remove tmp file
         combine_test.remove_tmp_testresult(combine_test.tpath)

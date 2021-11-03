@@ -20,8 +20,11 @@ Installation and prerequiste for running pytest
 To run all tests:
 
 ``pytest -n 4 --enabletracing --xcov [test level]``
+
 test level: smoke < default < extended
 
 To run specific test:
+
 ``pytest -n 4 --enabletracing --xcov [test level] <test_name>.py``
+
 test level: smoke < default < extended

@@ -464,14 +464,14 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     {
         ep_info[i].epAddress = i;
         ep_info[i].resetting = 0;
-        ep_info[i].handshake = USB_PIDn_NAK;
+        ep_info[i].halted = USB_PIDn_NAK;
     }
 
     for(int i = 0; i < USB_MAX_NUM_EP_IN; i++)
     {
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
-        ep_info[USB_MAX_NUM_EP_OUT+i].handshake = 0;
+        ep_info[USB_MAX_NUM_EP_OUT+i].halted = 0;
     }
 
     /* Populate arrays of channels and status flag tabes */
@@ -486,7 +486,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         ep_info[i].array_ptr = x;
 
         asm("mov %0, %1":"=r"(x):"r"(c_ep_out[i]));
-        ep_info[i].ep_xud_chanend = x;
+        ep_info[i].xud_chanend = x;
 
         asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_out[i]));
         ep_info[i].client_chanend = x;
@@ -519,7 +519,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         ep_info[USB_MAX_NUM_EP_OUT+i].array_ptr = x;
 
         asm("mov %0, %1":"=r"(x):"r"(c_ep_in[i]));
-        ep_info[USB_MAX_NUM_EP_OUT+i].ep_xud_chanend = x;
+        ep_info[USB_MAX_NUM_EP_OUT+i].xud_chanend = x;
 
         asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_in[i]));
         ep_info[USB_MAX_NUM_EP_OUT+i].client_chanend = x;

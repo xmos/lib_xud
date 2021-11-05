@@ -3,7 +3,6 @@
 from pathlib import Path
 import os
 import shutil
-import psutil
 import time
 import sys
 import re
@@ -54,6 +53,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--xcov",
         action="store_true",
+        default=False,
         help="Enable xcov",
     )
     parser.addoption(
@@ -66,6 +66,7 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     os.environ["enabletracing"] = str(config.getoption("enabletracing"))
+    os.environ["xcov"] = str(config.getoption("xcov"))
 
 
 def pytest_generate_tests(metafunc):
@@ -78,7 +79,7 @@ def pytest_generate_tests(metafunc):
         else:
             params = PARAMS["default"]
         if metafunc.config.getoption("xcov"):
-            params["xcov"] = [metafunc.config.getoption("xcov")]
+            os.environ["enabletracing"] = "True"
     except AttributeError:
         params = {}
 
@@ -125,7 +126,6 @@ def test_RunUsbSession(
     bus_speed,
     dummy_threads,
     core_freq,
-    xcov,
     test_file,
     capfd,
 ):
@@ -145,7 +145,6 @@ def test_RunUsbSession(
             core_freq,
             clk_60,
             usb_phy,
-            xcov,
             [test_session],
             test_file,
         )
@@ -169,7 +168,7 @@ def test_RunUsbSession(
             print(cap_output)
             sys.stderr.write(err)
         else:
-            if xcov:
+            if eval(os.getenv("xcov")):
                 # calculate code coverage for each tests
                 coverage = xcov_process(disasm, trace, xcov_dir)
                 # generate coverage file for each source code included
@@ -205,8 +204,8 @@ def delete_test_specific_xn_files(test_dir, source_dir="src", xn_files=XN_FILES)
 
 @pytest.fixture(scope="session", autouse=True)
 def worker_id(request):
-    if hasattr(request.config, "slaveinput"):
-        return request.config.slaveinput["slaveid"]
+    if hasattr(request.config, "workerinput"):
+        return request.config.workerinput["workerid"]
     # Master means not executing with multiple workers
     return "master"
 
@@ -217,7 +216,7 @@ def worker_id(request):
 def copy_xn_files(worker_id, request):
 
     # Attempt to only run copy/delete once..
-    if worker_id in ("master", "gw0"):
+    if worker_id:
         session = request.node
         combine_test.remove_tmp_testresult(combine_test.tpath)
         # There will be duplicates (same test name with different params) sos
@@ -252,20 +251,42 @@ def copy_xn_files(worker_id, request):
 
 @pytest.fixture(scope="session", autouse=True)
 def xcoverage_combination(tmp_path_factory, worker_id, request):
-    # run xcoverage combine test at the end of pytest
-    def run_at_end():
-        coverage = combine_test.do_combine_test(test_dirs)
-        combine_test.generate_merge_src()
-        combine_test.close_fd()
-        # teardowm - remove tmp file
-        combine_test.remove_tmp_testresult(combine_test.tpath)
+    if eval(os.getenv("xcov")):
+        # run xcoverage combine test at the end of pytest
+        root_tmp_dir = tmp_path_factory.getbasetemp().parent
 
-    root_tmp_dir = tmp_path_factory.getbasetemp().parent
+        fn = root_tmp_dir / "data.json"
 
-    fn = root_tmp_dir / "data.json"
-    with FileLock(str(fn) + ".lock"):
-        if fn.is_file():
-            pass
-        else:
-            fn.write_text(str(os.getpid()))
+        def follow(nfile,n):
+            nf = open(nfile, "r")
+            lines = len(nf.readlines())
+            while (lines != n):
+                nf.close()
+                nf = open(nfile, "r")
+                lines = len(nf.readlines())
+                time.sleep(0.5)
+
+        def run_at_end():
+            wkc = os.getenv("PYTEST_XDIST_WORKER_COUNT")
+            if wkc:
+                follow(fn,int(wkc))
+            coverage = combine_test.do_combine_test(test_dirs)
+            combine_test.generate_merge_src()
+            combine_test.close_fd()
+            # teardowm - remove tmp file
+            combine_test.remove_tmp_testresult(combine_test.tpath)
+
+        def status():
+            f = open(fn, "a")
+            f.write(str(worker_id+"\n"))
+
+        if worker_id == "master":
             request.addfinalizer(run_at_end)
+            return
+
+        with FileLock(str(fn) + ".lock"):
+            if fn.is_file():
+                request.addfinalizer(status)
+            else:
+                fn.write_text(str(worker_id)+"\n")
+                request.addfinalizer(run_at_end)

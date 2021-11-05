@@ -21,6 +21,7 @@ COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
 			   -DUSB_TILE=tile[0] \
 			   -DXUD_SIM_XSIM=1 \
 			   -DXUD_TEST_SPEED_HS=1 \
+			   -save-temps \
 			   $(CFLAGS)
 
 TEST_FLAGS ?=

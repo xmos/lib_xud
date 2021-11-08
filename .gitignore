@@ -17,7 +17,7 @@ _build/
 *.pyc
 *.expect
 *.so
-*/logs/*
+**/logs*/**
 test_results.csv
 .DS_Store
 _README/**

@@ -15,7 +15,7 @@ APP_NAME =
 SHARED_CODE = ../../shared_src
 
 COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
-			   -O3 \
+			   -O0 \
 			   -g \
 			   -I$(SHARED_CODE) \
 			   -DUSB_TILE=tile[0] \

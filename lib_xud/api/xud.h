@@ -108,7 +108,6 @@ typedef enum XUD_Result
     XUD_RES_ERR =  2,
 } XUD_Result_t;
 
-#if defined(__XC__) || defined(__DOXYGEN__)
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
@@ -154,7 +153,6 @@ int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 XUD_BusSpeed_t desiredSpeed,
                 XUD_PwrConfig pwrConfig);
-#endif
 
 /**
  * \brief   This function must be called by a thread that deals with an OUT endpoint.

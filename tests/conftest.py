@@ -3,15 +3,21 @@
 from pathlib import Path
 import os
 import shutil
+import time
 import sys
+import re
+from filelock import FileLock
 
 import pytest
 
 from helpers import get_usb_clk_phy, do_usb_test
 import Pyxsim
+from xcoverage.xcov import xcov_process, xcov_combine, combine_process
 
 # Note, no current support for XS2 so don't copy XS2 xn files
 XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn", "test_xs3_540.xn", "test_xs3_500.xn"]
+combine_test = combine_process(os.path.dirname(os.path.abspath(__file__)))
+xcov_comb = xcov_combine()
 
 PARAMS = {
     "extended": {
@@ -45,6 +51,12 @@ def pytest_addoption(parser):
     parser.addoption("--smoke", action="store_true", help="Smoke test")
     parser.addoption("--extended", action="store_true", help="Extended test")
     parser.addoption(
+        "--xcov",
+        action="store_true",
+        default=False,
+        help="Enable xcov",
+    )
+    parser.addoption(
         "--enabletracing",
         action="store_true",
         default=False,
@@ -54,6 +66,7 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     os.environ["enabletracing"] = str(config.getoption("enabletracing"))
+    os.environ["xcov"] = str(config.getoption("xcov"))
 
 
 def pytest_generate_tests(metafunc):
@@ -65,6 +78,8 @@ def pytest_generate_tests(metafunc):
             params = PARAMS.get("extended", PARAMS["default"])
         else:
             params = PARAMS["default"]
+        if metafunc.config.getoption("xcov"):
+            os.environ["enabletracing"] = "True"
     except AttributeError:
         params = {}
 
@@ -93,7 +108,7 @@ def test_arch(arch: str) -> str:
     return arch
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_file(request):
     return str(request.node.fspath)
 
@@ -134,6 +149,13 @@ def test_RunUsbSession(
             test_file,
         )
     )
+
+    testname, _ = os.path.splitext(os.path.basename(test_file))
+    desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
+    disasm = f"{testname}/bin/{desc}/{testname}_{desc}.dump"
+    trace = f"logs/xsim_trace_{testname}_{desc}.txt"
+    xcov_dir = f"{testname}/bin/{desc}"
+
     cap_output, err = capfd.readouterr()
     output.append(cap_output.split("\n"))
 
@@ -145,6 +167,15 @@ def test_RunUsbSession(
         if not result:
             print(cap_output)
             sys.stderr.write(err)
+        else:
+            if eval(os.getenv("xcov")):
+                # calculate code coverage for each tests
+                coverage = xcov_process(disasm, trace, xcov_dir)
+                # generate coverage file for each source code included
+                xcov_comb.run_combine(xcov_dir)
+                # delete trace file and disasm file
+                if os.path.exists(trace):
+                    os.remove(trace)
         assert result
 
 
@@ -173,8 +204,8 @@ def delete_test_specific_xn_files(test_dir, source_dir="src", xn_files=XN_FILES)
 
 @pytest.fixture(scope="session", autouse=True)
 def worker_id(request):
-    if hasattr(request.config, "slaveinput"):
-        return request.config.slaveinput["slaveid"]
+    if hasattr(request.config, "workerinput"):
+        return request.config.workerinput["workerid"]
     # Master means not executing with multiple workers
     return "master"
 
@@ -185,20 +216,21 @@ def worker_id(request):
 def copy_xn_files(worker_id, request):
 
     # Attempt to only run copy/delete once..
-    if worker_id in ("master", "gw0"):
-
+    if worker_id:
         session = request.node
-
+        combine_test.remove_tmp_testresult(combine_test.tpath)
         # There will be duplicates (same test name with different params) sos
         # treat as set
+        global test_dirs
         test_dirs = set([])
-
+        # test_dir_list = []
         # Go through collected tests and copy over XN files
         for item in session.items:
             full_path = item.fspath
             test_dir = Path(full_path).with_suffix("")  # Strip suffix
             test_dir = os.path.basename(test_dir)  # Strip path leaving filename
             test_dirs.add(test_dir)
+            # test_dir_list.append(test_dir)
 
         for test_dir in test_dirs:
             copy_common_xn_files(test_dir)
@@ -215,3 +247,46 @@ def copy_xn_files(worker_id, request):
     # Setup tear down
     # Deletion removed for now - doesn't seem important
     # request.addfinalizer(delete_xn_files)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def xcoverage_combination(tmp_path_factory, worker_id, request):
+    if eval(os.getenv("xcov")):
+        # run xcoverage combine test at the end of pytest
+        root_tmp_dir = tmp_path_factory.getbasetemp().parent
+
+        fn = root_tmp_dir / "data.json"
+
+        def follow(nfile,n):
+            nf = open(nfile, "r")
+            lines = len(nf.readlines())
+            while (lines != n):
+                nf.close()
+                nf = open(nfile, "r")
+                lines = len(nf.readlines())
+                time.sleep(0.5)
+
+        def run_at_end():
+            wkc = os.getenv("PYTEST_XDIST_WORKER_COUNT")
+            if wkc:
+                follow(fn,int(wkc))
+            coverage = combine_test.do_combine_test(test_dirs)
+            combine_test.generate_merge_src()
+            combine_test.close_fd()
+            # teardowm - remove tmp file
+            combine_test.remove_tmp_testresult(combine_test.tpath)
+
+        def status():
+            f = open(fn, "a")
+            f.write(str(worker_id+"\n"))
+
+        if worker_id == "master":
+            request.addfinalizer(run_at_end)
+            return
+
+        with FileLock(str(fn) + ".lock"):
+            if fn.is_file():
+                request.addfinalizer(status)
+            else:
+                fn.write_text(str(worker_id)+"\n")
+                request.addfinalizer(run_at_end)

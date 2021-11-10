@@ -3,6 +3,7 @@
 
 #include <xs1.h>
 #include "XUD_USB_Defines.h"
+#include "XUD_AlignmentDefines.h"
 
 .issue_mode dual
 
@@ -14,6 +15,7 @@
 
 // NAK every IN token if the CRC is correct.
 
+.align FUNCTION_ALIGNMENT
 XUD_UsbTestSE0:
     DUALENTSP_lu6  0                                        // Note, don't really need DI here..
                                                             // TODO ideally don't load these from dp..

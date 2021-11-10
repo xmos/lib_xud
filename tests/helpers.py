@@ -160,7 +160,7 @@ def do_usb_test(
     assert len(sessions) == 1, "Multiple sessions not yet supported"
     if build_success:
 
-        if xcov:
+        if eval(os.getenv("xcov")):
             split_dir = f"{testname}/bin/{desc}/"
             disasm = f"{testname}/bin/{desc}/{testname}_{desc}.dump"
             generate_elf_disasm(binary, split_dir, disasm)

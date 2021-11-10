@@ -34,13 +34,19 @@
   #define USB_TILE tile[0]
 #endif
 
+// TODO use PLATFORM_REFERENCE_MHZ from platform.h
 #ifndef REF_CLK_FREQ
 #define REF_CLK_FREQ 100
 #endif
 
 #ifndef XUD_CORE_CLOCK
-#warning XUD_CORE_CLOCK not defined, using default (700MHz)
-#define XUD_CORE_CLOCK (700)
+    #ifdef __XS2A__
+        //#warning XUD_CORE_CLOCK not defined, using default (500MHz)
+        #define XUD_CORE_CLOCK (500)
+    #else
+        //#warning XUD_CORE_CLOCK not defined, using default (600MHz)
+        #define XUD_CORE_CLOCK (600)
+    #endif
 #endif
 
 #if !defined(PORT_USB_CLK)
@@ -108,7 +114,6 @@ typedef enum XUD_Result
     XUD_RES_ERR =  2,
 } XUD_Result_t;
 
-#if defined(__XC__) || defined(__DOXYGEN__)
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
@@ -154,7 +159,17 @@ int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 XUD_BusSpeed_t desiredSpeed,
                 XUD_PwrConfig pwrConfig);
-#endif
+
+/* Legacy API support */
+int XUD_Manager(chanend c_epOut[], int noEpOut,
+                chanend c_epIn[], int noEpIn,
+                NULLABLE_RESOURCE(chanend, c_sof),
+                XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
+                NULLABLE_RESOURCE(port, p_usb_rst),
+                NULLABLE_RESOURCE(xcore_clock_t, clk),
+                unsigned rstMask,
+                XUD_BusSpeed_t desiredSpeed,
+                XUD_PwrConfig pwrConfig);
 
 /**
  * \brief   This function must be called by a thread that deals with an OUT endpoint.

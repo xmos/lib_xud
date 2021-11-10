@@ -18,6 +18,8 @@ _build/
 *.expect
 *.so
 */logs/*
+**/logs_*
+**/tests/result/*
 test_results.csv
 .DS_Store
 _README/**

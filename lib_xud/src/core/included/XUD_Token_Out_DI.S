@@ -39,12 +39,12 @@ DoOutNonIso:
 doRXDataReturn_NonIso:
     bf         r1, NextTokenAfterOut            // Check for bad crc
 
-    ldaw       r11, dp[ep_addr]                 // Check if EP was stalled (and also ready)
-    ldw        r11, r11[r10]
-    {ldw       r11, r11[10]
-    ldc        r1,  USB_PIDn_STALL}
-    eq         r1,  r11, r1
-    bt         r1,  XUD_TokenOut_Handshake
+    //ldaw       r11, dp[ep_addr]                 // Check if EP was stalled (and also ready)
+    //ldw        r11, r11[r10]
+    //{ldw       r11, r11[10]
+    //ldc        r1,  USB_PIDn_STALL}
+    //eq         r1,  r11, r1
+    //bt         r1,  XUD_TokenOut_Handshake
 
     ldc        r11, USB_PIDn_ACK                // Data CRC good, EP not Iso, and EP not halted: Send Ack
     outpw      res[TXD], r11, 8

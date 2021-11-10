@@ -14,14 +14,14 @@ APP_NAME = app_test_and_measurement
 
 BUILD_FLAGS = -O3 -report
 
-XCC_FLAGS_xcore200 = $(BUILD_FLAGS) -DXUD_SERIES_SUPPORT=XUD_X200_SERIES
-XCC_FLAGS_xcoreai = $(BUILD_FLAGS)
+XCC_FLAGS_200 = $(BUILD_FLAGS)
+XCC_FLAGS_AI = $(BUILD_FLAGS)
 
 # The TARGET variable determines what target system the application is
 # compiled for. It either refers to an XN file in the source directories
 # or a valid argument for the --target option when compiling.
 
-ifeq ($(CONFIG),xcoreai)
+ifeq ($(CONFIG),AI)
 TARGET = XCORE-AI-EXPLORER
 else
 TARGET = XCORE-200-EXPLORER

@@ -56,7 +56,7 @@ USB_TIMINGS_SHORT = {
 
 
 USB_PKT_TIMINGS_TIGHT = {
-    "TX_TO_RX_PACKET_TIMEOUT": 20,  # Timeout between sending DUT a packet
+    "TX_TO_RX_PACKET_TIMEOUT": 18,  # Timeout between sending DUT a packet
     # and the expected response (in USB
     # clocks). This is SIE decision time in
     # UTMI spec

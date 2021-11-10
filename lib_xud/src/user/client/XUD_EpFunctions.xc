@@ -118,24 +118,12 @@ void XUD_SetStall(XUD_ep ep)
 }
 
 extern XUD_ep_info ep_info[USB_MAX_NUM_EP];
+
 unsafe
 {
     XUD_ep_info * unsafe ep_info_ = ep_info;
 }
 
-void XUD_SetStallByAddr(int epNum)
-{
-    if(epNum & 0x80)
-    {
-        epNum &= 0x7f;
-        epNum += 16;
-    }
-
-    unsafe
-    {
-        ep_info_[epNum].handshake = USB_PIDn_STALL;
-    }
-}
 
 void XUD_ClearStall(XUD_ep ep)
 {
@@ -173,7 +161,7 @@ void XUD_ClearStallByAddr(int epNum)
 
     unsafe
     {
-        ep_info_[epNum].handshake = handshake;
+        ep_info_[epNum].halted = handshake;
     }
 }
 

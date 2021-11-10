@@ -1,6 +1,34 @@
 #include "xud.h"
 #include "XUD_USB_Defines.h"
 
+extern XUD_ep_info ep_info[USB_MAX_NUM_EP];
+
+void XUD_SetStallByAddr(int epNum)
+{
+    
+    if(epNum & 0x80)
+    {
+        epNum &= 0x7f;
+        epNum += 16;
+    }
+   
+#if 0 
+    XUD_ep_info *ep = ep_info[epNum];
+
+    unsigned * array_ptr = (unsigned *)ep->array_ptr;
+    
+    if(*array_ptr != 0)
+    {
+        printstr("trying to stall a ready EP\n");
+    }
+
+    unsafe
+    {
+        ep_info_[epNum].halted = USB_PIDn_STALL;
+    }
+#endif
+}
+
 
 XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
 {
@@ -16,6 +44,12 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
         if(ep->resetting)
         {
             return XUD_RES_RST;
+        }
+
+        /* If EP is marked as halted do not mark as ready.. */
+        if(ep->halted == USB_PIDn_STALL)
+        {
+            continue;
         } 
 
         /* Store buffer address in EP structure */
@@ -57,7 +91,7 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
         }
 
         // ISO = 0
-        if(ep->epType)
+        if(ep->epType != XUD_EPTYPE_ISO)
         {
 #ifdef __XS2A__
             ep->pid ^= 0x8;

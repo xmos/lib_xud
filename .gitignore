@@ -17,6 +17,7 @@ _build/
 *.pyc
 *.expect
 *.so
+**/bin/**
 **/tests/result/*
 **/logs*/**
 test_results.csv

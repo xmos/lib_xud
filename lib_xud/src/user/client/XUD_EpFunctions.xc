@@ -124,7 +124,6 @@ unsafe
     XUD_ep_info * unsafe ep_info_ = ep_info;
 }
 
-
 void XUD_ClearStall(XUD_ep ep)
 {
     // Load EP addr and check for IN or OUT
@@ -143,26 +142,6 @@ void XUD_ClearStall(XUD_ep ep)
     
     /* Reset data PID */
     XUD_ResetEpStateByAddr(epAddr);
-}
-
-void XUD_ClearStallByAddr(int epNum)
-{
-    unsigned handshake = USB_PIDn_NAK;
-
-    /* Reset data PID */
-    XUD_ResetEpStateByAddr(epNum);
-
-    if(epNum & 0x80)
-    {
-        epNum &= 0x7f;
-        epNum += 16;
-        handshake = 0;
-    }
-
-    unsafe
-    {
-        ep_info_[epNum].halted = handshake;
-    }
 }
 
 void XUD_CloseEndpoint(XUD_ep one)

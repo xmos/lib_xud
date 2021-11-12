@@ -5,30 +5,37 @@ extern XUD_ep_info ep_info[USB_MAX_NUM_EP];
 
 void XUD_SetStallByAddr(int epNum)
 {
-    
     if(epNum & 0x80)
     {
         epNum &= 0x7f;
         epNum += 16;
     }
    
-#if 0 
-    XUD_ep_info *ep = ep_info[epNum];
+    XUD_ep_info *ep = &ep_info[epNum];
 
     unsigned * array_ptr = (unsigned *)ep->array_ptr;
     
-    if(*array_ptr != 0)
-    {
-        printstr("trying to stall a ready EP\n");
-    }
-
-    unsafe
-    {
-        ep_info_[epNum].halted = USB_PIDn_STALL;
-    }
-#endif
+    ep->halted = USB_PIDn_STALL;
 }
 
+void XUD_ClearStallByAddr(int epNum)
+{
+    unsigned handshake = USB_PIDn_NAK;
+   
+    /* Reset data PID */
+    XUD_ResetEpStateByAddr(epNum);
+
+    if(epNum & 0x80)
+    {
+        epNum &= 0x7f;
+        epNum += 16;
+        handshake = 0;
+    }
+    
+    XUD_ep_info *ep = &ep_info[epNum];
+
+    ep->halted = handshake;
+}
 
 XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
 {

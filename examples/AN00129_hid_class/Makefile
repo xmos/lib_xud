@@ -32,6 +32,12 @@ else
 TARGET = XCORE-200-EXPLORER
 endif
 
+ifeq ($(CBUILD),1)
+EXCLUDE_FILES = main.xc \
+				endpoint0.xc
+else
+EXCLUDE_FILES = main.c
+endif
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure
 # for compiling XMOS applications. You should not need to edit below here.

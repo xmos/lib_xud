@@ -24,7 +24,6 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN]   = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, 
 /* It is essential that HID_REPORT_BUFFER_SIZE, defined in hid_defs.h, matches the   */
 /* infered length of the report described in hidReportDescriptor above. In this case */
 /* it is three bytes, three button bits padded to a byte, plus a byte each for X & Y */
-// #define HID_REPORT_BUFFER_SIZE 3
 unsigned char g_reportBuffer[HID_REPORT_BUFFER_SIZE] = {0, 0, 0};
 
 /* HID Class Requests */
@@ -38,14 +37,7 @@ XUD_Result_t HidInterfaceClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_Se
 
             /* Mandatory. Allows sending of report over control pipe */
             /* Send a hid report - note the use of unsafe due to shared mem */
-            //unsafe {
-              //char * unsafe p_reportBuffer = g_reportBuffer;
-              //char * p_reportBuffer = g_reportBuffer;
-              //buffer[0] = p_reportBuffer[0];
-            //}
             buffer[0] = g_reportBuffer[0];
-
-            //return XUD_DoGetRequest(c_ep0_out, c_ep0_in, (buffer, unsigned char []), 4, sp.wLength);
             return XUD_DoGetRequest(c_ep0_out, c_ep0_in, (void*)buffer, 4, sp.wLength);
             break;
 
@@ -107,7 +99,6 @@ void Endpoint0(chanend_t chan_ep0_out, chanend_t chan_ep0_in)
     while(1)
     {
         /* Returns XUD_RES_OKAY on success */
-        //XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, sp);
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
 
         if(result == XUD_RES_OKAY)
@@ -181,20 +172,15 @@ void Endpoint0(chanend_t chan_ep0_out, chanend_t chan_ep0_in)
             /* Returns  XUD_RES_OKAY if handled okay,
              *          XUD_RES_ERR if request was not handled (STALLed),
              *          XUD_RES_RST for USB Reset */
-            //unsafe{
             result = USB_StandardRequests(ep0_out, ep0_in, devDesc,
                         sizeof(devDesc), cfgDesc, sizeof(cfgDesc),
-                        //null, 0, null, 0, stringDescriptors, sizeof(stringDescriptors)/sizeof(stringDescriptors[0]),
                         NULL, 0, NULL, 0, stringDescriptors, sizeof(stringDescriptors)/sizeof(stringDescriptors[0]),
-                        //sp, usbBusSpeed);
                         &sp, usbBusSpeed);
-             //}
         }
 
         /* USB bus reset detected, reset EP and get new bus speed */
         if(result == XUD_RES_RST)
         {
-            //usbBusSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
             usbBusSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
         }
     }
@@ -269,7 +255,6 @@ void hid_mouse(chanend_t chan_ep_hid)
 }
 
 DECLARE_JOB(_XUD_Main, (chanend_t*, int, chanend_t*, int, chanend_t, XUD_EpType*, XUD_EpType*, XUD_BusSpeed_t, XUD_PwrConfig));
-//DECLARE_JOB(XUD_Main, (chanend, chanend, NULLABLE_RESOURCE(chanend, c_sof), XUD_EpType, XUD_EpType, XUD_BusSpeed_t, XUD_PwrConfig));
 void _XUD_Main(chanend_t *c_epOut, int noEpOut, chanend_t *c_epIn, int noEpIn, chanend_t c_sof, XUD_EpType *epTypeTableOut, XUD_EpType *epTypeTableIn, XUD_BusSpeed_t desiredSpeed, XUD_PwrConfig pwrConfig)
 {
     for(int i = 0; i < EP_COUNT_OUT; ++i) {
@@ -304,17 +289,8 @@ int main()
         c_ep_in[i] = channel_ep_in[i].end_a;
     }
 
-    /*
-        on tile[0]: XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN, null,
-                             epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_BUS);
-        on tile[0]: Endpoint0(c_ep_out[0], c_ep_in[0]);
-        
-        on tile[0]: hid_mouse(c_ep_in[1]);
-        */
     PAR_JOBS(
         PJOB(_XUD_Main, (c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN, 0, epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_BUS)),
-        //PJOB(Endpoint0, (c_ep_out[0], c_ep_in[0])),
-        //PJOB(hid_mouse, (c_ep_in[1]))
         PJOB(Endpoint0, (channel_ep_out[0].end_b, channel_ep_in[0].end_b)),
         PJOB(hid_mouse, (channel_ep_in[1].end_b))
     );

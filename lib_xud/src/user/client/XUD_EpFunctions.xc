@@ -22,12 +22,6 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned 
    return XUD_GetSetupData(ep_out, buffer, length);
 }
 
-XUD_Result_t XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
-{
-    /* No PID reset, 0 start index */
-    return XUD_SetData(c, buffer, datalength, 0, 0);
-}
-
 void XUD_Kill(XUD_ep ep)
 {
     XUD_SetTestMode(ep, 0);
@@ -129,7 +123,7 @@ void XUD_ClearStall(XUD_ep ep)
     // Load EP addr and check for IN or OUT
     unsigned epAddr;
 
-    asm volatile("ldw %0, %1[8]":"=r"(epAddr):"r"(ep));             // Load EP chanend
+    asm volatile("ldw %0, %1[8]":"=r"(epAddr):"r"(ep));
     
     if(epAddr & 0x80)
     {

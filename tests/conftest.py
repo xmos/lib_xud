@@ -135,7 +135,7 @@ def test_RunUsbSession(
 ):
 
     xcov = eval(os.getenv("xcov"))
-    
+
     total_threads = dummy_threads + 2  # 1 thread for xud another for test code
     if (core_freq / total_threads < 85.0) and bus_speed == "HS":
         pytest.skip("HS requires 85 MIPS")
@@ -267,10 +267,10 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
 
         fn = root_tmp_dir / "data.json"
 
-        def follow(nfile,n):
+        def follow(nfile, n):
             nf = open(nfile, "r")
             lines = len(nf.readlines())
-            while (lines != n):
+            while lines != n:
                 nf.close()
                 nf = open(nfile, "r")
                 lines = len(nf.readlines())
@@ -279,7 +279,7 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
         def run_at_end():
             wkc = os.getenv("PYTEST_XDIST_WORKER_COUNT")
             if wkc:
-                follow(fn,int(wkc))
+                follow(fn, int(wkc))
             coverage = combine_test.do_combine_test(test_dirs)
             combine_test.generate_merge_src()
             combine_test.close_fd()
@@ -288,7 +288,7 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
 
         def status():
             f = open(fn, "a")
-            f.write(str(worker_id+"\n"))
+            f.write(str(worker_id + "\n"))
 
         if worker_id == "master":
             request.addfinalizer(run_at_end)
@@ -298,5 +298,5 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
             if fn.is_file():
                 request.addfinalizer(status)
             else:
-                fn.write_text(str(worker_id)+"\n")
+                fn.write_text(str(worker_id) + "\n")
                 request.addfinalizer(run_at_end)

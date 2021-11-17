@@ -67,7 +67,7 @@ XUD_GetSetupData_ResetPid:                      // We must reset PID toggling on
 #endif
     stw         r11, r0[4]                      // Reset OUT toggle
 
-    ldc         r11, 704                        // Assuming MAX_NUM_EPS is 16 and struct size is 44 here!
+    ldc         r11, 768                        // Assuming MAX_NUM_EPS is 16 and struct size is 44 here!
     add         r11, r0, r11
 
     ldc         r10, USB_PIDn_DATA1
@@ -232,7 +232,7 @@ XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on
 #endif
     stw         r11, r0[4]                      // Reset OUT toggle
 
-    ldc         r11, 704                        // Assuming MAX_NUM_EPS is 16 and struct size is 44 here!
+    ldc         r11, 768                        // Assuming MAX_NUM_EPS is 16 and struct size is 44 here!
     add         r11, r0, r11
 
     ldc         r10, USB_PIDn_DATA1
@@ -245,7 +245,6 @@ XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on
     
     ldw        r10, sp[1]
     retsp       4
-
 
 
 .size XUD_GetData, .-XUD_GetData
@@ -268,7 +267,6 @@ XUD_GetDataSetupData_ResetPid:                  // We must reset PID toggling on
 .set XUD_GetData.locnoglobalaccess, 1
 .set XUD_GetData.locnointerfaceaccess, 1
 .set XUD_GetData.locnonotificationselect, 1
-
 
 // Note: Assumes startIndex is word aligned
 // int XUD_SetData_indexed(XUD_ep e, unsigned buffer[], unsigned datasize, unsigned startIndex unsigned pid);
@@ -548,7 +546,7 @@ XUD_ResetEpStateByAddr_:
     bf          r2, NoOffset
     ldaw        r0, r0[4]                       // Assume MAX_NUM_EP_OUT is 16 here! (r0 = r0 + 4 * 4)
 NoOffset:
-    ldc         r2, 44                          // Size of XUD_ep_info struct TODO. FIXME!
+    ldc         r2, 48                          // Size of XUD_ep_info struct TODO. FIXME!
     mul         r0, r0, r2
     ldw         r2, cp[ep_info_address]
     add         r0, r2, r0

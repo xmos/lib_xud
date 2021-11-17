@@ -484,6 +484,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(i));
         ep_info[i].array_ptr = x;
+        ep_info[i].saved_array_ptr = 0;
 
         asm("mov %0, %1":"=r"(x):"r"(c_ep_out[i]));
         ep_info[i].xud_chanend = x;
@@ -517,6 +518,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(USB_MAX_NUM_EP_OUT+i));
         ep_info[USB_MAX_NUM_EP_OUT+i].array_ptr = x;
+        ep_info[USB_MAX_NUM_EP_OUT+i].saved_array_ptr = 0;
 
         asm("mov %0, %1":"=r"(x):"r"(c_ep_in[i]));
         ep_info[USB_MAX_NUM_EP_OUT+i].xud_chanend = x;

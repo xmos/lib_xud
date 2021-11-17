@@ -236,20 +236,13 @@ void hid_mouse(chanend_t chan_ep_hid)
             }
 
             /* Unsafe region so we can use shared memory. */
-            //unsafe {
                 /* global buffer 'g_reportBuffer' defined in hid_defs.h */
-                //char * unsafe p_reportBuffer = g_reportBuffer;
-                
-                //p_reportBuffer[1] = x;
-                //p_reportBuffer[2] = y;
                 g_reportBuffer[1] = x;
                 g_reportBuffer[2] = y;
 
                 /* Send the buffer off to the host.  Note this will return when complete */
-                //XUD_SetBuffer(ep_hid, (char *) p_reportBuffer, sizeof(g_reportBuffer));
                 XUD_SetBuffer(ep_hid, (void*)g_reportBuffer, sizeof(g_reportBuffer));
                 counter = 0;
-            //}
         }
     }
 }

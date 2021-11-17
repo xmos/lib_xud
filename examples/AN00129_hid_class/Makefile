@@ -18,6 +18,7 @@ BUILD_FLAGS = -O3 -report -fxscope
 
 XCC_FLAGS_200 = $(BUILD_FLAGS)
 XCC_FLAGS_AI = $(BUILD_FLAGS)
+XCC_FLAGS_AI_C = $(BUILD_FLAGS)
 
 USED_MODULES = lib_xud
 
@@ -28,14 +29,13 @@ USED_MODULES = lib_xud
 # In this case, the target depends on the build configuration.
 ifeq ($(CONFIG),AI)
 TARGET = XCORE-AI-EXPLORER
-else
-TARGET = XCORE-200-EXPLORER
-endif
-
-ifeq ($(CBUILD),1)
+EXCLUDE_FILES = main.c
+else ifeq ($(CONFIG),AI_C)
+TARGET = XCORE-AI-EXPLORER
 EXCLUDE_FILES = main.xc \
 				endpoint0.xc
 else
+TARGET = XCORE-200-EXPLORER
 EXCLUDE_FILES = main.c
 endif
 #=============================================================================

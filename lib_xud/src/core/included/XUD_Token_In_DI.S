@@ -54,12 +54,6 @@ Pid_In:
     ldaw       r3, r10[4]                          // R3 = R10 + 16
     ldw        r4, r5[r3]                          // Load EP structure address
     bf         r4, XUD_IN_NotReady
-    
-    ldaw       r11, dp[ep_addr]
-    ldw        r11, r11[r3]
-    ldw        r11, r11[10]
-    bt         r11, XUD_IN_TxHandshake           // Note, user could potentially stall an ISO EP.
-
     ldw        r1, r4[4]                           // Load PID from structure
 
 XUD_IN_Ready:

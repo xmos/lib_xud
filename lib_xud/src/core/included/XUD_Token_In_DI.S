@@ -98,7 +98,6 @@ DoneTail:
 SetupReceiveHandShake:
     ldc        r11, 8
     setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
-    eeu        res[RXD]                            // Events on RXD always enabled - Can;t be any more due to using events on channels
 
 SetupTimeout:                                      // Timeout done using another port we dont happen to already be using events on. Cunning.
 #ifdef __XS2A__
@@ -106,6 +105,8 @@ SetupTimeout:                                      // Timeout done using another
 #else
     ldw        r1, dp[rx_rdy]                      // TODO load from stack
 #endif
+    eeu        res[RXD]                            // Events on RXD always enabled - Can;t be any more due to using events on channels
+    
     in         r11, res[r1]                        // Do input and get port time/timestamps
     getts      r11, res[r1]
     ldw        r9, dp[g_txHandshakeTimeout]
@@ -127,7 +128,6 @@ TxHandshakeTimeOut:
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align FUNCTION_ALIGNMENT
 TxHandShakeReceived:
-XUD_IN_RxAck:
     in         r11, res[RXD]                       // Input data from RXD port
     clrpt      res[r1]                             // Clear port time on valid token port
     

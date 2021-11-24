@@ -13,7 +13,6 @@ import subprocess
 ARCHITECTURE_CHOICES = ["xs2", "xs3"]
 BUSSPEED_CHOICES = ["FS", "HS"]
 args = {"arch": "xs3"}
-clean_only = False
 
 
 def create_if_needed(folder):
@@ -156,6 +155,8 @@ def do_usb_test(
     # separate binaries
     if eval(os.getenv("clean")):
         clean_only = True
+    else:
+        clean_only = False
 
     build_success, _ = Pyxsim._build(
         binary, do_clean=False, clean_only=clean_only, build_options=build_options

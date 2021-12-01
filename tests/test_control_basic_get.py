@@ -25,41 +25,46 @@ for k in PARAMS:
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
+    start_length = 0
+    end_length = start_length + 10
+    
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="CONTROL",
-            transType="SETUP",
-            dataLength=8,
-        )
-    )
+    for pktLength in range(start_length, end_length):
 
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="CONTROL",
-            transType="IN",
-            dataLength=10,
+        session.add_event(
+            UsbTransaction(
+                session,
+                deviceAddress=address,
+                endpointNumber=ep,
+                endpointType="CONTROL",
+                transType="SETUP",
+                dataLength=8,
+            )
         )
-    )
 
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="CONTROL",
-            transType="OUT",
-            dataLength=0,
+        session.add_event(
+            UsbTransaction(
+                session,
+                deviceAddress=address,
+                endpointNumber=ep,
+                endpointType="CONTROL",
+                transType="IN",
+                dataLength=pktLength
+            )
         )
-    )
+
+        session.add_event(
+            UsbTransaction(
+                session,
+                deviceAddress=address,
+                endpointNumber=ep,
+                endpointType="CONTROL",
+                transType="OUT",
+                dataLength=0,
+            )
+        )
 
     return session

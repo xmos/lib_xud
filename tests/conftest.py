@@ -29,7 +29,7 @@ PARAMS = {
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 3, 4],  # Note, plus 2 for test cores
+        "dummy_threads": [0, 3, 5],  # Note, plus 2 for test cores
         "core_freq": [600, 800],
     },
     "default": {
@@ -37,14 +37,14 @@ PARAMS = {
         "ep": [1, 2],
         "address": [0, 1],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 4],  # Note, plus 2 for test cores
+        "dummy_threads": [0, 5],  # Note, plus 2 for test cores
         "core_freq": [600],
     },
     "smoke": {
         "arch": ["xs3"],
         "ep": [1],
         "address": [1],
-        "bus_speed": ["HS"],
+        "bus_speed": ["HS", "FS"],
         "dummy_threads": [5],  # Note, plus 2 for test cores
         "core_freq": [600],
     },

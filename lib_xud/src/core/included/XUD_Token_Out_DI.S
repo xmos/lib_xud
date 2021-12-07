@@ -70,13 +70,12 @@ Err_RxErr:                                      // RxError signal high during da
 XUD_TokenOut_BufferFull:
   ldw       r9, sp[STACK_RXA_PORT]
   setc      res[r9], XS1_SETC_RUN_CLRBUF
-  setc      res[r9], XS1_SETC_COND_NEQ
+  inpw        r4, res[r0], 8                    // Input PID of next packet.
+                                                // TODO catch case where PID is not DATA
 
 XUD_TokenOut_WaitForPacketEnd:                  // Wait for end of data then send NAK
   in        r11, res[r9]
-  setc      res[r9], XS1_SETC_COND_EQ
-  in        r11, res[r9]
-                                                // TODO: Observe interpacket delay
+
 #ifndef XUD_NAK_ISO_OUT
   ldw       r4, sp[STACK_EPTYPES_OUT]           // Load ep type table
   ldw       r4, r4[r10]                         // load EP type

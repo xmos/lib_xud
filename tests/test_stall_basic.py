@@ -10,9 +10,6 @@ from usb_transaction import UsbTransaction
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    if bus_speed == "FS":
-        pytest.xfail("Known failure at FS")
-
     pktLength = 10
 
     session = UsbSession(

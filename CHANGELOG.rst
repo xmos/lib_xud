@@ -1,6 +1,13 @@
 lib_xud Change Log
 ==================
 
+2.1.0
+-----
+
+  * CHANGE:    Various optimisations to aid corner-case timings on XS3 based devices
+  * CHANGE:    Some API functions re-authored in C (from Assembly)
+  * CHANGE:    Testbench now more accurately models XS3 based devices
+
 2.0.2
 -----
 

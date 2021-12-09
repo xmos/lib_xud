@@ -95,7 +95,7 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[
     }
 
     /* Status stage - this should return -1 for reset or 0 for 0 length status stage packet */
-    return XUD_GetData(ep_out, tmpBuffer, rxlength);
+    return XUD_GetBuffer(ep_out, tmpBuffer, rxlength);
 }
 
 XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)

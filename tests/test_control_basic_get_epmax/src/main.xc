@@ -6,11 +6,11 @@
 #define EP_COUNT_IN        (5)
 
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START   (0)
+#define PKT_LENGTH_START   (8)
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END     (9)
+#define PKT_LENGTH_END     (20)
 #endif
 
 #include "test_control_basic_get.xc"

@@ -22,7 +22,7 @@ XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
 
-int TestEp_Control(XUD_ep c_ep0_out, XUD_ep c_ep0_in, int epNum)
+int TestEp_Control(XUD_ep ep0_out, XUD_ep ep0_in, int epNum)
 {
     unsigned int slength;
     unsigned int length;
@@ -33,25 +33,29 @@ int TestEp_Control(XUD_ep c_ep0_out, XUD_ep c_ep0_in, int epNum)
     unsigned char sbuffer[120];
     unsigned char buffer[120];
 
-
     for(int i = 0; i <= (PKT_LENGTH_END - PKT_LENGTH_START); i++)
     {
         unsafe
         {
+            GenTxPacketBuffer(buffer, i, epNum);
+           
             /* Wait for Setup data */
-            sres = XUD_GetSetupBuffer(c_ep0_out, sbuffer, slength);
+            sres = XUD_GetSetupBuffer(ep0_out, sbuffer, slength);
 
-            res = SendTxPacket(c_ep0_in, i, epNum);
+            res = XUD_DoGetRequest(ep0_out, ep0_in, buffer, i, i);
 
-            res = XUD_GetBuffer(c_ep0_out, buffer, length);
-
-            if(length != 0)
+            /* Do some checking */ 
+            if(slength != 8)
             {
                 return FAIL_RX_DATAERROR;
             }
-          
-            /* Do some checking */ 
+              
             if(res != XUD_RES_OKAY)
+            {
+                return FAIL_RX_BAD_RETURN_CODE;
+            }
+            
+            if(sres != XUD_RES_OKAY)
             {
                 return FAIL_RX_BAD_RETURN_CODE;
             }

@@ -188,3 +188,49 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
     }
 }
 
+XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax)
+{
+    int i = 0;
+    XUD_Result_t result;
+
+    /* Note: We could encompass this in the SetData function */
+    if (datalength <= epMax)
+    {
+        /* Datalength is less than the maximum per transaction of the EP, so just send */
+        result = XUD_SetBuffer(ep_in, buffer, datalength);
+        return result;
+    }
+    else
+    {
+        /* Send first packet out and reset PID */
+        if((result = XUD_SetBuffer(ep_in, buffer, epMax)) != XUD_RES_OKAY)
+        {
+            return result;
+        }
+        i += epMax;
+        datalength -= epMax;
+
+        while (1)
+	    {
+            if (datalength > epMax)
+	        {
+                /* PID Automatically toggled */
+                if ((result = XUD_SetData(ep_in, buffer, epMax, i, 0)) != XUD_RES_OKAY)
+                    return result;
+
+                datalength-=epMax;
+                i += epMax;
+	        }
+	        else
+	        {
+                /* PID automatically toggled */
+                if ((result = XUD_SetData(ep_in, buffer, datalength, i, 0)) != XUD_RES_OKAY)
+                    return result;
+
+	            break; //out of while loop
+	        }
+	    }
+    }
+
+    return XUD_RES_OKAY;
+}

@@ -27,52 +27,9 @@ void XUD_Kill(XUD_ep ep)
     XUD_SetTestMode(ep, 0);
 }
 
-XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax)
-{
-    int i = 0;
-    XUD_Result_t result;
-
-    /* Note: We could encompass this in the SetData function */
-    if (datalength <= epMax)
-    {
-        /* Datalength is less than the maximum per transaction of the EP, so just send */
-        result = XUD_SetData(ep_in, buffer, datalength, 0, 0);
-        return result;
-    }
-    else
-    {
-        /* Send first packet out and reset PID */
-        if((result = XUD_SetData(ep_in, buffer, epMax, 0, 0)) != XUD_RES_OKAY)
-        {
-            return result;
-        }
-        i+= epMax;
-        datalength-=epMax;
-
-        while (1)
-	    {
-            if (datalength > epMax)
-	        {
-                /* PID Automatically toggled */
-                if ((result = XUD_SetData(ep_in, buffer, epMax, i, 0)) != XUD_RES_OKAY)
-                    return result;
-
-                datalength-=epMax;
-                i += epMax;
-	        }
-	        else
-	        {
-                /* PID automatically toggled */
-                if ((result = XUD_SetData(ep_in, buffer, datalength, i, 0)) != XUD_RES_OKAY)
-                    return result;
-
-	            break; //out of while loop
-	        }
-	    }
-    }
-
-    return XUD_RES_OKAY;
-}
+#ifndef EP0_MAX_PACKET_SIZE
+#define EP0_MAX_PACKET_SIZE 64
+#endif
 
 /* TODO Should take ep max length as a param - currently hardcoded as 64 (#11384) */
 XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsigned length, unsigned requested)

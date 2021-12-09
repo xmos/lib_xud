@@ -45,19 +45,19 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="SETUP",
                 dataLength=8,
-                interEventDelay=1000,  # Large delay to allow for packet generation 
+                interEventDelay=1000,  # Large delay to allow for packet generation
             )
         )
-  
+
         thisDataLength = dataLength
 
         while thisDataLength > 0:
 
             pktLength = maxPktLength
 
-            if thisDataLength <  maxPktLength:
+            if thisDataLength < maxPktLength:
                 pktLength = thisDataLength
-    
+
             thisDataLength = thisDataLength - pktLength
 
             session.add_event(

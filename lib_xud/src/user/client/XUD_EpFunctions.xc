@@ -60,7 +60,7 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
     unsigned char tmp[8];
 
     /* Send 0 length packet */
-    return XUD_SetData(ep_in, tmp, 0, 0, 0);
+    return XUD_SetBuffer(ep_in, tmp, 0);
 }
 
 void XUD_SetStall(XUD_ep ep)

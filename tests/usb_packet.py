@@ -62,13 +62,14 @@ from usb_event import UsbEvent
 import usb_phy
 
 
-USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
+USB_DATA_VALID_COUNT = {"FS": 40, "HS": 1}
 
 # In USB clocks
 # Pad delay not currently simulated in xsim for USB or OTP, so add this
 # delay here
 RXA_END_DELAY = 0  # Taken from RTL sim
-RXA_START_DELAY = 5  # Taken from RTL sim and UTMI spec 6.4.2
+RXA_START_DELAY = {"FS": 1, "HS": 5}  # Taken from RTL sim and UTMI spec 6.4.2
+                                      # Note, will get muiltiplied by USB_DATA_VALID_COUNT before use
 
 # TODO should we have a PID class?
 # TODO remove the inverted check bits
@@ -322,7 +323,7 @@ class TxPacket(UsbPacket):
 
         rxv_count = USB_DATA_VALID_COUNT[bus_speed]
 
-        usb_phy.wait_for_clocks(self.interEventDelay)
+        usb_phy.wait_for_clocks(self.interEventDelay * USB_DATA_VALID_COUNT[bus_speed])
 
         print(
             "Packet:\tHOST -> DEVICE\n\tPID: {0} ({1:#x})".format(
@@ -334,7 +335,7 @@ class TxPacket(UsbPacket):
         xsi.drive_periph_pin(usb_phy._rxa, 1)
 
         # Wait for RXA start delay
-        rxa_start_delay = RXA_START_DELAY
+        rxa_start_delay = (RXA_START_DELAY[bus_speed]) * USB_DATA_VALID_COUNT[bus_speed]
 
         while rxa_start_delay > 1:
             wait(lambda x: usb_phy._clock.is_high())
@@ -347,19 +348,30 @@ class TxPacket(UsbPacket):
             if xsi.sample_port_pins(usb_phy._txv) == 1:
                 print("ERROR: Unexpected packet from xCORE (TxPacket 1)")
 
-            wait(lambda x: usb_phy._clock.is_high())
-            wait(lambda x: usb_phy._clock.is_low())
-            xsi.drive_periph_pin(usb_phy._rxdv, 1)
             xsi.drive_periph_pin(usb_phy._rxd, byte)
 
             if (self.rxe_assert_time != 0) and (self.rxe_assert_time == i):
                 xsi.drive_periph_pin(usb_phy._rxer, 1)
 
-            while rxv_count != 0:
+            # Subtract 1 since we always drive for atleast one cycle..
+            rxv_count -= 1 
+    
+            while rxv_count > USB_DATA_VALID_COUNT[bus_speed] // 2:
                 wait(lambda x: usb_phy._clock.is_high())
                 wait(lambda x: usb_phy._clock.is_low())
-                xsi.drive_periph_pin(usb_phy._rxdv, 0)
                 rxv_count = rxv_count - 1
+
+            # RxV high for 1 cycle 
+            xsi.drive_periph_pin(usb_phy._rxdv, 1)
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+            xsi.drive_periph_pin(usb_phy._rxdv, 0)
+
+            while rxv_count > 0:
+                wait(lambda x: usb_phy._clock.is_high())
+                wait(lambda x: usb_phy._clock.is_low())
+                rxv_count = rxv_count - 1
+            
 
                 # xCore should not be trying to send if we are trying to send..
                 # We assume that the Phy internally blocks the TXValid signal

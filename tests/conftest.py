@@ -55,6 +55,12 @@ def pytest_addoption(parser):
     parser.addoption("--smoke", action="store_true", help="Smoke test")
     parser.addoption("--extended", action="store_true", help="Extended test")
     parser.addoption(
+        "--clean",
+        action="store_true",
+        default=False,
+        help="clean build file",
+    )
+    parser.addoption(
         "--xcov",
         action="store_true",
         default=False,
@@ -71,12 +77,15 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     os.environ["enabletracing"] = str(config.getoption("enabletracing"))
     os.environ["xcov"] = str(config.getoption("xcov"))
+    os.environ["clean"] = str(config.getoption("clean"))
 
 
 def pytest_generate_tests(metafunc):
     try:
         PARAMS = metafunc.module.PARAMS  # noqa F401
-        if metafunc.config.getoption("smoke"):
+        if metafunc.config.getoption("clean"):
+            params = PARAMS.get("extended", PARAMS["default"])
+        elif metafunc.config.getoption("smoke"):
             params = PARAMS.get("smoke", PARAMS["default"])
         elif metafunc.config.getoption("extended"):
             params = PARAMS.get("extended", PARAMS["default"])
@@ -166,27 +175,30 @@ def test_RunUsbSession(
     trace = f"logs/xsim_trace_{testname}_{desc}.txt"
     xcov_dir = f"{testname}/bin/{desc}"
 
-    cap_output, err = capfd.readouterr()
-    output.append(cap_output.split("\n"))
+    if not eval(os.getenv("clean")):
+        cap_output, err = capfd.readouterr()
+        output.append(cap_output.split("\n"))
 
-    sys.stdout.write("\n")
-    results = Pyxsim.run_tester(output, tester_list)
+        sys.stdout.write("\n")
+        results = Pyxsim.run_tester(output, tester_list)
 
-    # TODO only one result
-    for result in results:
-        if not result:
-            print(cap_output)
-            sys.stderr.write(err)
-        else:
-            if eval(os.getenv("xcov")):
-                # calculate code coverage for each tests
-                coverage = xcov_process(disasm, trace, xcov_dir)
-                # generate coverage file for each source code included
-                xcov_comb.run_combine(xcov_dir)
-                # delete trace file and disasm file
-                if os.path.exists(trace):
-                    os.remove(trace)
-        assert result
+        # TODO only one result
+        for result in results:
+            if not result:
+                print(cap_output)
+                sys.stderr.write(err)
+            else:
+                if eval(os.getenv("xcov")):
+                    # calculate code coverage for each tests
+                    coverage = xcov_process(disasm, trace, xcov_dir)
+                    # generate coverage file for each source code included
+                    xcov_comb.run_combine(xcov_dir)
+                    # delete trace file and disasm file
+                    if os.path.exists(trace):
+                        os.remove(trace)
+            assert result
+    else:
+        pass
 
 
 def copy_common_xn_files(

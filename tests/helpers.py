@@ -11,7 +11,6 @@ import Pyxsim
 import subprocess
 
 args = {"arch": "xs3"}
-clean_only = False
 
 
 def create_if_needed(folder):
@@ -153,8 +152,13 @@ def do_usb_test(
 
     # Do not need to clean since different build will different params go to
     # separate binaries
+    if eval(os.getenv("clean")):
+        clean_only = True
+    else:
+        clean_only = False
+
     build_success, _ = Pyxsim._build(
-        binary, do_clean=False, build_options=build_options
+        binary, do_clean=False, clean_only=clean_only, build_options=build_options
     )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"

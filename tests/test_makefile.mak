@@ -23,6 +23,7 @@ COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
 			   -DXUD_TEST_SPEED_HS=1 \
 			   -Xmapper --retain \
 			   -g \
+			   -save-temps \
 			   $(CFLAGS)
 
 TEST_FLAGS ?=

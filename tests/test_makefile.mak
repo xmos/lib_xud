@@ -15,13 +15,14 @@ APP_NAME =
 SHARED_CODE = ../../shared_src
 
 COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
-			   -O0 \
+			   -O3 \
 			   -g \
 			   -I$(SHARED_CODE) \
 			   -DUSB_TILE=tile[0] \
 			   -DXUD_SIM_XSIM=1 \
 			   -DXUD_TEST_SPEED_HS=1 \
 			   -save-temps \
+			   -Xmapper --retain \
 			   $(CFLAGS)
 
 TEST_FLAGS ?=

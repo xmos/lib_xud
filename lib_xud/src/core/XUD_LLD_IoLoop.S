@@ -70,6 +70,7 @@ suspend_t_wtwrsths:
 .globl UsbTestModeHandler_asm.nstackwords
 .linkset UsbTestModeHandler_asm.nstackwords, 0
 .globl UsbTestModeHandler_asm
+.type UsbTestModeHandler_asm, @function
 .text
 .cc_top UsbTestModeHandler_asm.func, UsbTestModeHandler_asm
 .issue_mode single
@@ -100,6 +101,7 @@ UsbTestModeHandler_asm:
 .globl ResetIntHandler.nstackwords
 .linkset ResetIntHandler.nstackwords, 0
 .globl ResetIntHandler
+.type ResetIntHandler, @function
 .text
 .cc_top ResetIntHandler.func, ResetIntHandler
 .issue_mode dual
@@ -137,8 +139,9 @@ ResetIntHandler:
 .linkset XUD_LLD_IoLoop.maxthreads, 0
 
 .globl XUD_LLD_IoLoop
-.cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
+.type XUD_LLD_IoLoop, @function
 .text
+.cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
 
 .issue_mode dual
 // Note, included here so in same elimination blocks to avoid long jumps

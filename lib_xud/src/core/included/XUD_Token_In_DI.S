@@ -181,8 +181,8 @@ TxTail1s:                                           // One tail byte
     crcn       r7, r8, r9, r6
     crc32      r7, r4, r9                           // r4: 0
 XUD_IN_TxPid_TailS1:
-    outpw      res[TXD], r1, 8                      // Output PID
     not        r7, r7
+    outpw      res[TXD], r1, 8                      // Output PID
     outpw      res[TXD], r8, 8                      // Output data[0]
 XUD_IN_TxCrc_TailS1:
     outpw      res[TXD], r7, 16

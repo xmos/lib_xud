@@ -6,6 +6,7 @@ from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_packet import CreateSofToken
+from usb_transaction import INTER_TRANSACTION_DELAY
 
 
 @pytest.fixture
@@ -29,11 +30,21 @@ def test_session(ep, address, bus_speed):
         )
     )
 
-    session.add_event(CreateSofToken(frameNumber))
-    session.add_event(CreateSofToken(frameNumber + 1))
-    session.add_event(CreateSofToken(frameNumber + 2))
-    session.add_event(CreateSofToken(frameNumber + 3))
-    session.add_event(CreateSofToken(frameNumber + 4))
+    session.add_event(
+        CreateSofToken(frameNumber, interEventDelay=INTER_TRANSACTION_DELAY)
+    )
+    session.add_event(
+        CreateSofToken(frameNumber + 1, interEventDelay=INTER_TRANSACTION_DELAY)
+    )
+    session.add_event(
+        CreateSofToken(frameNumber + 2, interEventDelay=INTER_TRANSACTION_DELAY)
+    )
+    session.add_event(
+        CreateSofToken(frameNumber + 3, interEventDelay=INTER_TRANSACTION_DELAY)
+    )
+    session.add_event(
+        CreateSofToken(frameNumber + 4, interEventDelay=INTER_TRANSACTION_DELAY)
+    )
 
     # Finish with valid transaction
     session.add_event(

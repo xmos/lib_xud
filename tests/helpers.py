@@ -23,7 +23,7 @@ def get_usb_clk_phy(
     verbose=True,
     do_timeout=True,
     complete_fn=None,
-    dut_exit_time=350000 * 1000,  # in ps
+    dut_exit_time=350000 * 1000 * 1000,  # in fs
     arch="xs2",
 ):
 

@@ -11,7 +11,7 @@ class Clock(SimThread):
         self._running = True
         self._clk = clk
         if clk == self.CLK_60MHz:
-            self._period_ps = 16667
+            self._period_fs = 16666667
             self._name = "60Mhz"
         else:
             raise ValueError("Unsupported Clock Frequency")
@@ -24,7 +24,7 @@ class Clock(SimThread):
 
         while True:
 
-            time += self._period_ps / 2
+            time += self._period_fs / 2
             self.wait_until(time)
             self._val = 1 - self._val
 

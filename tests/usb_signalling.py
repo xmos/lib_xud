@@ -4,6 +4,8 @@
 from usb_event import UsbEvent
 from usb_phy import USB_LINESTATE, USB_TIMINGS
 
+TIMESTEP_TO_NS = 1000000  # fs to ns
+
 
 class UsbDeviceAttach(UsbEvent):
     def __init__(self, interEventDelay=0):
@@ -29,10 +31,10 @@ class UsbDeviceAttach(UsbEvent):
     def drive(self, usb_phy, bus_speed):
         def time():
             time = xsi.get_time()
-            return time / 1000  # ps to ns
+            return time / TIMESTEP_TO_NS
 
         def wait_until_ns(time):
-            usb_phy.wait_until(time * 1000)  # ns to ps
+            usb_phy.wait_until(time * TIMESTEP_TO_NS)
 
         wait = usb_phy.wait
         xsi = usb_phy.xsi
@@ -219,7 +221,7 @@ class UsbResume(UsbEvent):
     def drive(self, usb_phy, bus_speed):
         def get_time_ns():
             time = xsi.get_time()
-            return time / 1000
+            return time / TIMESTEP_TO_NS
 
         xsi = usb_phy.xsi
         wait = usb_phy.wait
@@ -334,7 +336,7 @@ class UsbSuspend(UsbEvent):
     def drive(self, usb_phy, bus_speed):
         def get_time_ns():
             time = xsi.get_time()
-            return time / 1000
+            return time / TIMESTEP_TO_NS
 
         xsi = usb_phy.xsi
         wait = usb_phy.wait

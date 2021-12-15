@@ -61,7 +61,7 @@ USB_PKT_TIMINGS_TIGHT = {
     # clocks). This is SIE decision time in
     # UTMI spec
     # TODO this needs reducing to 14!
-    "TX_TO_TX_PACKET_DELAY": 5,  # Delay between transmitting two packets
+    "TX_TO_TX_PACKET_DELAY": 6,  # Delay between transmitting two packets
     # TODO this needs reducing to 4!
 }
 

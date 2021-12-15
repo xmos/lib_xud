@@ -7,7 +7,8 @@ from usb_phy import USB_LINESTATE, USB_TIMINGS
 
 class UsbDeviceAttach(UsbEvent):
     def __init__(self, interEventDelay=0):
-        super().__init__(interEventDelay=interEventDelay)
+        self.interEventDelay = interEventDelay
+        super().__init__()
 
     def __str__(self):
         return "DeviceAttach"
@@ -194,7 +195,8 @@ class UsbResume(UsbEvent):
     ):
         self._duration = duration
         self._glitches = glitches
-        super().__init__(interEventDelay=interEventDelay)
+        self.interEventDelay = interEventDelay
+        super().__init__()
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "RESUME\n"
@@ -313,7 +315,8 @@ class UsbSuspend(UsbEvent):
     # clks?
     def __init__(self, duration_ns, interEventDelay=0):
         self._duration_ns = duration_ns
-        super().__init__(interEventDelay=interEventDelay)
+        self.interEventDelay = interEventDelay
+        super().__init__()
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "SUSPEND START. WAITING FOR DUT TO ENTER FS\n"

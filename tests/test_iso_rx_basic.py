@@ -11,13 +11,15 @@ from usb_transaction import UsbTransaction
 def test_session(ep, address, bus_speed):
 
     start_length = 10
-    end_length = start_length + 5
+    end_length = start_length + 4
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    for pktLength in range(start_length, end_length):
+    interTransactionDelay = 500
+
+    for pktLength in range(start_length, end_length + 1):
         session.add_event(
             UsbTransaction(
                 session,
@@ -26,6 +28,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="ISO",
                 transType="OUT",
                 dataLength=pktLength,
+                interEventDelay=interTransactionDelay,
             )
         )
 

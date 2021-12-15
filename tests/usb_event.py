@@ -4,20 +4,13 @@ from abc import ABC, abstractmethod
 
 
 class UsbEvent(ABC):
-    def __init__(self, time=0, interEventDelay=None):
+    def __init__(self, time=0):
         self._time = time
-        self._interEventDelay = interEventDelay
 
     # TODO so we want to use relative delays or absolute times?
     @property
     def time(self):
         return self._time
-
-    # NOTE: its not always sensible for an event to used the IED - for example
-    # an Rx Packet
-    @property
-    def interEventDelay(self):
-        return self._interEventDelay
 
     @abstractmethod
     def expected_output(self, bus_speed, offset=0):

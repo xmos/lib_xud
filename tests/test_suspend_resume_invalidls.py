@@ -7,6 +7,7 @@ from usb_packet import CreateSofToken
 from usb_signalling import UsbSuspend, UsbResume
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+from usb_phy import USB_PKT_TIMINGS
 
 
 @pytest.fixture
@@ -14,6 +15,8 @@ def test_session(ep, address, bus_speed):
 
     pktLength = 10
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
+
+    interEventDelay = USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -39,6 +42,7 @@ def test_session(ep, address, bus_speed):
     frameNumber = frameNumber + 1
     pktLength = pktLength + 1
     session.add_event(CreateSofToken(frameNumber, interEventDelay=2000))
+
     session.add_event(
         UsbTransaction(
             session,
@@ -47,7 +51,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=0,
+            interEventDelay=interEventDelay,
         )
     )
 

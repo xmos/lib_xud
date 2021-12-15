@@ -9,8 +9,9 @@ from usb_packet import (
     RxHandshakePacket,
     RxDataPacket,
     TxHandshakePacket,
+    USB_DATA_VALID_COUNT,
 )
-from usb_packet import USB_DATA_VALID_COUNT
+from usb_phy import USB_PKT_TIMINGS
 
 INTER_TRANSACTION_DELAY = 500
 
@@ -173,7 +174,7 @@ class UsbTransaction(UsbEvent):
             if halted:
                 self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
 
-        super().__init__(time=eventTime, interEventDelay=interEventDelay)
+        super().__init__(time=eventTime)
 
     # TODO ideally USBTransaction doesnt know about data_valid_count
     @property

@@ -88,7 +88,12 @@ USB_PID = {
 }
 
 
-def CreateSofToken(frameNumber, badCrc=False, interEventDelay=1000):
+def CreateSofToken(
+    frameNumber,
+    badCrc=False,
+    interEventDelay=usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"],
+):
+
     ep = (frameNumber >> 7) & 0xF
     address = (frameNumber) & 0x7F
 
@@ -192,8 +197,7 @@ class UsbPacket(UsbEvent):
         self.data_bytes = kwargs.pop("data_bytes", None)
         self.num_data_bytes = kwargs.pop("length", 0)
         self.bad_crc = kwargs.pop("bad_crc", False)
-        ied = kwargs.pop("interEventDelay", None)
-        super().__init__(interEventDelay=ied)
+        super().__init__()
 
     @property
     def event_count(self):
@@ -301,11 +305,11 @@ class TxPacket(UsbPacket):
         self.rxe_assert_time = kwargs.pop("rxe_assert_time", 0)
         self.rxe_assert_length = kwargs.pop("rxe_assert_length", 1)
 
-        ied = kwargs.pop(
+        self.interEventDelay = kwargs.pop(
             "interEventDelay",
             usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"],
         )
-        super().__init__(**kwargs, interEventDelay=ied)
+        super().__init__(**kwargs)
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "Packet:\tHOST -> DEVICE\n"
@@ -385,8 +389,8 @@ class TxPacket(UsbPacket):
                 #    print("ERROR: Unexpected packet from xCORE (TxPacket 2)")
 
         # Wait for last byte
-        #wait(lambda x: usb_phy._clock.is_high())
-        #wait(lambda x: usb_phy._clock.is_low())
+        # wait(lambda x: usb_phy._clock.is_high())
+        # wait(lambda x: usb_phy._clock.is_low())
 
         xsi.drive_periph_pin(usb_phy._rxdv, 0)
         xsi.drive_periph_pin(usb_phy._rxer, 0)
@@ -493,6 +497,7 @@ class TxDataPacket(DataPacket, TxPacket):
 # Always TX
 class TokenPacket(TxPacket):
     def __init__(self, **kwargs):
+
         super().__init__(**kwargs)
         self.endpoint = kwargs.pop("endpoint", 0)
         self.valid = kwargs.pop("valid", 1)

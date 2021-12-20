@@ -22,11 +22,16 @@ XUD_SETUP_LoadBuffer:
 
 XUD_SETUP_ClearStall:                           // CRC OK
                                                 // Have received a SETUP so clear any STALL condition on IN/OUT endpoint.
-    ldaw       r11, dp[handshakeTable_OUT]      // Note, we can speed this up by assuming SETUP only received on EP 0
-    ldc        r6, USB_PIDn_NAK
-    stw        r6, r11[r10]
-    ldw        r11, sp[STACK_HANDSHAKETABLEIN]
-    stw        r1, r11[r10]
+                                                // Note, we can speed this up by assuming SETUP only received on EP 0
+    ldaw         r6, dp[ep_addr]
+    
+    ldaw         r11, r10[4]                    // R11 = R10 + 16
+    ldw          r11, r6[r11]
+    stw          r1, r11[10]                    // r1: 0
+    
+    ldw          r11, r6[r10]
+    ldc          r6, USB_PIDn_NAK
+    stw          r6, r11[10]
 
 XUD_SETUP_SendSetupAck:
     ldc        r11, USB_PIDn_ACK

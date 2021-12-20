@@ -35,7 +35,7 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=address,
                 endpointNumber=ep_loopback,
                 endpointType="BULK",
-                direction="OUT",
+                transType="OUT",
                 dataLength=pktLength,
             )
         )
@@ -45,7 +45,7 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=address,
                 endpointNumber=ep_loopback,
                 endpointType="BULK",
-                direction="IN",
+                transType="IN",
                 dataLength=pktLength,
             )
         )
@@ -59,7 +59,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep_loopback_kill,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
         )
     )
@@ -69,7 +69,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep_loopback_kill,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             dataLength=pktLength,
         )
     )

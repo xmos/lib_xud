@@ -42,7 +42,7 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=address,
                 endpointNumber=ep,
                 endpointType="BULK",
-                direction="IN",
+                transType="IN",
                 dataLength=pktLength,
                 interEventDelay=ied,
             )

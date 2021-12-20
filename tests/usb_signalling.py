@@ -4,10 +4,13 @@
 from usb_event import UsbEvent
 from usb_phy import USB_LINESTATE, USB_TIMINGS
 
+TIMESTEP_TO_NS = 1000000  # fs to ns
+
 
 class UsbDeviceAttach(UsbEvent):
     def __init__(self, interEventDelay=0):
-        super().__init__(interEventDelay=interEventDelay)
+        self.interEventDelay = interEventDelay
+        super().__init__()
 
     def __str__(self):
         return "DeviceAttach"
@@ -26,11 +29,15 @@ class UsbDeviceAttach(UsbEvent):
         return 1
 
     def drive(self, usb_phy, bus_speed):
+        def time():
+            time = xsi.get_time()
+            return time / TIMESTEP_TO_NS
+
+        def wait_until_ns(time):
+            usb_phy.wait_until(time * TIMESTEP_TO_NS)
 
         wait = usb_phy.wait
-        wait_until_ns = usb_phy.wait_until
         xsi = usb_phy.xsi
-        time = xsi.get_time
 
         print("DeviceAttach")
         tConnect_ns = time()
@@ -190,7 +197,8 @@ class UsbResume(UsbEvent):
     ):
         self._duration = duration
         self._glitches = glitches
-        super().__init__(interEventDelay=interEventDelay)
+        self.interEventDelay = interEventDelay
+        super().__init__()
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "RESUME\n"
@@ -211,6 +219,10 @@ class UsbResume(UsbEvent):
         return 1
 
     def drive(self, usb_phy, bus_speed):
+        def get_time_ns():
+            time = xsi.get_time()
+            return time / TIMESTEP_TO_NS
+
         xsi = usb_phy.xsi
         wait = usb_phy.wait
         wait_for_clocks = usb_phy.wait_for_clocks
@@ -219,7 +231,7 @@ class UsbResume(UsbEvent):
         if xsi.sample_port_pins(usb_phy._txv) == 1:
             print("ERROR: Unexpected packet from xCORE")
 
-        resumeStartTime_ns = xsi.get_time()
+        resumeStartTime_ns = get_time_ns()
 
         print("RESUME")
 
@@ -236,7 +248,7 @@ class UsbResume(UsbEvent):
 
             wait_for_clocks(1)
 
-            currentTime_ns = xsi.get_time()
+            currentTime_ns = get_time_ns()
 
             if (
                 currentTime_ns >= (resumeStartTime_ns + glitchTime)
@@ -255,7 +267,7 @@ class UsbResume(UsbEvent):
                         while True:
                             wait_for_clocks(1)
 
-                            currentTime_ns = xsi.get_time()
+                            currentTime_ns = get_time_ns()
 
                             if currentTime_ns >= glitchTime + duration:
                                 break
@@ -268,7 +280,7 @@ class UsbResume(UsbEvent):
             ):
                 break
 
-        endResumeStartTime_ns = xsi.get_time()
+        endResumeStartTime_ns = get_time_ns()
 
         # Drive end of resume signalling
         xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["IDLE"])
@@ -277,7 +289,7 @@ class UsbResume(UsbEvent):
             wait(lambda x: usb_phy._clock.is_high())
             wait(lambda x: usb_phy._clock.is_low())
 
-            currentTime_ns = xsi.get_time()
+            currentTime_ns = get_time_ns()
             if currentTime_ns >= endResumeStartTime_ns + (
                 USB_TIMINGS["RESUME_SE0_US"] * 1000
             ):
@@ -305,7 +317,8 @@ class UsbSuspend(UsbEvent):
     # clks?
     def __init__(self, duration_ns, interEventDelay=0):
         self._duration_ns = duration_ns
-        super().__init__(interEventDelay=interEventDelay)
+        self.interEventDelay = interEventDelay
+        super().__init__()
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "SUSPEND START. WAITING FOR DUT TO ENTER FS\n"
@@ -321,6 +334,9 @@ class UsbSuspend(UsbEvent):
         return 1
 
     def drive(self, usb_phy, bus_speed):
+        def get_time_ns():
+            time = xsi.get_time()
+            return time / TIMESTEP_TO_NS
 
         xsi = usb_phy.xsi
         wait = usb_phy.wait
@@ -329,7 +345,7 @@ class UsbSuspend(UsbEvent):
         if xsi.sample_port_pins(usb_phy._txv) == 1:
             print("ERROR: Unexpected packet from xCORE")
 
-        suspendStartTime_ns = xsi.get_time()
+        suspendStartTime_ns = get_time_ns()
         # print("SUSPEND START TIME: " + str(suspendStartTime_ns))
 
         assert self.interEventDelay == 0
@@ -355,7 +371,7 @@ class UsbSuspend(UsbEvent):
             # Wait for DUT to move into FS mode
             if xcvr == 1 and termsel == 1:
 
-                fsTime_ns = xsi.get_time()
+                fsTime_ns = get_time_ns()
                 timeToFs_ns = fsTime_ns - suspendStartTime_ns
                 # print("DEVICE ENTERED FS AT TIME " + str(fsTime_ns/1000) + "(after " + str(timeToFs_ns/1000) +" uS)")  # noqa F401
                 print("DEVICE ENTERED FS MODE")
@@ -368,7 +384,7 @@ class UsbSuspend(UsbEvent):
                 xsi.drive_periph_pin(usb_phy._ls, USB_LINESTATE["FS_J"])
                 break
 
-            time_ns = xsi.get_time() - suspendStartTime_ns
+            time_ns = get_time_ns() - suspendStartTime_ns
             if time_ns > (USB_TIMINGS["IDLE_TO_FS_MAX_US"] * 1000):
                 print("ERROR: DUT DID NOT ENTER FS MODE IN TIME")
 
@@ -389,7 +405,7 @@ class UsbSuspend(UsbEvent):
             if not (xcvr == 1 and termsel == 1):
                 print("ERROR: DUT moved out of FS mode unexpectly during suspend")
 
-            time_ns = xsi.get_time() - suspendStartTime_ns
+            time_ns = get_time_ns() - suspendStartTime_ns
             if time_ns >= self._duration_ns:
                 print("SUSPEND END")
                 break

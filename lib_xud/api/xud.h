@@ -271,7 +271,7 @@ XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
  * \param   one      IN or OUT endpoint identifier to perform the reset on.
  * \param   two      Optional second IN or OUT endpoint structure to perform a reset on.
  * \return  Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
- *          at high speed, ``XUD_SPEED_FS`` - the device is runnig at full speed,
+ *          at high speed, ``XUD_SPEED_FS`` - the device is running at full speed,
  *          or ``XUD_SPEED_KILL`` to indicate that the USB stack has been shut down
  *          by another part of the user code (using XUD_Kill). If the last value is
  *          returned, the endpoint code should call XUD_CloseEndpoint and then
@@ -552,6 +552,27 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 #define XUD_OSC_MHZ (24)
 #endif
 
-#endif //__ASSEMBLER__
 
+
+/* TODO pack this to save mem
+ * TODO size of this hardcoded in ResetRpStateByAddr_
+ */
+typedef struct XUD_ep_info
+{
+    unsigned int array_ptr;            // 0
+    unsigned int xud_chanend;          // 1
+    unsigned int client_chanend;       // 2 
+    unsigned int buffer;               // 3 Pointer to buffer
+    unsigned int pid;                  // 4 Expected out PID
+    unsigned int epType;               // 5 Data
+    unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.
+    unsigned int tailLength;           // 7 "tail" length for IN (bytes)
+    unsigned int epAddress;            // 8 EP address assigned by XUD (Used for marking stall etc)
+    unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
+    unsigned int halted;               // 10 NAK or STALL
+    unsigned int saved_array_ptr;      // 11
+} XUD_ep_info;
+
+
+#endif //__ASSEMBLER__
 #endif // _XUD_H_

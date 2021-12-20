@@ -27,7 +27,7 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=address,
                 endpointNumber=ep_loopback,
                 endpointType="ISO",
-                direction="OUT",
+                transType="OUT",
                 dataLength=pktLength,
             )
         )
@@ -42,7 +42,7 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=address,
                 endpointNumber=ep_loopback,
                 endpointType="ISO",
-                direction="IN",
+                transType="IN",
                 dataLength=pktLength,
                 interEventDelay=498,
             )
@@ -57,7 +57,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep_loopback_kill,
             endpointType="ISO",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
         )
     )
@@ -67,7 +67,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep_loopback_kill,
             endpointType="ISO",
-            direction="IN",
+            transType="IN",
             dataLength=pktLength,
         )
     )

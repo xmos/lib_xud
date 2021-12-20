@@ -52,7 +52,8 @@ suspend_t_wtwrsths:
 #define STACK_TXCRC_INIT        (20)
 #define STACK_RXCRC_INIT        (21)
 #define STACK_PIDJUMPTABLE      (22)
-#define STACK_HANDSHAKETABLEIN  (23)
+#define STACK_PIDJUMPTABLE_RXDATA (23)
+#define STACK_CRC5TABLE_ADDR      (24)
 
 // Params
 #define STACK_VTOK_PORT     (STACK_EXTEND + 1)
@@ -70,6 +71,7 @@ suspend_t_wtwrsths:
 .globl UsbTestModeHandler_asm.nstackwords
 .linkset UsbTestModeHandler_asm.nstackwords, 0
 .globl UsbTestModeHandler_asm
+.type UsbTestModeHandler_asm, @function
 .text
 .cc_top UsbTestModeHandler_asm.func, UsbTestModeHandler_asm
 .issue_mode single
@@ -100,6 +102,7 @@ UsbTestModeHandler_asm:
 .globl ResetIntHandler.nstackwords
 .linkset ResetIntHandler.nstackwords, 0
 .globl ResetIntHandler
+.type ResetIntHandler, @function
 .text
 .cc_top ResetIntHandler.func, ResetIntHandler
 .issue_mode dual
@@ -137,8 +140,9 @@ ResetIntHandler:
 .linkset XUD_LLD_IoLoop.maxthreads, 0
 
 .globl XUD_LLD_IoLoop
-.cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
+.type XUD_LLD_IoLoop, @function
 .text
+.cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
 
 .issue_mode dual
 // Note, included here so in same elimination blocks to avoid long jumps
@@ -260,8 +264,13 @@ ConfigSofJump:
 #endif
 ConfigSofJump_Done:
     stw        r10, sp[STACK_PIDJUMPTABLE]
-    ldaw       r10, dp[handshakeTable_IN]           // Load handshake table
-    stw        r10, sp[STACK_HANDSHAKETABLEIN]
+
+    ldaw       r10, dp[PidJumpTable_RxData]
+    stw        r10, sp[STACK_PIDJUMPTABLE_RXDATA]
+    
+    ldaw       r10, dp[crc5Table_Addr]
+    stw        r10, sp[STACK_CRC5TABLE_ADDR]
+
 
 ConfigRxErrEventVector:
     setc       res[r3], XS1_SETC_COND_EQ
@@ -371,4 +380,5 @@ Return:
 
 // Tables of tables...
 #include "./included/XUD_PidJumpTable.S"
+#include "./included/XUD_PidJumpTable_RxData.S"
 

@@ -30,7 +30,7 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=trafficAddress1,
                 endpointNumber=trafficEp1,
                 endpointType="BULK",
-                direction="OUT",
+                transType="OUT",
                 dataLength=pktLength,
                 interEventDelay=ied,
             )
@@ -42,7 +42,7 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=address,
                 endpointNumber=ep,
                 endpointType="BULK",
-                direction="OUT",
+                transType="OUT",
                 dataLength=pktLength,
                 interEventDelay=ied,
             )
@@ -54,7 +54,7 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=trafficAddress2,
                 endpointNumber=trafficEp2,
                 endpointType="BULK",
-                direction="OUT",
+                transType="OUT",
                 dataLength=pktLength,
                 interEventDelay=ied,
             )

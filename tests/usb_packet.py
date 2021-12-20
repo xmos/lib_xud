@@ -62,15 +62,16 @@ from usb_event import UsbEvent
 import usb_phy
 
 
-USB_DATA_VALID_COUNT = {"FS": 39, "HS": 0}
+USB_DATA_VALID_COUNT = {"FS": 40, "HS": 1}
 
 # In USB clocks
 # Pad delay not currently simulated in xsim for USB or OTP, so add this
 # delay here
-RXA_END_DELAY = 2
-RXA_START_DELAY = 5  # Taken from RTL sim
+RXA_END_DELAY = 0  # Taken from RTL sim
+RXA_START_DELAY = {"FS": 1, "HS": 5}  # Taken from RTL sim and UTMI spec 6.4.2
+# Note, will get muiltiplied by USB_DATA_VALID_COUNT before use
 
-# TODO shoud we have a PID class?
+# TODO should we have a PID class?
 # TODO remove the inverted check bits
 USB_PID = {
     "OUT": 0xE1,
@@ -87,7 +88,12 @@ USB_PID = {
 }
 
 
-def CreateSofToken(frameNumber, badCrc=False, interEventDelay=1000):
+def CreateSofToken(
+    frameNumber,
+    badCrc=False,
+    interEventDelay=usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"],
+):
+
     ep = (frameNumber >> 7) & 0xF
     address = (frameNumber) & 0x7F
 
@@ -191,8 +197,7 @@ class UsbPacket(UsbEvent):
         self.data_bytes = kwargs.pop("data_bytes", None)
         self.num_data_bytes = kwargs.pop("length", 0)
         self.bad_crc = kwargs.pop("bad_crc", False)
-        ied = kwargs.pop("interEventDelay", None)
-        super().__init__(interEventDelay=ied)
+        super().__init__()
 
     @property
     def event_count(self):
@@ -295,16 +300,16 @@ class RxPacket(UsbPacket):
 # Tx from host i.e. xCORE Rx
 class TxPacket(UsbPacket):
     def __init__(self, **kwargs):
-        self.rxa_start_delay = kwargs.pop("rxa_start_delay", 2)
+        self.rxa_start_delay = kwargs.pop("rxa_start_delay", RXA_START_DELAY)
         self.rxa_end_delay = kwargs.pop("rxa_end_delay", RXA_END_DELAY)
         self.rxe_assert_time = kwargs.pop("rxe_assert_time", 0)
         self.rxe_assert_length = kwargs.pop("rxe_assert_length", 1)
 
-        ied = kwargs.pop(
+        self.interEventDelay = kwargs.pop(
             "interEventDelay",
             usb_phy.USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"],
         )
-        super().__init__(**kwargs, interEventDelay=ied)
+        super().__init__(**kwargs)
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "Packet:\tHOST -> DEVICE\n"
@@ -320,8 +325,6 @@ class TxPacket(UsbPacket):
         if xsi.sample_port_pins(usb_phy._txv) == 1:
             print("ERROR: Unexpected packet from xCORE (TxPacket 0)")
 
-        rxv_count = USB_DATA_VALID_COUNT[bus_speed]
-
         usb_phy.wait_for_clocks(self.interEventDelay)
 
         print(
@@ -334,33 +337,48 @@ class TxPacket(UsbPacket):
         xsi.drive_periph_pin(usb_phy._rxa, 1)
 
         # Wait for RXA start delay
-        rxa_start_delay = RXA_START_DELAY
+        rxa_start_delay = (RXA_START_DELAY[bus_speed]) * USB_DATA_VALID_COUNT[bus_speed]
 
-        while rxa_start_delay != 0:
+        while rxa_start_delay > 1:
             wait(lambda x: usb_phy._clock.is_high())
             wait(lambda x: usb_phy._clock.is_low())
             rxa_start_delay = rxa_start_delay - 1
 
-        for (i, byte) in enumerate(self.get_bytes(do_tokens=False)):
+        packetBytes = self.get_bytes(do_tokens=False)
+
+        for (i, byte) in enumerate(packetBytes):
+
+            rxv_count = USB_DATA_VALID_COUNT[bus_speed]
 
             # xCore should not be trying to send if we are trying to send..
             if xsi.sample_port_pins(usb_phy._txv) == 1:
                 print("ERROR: Unexpected packet from xCORE (TxPacket 1)")
 
-            wait(lambda x: usb_phy._clock.is_low())
-            wait(lambda x: usb_phy._clock.is_high())
-            wait(lambda x: usb_phy._clock.is_low())
-            xsi.drive_periph_pin(usb_phy._rxdv, 1)
             xsi.drive_periph_pin(usb_phy._rxd, byte)
 
             if (self.rxe_assert_time != 0) and (self.rxe_assert_time == i):
                 xsi.drive_periph_pin(usb_phy._rxer, 1)
 
-            while rxv_count != 0:
+            # Subtract 1 since we always drive for atleast one cycle..
+            rxv_count -= 1
+
+            while rxv_count > USB_DATA_VALID_COUNT[bus_speed] // 2:
                 wait(lambda x: usb_phy._clock.is_high())
                 wait(lambda x: usb_phy._clock.is_low())
-                xsi.drive_periph_pin(usb_phy._rxdv, 0)
                 rxv_count = rxv_count - 1
+
+            # RxV high for 1 cycle
+            xsi.drive_periph_pin(usb_phy._rxdv, 1)
+            wait(lambda x: usb_phy._clock.is_high())
+            wait(lambda x: usb_phy._clock.is_low())
+            xsi.drive_periph_pin(usb_phy._rxdv, 0)
+
+            # Don't delay on last byte (effects FS only)
+            if i < len(packetBytes) - 1:
+                while rxv_count > 0:
+                    wait(lambda x: usb_phy._clock.is_high())
+                    wait(lambda x: usb_phy._clock.is_low())
+                    rxv_count = rxv_count - 1
 
                 # xCore should not be trying to send if we are trying to send..
                 # We assume that the Phy internally blocks the TXValid signal
@@ -370,11 +388,9 @@ class TxPacket(UsbPacket):
                 # if xsi.sample_port_pins(usb_phy._txv) == 1:
                 #    print("ERROR: Unexpected packet from xCORE (TxPacket 2)")
 
-            rxv_count = USB_DATA_VALID_COUNT[bus_speed]
-
         # Wait for last byte
-        wait(lambda x: usb_phy._clock.is_high())
-        wait(lambda x: usb_phy._clock.is_low())
+        # wait(lambda x: usb_phy._clock.is_high())
+        # wait(lambda x: usb_phy._clock.is_low())
 
         xsi.drive_periph_pin(usb_phy._rxdv, 0)
         xsi.drive_periph_pin(usb_phy._rxer, 0)
@@ -402,7 +418,7 @@ class TxPacket(UsbPacket):
         if do_tokens:
             byte_list.append(self.pid)
         else:
-            byte_list.append(self.pid | ((~self.pid) << 4))
+            byte_list.append(self.pid)  # | ((~self.pid) << 4))
             for b in self.data_bytes:
                 byte_list.append(b)
         return byte_list
@@ -425,7 +441,7 @@ class DataPacket(UsbPacket):
         if do_tokens:
             byte_list.append(self.pid)
         else:
-            byte_list.append(self.pid | (((~self.pid) & 0xF) << 4))
+            byte_list.append(self.pid)  # | (((~self.pid) & 0xF) << 4))
 
         packet_bytes = self.get_packet_bytes()
         for byte in packet_bytes:
@@ -481,6 +497,7 @@ class TxDataPacket(DataPacket, TxPacket):
 # Always TX
 class TokenPacket(TxPacket):
     def __init__(self, **kwargs):
+
         super().__init__(**kwargs)
         self.endpoint = kwargs.pop("endpoint", 0)
         self.valid = kwargs.pop("valid", 1)

@@ -15,17 +15,21 @@ import Pyxsim
 from xcoverage.xcov import xcov_process, xcov_combine, combine_process
 
 # Note, no current support for XS2 so don't copy XS2 xn files
-XN_FILES = ["test_xs3_600.xn", "test_xs3_800.xn", "test_xs3_540.xn", "test_xs3_500.xn"]
+XN_FILES = [
+    "test_xs3_600.xn",
+    "test_xs3_800.xn",
+]
 combine_test = combine_process(os.path.dirname(os.path.abspath(__file__)))
 xcov_comb = xcov_combine()
 
+# Note, HS tests will be skipped unless 85MIPS are available to lib_xud
 PARAMS = {
     "extended": {
         "arch": ["xs3"],
         "ep": [1, 2, 4],
         "address": [0, 1, 127],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 5, 6],
+        "dummy_threads": [0, 3, 5],  # Note, plus 2 for test cores
         "core_freq": [600, 800],
     },
     "default": {
@@ -33,15 +37,15 @@ PARAMS = {
         "ep": [1, 2],
         "address": [0, 1],
         "bus_speed": ["HS", "FS"],
-        "dummy_threads": [0, 6],
+        "dummy_threads": [0, 5],  # Note, plus 2 for test cores
         "core_freq": [600],
     },
     "smoke": {
         "arch": ["xs3"],
         "ep": [1],
         "address": [1],
-        "bus_speed": ["HS"],
-        "dummy_threads": [6],
+        "bus_speed": ["HS", "FS"],
+        "dummy_threads": [5],  # Note, plus 2 for test cores
         "core_freq": [600],
     },
 }
@@ -139,11 +143,17 @@ def test_RunUsbSession(
     capfd,
 ):
 
+    xcov = eval(os.getenv("xcov"))
+
+    total_threads = dummy_threads + 2  # 1 thread for xud another for test code
+    if (core_freq / total_threads < 85.0) and bus_speed == "HS":
+        pytest.skip("HS requires 85 MIPS")
+
     tester_list = []
     output = []
 
     # TODO it would be good to sanity check core_freq == xe.freq
-    (clk_60, usb_phy) = get_usb_clk_phy(core_freq, verbose=False, arch=arch)
+    (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
     tester_list.extend(
         do_usb_test(
             arch,
@@ -269,10 +279,10 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
 
         fn = root_tmp_dir / "data.json"
 
-        def follow(nfile,n):
+        def follow(nfile, n):
             nf = open(nfile, "r")
             lines = len(nf.readlines())
-            while (lines != n):
+            while lines != n:
                 nf.close()
                 nf = open(nfile, "r")
                 lines = len(nf.readlines())
@@ -281,7 +291,7 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
         def run_at_end():
             wkc = os.getenv("PYTEST_XDIST_WORKER_COUNT")
             if wkc:
-                follow(fn,int(wkc))
+                follow(fn, int(wkc))
             coverage = combine_test.do_combine_test(test_dirs)
             combine_test.generate_merge_src()
             # teardowm - remove tmp file
@@ -289,7 +299,7 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
 
         def status():
             f = open(fn, "a")
-            f.write(str(worker_id+"\n"))
+            f.write(str(worker_id + "\n"))
 
         if worker_id == "master":
             request.addfinalizer(run_at_end)
@@ -299,5 +309,5 @@ def xcoverage_combination(tmp_path_factory, worker_id, request):
             if fn.is_file():
                 request.addfinalizer(status)
             else:
-                fn.write_text(str(worker_id)+"\n")
+                fn.write_text(str(worker_id) + "\n")
                 request.addfinalizer(run_at_end)

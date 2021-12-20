@@ -7,12 +7,11 @@ class Clock(SimThread):
 
     CLK_60MHz = 0x0
 
-    def __init__(self, port, clk, coreFreq_Mhz):
+    def __init__(self, port, clk):
         self._running = True
         self._clk = clk
         if clk == self.CLK_60MHz:
-            self._period = float(1000000000.0 / 60000000.0)
-            self._period *= (1.0 / coreFreq_Mhz) * 1000.0
+            self._period_fs = 16666667
             self._name = "60Mhz"
         else:
             raise ValueError("Unsupported Clock Frequency")
@@ -25,20 +24,12 @@ class Clock(SimThread):
 
         while True:
 
-            time += self._period / 2
+            time += self._period_fs / 2
             self.wait_until(time)
             self._val = 1 - self._val
 
             if self._running:
                 self.xsi.drive_periph_pin(self._port, self._val)
-
-    @property
-    def period_ns(self):
-        return self._period
-
-    @property
-    def period_us(self):
-        return self._period / 1000
 
     def is_high(self):
         return self._val == 1

@@ -10,8 +10,6 @@ from usb_phy_utmi import UsbPhyUtmi
 import Pyxsim
 import subprocess
 
-ARCHITECTURE_CHOICES = ["xs2", "xs3"]
-BUSSPEED_CHOICES = ["FS", "HS"]
 args = {"arch": "xs3"}
 
 
@@ -22,16 +20,15 @@ def create_if_needed(folder):
 
 
 def get_usb_clk_phy(
-    coreFreqMhz,
     verbose=True,
     do_timeout=True,
     complete_fn=None,
-    dut_exit_time=350000,
+    dut_exit_time=350000 * 1000 * 1000,  # in fs
     arch="xs2",
 ):
 
     if arch == "xs2":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -51,7 +48,7 @@ def get_usb_clk_phy(
         )
 
     elif arch == "xs3":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -131,6 +128,8 @@ def do_usb_test(
     verbose=False,
 ):
     build_options = []
+
+    xcov = eval(os.getenv("xcov"))
 
     # Flags for makefile
     for k, v in FIXTURE_TO_DEFINE.items():

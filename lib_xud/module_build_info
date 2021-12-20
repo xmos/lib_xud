@@ -1,13 +1,14 @@
-VERSION = 2.0.2
+VERSION = 2.1.0
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \
                    -DREF_CLK_FREQ=100 \
                    -fasm-linenum \
                    -fcomment-asm \
-                   -DXUD_FULL_PIDTABLE=1
+                   -DXUD_FULL_PIDTABLE=1 \
+                   -g
 
-XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule -g
+XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule
 
 XCC_FLAGS_endpoint0.xc = $(MODULE_XCC_FLAGS) -Os
 XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os
@@ -44,6 +45,7 @@ SOURCE_DIRS = src/core \
 EXCLUDE_FILES += XUD_CrcAddrCheck.S \
                  XUD_G_Crc.S \
                  XUD_PidJumpTable.S \
+                 XUD_PidJumpTable_RxData.S \
                  XUD_RxData.S \
                  XUD_Token_In_DI.S \
                  XUD_Token_Out_DI.S \

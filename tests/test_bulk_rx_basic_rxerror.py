@@ -24,7 +24,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=10,
         )
     )
@@ -37,7 +37,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=11,
             interEventDelay=ied,
             rxeAssertDelay_data=5,
@@ -51,7 +51,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=11,
             interEventDelay=ied,
         )
@@ -64,7 +64,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=12,
             interEventDelay=ied,
         )
@@ -76,7 +76,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=13,
             interEventDelay=ied,
             rxeAssertDelay_data=1,
@@ -90,7 +90,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=13,
             interEventDelay=ied,
         )
@@ -102,7 +102,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=14,
             interEventDelay=ied,
         )

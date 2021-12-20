@@ -24,7 +24,7 @@ int main()
         }
 
         {
-            //set_thread_fast_mode_on();
+            set_thread_fast_mode_on();
             unsigned fail = test_func(c_ep_out, c_ep_in);
 
 #ifdef XUD_SIM_RTL

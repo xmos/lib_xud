@@ -118,7 +118,7 @@ The USB ID values used for vendor ID, product ID and device version number are d
 USB Device Descriptor
 .....................
 
-``endpoint0.xc`` is where the standard USB device descriptor is declared for the HID class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
+``hid_defs.h`` is where the standard USB device descriptor is declared for the HID class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
 
 .. literalinclude:: hid_defs.h
    :start-on: devDesc 
@@ -182,7 +182,7 @@ USB HID Class requests
 Inside ``endpoint0.xc`` there is a function for handling the USB HID device class specific requests. The code for handling these requests is shown as follows:
 
 .. literalinclude:: endpoint0.xc
-   :lines: 142-198
+   :lines: 16-74
 
 These HID specific requests are implemented by the application as they do not form part of the standard requests which have to be accepted by all device classes via endpoint0.
 
@@ -194,7 +194,7 @@ USB HID Class Endpoint0
 The function ``Endpoint0()`` contains the code for dealing with device requests made from the host to the standard endpoint0 which is present in all USB devices. In addition to requests required for all devices, the code handles the requests specific to the HID class.
 
 .. literalinclude:: endpoint0.xc
-   :lines: 201-301
+   :lines: 75-176
 
 |newpage|
 

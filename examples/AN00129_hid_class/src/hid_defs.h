@@ -11,8 +11,6 @@
 #define HID_REPORT_BUFFER_SIZE 3
 extern unsigned char g_reportBuffer[HID_REPORT_BUFFER_SIZE];
 
-#endif // HID_DEFS_H
-
 /* USB HID Device Product Defines */
 #define BCD_DEVICE   0x1000
 #define VENDOR_ID    0x20B1
@@ -127,9 +125,7 @@ static unsigned char hidReportDescriptor[] =
     0xC0          /* End Collection */
 };
 
-//unsafe{
 /* String table */
-//static char * unsafe stringDescriptors[]=
 static char * stringDescriptors[]=
 {
     "\x09\x04",             // Language ID string (US English)
@@ -137,4 +133,5 @@ static char * stringDescriptors[]=
     "Example HID Mouse",    // iProduct
     "Config",               // iConfiguration
 };
-//}
+
+#endif // HID_DEFS_H

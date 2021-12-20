@@ -7,7 +7,7 @@ MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -fcomment-asm \
                    -DXUD_FULL_PIDTABLE=1
 
-XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule -g0
+XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule -g
 
 XCC_FLAGS_endpoint0.xc = $(MODULE_XCC_FLAGS) -Os
 XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os

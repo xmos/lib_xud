@@ -14,13 +14,6 @@ APP_NAME =
 
 SHARED_CODE = ../../shared_src
 
-MODULE_XCC_FLAGS = $(XCC_FLAGS) \
-                   -O3 \
-                   -DREF_CLK_FREQ=100 \
-                   -fasm-linenum \
-                   -fcomment-asm \
-                   -DXUD_FULL_PIDTABLE=1
-
 COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
 			   -O3 \
 			   -g \
@@ -52,10 +45,6 @@ endif
 
 ifndef XUD_STARTUP_ADDRESS
 $(error XUD_STARTUP_ADDRESS is not set)
-endif
-
-ifndef XCC_FLAGS_XUD_IoLoop.S
-XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule -g
 endif
 
 XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM)_$(XUD_STARTUP_ADDRESS)_$(BUS_SPEED) = $(TEST_FLAGS) $(COMMON_FLAGS) 

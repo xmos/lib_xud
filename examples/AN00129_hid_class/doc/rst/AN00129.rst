@@ -113,15 +113,6 @@ The USB ID values used for vendor ID, product ID and device version number are d
    :start-on: /* USB HID Device Product Defines
    :end-before: /* Device Descriptor
 
-USB HID Class specific defines
-..............................
-
-The USB HID Class is configured in the file ``endpoint0.xc``. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB HID class device running on an xCORE-USB microcontroller.
-
-.. literalinclude:: hid_defs.h
-   :start-on: Standard HID
-   :end-before: Device Descriptor
-
 |newpage|
 
 USB Device Descriptor

@@ -28,68 +28,84 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             halted=True,
         )
     )
 
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="BULK",
-            direction="OUT",
-            dataLength=pktLength,
-            halted=True,
-        )
-    )
-
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="BULK",
-            direction="IN",
-            halted=True,
-        )
-    )
-
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="BULK",
-            direction="IN",
-            halted=True,
-        )
-    )
-
-    # Inform DUT to un halt EP's
+    # Inform DUT to un-halt OUT EP via ctrl EP
     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep_ctrl,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
         )
     )
 
-    # Expect normal transactions
-    # DUT will exit after one normal transaction per EP.
+    # Expect normal transaction on OUT EP
     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
+        )
+    )
+
+    # ----
+
+    # Expect normal transaction on OUT EP
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep_ctrl,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength,
+            interEventDelay=500,
+        )
+    )
+
+    # Expect EP to now be re-halted
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength,
+            halted=True,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep_ctrl,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
@@ -99,7 +115,7 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="OUT",
             dataLength=pktLength,
         )
     )

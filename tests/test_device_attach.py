@@ -9,6 +9,7 @@ from usb_packet import CreateSofToken
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_signalling import UsbDeviceAttach
+from usb_phy import USB_PKT_TIMINGS
 
 # Only need to run device attach tests for one ep/address
 PARAMS = deepcopy(PARAMS)
@@ -22,11 +23,13 @@ def test_session(ep, address, bus_speed):
     pktLength = 10
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
 
+    interEventDelay = USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
+
     session = UsbSession(
         bus_speed=bus_speed,
         run_enumeration=False,
         device_address=address,
-        initial_delay=19000,
+        initial_delay=19000 * 1000 * 1000,  # fs
     )
 
     session.add_event(UsbDeviceAttach())
@@ -39,9 +42,9 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
-            interEventDelay=0,
+            interEventDelay=interEventDelay,
         )
     )
 
@@ -55,9 +58,9 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
-            interEventDelay=0,
+            interEventDelay=interEventDelay,
         )
     )
 

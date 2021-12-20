@@ -84,17 +84,22 @@ typedef enum t_runMode
     RUNMODE_DIE
 } t_runMode;
 
+#pragma unsafe arrays
+void GenTxPacketBuffer(unsigned char buffer[], int length, int epNum)
+{
+    for (int i = 0; i < length; i++)
+    unsafe {
+        buffer[i] = g_txDataCheck[epNum]++;
+    }
+    return;
+}
 
 #pragma unsafe arrays
 XUD_Result_t SendTxPacket(XUD_ep ep, int length, int epNum)
 {
     unsigned char buffer[1024];
 
-    
-    for (int i = 0; i < length; i++)
-    unsafe {
-        buffer[i] = g_txDataCheck[epNum]++;
-    }
+    GenTxPacketBuffer(buffer, length, epNum);
 
     return XUD_SetBuffer(ep, buffer, length);
 }

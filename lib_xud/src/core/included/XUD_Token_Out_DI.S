@@ -19,10 +19,10 @@ CheckEpTypeOut:
 OutReady:
     stw        r11, r5[r10]                     // Clear ready straight away - we don't to CRC checking on Iso - else we would have to wait for end of packet
     bl         doRXData
-    clre
+    {clre;
+    ldw         r11, r3[1]}                     // Load EP chanend
 
 InformEP_Iso:                                   // Iso EP - no handshake
-    ldw         r11, r3[1]                      // Load EP chanend
     {out        res[r11], r4;   ldw    r7, sp[STACK_TXCRC_INIT]} // Output datalength (words) & CRC 16 Init (IN) 
     {outt       res[r11], r8;   ldw    r6, sp[STACK_RXCRC_INIT]} // CRC16 init (out) - Needs reseting after an out & Send tail length
 #ifndef __XS3A__
@@ -38,16 +38,6 @@ DoOutNonIso:
 
 doRXDataReturn_NonIso:
     bf         r1, NextTokenAfterOut            // Check for bad crc
-
-    ldaw       r6,  dp[handshakeTable_OUT]      // Load the handshake table.
-   {ldw        r11, r6[r10]                     // Get the handshake PID for this EP
-    ldc        r1,  USB_PIDn_STALL}             // as well as the STALL PID
-    eq         r1,  r11, r1                     // and compare them.
-    nop                                         // NOP to ensure minimum interpacket delay.
-    bt         r1,  XUD_TokenOut_Handshake      // If the handshake PID for this EP is STALL, then
-                                                // go and send the handshake without clearing ready
-                                                // or communicating back to the application that
-                                                // the packet has been received.
 
     ldc        r11, USB_PIDn_ACK                // Data CRC good, EP not Iso, and EP not halted: Send Ack
     outpw      res[TXD], r11, 8
@@ -80,13 +70,12 @@ Err_RxErr:                                      // RxError signal high during da
 XUD_TokenOut_BufferFull:
   ldw       r9, sp[STACK_RXA_PORT]
   setc      res[r9], XS1_SETC_RUN_CLRBUF
-  setc      res[r9], XS1_SETC_COND_NEQ
+  inpw        r4, res[r0], 8                    // Input PID of next packet.
+                                                // TODO catch case where PID is not DATA
 
 XUD_TokenOut_WaitForPacketEnd:                  // Wait for end of data then send NAK
   in        r11, res[r9]
-  setc      res[r9], XS1_SETC_COND_EQ
-  in        r11, res[r9]
-                                                // TODO: Observe interpacket delay
+
 #ifndef XUD_NAK_ISO_OUT
   ldw       r4, sp[STACK_EPTYPES_OUT]           // Load ep type table
   ldw       r4, r4[r10]                         // load EP type
@@ -94,9 +83,11 @@ XUD_TokenOut_WaitForPacketEnd:                  // Wait for end of data then sen
 #endif
 
   // Load handshake (ACK or STALL)
-  ldaw      r6, dp[handshakeTable_OUT]          // Load handshake table
 XUD_TokenOut_Handshake:
-  ldw       r11, r6[r10]
+  ldaw      r6, dp[ep_addr]
+  ldw       r6, r6[r10]
+  ldw       r11, r6[10]
+
   outpw     res[TXD], r11, 8
   syncr     res[TXD]
 

@@ -8,11 +8,9 @@ from Pyxsim import testers
 from usb_clock import Clock
 from usb_phy_utmi import UsbPhyUtmi
 import Pyxsim
+import subprocess
 
-ARCHITECTURE_CHOICES = ["xs2", "xs3"]
-BUSSPEED_CHOICES = ["FS", "HS"]
 args = {"arch": "xs3"}
-clean_only = False
 
 
 def create_if_needed(folder):
@@ -22,16 +20,15 @@ def create_if_needed(folder):
 
 
 def get_usb_clk_phy(
-    coreFreqMhz,
     verbose=True,
     do_timeout=True,
     complete_fn=None,
-    dut_exit_time=350000,
+    dut_exit_time=350000 * 1000 * 1000,  # in fs
     arch="xs2",
 ):
 
     if arch == "xs2":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -51,7 +48,7 @@ def get_usb_clk_phy(
         )
 
     elif arch == "xs3":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -93,6 +90,19 @@ def run_on(**kwargs):
     return True
 
 
+def generate_elf_disasm(binary, split_dir, disasm):
+    cmd_elf = (
+        "xobjdump --split " + binary + " --split-dir " + split_dir + " > /dev/null 2>&1"
+    )
+    cmd_disasm = "xobjdump -S " + binary + " -o " + disasm
+    try:
+        subprocess.run(cmd_elf, shell=True, check=True)
+        subprocess.run(cmd_disasm, shell=True, check=True)
+    except:
+        print("Error running build disasm")
+        sys.exit(1)
+
+
 FIXTURE_TO_DEFINE = {
     "core_freq": "TEST_FREQ",
     "arch": "TEST_ARCH",
@@ -119,6 +129,8 @@ def do_usb_test(
 ):
     build_options = []
 
+    xcov = eval(os.getenv("xcov"))
+
     # Flags for makefile
     for k, v in FIXTURE_TO_DEFINE.items():
         build_options += [str(v) + "=" + str(locals()[k])]
@@ -140,12 +152,23 @@ def do_usb_test(
 
     # Do not need to clean since different build will different params go to
     # separate binaries
+    if eval(os.getenv("clean")):
+        clean_only = True
+    else:
+        clean_only = False
+
     build_success, _ = Pyxsim._build(
-        binary, do_clean=False, build_options=build_options
+        binary, do_clean=False, clean_only=clean_only, build_options=build_options
     )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
     if build_success:
+
+        if eval(os.getenv("xcov")):
+            split_dir = f"{testname}/bin/{desc}/"
+            disasm = f"{testname}/bin/{desc}/{testname}_{desc}.dump"
+            generate_elf_disasm(binary, split_dir, disasm)
+
         for session in sessions:
 
             phy.session = session
@@ -169,7 +192,7 @@ def do_usb_test(
             )
 
             tester_list.append(tester)
-            simargs = get_sim_args(testname, clk, arch)
+            simargs = get_sim_args(testname, desc)
             simthreads = [clk, phy] + extra_tasks
             run_on_simulator(binary, simthreads, simargs=simargs)
     else:
@@ -205,17 +228,16 @@ def create_expect(session, filename, verbose=False):
             print("Test done\n")
 
 
-def get_sim_args(testname, clk, arch="xs2"):
+def get_sim_args(testname, desc):
     sim_args = []
 
     if eval(os.getenv("enabletracing")):
         log_folder = create_if_needed("logs")
 
-        filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(
+        filename = "{log}/xsim_trace_{test}_{desc}".format(
             log=log_folder,
             test=testname,
-            clk=clk.get_name(),
-            arch=arch,
+            desc=desc,
         )
 
         sim_args += [

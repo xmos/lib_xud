@@ -34,104 +34,78 @@ def test_session(ep, address, bus_speed):
     )
 
     # Ctrl transaction 0
-
-    # SETUP transaction
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["SETUP"],
-            address=address,
-            endpoint=ep,
-        )
-    )
-    session.add_event(
-        TxDataPacket(
-            dataPayload=session.getPayload_out(ep, 8),
-            pid=USB_PID["DATA0"],
-        )
-    )
-    session.add_event(RxHandshakePacket())
-
-    # OUT transaction
-    # Note, quite big gap to avoid nak
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["OUT"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=10000,
-        )
-    )
-    session.add_event(
-        TxDataPacket(
-            dataPayload=session.getPayload_out(ep, 10),
-            pid=USB_PID["DATA1"],
-        )
-    )
-    session.add_event(RxHandshakePacket())
-
-    # Expect 0 length IN transaction
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["IN"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=ied,
-        )
-    )
-    session.add_event(RxDataPacket(dataPayload=[], pid=USB_PID["DATA1"]))
-    session.add_event(TxHandshakePacket())
-
-    # Ctrl transaction 1
-
-    # SETUP transaction
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["SETUP"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=10000,
-        )
-    )
-    session.add_event(
-        TxDataPacket(
-            dataPayload=session.getPayload_out(ep, 8),
-            pid=USB_PID["DATA0"],
-        )
-    )
-    session.add_event(RxHandshakePacket())
-
-    # Check that the EP is now Halted
     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="CONTROL",
-            direction="IN",
+            transType="SETUP",
+            dataLength=8,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="CONTROL",
+            transType="OUT",
+            dataLength=10,
+        )
+    )
+
+    # Expect 0 length IN transaction
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="CONTROL",
+            transType="IN",
+            dataLength=0,
+        )
+    )
+
+    # Ctrl transaction 1
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="CONTROL",
+            transType="SETUP",
+            dataLength=8,
+        )
+    )
+
+    # Check that the EP is now Halted - i.e. as if the previous request could not be handled
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="CONTROL",
+            transType="IN",
             dataLength=pktLength,
             halted=True,
             interEventDelay=1000,
         )
     )
 
+    # Check that EP is un-Halted on a SETUP
     # Ctrl transaction 2
-
-    # SETUP transaction
     session.add_event(
-        TokenPacket(
-            pid=USB_PID["SETUP"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=10000,
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="CONTROL",
+            transType="SETUP",
+            dataLength=8,
         )
     )
-    session.add_event(
-        TxDataPacket(
-            dataPayload=session.getPayload_out(ep, 8),
-            pid=USB_PID["DATA0"],
-        )
-    )
-    session.add_event(RxHandshakePacket())
 
     session.add_event(
         UsbTransaction(
@@ -139,11 +113,8 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="CONTROL",
-            direction="IN",
+            transType="IN",
             dataLength=pktLength,
-            halted=False,
-            interEventDelay=1000,
-            resetDataPid=True,
         )
     )
 
@@ -152,12 +123,9 @@ def test_session(ep, address, bus_speed):
             session,
             deviceAddress=address,
             endpointNumber=ep,
-            endpointType="BULK",
-            direction="OUT",
+            endpointType="CONTROL",
+            transType="OUT",
             dataLength=0,
-            halted=False,
-            interEventDelay=1000,
-            resetDataPid=True,
         )
     )
 

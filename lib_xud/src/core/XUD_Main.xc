@@ -62,9 +62,10 @@ on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_5;
 XUD_chan epChans[USB_MAX_NUM_EP];
 XUD_chan epChans0[USB_MAX_NUM_EP];
 
-
-
 XUD_ep_info ep_info[USB_MAX_NUM_EP];
+
+/* Location to store stack pointer (required for interrupt handler) */
+unsigned SavedSp;
 
 /* Tables storing if EP's are signed up to bus state updates */
 int epStatFlagTableIn[USB_MAX_NUM_EP_IN];

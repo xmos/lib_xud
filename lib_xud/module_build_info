@@ -38,12 +38,10 @@ INCLUDE_DIRS = $(EXPORT_INCLUDE_DIRS) \
                src/user/class
 
 SOURCE_DIRS = src/core \
-              src/core/included \
               src/user/client \
               src/user/control
 
 EXCLUDE_FILES += XUD_CrcAddrCheck.S \
-                 XUD_G_Crc.S \
                  XUD_PidJumpTable.S \
                  XUD_PidJumpTable_RxData.S \
                  XUD_RxData.S \

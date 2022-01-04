@@ -1,7 +1,7 @@
 // Copyright 2011-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-// XUD_LLD_IoLoop.S
+// XUD_IoLoop.S
 // Main USB interfacing loop
 //
 // XMOS Ltd

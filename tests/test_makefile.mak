@@ -51,7 +51,7 @@ ifndef TEST_BUS_SPEED
 $(error TEST_BUS_SPEED is not set)
 endif
 
-ifeq (TEST_BUS_SPEED, 'FS')
+ifeq ($(TEST_BUS_SPEED), FS)
 TEST_BUS_SPEED_INT = 1
 else
 TEST_BUS_SPEED_INT = 2

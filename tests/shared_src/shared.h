@@ -74,7 +74,7 @@ void TerminatePass(unsigned x)
 #endif
 
 #ifndef TEST_EP_NUM
-#warning TEST_EP_NUM not defined, using default value
+#error TEST_EP_NUM not defined, using default value
 #define TEST_EP_NUM         (1)
 #endif
 
@@ -114,10 +114,10 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
     int counter = 0;
     int length = start;
 
-    set_core_fast_mode_on();
+    //set_core_fast_mode_on();
 
     /* Prepare packets */
-    for(int i = 0; i <= (end-start); i++)
+    for(int i = 0; i <= (end - start); i++)
     {
         for(int j = 0; j < length; j++)
         {
@@ -241,7 +241,7 @@ int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode)
 }
 
 #ifndef TEST_DTHREADS
-#warning TEST_DTHREADS not defined
+#error TEST_DTHREADS not defined
 #define TEST_DTHREADS (0)
 #endif
 

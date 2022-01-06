@@ -343,17 +343,18 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     XUD_HAL_SetDeviceAddress(XUD_STARTUP_ADDRESS);
 
 #ifdef XUD_BYPASS_RESET
-    #if defined(XUD_TEST_SPEED_HS)
+                    if(XUD_TEST_SPEED == XUD_SPEED_HS)
+                    {
                         g_curSpeed = XUD_SPEED_HS;
                         g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
                         XUD_HAL_EnterMode_PeripheralHighSpeed();
-    #elif defined(XUD_TEST_SPEED_FS)
+                    }
+                    else
+                    {
                         g_curSpeed = XUD_SPEED_FS;
                         g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
                         XUD_HAL_EnterMode_PeripheralFullSpeed(); //Technically not required since we should already be in FS mode..
-    #else 
-                        #error XUD_TEST_SPEED_ must be defined if using XUD_BYPASS_RESET!
-    #endif
+                    }
 #else
                     if(g_desSpeed == XUD_SPEED_HS)
                     {

@@ -55,6 +55,14 @@ int TestEp_LoopbackOnce(chanend c_out, chanend c_in, chanend c_out_0)
     XUD_GetBuffer(ep_out, buffer, length);
     XUD_SetBuffer(ep_in, buffer, length);
 
+    /* Allow a little time for Tx data to make it's way of the port - important for FS tests */
+    {
+        timer t; 
+        unsigned time;
+        t :> time;
+        t when timerafter(time + 500) :> int _;
+    }
+
     XUD_Kill(ep_out_0);
     exit(0);
 }

@@ -114,7 +114,7 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
     int counter = 0;
     int length = start;
 
-    //set_core_fast_mode_on();
+    set_core_fast_mode_on();
 
     /* Prepare packets */
     for(int i = 0; i <= (end - start); i++)
@@ -131,6 +131,14 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
     for(int i = 0; i <= (end - start); i++)
     {
         XUD_SetBuffer(ep_in, buffer[i], length++);
+    }
+
+    /* Allow a little time for Tx data to make it's way of the port - important for FS tests */
+    {
+        timer t; 
+        unsigned time;
+        t :> time;
+        t when timerafter(time + 500) :> int _;
     }
 
     if(runMode == RUNMODE_DIE)

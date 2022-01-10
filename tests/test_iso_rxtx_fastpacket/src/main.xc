@@ -33,6 +33,15 @@ int main()
 		
 		{
         	TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
+
+            /* Allow a little time for Tx data to make it's way of the port - important for FS tests */
+            {
+                timer t; 
+                unsigned time;
+                t :> time;
+                t when timerafter(time + 500) :> int _;
+            }
+
     		XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
 			XUD_Kill(ep0);
 			exit(0);	// TODO should be able to move this out of the par

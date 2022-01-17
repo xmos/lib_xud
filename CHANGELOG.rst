@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+HEAD
+----
+  
+  * RESOLVED:  Timeout event properly cleaned up after tx handshake received
+
 2.1.0
 -----
 

@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include "XUD_AlignmentDefines.h"
@@ -133,7 +133,7 @@ TxHandShakeReceived:
     {clrpt     res[r1];                            // Clear port time on valid token port
     shr        r11, r11, 24}                       // Shift off junk data to leave ACK
 #if defined(__XS2A__)
-    ldc        r9, USB_PID_ACK                     // Check for good ACK (L series strips of negated bits from PID)
+    ldc        r9, USB_PID_ACK                     // Check for good ACK (L series strips negated bits from PID)
 #else
     ldc        r9, USB_PIDn_ACK
 #endif

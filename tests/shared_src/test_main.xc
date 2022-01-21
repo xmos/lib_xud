@@ -1,4 +1,4 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifdef XUD_SIM_RTL
@@ -12,11 +12,11 @@ int main()
     par
     {
         {
-#if defined(XUD_TEST_SPEED_FS)
-            const unsigned speed = XUD_SPEED_FS;
-#elif defined(XUD_TEST_SPEED_HS)
-            const unsigned speed = XUD_SPEED_HS;
+          
+#ifndef XUD_TEST_SPEED
+#error XUD_TEST_SPEED must be defined
 #endif
+		 	const unsigned speed = XUD_TEST_SPEED;
             
             XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,

@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include "XUD_AlignmentDefines.h"
@@ -105,7 +105,7 @@ SetupTimeout:                                      // Timeout done using another
 #else
     ldw        r1, dp[rx_rdy]                      // TODO load from stack
 #endif
-    eeu        res[RXD]                            // Events on RXD always enabled - Can;t be any more due to using events on channels
+    eeu        res[RXD]                            // Events on RXD always enabled - Can't be any more due to using events on channels
     
     in         r11, res[r1]                        // Do input and get port time/timestamps
     getts      r11, res[r1]
@@ -121,28 +121,24 @@ WaitForHandshake:                                  // Wait for timeout or handsh
 // We sent some data but the host didn't handshake in time.  Needs a re-send.
 .align FUNCTION_ALIGNMENT
 TxHandshakeTimeOut:
+    clre
     in         r11, res[r1]                        // This will clear port time
-    edu        res[r1]
-    {edu       res[RXD]; bu          BadHandshake}
+    bu        BadHandshake
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align FUNCTION_ALIGNMENT
 TxHandShakeReceived:
+    clre 
     in         r11, res[RXD]                       // Input data from RXD port
-    clrpt      res[r1]                             // Clear port time on valid token port
-    
-    {edu       res[RXD];  shr      r11, r11, 24}   // Shift off junk data to leave ACK
+    {clrpt     res[r1];                            // Clear port time on valid token port
+    shr        r11, r11, 24}                       // Shift off junk data to leave ACK
 #if defined(__XS2A__)
-    ldc        r9, USB_PID_ACK                     // Check for good ACK (L series strips of negated bits from PID)
+    ldc        r9, USB_PID_ACK                     // Check for good ACK (L series strips negated bits from PID)
 #else
     ldc        r9, USB_PIDn_ACK
 #endif
     xor        r9, r11, r9
-#ifdef __XS2A__
-    {edu       res[r1];   bt       r9, BadHandshake}     // Disable events on ValidToken port
-#else
-    {bt        r9, BadHandshake}     
-#endif
+    bt         r9, BadHandshake
 
 XUD_IN_DoneTx:
 

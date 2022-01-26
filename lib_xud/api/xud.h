@@ -447,7 +447,7 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     return XUD_RES_OKAY;
 }
 
-#if defined(__XC__) || defined(__DOXYGEN__)
+// #if defined(__XC__) || defined(__DOXYGEN__)
 /**
  * \brief      Marks an IN endpoint as ready to transmit data
  * \param      ep          The IN endpoint identifier (created by ``XUD_InitEp``).
@@ -473,7 +473,11 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     }
 
     /* Tail length bytes to bits */
+#ifdef LANG_C
+    tailLength = (len << 3) & 0x1F;
+#else
     tailLength = zext((len << 3),5);
+#endif
 
     /* Datalength (bytes) --> datalength (words) */
     wordLength = len >> 2;
@@ -532,8 +536,12 @@ inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  *                   XUD_SetReady_Out())
  * \param   result   XUD_Result_t passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
+#ifdef LANG_C
+void XUD_GetData_Select(chanend c, XUD_ep ep, unsigned *length, XUD_Result_t *result);
+#else
 #pragma select handler
 void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length), REFERENCE_PARAM(XUD_Result_t, result));
+#endif
 
 /**
  * \brief   Select handler function for transmitting IN endpoint data in a select.
@@ -541,9 +549,13 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
  * \param   ep       The IN endpoint identifier (created by ``XUD_InitEp``).
  * \param   result   Passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
+#ifdef LANG_C
+void XUD_SetData_Select(chanend c, XUD_ep ep, XUD_Result_t *result);
+#else
 #pragma select handler
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
-#endif //__XC__ || __DOXYGEN__
+#endif
+// #endif //__XC__ || __DOXYGEN__
 
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */

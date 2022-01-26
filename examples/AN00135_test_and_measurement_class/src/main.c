@@ -30,66 +30,6 @@
 XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_BUL};
 
-// inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
-// {
-//     int chan_array_ptr;
-//     int tmp, tmp2;
-//     int wordLength;
-//     int tailLength;
-
-//     int reset;
-
-//     /* Firstly check if we have missed a USB reset - endpoint may not want to send out old data after a reset */
-//     asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
-//     if(reset)
-//     {
-//         return XUD_RES_RST;
-//     }
-
-//     /* Tail length bytes to bits */
-//     tailLength = zext((len << 3),5);
-
-//     /* Datalength (bytes) --> datalength (words) */
-//     wordLength = len >> 2;
-
-//     /* If tail-length is 0 and word-length not 0. Make tail-length 32 and word-length-- */
-//     if ((tailLength == 0) && (wordLength != 0))
-//     {
-//         wordLength = wordLength - 1;
-//         tailLength = 32;
-//     }
-    
-//      Get end off buffer address 
-//     asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
-
-//     /* Produce negative offset from end of buffer */
-//     asm ("neg %0, %1":"=r"(tmp2):"r"(wordLength));
-
-//     /* Store neg index */
-//     asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
-
-//     /* Store buffer pointer */
-//     asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));
-
-//     /*  Store tail len */
-//     asm ("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
-
-//     /* Finally, mark ready */
-//     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-//     asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
-
-//     return XUD_RES_OKAY;
-// }
-
-// inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
-// {
-//     unsigned addr;
-
-//     asm("mov %0, %1":"=r"(addr):"r"(buffer));
-
-//     return XUD_SetReady_InPtr(ep, addr, len);
-// }
-
 DECLARE_JOB(_usbtmc_bulk_endpoints, (chanend_t, chanend_t));
 void _usbtmc_bulk_endpoints(chanend_t c_ep_out, chanend_t c_ep_in)
 {
@@ -185,12 +125,6 @@ void _Endpoint0(chanend_t c_ep0_out, chanend_t c_ep0_in){
     hwtimer_free_xc_timer();
 }
 
-// void usbtmc_bulk_endpoints(chanend c_ep_out,chanend c_ep_in);
-// DECLARE_JOB(_usbtmc_bulk_endpoints, (chanend_t, chanend_t));
-// void _usbtmc_bulk_endpoints(chanend_t c_ep_out, chanend_t c_ep_in){
-//     usbtmc_bulk_endpoints(c_ep_out, c_ep_in);
-// }
-
 /* Global report buffer, global since used by Endpoint0 core */
 unsigned char g_reportBuffer[] = {0, 0, 0, 0};
 
@@ -231,18 +165,6 @@ int main()
     for(int i = 0; i < XUD_EP_COUNT_IN; ++i) {
         c_ep_in[i] = channel_ep_in[i].end_a;
     }
-
-    // par
-    // {
-    //     on USB_TILE: XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
-    //                   null, epTypeTableOut, epTypeTableIn, 
-    //                   XUD_SPEED_HS, XUD_PWR_BUS);
-
-    //     on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);
-
-    //     on USB_TILE: usbtmc_bulk_endpoints(c_ep_out[1],c_ep_in[1]);
-
-    // }
 
     PAR_JOBS(
         PJOB(_XUD_Main, (c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN, 0, epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_BUS)),

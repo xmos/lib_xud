@@ -81,7 +81,6 @@ void _usbtmc_bulk_endpoints(chanend_t c_ep_out, chanend_t c_ep_in)
                     host_transfer_buf[host_transfer_length++] = 0x00; //Set Alighnment byte
 
                     XUD_SetReady_In (ep_in, host_transfer_buf, host_transfer_length);
-                    // printf("ep in set ready\n");
                 }
                 break;
 
@@ -99,7 +98,6 @@ void _usbtmc_bulk_endpoints(chanend_t c_ep_out, chanend_t c_ep_in)
     
                 /* Mark EP as ready again */
             XUD_SetReady_Out (ep_out, host_transfer_buf);
-            // printf("ep out set ready\n");
             continue;
 
         xud_setdata_select_handler:
@@ -131,12 +129,6 @@ unsigned char g_reportBuffer[] = {0, 0, 0, 0};
 DECLARE_JOB(_XUD_Main, (chanend_t*, int, chanend_t*, int, chanend_t, XUD_EpType*, XUD_EpType*, XUD_BusSpeed_t, XUD_PwrConfig));
 void _XUD_Main(chanend_t *c_epOut, int noEpOut, chanend_t *c_epIn, int noEpIn, chanend_t c_sof, XUD_EpType *epTypeTableOut, XUD_EpType *epTypeTableIn, XUD_BusSpeed_t desiredSpeed, XUD_PwrConfig pwrConfig)
 {
-    for(int i = 0; i < XUD_EP_COUNT_OUT; ++i) {
-        printf("out[%d]: %x\n", i, c_epOut[i]);
-    }
-    for(int i = 0; i < XUD_EP_COUNT_IN; ++i) {
-        printf("in[%d]: %x\n", i, c_epIn[i]);
-    }
     XUD_Main(c_epOut, noEpOut, c_epIn, noEpIn, c_sof,
         epTypeTableOut, epTypeTableIn, desiredSpeed, pwrConfig);
 }

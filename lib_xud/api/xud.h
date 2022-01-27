@@ -396,31 +396,7 @@ XUD_Result_t XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned dataleng
  * Advanced functions for supporting multple Endpoints in a single core
  */
 
-/**
- * \brief      Marks an OUT endpoint as ready to receive data
- * \param      ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
- * \param      buffer      The buffer in which to store data received from the host.
- *                         The buffer is assumed to be word aligned.
- * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
- */
-inline int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
-{
-    int chan_array_ptr;
-    int reset;
 
-    /* Firstly check if we have missed a USB reset - endpoint may would not want receive after a reset */
-    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
-    if(reset)
-    {
-        return -1;
-    }
-
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-    asm ("stw %0, %1[3]"::"r"(buffer),"r"(ep));            // Store buffer
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
-
-    return 0;
-}
 
 /**
  * \brief      Marks an OUT endpoint as ready to receive data
@@ -446,6 +422,17 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 
     return XUD_RES_OKAY;
 }
+
+/**
+ * \brief      Marks an OUT endpoint as ready to receive data
+ * \param      ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
+ * \param      buffer      The buffer in which to store data received from the host.
+ *                         The buffer is assumed to be word aligned.
+ * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
+ */
+int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]);
+
+
 
 // #if defined(__XC__) || defined(__DOXYGEN__)
 /**

@@ -108,7 +108,7 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep,
             endpointType="BULK",
             transType="OUT",
-            dataLength=pktLength,
+            dataLength=pktLength + 1,
             interEventDelay=1000,
         )
     )
@@ -168,7 +168,7 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep,
             endpointType="BULK",
             transType="OUT",
-            dataLength=pktLength,
+            dataLength=pktLength + 2,
         )
     )
 

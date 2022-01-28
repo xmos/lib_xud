@@ -1,4 +1,4 @@
-# Copyright 2021 XMOS LIMITED.
+# Copyright 2021-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 from usb_event import UsbEvent
@@ -80,9 +80,6 @@ class UsbTransaction(UsbEvent):
             else:
                 togglePid = True
 
-            if halted:
-                resetDataPid = True
-
             expectHandshake = (
                 (not self._badDataCrc)
                 and (not self._rxeAssertDelay_data)
@@ -93,6 +90,10 @@ class UsbTransaction(UsbEvent):
             if expectHandshake or self._endpointType == "ISO":
                 resend = False
             else:
+                resend = True
+
+            if halted:
+                resetDataPid = True
                 resend = True
 
             # Generate packet data payload

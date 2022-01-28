@@ -12,7 +12,7 @@ void XUD_ResetEpStateByAddr(unsigned epAddr)
     
 #if defined(__XS2A__)
     /* Check IN bit of address */
-    if(epAddr & 0x80)
+    if((epAddr & 0x80) == 0)
     {
         pid = USB_PID_DATA0;     
     }

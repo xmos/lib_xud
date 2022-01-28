@@ -1,4 +1,4 @@
-// Copyright 2021 XMOS LIMITED.
+// Copyright 2021-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /*
@@ -126,12 +126,20 @@ static unsigned char hidReportDescriptor[] =
 };
 
 /* String table */
+#ifdef __XC__
+unsafe {
+static char * unsafe stringDescriptors[]=
+#else
 static char * stringDescriptors[]=
+#endif // __XC__
 {
     "\x09\x04",             // Language ID string (US English)
     "XMOS",                 // iManufacturer
     "Example HID Mouse",    // iProduct
     "Config",               // iConfiguration
 };
+#ifdef __XC__
+}
+#endif // __XC__
 
 #endif // HID_DEFS_H

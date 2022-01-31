@@ -2,7 +2,6 @@ name: Auto-format
 on: [push]
 jobs:
   apply-formatting:
-    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
       - name: Clone git repo

@@ -240,4 +240,3 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
 
     return XUD_RES_OKAY;
 }
-

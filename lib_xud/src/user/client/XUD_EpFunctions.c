@@ -138,7 +138,7 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     if(receivedPid != ep->pid) 
     {
         *datalength = 0; /* Extra safety measure */
-        XUD_RES_ERR;
+        return XUD_RES_ERR;
     }
 
     /* ISO == 0 */
@@ -168,7 +168,8 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
         }
 
         result = XUD_GetBuffer_Finish(ep->client_chanend, ep, datalength);
-    
+   
+        /* If error (e.g. bad PID seq) try again */ 
         if(result != XUD_RES_ERR)
         {
             return result;

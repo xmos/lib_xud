@@ -152,7 +152,12 @@ int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
 {
     if (l != expectedLength)
     {
-        printf("%d %d", (unsigned) l, expectedLength); 
+        printstr("#### Unexpected length on EP: ");
+        printint(epNum); 
+        printstr(". Got: ");
+        printint(l);
+        printstr(" Expected: ");
+        printintln(expectedLength);
         return FAIL_RX_LENERROR;
     }
 

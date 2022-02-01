@@ -19,17 +19,15 @@
 .cc_top XUD_SetTestMode.func
 .align FUNCTION_ALIGNMENT
 XUD_SetTestMode:
-#if defined(__XS2A__) || defined(__XS3A__)
 .issue_mode single
-    ENTSP_lu6 0
-#endif
-    ldw         r0, r0[2]                       // Load our chanend ID to use
-    outct       res[r0], 1
-    chkct       res[r0], 1
-    out         res[r0], r1                     // Output test mode
-    outct       res[r0], 1
-    chkct       res[r0], 1
-    retsp       0
+    ENTSP_lu6  0
+    ldw        r0, r0[2]                       // Load our chanend ID to use
+    outct      res[r0], 1
+    chkct      res[r0], 1
+    out        res[r0], r1                     // Output test mode
+    outct      res[r0], 1
+    chkct      res[r0], 1
+    retsp      0
 .size XUD_SetTestMode, .-XUD_SetTestMode
 .cc_bottom XUD_SetTestMode.func
 .globl XUD_SetTestMode.nstackwords

@@ -75,6 +75,7 @@ class UsbTransaction(UsbEvent):
                 or self._rxeAssertDelay_data
                 or endpointType == "ISO"
                 or halted
+                or resend
             ):
                 togglePid = False
             else:
@@ -88,13 +89,15 @@ class UsbTransaction(UsbEvent):
             )
 
             if expectHandshake or self._endpointType == "ISO":
-                resend = False
+                needResend = False
             else:
-                resend = True
+                needResend = True
 
             if halted:
                 resetDataPid = True
-                resend = True
+                needResend = True
+
+            resend = resend or needResend
 
             # Generate packet data payload
             packetPayload = session.getPayload_out(

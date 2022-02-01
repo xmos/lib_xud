@@ -5,13 +5,14 @@ HEAD
 ----
   
   * RESOLVED:  Timeout event properly cleaned up after tx handshake received
+  * CHANGE:    Further API functions re-authored in C (were Assembly)
 
 2.1.0
 -----
 
   * CHANGE:    Various optimisations to aid corner-case timings on XS3 based
     devices
-  * CHANGE:    Some API functions re-authored in C (from Assembly)
+  * CHANGE:    Some API functions re-authored in C (were Assembly)
   * CHANGE:    Testbench now more accurately models XS3 based devices
 
 2.0.2

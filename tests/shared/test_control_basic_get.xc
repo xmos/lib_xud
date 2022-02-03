@@ -69,4 +69,3 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     return failed;
 }
 
-#include "test_main.xc"

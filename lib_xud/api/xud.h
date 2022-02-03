@@ -36,7 +36,7 @@
 
 // TODO use PLATFORM_REFERENCE_MHZ from platform.h
 #ifndef REF_CLK_FREQ
-#define REF_CLK_FREQ 100
+#define REF_CLK_FREQ (100)
 #endif
 
 #ifndef XUD_CORE_CLOCK
@@ -373,6 +373,7 @@ XUD_Result_t XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned dataleng
  * Advanced functions for supporting multple Endpoints in a single core
  */
 
+
 /**
  * \brief      Marks an OUT endpoint as ready to receive data
  * \param      ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
@@ -406,7 +407,6 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
  * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]);
-
 
 /**
  * \brief      Marks an IN endpoint as ready to transmit data

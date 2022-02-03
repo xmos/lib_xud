@@ -15,5 +15,4 @@
 
 #include "test_control_basic_get.xc"
 
-#include "test_main.xc"
 

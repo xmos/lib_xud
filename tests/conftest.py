@@ -203,7 +203,7 @@ def test_RunUsbSession(
 
 def copy_common_xn_files(
     test_dir,
-    common_dir="shared_src",
+    common_dir="shared",
     source_dir="src",
     xn_files=XN_FILES,
 ):

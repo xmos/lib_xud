@@ -1,6 +1,12 @@
 // Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
+#include "shared.h"
+
+extern size_t g_dummyThreadCount;
+
+unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN]);
+
 #ifdef XUD_SIM_RTL
 int testmain()
 #else

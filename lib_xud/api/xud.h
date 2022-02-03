@@ -492,7 +492,9 @@ inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  *                   XUD_SetReady_Out())
  * \param   result   XUD_Result_t passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
+#ifdef __XC__
 #pragma select handler
+#endif
 void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length), REFERENCE_PARAM(XUD_Result_t, result));
 
 
@@ -502,7 +504,9 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
  * \param   ep       The IN endpoint identifier (created by ``XUD_InitEp``).
  * \param   result   Passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
+#ifdef __XC__
 #pragma select handler
+#endif
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
 
 /* Control token defines - used to inform EPs of bus-state types */

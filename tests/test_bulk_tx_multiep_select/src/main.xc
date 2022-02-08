@@ -6,7 +6,7 @@
 #define EP_COUNT_IN        (7)
 
 #define PACKET_LEN_START   (10)
-#define PACKET_LEN_END     (11)
+#define PACKET_LEN_END     (19)
 
 #define PACKET_COUNT       (PACKET_LEN_END - PACKET_LEN_START + 2) 
 

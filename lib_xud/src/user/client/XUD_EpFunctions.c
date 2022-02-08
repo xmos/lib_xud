@@ -1,10 +1,33 @@
-// Copyright 2021 XMOS LIMITED.
+
+// Copyright 2021-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include "xud.h"
 #include "XUD_USB_Defines.h"
 
 extern XUD_ep_info ep_info[USB_MAX_NUM_EP];
+
+void XUD_ResetEpStateByAddr(unsigned epAddr)
+{
+    unsigned pid = USB_PIDn_DATA0;
+    
+#if defined(__XS2A__)
+    /* Check IN bit of address */
+    if((epAddr & 0x80) == 0)
+    {
+        pid = USB_PID_DATA0;     
+    }
+#endif
+
+    if(epAddr & 0x80)
+    {
+        epAddr &= 0x7F;
+        epAddr += USB_MAX_NUM_EP_OUT;
+    } 
+    
+    XUD_ep_info *ep = &ep_info[epAddr];
+    ep->pid = pid;
+}
 
 void XUD_SetStallByAddr(int epNum)
 {
@@ -36,8 +59,8 @@ void XUD_ClearStallByAddr(int epNum)
 
     if(epNum & 0x80)
     {
-        epNum &= 0x7f;
-        epNum += 16;
+        epNum &= 0x7F;
+        epNum += USB_MAX_NUM_EP_OUT;
         handshake = 0;
     }
     
@@ -55,22 +78,19 @@ void XUD_ClearStallByAddr(int epNum)
     ep->halted = handshake;
 }
 
-static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigned char buffer[])
+/* ignoreHalted should only be used for Setup data */
+static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigned char buffer[], const int ignoreHalted)
 {
-    while(1)
+    /* If EP is marked as halted do not mark as ready.. */
+    do
     {
         /* Check if we missed a reset */
         if(ep->resetting)
         {
             return XUD_RES_RST;
         }
-
-        /* If EP is marked as halted do not mark as ready.. */
-        if(ep->halted != USB_PIDn_STALL)
-        {
-            break;
-        } 
     }
+    while((ep->halted == USB_PIDn_STALL) && !ignoreHalted);
 
     /* Store buffer address in EP structure */
     ep->buffer = (unsigned) &buffer[0];
@@ -119,7 +139,7 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     if(receivedPid != ep->pid) 
     {
         *datalength = 0; /* Extra safety measure */
-        XUD_RES_ERR;
+        return XUD_RES_ERR;
     }
 
     /* ISO == 0 */
@@ -141,7 +161,7 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
   
     while(1)
     { 
-        XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer);
+        XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer, 0);
 
         if(result == XUD_RES_RST)
         {
@@ -149,7 +169,8 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
         }
 
         result = XUD_GetBuffer_Finish(ep->client_chanend, ep, datalength);
-    
+   
+        /* If error (e.g. bad PID seq) try again */ 
         if(result != XUD_RES_ERR)
         {
             return result;
@@ -161,7 +182,7 @@ int XUD_SetReady_Out(XUD_ep e, unsigned char buffer[])
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
-    return XUD_GetBuffer_Start(ep, buffer);
+    return XUD_GetBuffer_Start(ep, buffer, 0);
 }
 
 void XUD_GetData_Select(chanend c, XUD_ep e, unsigned *datalength, XUD_Result_t *result)
@@ -169,6 +190,53 @@ void XUD_GetData_Select(chanend c, XUD_ep e, unsigned *datalength, XUD_Result_t 
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
     
     *result = XUD_GetBuffer_Finish(ep->client_chanend, ep, datalength);
+}
+
+XUD_Result_t XUD_GetSetupData(XUD_ep e, unsigned char buffer[], unsigned *datalength)
+{
+
+    volatile XUD_ep_info *ep = (XUD_ep_info*) e;
+    unsigned isReset;
+    unsigned length;
+    unsigned lengthTail;
+    
+    XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer, 1);
+
+    if(result == XUD_RES_RST)
+    {
+        return XUD_RES_RST;
+    }
+
+    /* Wait for XUD response */
+    asm volatile("testct %0, res[%1]" : "=r"(isReset) : "r"(ep->client_chanend));
+
+    if(isReset)
+    {
+        return XUD_RES_RST;
+    }
+    
+    /* Input packet length (words) */
+    asm volatile("in %0, res[%1]" : "=r"(length) : "r"(ep->client_chanend));
+   
+    /* Input tail length (bytes) */ 
+    /* TODO Check CT vs T */
+    asm volatile("inct %0, res[%1]" : "=r"(lengthTail) : "r"(ep->client_chanend));
+
+    /* Reset PID toggling on receipt of SETUP (both IN and OUT) */
+#ifdef __XS2A__
+    ep->pid = USB_PID_DATA1;
+#else
+    ep->pid = USB_PIDn_DATA1;
+#endif
+
+    /* Reset IN EP PID */
+    XUD_ep_info *ep_in = (XUD_ep_info*) ((unsigned)ep + (USB_MAX_NUM_EP_OUT * sizeof(XUD_ep_info)));
+    ep_in->pid = USB_PIDn_DATA1;
+
+    /* TODO check that this is the case */
+    *datalength = 8;
+
+    return XUD_RES_OKAY;
 }
 
 XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned datalength)
@@ -284,27 +352,27 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
         datalength -= epMax;
 
         while (1)
-	    {
+        {
             unsigned char *bufferPtr = &buffer[i]; 
 
             if (datalength > epMax)
-	        {
+            {
                 /* PID Automatically toggled */
                 if ((result = XUD_SetBuffer(ep_in, bufferPtr, epMax)) != XUD_RES_OKAY)
                     return result;
 
                 datalength -= epMax;
                 i += epMax;
-	        }
-	        else
-	        {
+            }
+            else
+            {
                 /* PID automatically toggled */
                 if ((result = XUD_SetBuffer(ep_in, bufferPtr, datalength)) != XUD_RES_OKAY)
                     return result;
 
-	            break; //out of while loop
-	        }
-	    }
+                break; //out of while loop
+            }
+        }
     }
 
     return XUD_RES_OKAY;

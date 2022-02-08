@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 
@@ -108,7 +108,7 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep,
             endpointType="BULK",
             transType="OUT",
-            dataLength=pktLength,
+            dataLength=pktLength + 1,
             interEventDelay=1000,
         )
     )
@@ -168,7 +168,7 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep,
             endpointType="BULK",
             transType="OUT",
-            dataLength=pktLength,
+            dataLength=pktLength + 2,
         )
     )
 

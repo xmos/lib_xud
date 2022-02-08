@@ -1,13 +1,8 @@
 // Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef _SHARED_H_
-#define _SHARED_H_
 #include <xs1.h>
 #include <print.h>
-#include <stdio.h>
-#include <platform.h>
-#include <stdint.h>
-#include "xud.h"
+#include "shared.h"
 
 unsigned char g_rxDataCheck_[16] = {0};
 unsigned char g_txDataCheck_[16] = {0};
@@ -19,19 +14,11 @@ unsafe
     unsigned char volatile * unsafe g_txDataCheck = g_txDataCheck_;
 }
 
-void exit(int);
-
-#define FAIL_RX_DATAERROR        1
-#define FAIL_RX_LENERROR         2
-#define FAIL_RX_EXPECTED_CTL     3   
-#define FAIL_RX_BAD_RETURN_CODE  4
-#define FAIL_RX_FRAMENUMBER      5
-
 #ifdef XUD_SIM_XSIM
 /* Alternatives to the RTL sim testbench functions */
-void TerminateFail(unsigned x)
+void TerminateFail(unsigned failReason)
 {
-    switch(x)
+    switch(failReason)
     {
         case FAIL_RX_DATAERROR:
 		    printstr("\nXCORE: ### FAIL ### : XCORE RX Data Error\n");
@@ -53,7 +40,7 @@ void TerminateFail(unsigned x)
             printstr("\nXCORE: ### FAIL ### : Received bad frame number\n");
             break;
     }
-    exit(x);
+    exit(failReason);
 }
 void TerminatePass(unsigned x)
 {
@@ -61,34 +48,12 @@ void TerminatePass(unsigned x)
 }
 #endif
 
-#ifndef PKT_LEN_START
-#define PKT_LEN_START       (10)
-#endif
-
-#ifndef PKT_LEN_END
-#define PKT_LEN_END         (21)
-#endif
-
-#ifndef MAX_PKT_COUNT 
-#define MAX_PKT_COUNT       (50)
-#endif
-
-#ifndef TEST_EP_NUM
-#error TEST_EP_NUM not defined, using default value
-#define TEST_EP_NUM         (1)
-#endif
-
-typedef enum t_runMode
-{
-    RUNMODE_LOOP,
-    RUNMODE_DIE
-} t_runMode;
-
 #pragma unsafe arrays
 void GenTxPacketBuffer(unsigned char buffer[], int length, int epNum)
 {
     for (int i = 0; i < length; i++)
-    unsafe {
+    unsafe 
+    {
         buffer[i] = g_txDataCheck[epNum]++;
     }
     return;
@@ -152,7 +117,12 @@ int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
 {
     if (l != expectedLength)
     {
-        printf("%d %d", (unsigned) l, expectedLength); 
+        printstr("#### Unexpected length on EP: ");
+        printint(epNum); 
+        printstr(". Got: ");
+        printint(l);
+        printstr(" Expected: ");
+        printintln(expectedLength);
         return FAIL_RX_LENERROR;
     }
 
@@ -279,4 +249,4 @@ void dummyThreads()
     }
 #endif
 }
-#endif
+

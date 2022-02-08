@@ -12,7 +12,7 @@ APP_NAME =
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to
 # xcc for the final link (mapping) stage.
 
-SHARED_CODE = ../../shared_src
+SHARED_CODE = ../../shared
 
 COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
 			   -O3 \
@@ -56,6 +56,8 @@ TEST_BUS_SPEED_INT = 1
 else
 TEST_BUS_SPEED_INT = 2
 endif
+
+SOURCE_DIRS = ./src ../shared/src
 
 
 XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM)_$(TEST_ADDRESS)_$(TEST_BUS_SPEED) = $(TEST_FLAGS) $(COMMON_FLAGS) \

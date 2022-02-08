@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 
@@ -45,6 +45,19 @@ def test_session(ep, address, bus_speed):
         )
     )
 
+    # This is a resend on the packet above
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=11,
+            interEventDelay=interEventDelay,
+        )
+    )
+
     # Send some valid OUT transactions
     session.add_event(
         UsbTransaction(
@@ -57,6 +70,7 @@ def test_session(ep, address, bus_speed):
             interEventDelay=interEventDelay,
         )
     )
+
     session.add_event(
         UsbTransaction(
             session,
@@ -65,17 +79,6 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=13,
-            interEventDelay=interEventDelay,
-        )
-    )
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="BULK",
-            transType="OUT",
-            dataLength=14,
             interEventDelay=interEventDelay,
         )
     )

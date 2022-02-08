@@ -36,15 +36,12 @@ XUD_IN_TxHandshake:                                // Non-Iso
     ldw          r11, r11[10]
 
     bf         r11, XUD_IN_TxNak
+XUD_IN_TxStall:
     outpw     res[TXD], r11, 8                     // Output STALL
     #include "XUD_TokenJmp.S"
 
 XUD_IN_TxNak:
     ldc        r11, USB_PIDn_NAK
-    outpw     res[TXD], r11, 8
-    #include "XUD_TokenJmp.S"
-
-XUD_IN_TxStall:
     outpw     res[TXD], r11, 8
     #include "XUD_TokenJmp.S"
 

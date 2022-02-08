@@ -7,7 +7,7 @@
 #include <xccompat.h>
 
 void SCPI_initialize_parser(void);
-#ifdef LANG_C
+#ifndef __XC__
 int SCPI_get_cmd(unsigned char *cmd, unsigned *scpi_cmd_len, unsigned char *scpi_cmd);
 int SCPI_parse_cmd(unsigned char *cmd, unsigned cmd_len, unsigned char *buf, unsigned *len);
 #else

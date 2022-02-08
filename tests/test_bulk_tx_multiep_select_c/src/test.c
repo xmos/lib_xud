@@ -5,7 +5,7 @@
 #include "shared.h"
 
 #define PACKET_LEN_START   (10)
-#define PACKET_LEN_END     (11)
+#define PACKET_LEN_END     (19)
 
 #define PACKET_COUNT       (PACKET_LEN_END - PACKET_LEN_START + 2) 
 
@@ -22,20 +22,7 @@
 #error TEST_EP_NUM clashes with traffic EP
 #endif
 
-#define TEST_EP_COUNT      (1)
-
-int checkExit(unsigned pktLength[])
-{
-    int exit = 1;
-    for (size_t i = 0; i < TEST_EP_COUNT; i++)
-    {
-        if(pktLength[i] <= (PACKET_LEN_END + 1))
-        {
-            exit = 0;
-        }
-    }
-    return exit;
-}
+#define TEST_EP_COUNT      (3)
 
 unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
@@ -66,23 +53,46 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     } 
 
     XUD_ep ep_in0 = XUD_InitEp(c_ep_in[TEST_EP_NUM]);
+    XUD_ep ep_in1 = XUD_InitEp(c_ep_in[TEST_EP_NUM+1]);
+    XUD_ep ep_in2 = XUD_InitEp(c_ep_in[TEST_EP_NUM+2]);
 
     XUD_SetReady_In(ep_in0, buffer[bufferIndex[0]++], pktLength[0]++);
+    XUD_SetReady_In(ep_in1, buffer[bufferIndex[1]++], pktLength[1]++);
+    XUD_SetReady_In(ep_in2, buffer[bufferIndex[2]++], pktLength[2]++);
     
-    while(1)
+    while(!exit)
     {
-        SELECT_RES(CASE_THEN(c_ep_out[TEST_EP_NUM], ep_a))
+        SELECT_RES(
+                CASE_THEN(c_ep_in[TEST_EP_NUM], ep_a), 
+                CASE_THEN(c_ep_in[TEST_EP_NUM+1], ep_b), 
+                CASE_THEN(c_ep_in[TEST_EP_NUM+2], ep_c))
         {
             ep_a: 
                 XUD_SetData_Select(c_ep_in[TEST_EP_NUM], ep_in0, &result);
                 XUD_SetReady_In(ep_in0, buffer[bufferIndex[0]++], pktLength[0]++);
-                exit = checkExit(pktLength);
-                if (exit)
-                    return 0;
-                continue;
+                break;
+
+            ep_b: 
+                XUD_SetData_Select(c_ep_in[TEST_EP_NUM+1], ep_in1, &result);
+                XUD_SetReady_In(ep_in1, buffer[bufferIndex[1]++], pktLength[1]++);
+                break;
+
+             ep_c: 
+                XUD_SetData_Select(c_ep_in[TEST_EP_NUM+2], ep_in2, &result);
+                XUD_SetReady_In(ep_in2, buffer[bufferIndex[2]++], pktLength[2]++);
+                break;
+        }
+    
+        exit = 1;
+        for (size_t i = 0; i < TEST_EP_COUNT; i++)
+        {
+            if(pktLength[i] <= (PACKET_LEN_END + 1))
+            {
+                exit = 0;
+            }
         }
     }
-
+    
     // TODO do we need to do any checking?
     return 0;
 }

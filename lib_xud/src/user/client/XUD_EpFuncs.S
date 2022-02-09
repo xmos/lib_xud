@@ -48,8 +48,3 @@ XUD_SetTestMode:
 .set XUD_SetTestMode.locnoglobalaccess, 1
 .set XUD_SetTestMode.locnointerfaceaccess, 1
 .set XUD_SetTestMode.locnonotificationselect, 1
-
-
-
-
-

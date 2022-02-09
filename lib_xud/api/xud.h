@@ -387,14 +387,14 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     int reset;
 
     /* Firstly check if we have missed a USB reset - endpoint may would not want receive after a reset */
-    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
+    asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
         return XUD_RES_RST;
     }
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-    asm ("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
+    asm volatile("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    asm volatile("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
+    asm volatile("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
     return XUD_RES_OKAY;
 }
@@ -427,14 +427,18 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     int reset;
 
     /* Firstly check if we have missed a USB reset - endpoint may not want to send out old data after a reset */
-    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
+    asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
         return XUD_RES_RST;
     }
 
     /* Tail length bytes to bits */
+#ifdef __XC__
+    tailLength = zext((len << 3),5);
+#else
     tailLength = (len << 3) & 0x1F;
+#endif
 
     /* Datalength (bytes) --> datalength (words) */
     wordLength = len >> 2;
@@ -447,23 +451,23 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     }
     
     /* Get end off buffer address */
-    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
+    asm volatile("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
 
     /* Produce negative offset from end of buffer */
-    asm ("neg %0, %1":"=r"(tmp2):"r"(wordLength));
+    asm volatile("neg %0, %1":"=r"(tmp2):"r"(wordLength));
 
     /* Store neg index */
-    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
+    asm volatile("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
 
     /* Store buffer pointer */
-    asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));
+    asm volatile("stw %0, %1[3]"::"r"(tmp),"r"(ep));
 
     /*  Store tail len */
-    asm ("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
+    asm volatile("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
 
     /* Finally, mark ready */
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
+    asm volatile("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    asm volatile("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
     return XUD_RES_OKAY;
 }
@@ -480,7 +484,7 @@ inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
 {
     unsigned addr;
 
-    asm("mov %0, %1":"=r"(addr):"r"(buffer));
+    asm volatile("mov %0, %1":"=r"(addr):"r"(buffer));
 
     return XUD_SetReady_InPtr(ep, addr, len);
 }

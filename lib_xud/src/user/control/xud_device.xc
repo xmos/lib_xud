@@ -1,4 +1,4 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief      Implements USB Device standard requests
@@ -6,7 +6,7 @@
  */
 
 #include "xud_device.h"          /* Defines related to the USB 2.0 Spec */
-
+#include "XUD_HAL.h"
 #include <string.h>
 #include <xs1.h>
 #include <print.h>
@@ -143,7 +143,8 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                         }
 
                         /* Set the device address in XUD */
-                        return XUD_SetDevAddr(sp.wValue);
+                        XUD_HAL_SetDeviceAddress(sp.wValue);
+                        return XUD_RES_OKAY;
 
                     }
                     break;

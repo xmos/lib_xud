@@ -351,27 +351,27 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
         datalength -= epMax;
 
         while (1)
-	    {
+        {
             unsigned char *bufferPtr = &buffer[i]; 
 
             if (datalength > epMax)
-	        {
+            {
                 /* PID Automatically toggled */
                 if ((result = XUD_SetBuffer(ep_in, bufferPtr, epMax)) != XUD_RES_OKAY)
                     return result;
 
                 datalength -= epMax;
                 i += epMax;
-	        }
-	        else
-	        {
+            }
+            else
+            {
                 /* PID automatically toggled */
                 if ((result = XUD_SetBuffer(ep_in, bufferPtr, datalength)) != XUD_RES_OKAY)
                     return result;
 
-	            break; //out of while loop
-	        }
-	    }
+                break; //out of while loop
+            }
+        }
     }
 
     return XUD_RES_OKAY;

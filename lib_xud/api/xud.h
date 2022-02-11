@@ -408,6 +408,7 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
  */
 int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]);
 
+
 /**
  * \brief      Marks an IN endpoint as ready to transmit data
  * \param      ep          The IN endpoint identifier (created by ``XUD_InitEp``).

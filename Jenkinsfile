@@ -43,11 +43,17 @@ pipeline {
         archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
       }
     }
-    // stage('Tests') {
-    //   steps {
-    //     runXmostest("${REPO}", 'tests')
-    //   }
-    // }
+    stage('Tests') {
+      steps {
+        viewEnv() {
+          withEnv{
+            dir("${REPO}/tests") {
+              runPytest('--numprocesses=2 --smoke')
+            }
+          }
+        }
+      }
+    }
   }
   post {
     success {

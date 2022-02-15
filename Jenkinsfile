@@ -45,10 +45,10 @@ pipeline {
     }
     stage('Tests') {
       steps {
-        viewEnv() {
-          withVenv{
-            dir("${REPO}/tests") {
-              runPytest('--numprocesses=2 --smoke')
+        dir("${REPO}/tests"){
+          viewEnv(){
+            withVenv{
+                runPytest('--numprocesses=2 --smoke')
             }
           }
         }

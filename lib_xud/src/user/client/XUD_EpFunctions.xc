@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /** @file      XUD_EPFunctions.xc
   * @brief     Implementation of user API functions.  See xud.h for documentation.
@@ -28,7 +28,7 @@ void XUD_Kill(XUD_ep ep)
 }
 
 #ifndef EP0_MAX_PACKET_SIZE
-#define EP0_MAX_PACKET_SIZE 64
+#define EP0_MAX_PACKET_SIZE (64)
 #endif
 
 /* TODO Should take ep max length as a param - currently hardcoded as 64 (#11384) */

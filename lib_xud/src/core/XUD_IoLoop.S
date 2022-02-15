@@ -87,11 +87,8 @@ UsbTestModeHandler_asm:
     in          r0, res[r11]
     chkct       res[r11], XS1_CT_END
 	outct       res[r11], XS1_CT_END
-	
     bf          r0, Return                         // Special case for Exit
-   
     bl          XUD_UsbTestModeHandler
-
     retsp       0
 .cc_bottom UsbTestModeHandler_asm.func
 #endif
@@ -109,18 +106,18 @@ UsbTestModeHandler_asm:
 .align FUNCTION_ALIGNMENT
 ResetIntHandler:
     DUALENTSP_lu6   0
-    clrsr   0x18                                // Clear InInterrupt bit (and InKernel)
-    clrsr   0x3									// Clear thread events and interrupts
+    clrsr   0x18                                   // Clear InInterrupt bit (and InKernel)
+    clrsr   0x3									   // Clear thread events and interrupts
 
-    get     r11, ed                             // Get timer resource ID
-    setc    res[r11], XS1_SETC_IE_MODE_EVENT    // Set IE mode back to events
+    get     r11, ed                                // Get timer resource ID
+    setc    res[r11], XS1_SETC_IE_MODE_EVENT       // Set IE mode back to events
 
-    clre                                        // Clear all events
+    clre                                           // Clear all events
 
-    ldw     r10, dp[SavedSp]                    // Restore stack pointer
+    ldw     r10, dp[SavedSp]                       // Restore stack pointer
     set     sp, r10
 
-    ldc        r0, 1                            // Load non-zero (zero is kill)
+    ldc        r0, 1                               // Load non-zero (zero is kill)
     bu         Return                        
 
 .cc_bottom ResetIntHandler.func

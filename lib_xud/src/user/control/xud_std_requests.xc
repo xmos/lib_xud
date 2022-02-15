@@ -45,19 +45,19 @@ void USB_ComposeSetupBuffer(USB_SetupPacket_t sp, unsigned char buffer[])
 
 void USB_PrintSetupPacket(USB_SetupPacket_t sp)
 {
-    printstr("Setup data\n");
-    printstr("bmRequestType.Recipient: ");
-    printhexln(sp.bmRequestType.Recipient);
-    printstr("bmRequestType.Type: ");
-    printhexln(sp.bmRequestType.Type);
-    printstr("bmRequestType.Direction: ");
-    printhexln(sp.bmRequestType.Direction);
-    printstr("bRequest: ");
-    printhexln(sp.bRequest);
-    printstr("bmRequestType.wValue: ");
-    printhexln(sp.wValue);
-    printstr("bmRequestType.wIndex: ");
-    printhexln(sp.wIndex);
-    printstr("bmRequestType.wLength: ");
-    printhexln(sp.wLength);
+    printstr("Setup data\n"); //NOCOVER
+    printstr("bmRequestType.Recipient: "); //NOCOVER
+    printhexln(sp.bmRequestType.Recipient); //NOCOVER
+    printstr("bmRequestType.Type: "); //NOCOVER
+    printhexln(sp.bmRequestType.Type); //NOCOVER
+    printstr("bmRequestType.Direction: "); //NOCOVER
+    printhexln(sp.bmRequestType.Direction); //NOCOVER
+    printstr("bRequest: "); //NOCOVER
+    printhexln(sp.bRequest); //NOCOVER
+    printstr("bmRequestType.wValue: "); //NOCOVER
+    printhexln(sp.wValue); //NOCOVER
+    printstr("bmRequestType.wIndex: "); //NOCOVER
+    printhexln(sp.wIndex); //NOCOVER
+    printstr("bmRequestType.wLength: "); //NOCOVER
+    printhexln(sp.wLength); //NOCOVER
 }

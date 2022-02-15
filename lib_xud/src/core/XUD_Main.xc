@@ -141,7 +141,6 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
             XUD_Sup_outuint(c[i + USB_MAX_NUM_EP_OUT], speed);
         }
     }
-
 }
 
 // Main XUD loop
@@ -589,7 +588,7 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
                 XUD_BusSpeed_t desiredSpeed,
                 XUD_PwrConfig pwrConfig)
 {
-    return XUD_Main(c_epOut, noEpOut, c_epIn, noEpIn, c_sof, epTypeTableOut, epTypeTableIn, desiredSpeed, pwrConfig);
+    return XUD_Main(c_epOut, noEpOut, c_epIn, noEpIn, c_sof, epTypeTableOut, epTypeTableIn, desiredSpeed, pwrConfig); //NOCOVER
 }
 
 

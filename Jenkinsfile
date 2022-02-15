@@ -52,8 +52,8 @@ pipeline {
             }
           }
         }
-        archiveArtifacts artifacts: "${REPO}/**/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
-        archiveArtifacts artifacts: "${REPO}/**/tests/logs/*.vcd", fingerprint: true, allowEmptyArchive: true
+        archiveArtifacts artifacts: "${REPO}/**/logs/*.txt", fingerprint: true, allowEmptyArchive: true
+        archiveArtifacts artifacts: "${REPO}/**/logs/*.vcd", fingerprint: true, allowEmptyArchive: true
       }
     }
   }

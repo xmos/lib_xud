@@ -35,3 +35,4 @@ filelock==3.0.12
 # of its own setup.py file, then this list must include an entry for that
 # setup.py file, e.g., '-e .' or '-e ./python' (without the quotes).
 -e ./python
+-e ../test_support/lib/python

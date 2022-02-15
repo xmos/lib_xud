@@ -20,6 +20,7 @@
 black==21.5b1
 pytest==6.2.4
 pytest-xdist==2.3.0
+filelock==3.0.12
 
 # Development dependencies
 #

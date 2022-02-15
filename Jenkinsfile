@@ -48,7 +48,7 @@ pipeline {
         dir("${REPO}/tests"){
           viewEnv(){
             withVenv{
-                runPytest('--numprocesses=2 --smoke')
+                runPytest('--numprocesses=auto --smoke')
             }
           }
         }

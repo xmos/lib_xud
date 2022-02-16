@@ -45,15 +45,15 @@ pipeline {
     }
     stage('Tests') {
       steps {
-        dir("${REPO}/tests") {
-          viewEnv() {
-            withVenv {
-              runPytest('--numprocesses=auto --smoke')
+        dir("${REPO}/tests"){
+          viewEnv(){
+            withVenv{
+                runPytest('--numprocesses=4 --smoke --enabletracing')
             }
           }
         }
-        archiveArtifacts artifacts: "${REPO}/**/logs/*.txt", fingerprint: true, allowEmptyArchive: true
-        archiveArtifacts artifacts: "${REPO}/**/logs/*.vcd", fingerprint: true, allowEmptyArchive: true
+        archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
+        archiveArtifacts artifacts: "${REPO}/tests/logs/*.vcd", fingerprint: true, allowEmptyArchive: true
       }
     }
   }

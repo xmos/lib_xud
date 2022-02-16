@@ -3,7 +3,7 @@ lib_xud Change Log
 
 2.2.0
 -----
-  
+
   * RESOLVED:  Timeout event properly cleaned up after tx handshake received
   * CHANGE:    Further API functions re-authored in C (were Assembly)
 

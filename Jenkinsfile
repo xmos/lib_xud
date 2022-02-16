@@ -43,11 +43,19 @@ pipeline {
         archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
       }
     }
-    // stage('Tests') {
-    //   steps {
-    //     runXmostest("${REPO}", 'tests')
-    //   }
-    // }
+    stage('Tests') {
+      steps {
+        dir("${REPO}/tests"){
+          viewEnv(){
+            withVenv{
+                runPytest('--numprocesses=4 --smoke --enabletracing')
+            }
+          }
+        }
+        archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
+        archiveArtifacts artifacts: "${REPO}/tests/logs/*.vcd", fingerprint: true, allowEmptyArchive: true
+      }
+    }
   }
   post {
     success {

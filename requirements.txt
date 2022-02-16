@@ -18,6 +18,7 @@
 # same modules should appear in the setup.py list as given below.
 
 black==21.5b1
+filelock==3.0.12
 pytest==6.2.4
 pytest-xdist==2.3.0
 filelock==3.0.12
@@ -35,4 +36,4 @@ filelock==3.0.12
 # of its own setup.py file, then this list must include an entry for that
 # setup.py file, e.g., '-e .' or '-e ./python' (without the quotes).
 -e ./python
--e ../test_support
+-e ./../test_support

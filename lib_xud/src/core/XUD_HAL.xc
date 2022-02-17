@@ -21,7 +21,7 @@ extern buffered in port:32 p_usb_clk;
 void XUD_SetCrcTableAddr(unsigned addr);
 unsigned XtlSelFromMhz(unsigned m)
 {   // NOCOVER
-    switch(m)
+    switch(m) //NOCOVER
     {
         case 10:
             return 0b000;
@@ -375,7 +375,7 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     if (timeout != null)
         t :> time;
 
-#ifdef XS2A
+#ifdef __XS2A__
     unsigned se0 = currentLs == XUD_LINESTATE_SE0;
     unsigned j = currentLs == XUD_LINESTATE_HS_J_FS_K;
     unsigned k = currentLs == XUD_LINESTATE_HS_K_FS_J;

@@ -48,12 +48,13 @@ pipeline {
         dir("${REPO}/tests"){
           viewEnv(){
             withVenv{
-                runPytest('--numprocesses=4 --smoke --enabletracing')
+                runPytest('--numprocesses=4 --smoke --enabletracing --xcov')
             }
           }
         }
         archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
         archiveArtifacts artifacts: "${REPO}/tests/logs/*.vcd", fingerprint: true, allowEmptyArchive: true
+        archiveArtifacts artifacts: "${REPO}/tests/result/*.txt", fingerprint: true, allowEmptyArchive: true
       }
     }
   }

@@ -189,11 +189,11 @@ def test_RunUsbSession(
                 sys.stderr.write(err)
             else:
                 if eval(os.getenv("xcov")):
-                    # calculate code coverage for each tests
-                    coverage = xcov_process(disasm, trace, xcov_dir)
-                    # generate coverage file for each source code included
+                    # Calculate code coverage for each tests. Exclude test source code.
+                    coverage = xcov_process(disasm, trace, xcov_dir, excluded_file=["/tests/", "XUD_TestMode"])
+                    # Generate coverage file for each source code included
                     xcov_comb.run_combine(xcov_dir)
-                    # delete trace file and disasm file
+                    # Delete trace file and disasm file
                     if os.path.exists(trace):
                         os.remove(trace)
             assert result

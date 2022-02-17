@@ -36,7 +36,6 @@ XUD_Result_t USB_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, USB_SetupPacket_t &
     XUD_Result_t result;
 
     if((result = XUD_GetSetupBuffer(ep_out, sbuffer, length)) != XUD_RES_OKAY)
-   // if((result = XUD_GetControlBuffer(ep_out, sbuffer, length)) != XUD_RES_CTL) // New API 
     {
         return result;
     }

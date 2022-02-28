@@ -49,6 +49,13 @@ void XUD_SetStallByAddr(int epNum)
     ep->halted = USB_PIDn_STALL;
 }
 
+void XUD_SetStall(XUD_ep e)
+{
+    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
+
+    XUD_SetStallByAddr(ep->epAddress);
+}
+
 void XUD_ClearStallByAddr(int epNum)
 {
     unsigned handshake = USB_PIDn_NAK;
@@ -75,6 +82,13 @@ void XUD_ClearStallByAddr(int epNum)
 
     /* Mark EP as un-halted */
     ep->halted = handshake;
+}
+
+void XUD_ClearStall(XUD_ep e)
+{
+    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
+
+    XUD_ClearStallByAddr(ep->epAddress);
 }
 
 /* ignoreHalted should only be used for Setup data */

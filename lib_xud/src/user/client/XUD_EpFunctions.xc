@@ -16,12 +16,6 @@ static inline int min(int x, int y)
     return y;
 }
 
-// To be deprecated - In favour of XUD_GetControlBuffer()
-XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned &length)
-{
-   return XUD_GetSetupData(ep_out, buffer, length);
-}
-
 void XUD_Kill(XUD_ep ep)
 {
     XUD_SetTestMode(ep, 0);
@@ -121,5 +115,4 @@ XUD_ep XUD_InitEp(chanend c)
     XUD_ep ep = inuint(c);
     return ep;
 }
-
 

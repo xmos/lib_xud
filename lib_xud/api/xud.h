@@ -337,36 +337,6 @@ void XUD_SetTestMode(XUD_ep ep, unsigned testMode);
  */
 void XUD_Kill(XUD_ep ep);
 
-/**
- * \brief      Gets a data buffer from XUD
- * \param      ep_out      The OUT endpoint identifier.
- * \param      buffer      The buffer to store received data into.
- * \param      length      Length of the buffer received
- * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
- */
-XUD_Result_t XUD_GetData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
-
-/**
- * \brief      Gets a setup data from XUD
- * \param      ep_out      OUT endpoint identifier.
- * \param      buffer      Buffer to store received data into.
- * \param      length      Length of the buffer received (expect 8)
- * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
- * TODO:       Use generic GetData for this
- */
-XUD_Result_t XUD_GetSetupData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
-
-/**
- * \brief     Gives a data buffer to XUD from transmission to the host
- * \param     ep_in        The IN endpoint identifier.
- * \param     buffer       The packet buffer to send data from.
- * \param     datalength   The length of the packet to send (in bytes).
- * \param     startIndex   The start index of the packet in the buffer (typically 0).
- * \param     pidToggle    No longer used, value ignored
- * \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
- */
-XUD_Result_t XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
-
 /***********************************************************************************************/
 
 /*
@@ -522,7 +492,7 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 #endif
 
 /* TODO pack this to save mem
- * TODO size of this hardcoded in ResetRpStateByAddr_
+ * TODO size of this hardcoded in ResetEpStateByAddr_
  */
 typedef struct XUD_ep_info
 {
@@ -538,6 +508,7 @@ typedef struct XUD_ep_info
     unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
     unsigned int halted;               // 10 NAK or STALL
     unsigned int saved_array_ptr;      // 11
+    unsigned int array_ptr_setup;      // 12
 } XUD_ep_info;
 
 #endif

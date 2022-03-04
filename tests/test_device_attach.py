@@ -21,10 +21,7 @@ for k in PARAMS:
 def test_session(ep, address, bus_speed):
 
     # TODO ideally this can be tidied
-    if bus_speed == "HS":
-        initial_delay = 17000
-    else:
-        initial_delay = 17000
+    initial_delay = 22000
 
     pktLength = 10
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus

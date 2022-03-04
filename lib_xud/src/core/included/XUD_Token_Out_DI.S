@@ -84,7 +84,7 @@ XUD_TokenOut_WaitForPacketEnd:                  // Wait for end of data then sen
 
   // Load handshake (ACK or STALL)
 XUD_TokenOut_Handshake:
-  ldaw      r6, dp[ep_addr]
+  ldaw      r6, dp[epAddr]
   ldw       r6, r6[r10]
   ldw       r11, r6[10]
 

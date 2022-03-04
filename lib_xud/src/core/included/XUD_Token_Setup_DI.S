@@ -24,7 +24,7 @@ XUD_Setup_LoadBuffer:
 XUD_Setup_ClearStall:                           // CRC OK
                                                 // Have received a Setup so clear any STALL condition on IN/OUT endpoint.
                                                 // Note, we can speed this up by assuming Setup only received on EP 0
-    ldaw         r6, dp[ep_addr]
+    ldaw         r6, dp[epAddr]
     
     ldaw         r11, r10[4]                    // R11 = R10 + 16
     ldw          r11, r6[r11]

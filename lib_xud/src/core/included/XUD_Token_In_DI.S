@@ -31,7 +31,7 @@ XUD_IN_NotReady:
     #include "XUD_TokenJmp.S"
 
 XUD_IN_TxHandshake:                                // Non-Iso
-    ldaw         r11, dp[ep_addr]
+    ldaw         r11, dp[epAddr]
     ldw          r11, r11[r3]
     ldw          r11, r11[10]
 

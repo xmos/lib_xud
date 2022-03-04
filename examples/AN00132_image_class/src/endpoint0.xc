@@ -1,4 +1,4 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /*
@@ -139,7 +139,8 @@ XUD_Result_t StillImageClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_Setu
 
         case STILL_IMAGE_DEV_RESET_REQ:
             /* Put the device in the idle state */
-            return XUD_RES_RST;
+            result = XUD_DoSetRequestStatus(c_ep0_in);
+            return result;
             break;
 
          case STILL_IMAGE_GET_DEV_STATUS:

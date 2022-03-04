@@ -116,7 +116,7 @@ static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigne
 }
 
 XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
-{
+{   // NOCOVER
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
     
     unsigned length;
@@ -167,7 +167,7 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     }
    
     return XUD_RES_OKAY;
-}
+}  // NOCOVER
 
 XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
 {
@@ -259,7 +259,7 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep e, unsigned char buffer[], unsigned *data
 }
 
 XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned datalength)
-{
+{   // NOCOVER
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
     while(1)
@@ -291,7 +291,7 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
 
     /* XUD uses negative index */
     lengthWords *= -1;
-    ep->actualPid = lengthWords; /* Re-used of actualPid entry - TODO rename */
+    ep->actualPid = lengthWords; /* Re-use of actualPid entry - TODO rename */
     ep->tailLength = lengthTail;
 
     unsigned * array_ptr = (unsigned *)ep->array_ptr;
@@ -301,7 +301,7 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
 }
 
 XUD_Result_t XUD_SetBuffer_Finish(chanend c, XUD_ep e)
-{
+{   // NOCOVER
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
     unsigned isReset;
     unsigned tmp;
@@ -324,7 +324,7 @@ XUD_Result_t XUD_SetBuffer_Finish(chanend c, XUD_ep e)
     }
     
     return XUD_RES_OKAY;
-}
+}   // NOCOVER
 
 XUD_Result_t XUD_SetBuffer(XUD_ep e, unsigned char buffer[], unsigned datalength)
 {

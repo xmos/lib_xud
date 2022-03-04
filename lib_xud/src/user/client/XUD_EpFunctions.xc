@@ -16,12 +16,6 @@ static inline int min(int x, int y)
     return y;
 }
 
-// To be deprecated - In favour of XUD_GetControlBuffer()
-XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned &length)
-{
-   return XUD_GetSetupData(ep_out, buffer, length);
-}
-
 void XUD_Kill(XUD_ep ep)
 {
     XUD_SetTestMode(ep, 0);
@@ -61,38 +55,6 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
 
     /* Send 0 length packet */
     return XUD_SetBuffer(ep_in, tmp, 0);
-}
-
-void XUD_SetStall(XUD_ep ep)
-{
-    asm volatile ("stw %0, %1[10]"::"r"(USB_PIDn_STALL), "r"(ep));
-}
-
-extern XUD_ep_info ep_info[USB_MAX_NUM_EP];
-
-unsafe
-{
-    XUD_ep_info * unsafe ep_info_ = ep_info;
-}
-
-void XUD_ClearStall(XUD_ep ep)
-{
-    // Load EP addr and check for IN or OUT
-    unsigned epAddr;
-
-    asm volatile("ldw %0, %1[8]":"=r"(epAddr):"r"(ep));
-    
-    if(epAddr & 0x80)
-    {
-        asm volatile ("stw %0, %1[10]"::"r"(0), "r"(ep));
-    }
-    else
-    {
-        asm volatile ("stw %0, %1[10]"::"r"(USB_PIDn_NAK), "r"(ep));
-    }
-    
-    /* Reset data PID */
-    XUD_ResetEpStateByAddr(epAddr);
 }
 
 void XUD_CloseEndpoint(XUD_ep one)
@@ -153,5 +115,4 @@ XUD_ep XUD_InitEp(chanend c)
     XUD_ep ep = inuint(c);
     return ep;
 }
-
 

@@ -9,7 +9,8 @@
 .align FUNCTION_ALIGNMENT
 Pid_Setup:
     #include "XUD_CrcAddrCheck.S"
-    ldw        r3, r5[r10]                      // Load relevant EP pointer
+    ldaw       r3, r10[8]                       // R11 = R10 + 32. Read Past end of epAddr to epAddr_Setup
+    ldw        r3, r5[r3]                       // Load relevant EP pointer
     bf         r3, XUD_Setup_BuffFull
     ldw        r1, r3[3]                        // Load buffer
 
@@ -23,7 +24,7 @@ XUD_Setup_LoadBuffer:
 XUD_Setup_ClearStall:                           // CRC OK
                                                 // Have received a Setup so clear any STALL condition on IN/OUT endpoint.
                                                 // Note, we can speed this up by assuming Setup only received on EP 0
-    ldaw         r6, dp[ep_addr]
+    ldaw         r6, dp[epAddr]
     
     ldaw         r11, r10[4]                    // R11 = R10 + 16
     ldw          r11, r6[r11]

@@ -1,5 +1,9 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
+# This test makes sure traffic to endpoints that XUD considers unused behave as expected
+# Test authored after issue #336 raised
+
 import pytest
 
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
@@ -98,6 +102,5 @@ def test_session(ep, address, bus_speed):
             dataLength=pktLength,
         )
     )
-
 
     return session

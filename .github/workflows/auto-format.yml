@@ -13,5 +13,5 @@ jobs:
           file-extensions:  |
             py
           exclude-dirs:
-          c-style: llvm
+          python-style: black
           token: ${{ secrets.GITHUB_TOKEN }}

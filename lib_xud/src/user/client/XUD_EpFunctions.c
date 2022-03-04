@@ -49,6 +49,13 @@ void XUD_SetStallByAddr(int epNum)
     ep->halted = USB_PIDn_STALL;
 }
 
+void XUD_SetStall(XUD_ep e)
+{
+    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
+
+    XUD_SetStallByAddr(ep->epAddress);
+}
+
 void XUD_ClearStallByAddr(int epNum)
 {
     unsigned handshake = USB_PIDn_NAK;
@@ -77,8 +84,15 @@ void XUD_ClearStallByAddr(int epNum)
     ep->halted = handshake;
 }
 
+void XUD_ClearStall(XUD_ep e)
+{
+    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
+
+    XUD_ClearStallByAddr(ep->epAddress);
+}
+
 /* ignoreHalted should only be used for Setup data */
-static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigned char buffer[], const int ignoreHalted)
+static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigned char buffer[])
 {
     /* If EP is marked as halted do not mark as ready.. */
     do
@@ -89,11 +103,12 @@ static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigne
             return XUD_RES_RST;
         }
     }
-    while((ep->halted == USB_PIDn_STALL) && !ignoreHalted);
+    while(ep->halted == USB_PIDn_STALL);
 
     /* Store buffer address in EP structure */
     ep->buffer = (unsigned) &buffer[0];
 
+    /* Mark EP as ready */
     unsigned * array_ptr = (unsigned *)ep->array_ptr;
     *array_ptr = (unsigned) ep;
 
@@ -160,7 +175,7 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
   
     while(1)
     { 
-        XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer, 0);
+        XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer);
 
         if(result == XUD_RES_RST)
         {
@@ -181,7 +196,7 @@ int XUD_SetReady_Out(XUD_ep e, unsigned char buffer[])
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
-    return XUD_GetBuffer_Start(ep, buffer, 0);
+    return XUD_GetBuffer_Start(ep, buffer);
 }
 
 void XUD_GetData_Select(chanend c, XUD_ep e, unsigned *datalength, XUD_Result_t *result)
@@ -191,20 +206,25 @@ void XUD_GetData_Select(chanend c, XUD_ep e, unsigned *datalength, XUD_Result_t 
     *result = XUD_GetBuffer_Finish(ep->client_chanend, ep, datalength);
 }
 
-XUD_Result_t XUD_GetSetupData(XUD_ep e, unsigned char buffer[], unsigned *datalength)
+XUD_Result_t XUD_GetSetupBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
 {
-
     volatile XUD_ep_info *ep = (XUD_ep_info*) e;
     unsigned isReset;
     unsigned length;
     unsigned lengthTail;
     
-    XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer, 1);
-
-    if(result == XUD_RES_RST)
+    /* Check if we missed a reset */
+    if(ep->resetting)
     {
         return XUD_RES_RST;
     }
+
+    /* Store buffer address in EP structure */
+    ep->buffer = (unsigned) &buffer[0];
+
+    /* Mark EP as ready for SETUP data */
+    unsigned * array_ptr_setup = (unsigned *)ep->array_ptr_setup;
+    *array_ptr_setup = (unsigned) ep;
 
     /* Wait for XUD response */
     asm volatile("testct %0, res[%1]" : "=r"(isReset) : "r"(ep->client_chanend));

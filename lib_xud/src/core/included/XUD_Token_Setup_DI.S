@@ -9,7 +9,8 @@
 .align FUNCTION_ALIGNMENT
 Pid_Setup:
     #include "XUD_CrcAddrCheck.S"
-    ldw        r3, r5[r10]                      // Load relevant EP pointer
+    ldaw       r3, r10[8]                       // R11 = R10 + 32. Read Past end of epAddr to epAddr_Setup
+    ldw        r3, r5[r3]                       // Load relevant EP pointer
     bf         r3, XUD_Setup_BuffFull
     ldw        r1, r3[3]                        // Load buffer
 

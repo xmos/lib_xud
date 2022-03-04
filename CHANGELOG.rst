@@ -1,11 +1,15 @@
 lib_xud Change Log
 ==================
 
-2.2.0
------
+UNRELEASED
+----------
 
-  * RESOLVED:  Timeout event properly cleaned up after tx handshake received
   * CHANGE:    Further API functions re-authored in C (were Assembly)
+  * FIXED:     Exception if host accesses an endpoint that XUD believes to be
+    not in use
+  * FIXED:     Timeout event properly cleaned up after tx handshake received
+  * FIXED:     A control endpoint will respect the halt condition for OUT
+    transactions when marked ready to accept SETUP transactions
 
 2.1.0
 -----
@@ -14,6 +18,8 @@ lib_xud Change Log
     devices
   * CHANGE:    Some API functions re-authored in C (were Assembly)
   * CHANGE:    Testbench now more accurately models XS3 based devices
+  * CHANGE:    Endpoint functions called on a halted endpoint will block until
+    the halt condition is cleared
 
 2.0.2
 -----

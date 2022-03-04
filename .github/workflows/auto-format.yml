@@ -11,7 +11,7 @@ jobs:
         uses: xmos/xaction_format@v1.0
         with:
           file-extensions:  |
-            c h cpp py
+            py
           exclude-dirs:
           c-style: llvm
           token: ${{ secrets.GITHUB_TOKEN }}

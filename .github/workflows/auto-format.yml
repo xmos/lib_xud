@@ -1,7 +1,10 @@
 name: Auto-format
-on: [push, pull_request]
+on:
+  issue_comment:
+    types: [created]
 jobs:
   apply-formatting:
+    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
       - name: Clone git repo
@@ -12,6 +15,5 @@ jobs:
         with:
           file-extensions:  |
             py
-          exclude-dirs:
-          python-style: black
+          python-style: python
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -64,7 +64,7 @@ on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_5;
 // unsigned epAddr_Ready[USB_MAN_NUM_EP]
 // unsigned epAddr_Ready[USB_MAX_NUM_EP_OUT]
 unsigned epAddr[USB_MAX_NUM_EP];                        // Used to store the addr of each EP in ep_info array
-unsigned epAddr_Ready[USB_MAX_NUM_EP + USB_MAX_NUM_EP_OUT];    // Used by the EP to mark itself as ready, essentially same as epAddr_Ready with 0 entries.
+unsigned epAddr_Ready[USB_MAX_NUM_EP + USB_MAX_NUM_EP_OUT];    // Used by the EP to mark itself as ready, essentially same as epAddr with 0 entries.
 
 XUD_chan epChans0[USB_MAX_NUM_EP];
 
@@ -481,7 +481,6 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         epAddr_Ready[USB_MAX_NUM_EP_OUT+i] = 0;
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
-        
         ep_info[USB_MAX_NUM_EP_OUT+i].halted = USB_PIDn_STALL;
         
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));

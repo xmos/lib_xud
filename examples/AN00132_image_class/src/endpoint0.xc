@@ -139,7 +139,8 @@ XUD_Result_t StillImageClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_Setu
 
         case STILL_IMAGE_DEV_RESET_REQ:
             /* Put the device in the idle state */
-            return XUD_RES_RST;
+            result = XUD_DoSetRequestStatus(c_ep0_in);
+            return result;
             break;
 
          case STILL_IMAGE_GET_DEV_STATUS:

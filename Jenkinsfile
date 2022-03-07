@@ -56,7 +56,6 @@ pipeline {
        post {
         failure {
           archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
-          archiveArtifacts artifacts: "${REPO}/tests/logs/*.vcd", fingerprint: true, allowEmptyArchive: true
       }
     }
   }

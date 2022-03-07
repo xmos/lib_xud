@@ -43,7 +43,8 @@ pipeline {
         archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
       }
     }
-    stage('Tests') {
+    stage('Tests') 
+    {
       steps {
         dir("${REPO}/tests"){
           viewEnv(){
@@ -53,9 +54,12 @@ pipeline {
           }
         }
       }
-       post {
-        failure {
+       post 
+       {
+        failure 
+        {
           archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
+        }
       }
     }
   }

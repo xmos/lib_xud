@@ -36,6 +36,7 @@ class UsbTransaction(UsbEvent):
         rxeAssertDelay_data=0,
         halted=False,
         resetDataPid=False,
+        nacking=False,
     ):
 
         self._deviceAddress = deviceAddress
@@ -47,6 +48,7 @@ class UsbTransaction(UsbEvent):
         self._badDataCrc = badDataCrc
         self._rxeAssertDelay_data = rxeAssertDelay_data
         self._halted = halted
+        self._nacking = nacking
 
         assert endpointType in USB_EP_TYPES
         assert transType in USB_TRANS_TYPES
@@ -129,9 +131,12 @@ class UsbTransaction(UsbEvent):
                 )
             )
 
+            # Note precedence of halted here
             if expectHandshake:
-                if halted:
+                if self._halted:
                     packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                elif self._nacking:
+                    packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
                 else:
                     packets.append(RxHandshakePacket())
 
@@ -153,7 +158,8 @@ class UsbTransaction(UsbEvent):
                 self._badDataCrc
                 or self._rxeAssertDelay_data
                 or self._endpointType == "ISO"
-                or halted
+                or self._halted
+                or self._nacking
             ):
                 togglePid = False
             else:
@@ -167,16 +173,19 @@ class UsbTransaction(UsbEvent):
             )
 
             # Add data packet to packets list
-            if not halted:
+            if not halted and not self._nacking:
                 # Generate packet data payload
                 packetPayload = session.getPayload_in(endpointNumber, dataLength)
                 self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
 
-            if self._endpointType != "ISO" and not halted:
-                self._packets.append(TxHandshakePacket())
+            if self._endpointType != "ISO":
 
-            if halted:
-                self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                if self._halted:
+                    self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                elif self._nacking:
+                    self._packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
+                else:
+                    self._packets.append(TxHandshakePacket())
 
         super().__init__(time=eventTime)
 

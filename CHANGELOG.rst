@@ -5,6 +5,8 @@ UNRELEASED
 ----------
 
   * CHANGE:    Further API functions re-authored in C (were Assembly)
+  * CHANGE:    Endpoints marked as Disabled now reply with STALL if the host
+    attempts to access them, previously they would NAK
   * FIXED:     Exception if host accesses an endpoint that XUD believes to be
     not in use
   * FIXED:     Timeout event properly cleaned up after tx handshake received

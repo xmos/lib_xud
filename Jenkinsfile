@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.16.2') _
+@Library('xmos_jenkins_shared_library@v0.18.0') _
 
 getApproval()
 
@@ -43,7 +43,8 @@ pipeline {
         archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
       }
     }
-    stage('Tests') {
+    stage('Tests') 
+    {
       steps {
         dir("${REPO}/tests"){
           viewEnv(){
@@ -52,8 +53,13 @@ pipeline {
             }
           }
         }
-        archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true, onlyIfSuccessful: false
-        archiveArtifacts artifacts: "${REPO}/tests/logs/*.vcd", fingerprint: true, allowEmptyArchive: true, onlyIfSuccessful: false
+      }
+       post 
+       {
+        failure 
+        {
+          archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
+        }
       }
     }
   }

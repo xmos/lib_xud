@@ -23,7 +23,13 @@ int main()
 #error XUD_TEST_SPEED must be defined
 #endif
 		 	const unsigned speed = XUD_TEST_SPEED;
-            
+           
+            const int epCountOut = sizeof(epTypeTableOut)/sizeof(epTypeTableOut[0]);
+            const int epCountIn = sizeof(epTypeTableIn)/sizeof(epTypeTableIn[0]);
+
+            assert(epCountOut == EP_COUNT_OUT);
+            assert(epCountIn == EP_COUNT_IN);
+
             XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 speed, XUD_PWR_BUS);

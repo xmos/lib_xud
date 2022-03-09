@@ -223,7 +223,11 @@ def create_expect(session, filename, verbose=False):
 def get_sim_args(testname, desc):
     sim_args = []
 
-    if eval(os.getenv("enabletracing")):
+    instTracing = eval(os.getenv("enabletracing"))
+    vcdTracing = eval(os.getenv("enablevcdtracing"))
+
+    if instTracing or vcdTracing:
+
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{desc}".format(
@@ -232,11 +236,15 @@ def get_sim_args(testname, desc):
             desc=desc,
         )
 
+    if instTracing:
+
         sim_args += [
             "--trace-to",
             "{0}.txt".format(filename),
             "--enable-fnop-tracing",
         ]
+
+    if vcdTracing:
 
         vcd_args = "-o {0}.vcd".format(filename)
         vcd_args += (

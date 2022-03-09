@@ -70,12 +70,19 @@ def pytest_addoption(parser):
         "--enabletracing",
         action="store_true",
         default=False,
-        help="Run tests with tracing",
+        help="Run tests with instruction tracing",
+    )
+    parser.addoption(
+        "--enablevcdtracing",
+        action="store_true",
+        default=False,
+        help="Run tests with VCD tracing",
     )
 
 
 def pytest_configure(config):
     os.environ["enabletracing"] = str(config.getoption("enabletracing"))
+    os.environ["enablevcdtracing"] = str(config.getoption("enablevcdtracing"))
     os.environ["xcov"] = str(config.getoption("xcov"))
     os.environ["clean"] = str(config.getoption("clean"))
 
@@ -190,7 +197,12 @@ def test_RunUsbSession(
             else:
                 if eval(os.getenv("xcov")):
                     # Calculate code coverage for each tests. Exclude test source code.
-                    coverage = xcov_process(disasm, trace, xcov_dir, excluded_file=["/tests/", "XUD_TestMode"])
+                    coverage = xcov_process(
+                        disasm,
+                        trace,
+                        xcov_dir,
+                        excluded_file=["/tests/", "XUD_TestMode"],
+                    )
                     # Generate coverage file for each source code included
                     xcov_comb.run_combine(xcov_dir)
                     # Delete trace file and disasm file

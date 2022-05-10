@@ -99,10 +99,6 @@ descriptors must be sent in typically 64 byte transactions.
 
 .. doxygenfunction:: XUD_DoSetRequestStatus
 
-``XUD_SetDevAddr()``
-....................
-
-.. doxygenfunction:: XUD_SetDevAddr
 
 ``XUD_SetStall()``
 ..................

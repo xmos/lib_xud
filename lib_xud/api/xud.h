@@ -241,14 +241,6 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer
 XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
 
 /**
- * \brief   Sets the device's address. This function must be called by Endpoint 0
- *          once a ``setDeviceAddress`` request is made by the host.
- * \param   addr New device address.
- * \warning Must be run on USB core
- */
-XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
-
-/**
  * \brief   This function will complete a reset on an endpoint. Can take
  *          one or two ``XUD_ep`` as parameters (the second parameter can be set to ``null``).
  *          The return value should be inspected to find the new bus-speed.

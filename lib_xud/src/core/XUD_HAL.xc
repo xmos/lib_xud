@@ -430,11 +430,15 @@ void XUD_HAL_SetDeviceAddress(unsigned char address)
 #endif
 }
 
-#ifdef __XS2A__
-unsigned read_vbus()
+/* Note, this is called from XUA_HAL.c (weak symbol) */
+unsigned int XUD_HAL_GetVBusState_(void)
 {
+#ifdef __XS2A__   
     unsigned int x;
     read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
     return x & (1 << XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT);
-}
+#else
+    return 1u;    
 #endif
+}
+

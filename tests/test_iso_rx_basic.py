@@ -17,7 +17,7 @@ def test_session(ep, address, bus_speed):
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    interTransactionDelay = 500
+    interTransactionDelay = 24 #fail at 23
 
     for pktLength in range(start_length, end_length + 1):
         session.add_event(

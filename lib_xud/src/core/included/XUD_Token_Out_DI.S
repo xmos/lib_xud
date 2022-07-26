@@ -17,13 +17,13 @@ CheckEpTypeOut:
     BRFT_ru6   r11, DoOutNonIso                 // ISO endpoint
 
 OutReady:
-    stw        r11, r5[r10]                     // Clear ready straight away - we don't to CRC checking on Iso - else we would have to wait for end of packet
-    bl         doRXData
-    {clre;
+    BLRF_u10    doRXData                        // Leaves r1: 0
+    {clre;      
     ldw         r11, r3[1]}                     // Load EP chanend
 
 InformEP_Iso:                                   // Iso EP - no handshake
-    {out        res[r11], r4;   ldw    r7, sp[STACK_TXCRC_INIT]} // Output datalength (words) & CRC 16 Init (IN) 
+    out        res[r11], r4;                    // Output datalength (words) 
+    stw         r1, r5[r10]                     // Clear ready (r1: 0)
     {outt       res[r11], r8;   ldw    r6, sp[STACK_RXCRC_INIT]} // CRC16 init (out) - Needs reseting after an out & Send tail length
 #ifndef __XS3A__
     ldw         r1, sp[STACK_VTOK_PORT]
@@ -34,18 +34,17 @@ InformEP_Iso:                                   // Iso EP - no handshake
 .skip 0
 DoOutNonIso:
     bl         doRXData
-    {clre;     eq         r1, r6, r11}          // Check for good CRC16
+    {clre;     eq         r11, r6, r11}         // Check for good CRC16
 
 doRXDataReturn_NonIso:
-    bf         r1, NextTokenAfterOut            // Check for bad crc
+    bf         r11, NextTokenAfterOut           // Check for bad crc
 
     ldc        r11, USB_PIDn_ACK                // Data CRC good, EP not Iso, and EP not halted: Send Ack
     outpw      res[TXD], r11, 8
     syncr      res[TXD]
 
 StoreTailDataOut:
-    ldc        r11, 0
-    stw        r11, r5[r10]                     // Clear ready
+    stw        r1,  r5[r10]                     // Clear ready (r1: 0)
     ldw        r11, r3[1]                       // Load EP chanend
 
     out        res[r11], r4                     // Output datalength (words)

@@ -77,6 +77,9 @@ def test_session(ep, address, bus_speed):
         )
     )
 
+    frameNumber = frameNumber + 1
+    session.add_event(CreateSofToken(frameNumber))
+
     # Simulate suspend (or unplug?) mid trans
     session.add_event(
         TokenPacket(

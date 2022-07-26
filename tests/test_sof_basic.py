@@ -13,6 +13,7 @@ from usb_transaction import INTER_TRANSACTION_DELAY
 def test_session(ep, address, bus_speed):
 
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
+    interEventDelay = 50
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -30,21 +31,11 @@ def test_session(ep, address, bus_speed):
         )
     )
 
-    session.add_event(
-        CreateSofToken(frameNumber, interEventDelay=INTER_TRANSACTION_DELAY)
-    )
-    session.add_event(
-        CreateSofToken(frameNumber + 1, interEventDelay=INTER_TRANSACTION_DELAY)
-    )
-    session.add_event(
-        CreateSofToken(frameNumber + 2, interEventDelay=INTER_TRANSACTION_DELAY)
-    )
-    session.add_event(
-        CreateSofToken(frameNumber + 3, interEventDelay=INTER_TRANSACTION_DELAY)
-    )
-    session.add_event(
-        CreateSofToken(frameNumber + 4, interEventDelay=INTER_TRANSACTION_DELAY)
-    )
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=interEventDelay))
+    session.add_event(CreateSofToken(frameNumber + 1, interEventDelay=interEventDelay))
+    session.add_event(CreateSofToken(frameNumber + 2, interEventDelay=interEventDelay))
+    session.add_event(CreateSofToken(frameNumber + 3, interEventDelay=interEventDelay))
+    session.add_event(CreateSofToken(frameNumber + 4, interEventDelay=interEventDelay))
 
     # Finish with valid transaction
     session.add_event(

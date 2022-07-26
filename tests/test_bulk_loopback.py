@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 from copy import deepcopy
@@ -20,6 +20,8 @@ def test_session(ep, address, bus_speed):
     ep_loopback = ep
     ep_loopback_kill = ep + 1
 
+    interEventDelay = 500
+
     start_length = 10
     end_length = 20
 
@@ -37,6 +39,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="OUT",
                 dataLength=pktLength,
+                interEventDelay=interEventDelay,
             )
         )
         session.add_event(
@@ -47,6 +50,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
+                interEventDelay=interEventDelay,
             )
         )
 
@@ -61,6 +65,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=interEventDelay,
         )
     )
     session.add_event(
@@ -71,6 +76,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="IN",
             dataLength=pktLength,
+            interEventDelay=interEventDelay,
         )
     )
 

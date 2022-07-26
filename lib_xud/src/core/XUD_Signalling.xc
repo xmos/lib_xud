@@ -174,6 +174,9 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 }
 
             break;
+
+            default:
+                break;
         }      
     }
 }

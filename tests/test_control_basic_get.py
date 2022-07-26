@@ -27,6 +27,7 @@ def test_session(ep, address, bus_speed):
 
     start_length = 0
     end_length = start_length + 10
+    interEventDelay=500
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -42,6 +43,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="SETUP",
                 dataLength=8,
+                interEventDelay=interEventDelay,
             )
         )
 
@@ -53,6 +55,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="IN",
                 dataLength=pktLength,
+                interEventDelay=interEventDelay,
             )
         )
 
@@ -64,6 +67,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="OUT",
                 dataLength=0,
+                interEventDelay=interEventDelay,
             )
         )
 

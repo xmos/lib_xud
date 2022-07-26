@@ -31,6 +31,7 @@ def test_session(ep, address, bus_speed):
             transType="OUT",
             dataLength=pktLength,
             halted=True,
+            interEventDelay=500,
         )
     )
 
@@ -43,6 +44,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
@@ -55,6 +57,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
@@ -69,6 +72,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
@@ -94,6 +98,7 @@ def test_session(ep, address, bus_speed):
             transType="OUT",
             dataLength=pktLength,
             halted=True,
+            interEventDelay=500,
         )
     )
 
@@ -117,6 +122,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 

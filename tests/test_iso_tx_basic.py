@@ -26,6 +26,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="ISO",
                 transType="IN",
                 dataLength=pktLength,
+                interEventDelay=500,
             )
         )
 

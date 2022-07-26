@@ -19,7 +19,6 @@ def test_session(ep, address, bus_speed):
 
     for pktLength in range(start_length, end_length + 1):
 
-        # < 17 fails
         session.add_event(
             UsbTransaction(
                 session,
@@ -28,7 +27,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="ISO",
                 transType="OUT",
                 dataLength=pktLength,
-                interEventDelay=20,
+                interEventDelay=0,
             )
         )
 
@@ -40,7 +39,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="ISO",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=58,
+                interEventDelay=0,
             )
         )
 

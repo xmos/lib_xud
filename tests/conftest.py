@@ -161,20 +161,6 @@ def test_RunUsbSession(
 
     # TODO it would be good to sanity check core_freq == xe.freq
     (clk_60, usb_phy) = get_usb_clk_phy(verbose=False, arch=arch)
-    tester_list.extend(
-        do_usb_test(
-            arch,
-            ep,
-            address,
-            bus_speed,
-            dummy_threads,
-            core_freq,
-            clk_60,
-            usb_phy,
-            [test_session],
-            test_file,
-        )
-    )
 
     testname, _ = os.path.splitext(os.path.basename(test_file))
     desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
@@ -187,30 +173,36 @@ def test_RunUsbSession(
         output.append(cap_output.split("\n"))
 
         sys.stdout.write("\n")
-        results = Pyxsim.run_tester(output, tester_list)
 
-        # TODO only one result
-        for result in results:
-            if not result:
-                print(cap_output)
-                sys.stderr.write(err)
-            else:
-                if eval(os.getenv("xcov")):
-                    # Calculate code coverage for each tests. Exclude test source code.
-                    coverage = xcov_process(
-                        disasm,
-                        trace,
-                        xcov_dir,
-                        excluded_file=["/tests/", "XUD_TestMode"],
-                    )
-                    # Generate coverage file for each source code included
-                    xcov_comb.run_combine(xcov_dir)
-                    # Delete trace file and disasm file
-                    if os.path.exists(trace):
-                        os.remove(trace)
-            assert result
-    else:
-        pass
+        result = do_usb_test(
+            arch,
+            ep,
+            address,
+            bus_speed,
+            dummy_threads,
+            core_freq,
+            clk_60,
+            usb_phy,
+            [test_session],
+            test_file,
+            capfd=capfd,
+        )
+
+        if result:
+            if eval(os.getenv("xcov")):
+                # Calculate code coverage for each tests. Exclude test source code.
+                coverage = xcov_process(
+                    disasm,
+                    trace,
+                    xcov_dir,
+                    excluded_file=["/tests/", "XUD_TestMode"],
+                )
+                # Generate coverage file for each source code included
+                xcov_comb.run_combine(xcov_dir)
+                # Delete trace file and disasm file
+                if os.path.exists(trace):
+                    os.remove(trace)
+        assert result
 
 
 def copy_common_xn_files(

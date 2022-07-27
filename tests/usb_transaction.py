@@ -13,10 +13,10 @@ from usb_packet import (
 )
 from usb_phy import USB_PKT_TIMINGS
 
-INTER_TRANSACTION_DELAY = 500
-
 USB_TRANS_TYPES = ["OUT", "IN", "SETUP"]
 USB_EP_TYPES = ["CONTROL", "BULK", "ISO", "INTERRUPT"]
+
+INTER_TRANSACTION_DELAY = USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
 
 # TODO UsbTransaction_IN and UsbTransaction_OUT
 class UsbTransaction(UsbEvent):

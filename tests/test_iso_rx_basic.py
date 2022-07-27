@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 
@@ -17,7 +17,7 @@ def test_session(ep, address, bus_speed):
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    interTransactionDelay = 500
+    interTransactionDelay = 24  # Fail at 23
 
     for pktLength in range(start_length, end_length + 1):
         session.add_event(

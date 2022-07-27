@@ -73,13 +73,6 @@ def get_usb_clk_phy(
     return (clk, phy)
 
 
-def run_on_simulator(xe, simthreads, **kwargs):
-    for k in ["do_xe_prebuild", "build_env", "clean_before_build"]:
-        if k in kwargs:
-            kwargs.pop(k)
-    Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
-
-
 def run_on(**kwargs):
 
     for name, value in kwargs.items():
@@ -126,6 +119,7 @@ def do_usb_test(
     test_file,
     extra_tasks=[],
     verbose=False,
+    capfd=None,
 ):
     build_options = []
 
@@ -137,7 +131,6 @@ def do_usb_test(
 
     # Shared test code for all RX tests using the test_rx application
     testname, _ = os.path.splitext(os.path.basename(test_file))
-    tester_list = []
 
     desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
     binary = f"{testname}/bin/{desc}/{testname}_{desc}.xe"
@@ -175,22 +168,19 @@ def do_usb_test(
 
             create_expect(session, expect_filename, verbose=verbose)
 
-            tester = testers.ComparisonTester(
-                open(expect_filename),
-                "lib_xud",
-                "xud_sim_tests",
-                testname,
-                {"clk": clk.get_name(), "arch": arch, "speed": bus_speed},
-            )
+            tester = testers.ComparisonTester(open(expect_filename))
 
-            tester_list.append(tester)
             simargs = get_sim_args(testname, desc)
             simthreads = [clk, phy] + extra_tasks
-            run_on_simulator(binary, simthreads, simargs=simargs)
+            return Pyxsim.run_on_simulator_(
+                binary,
+                simthreads=simthreads,
+                tester=tester,
+                simargs=simargs,
+                capfd=capfd,
+            )
     else:
-        tester_list.append("Build Failed")
-
-    return tester_list
+        return False
 
 
 def create_expect(session, filename, verbose=False):

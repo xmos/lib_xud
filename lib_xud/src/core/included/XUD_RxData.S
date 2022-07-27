@@ -1,4 +1,4 @@
-// Copyright 2019-2021 XMOS LIMITED.
+// Copyright 2019-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #define PASTER(x,y) x ## _ ## y
@@ -101,7 +101,7 @@ LABEL(RxTail):
 OutTail0:
     crc32       r6, r8, r9                      // CRC zero step
     ldw         r11, sp[STACK_RXCRC_TAIL0]
-    RETSP_u6   0
+    {RETSP_u6   0;  ldc r1, 0}
 
 // 1 Tail Byte
 .align 32
@@ -110,7 +110,7 @@ OutTail1:
     crc32       r6, r11, r9
     stw         r11, r1[r4]                     // Store last data
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL1]
-    RETSP_u6   0
+    {RETSP_u6   0;  ldc r1, 0}
 
 // Two Tail Bytes
 .align 32
@@ -119,7 +119,7 @@ OutTail2:
     crc32       r6, r11, r9
     stw         r11, r1[r4]                      // Store last data
     ldw         r11, sp[STACK_RXCRC_TAIL2]
-    RETSP_u6   0
+    {RETSP_u6   0;  ldc r1, 0}
 
 // Three Tail Bytes
 .align 32
@@ -129,5 +129,5 @@ OutTail3:
     crc32       r6, r11, r9
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL3]
     crc8        r6, r1, r2, r9                  // Use the fact the the bottom byte of port id is 0.. saves us an ldc
-    RETSP_u6   0
+    {RETSP_u6   0;  ldc r1, 0}
 

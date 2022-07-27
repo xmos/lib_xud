@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 import pytest
@@ -26,6 +26,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["PING"],
             address=address,
             endpoint=ep,
+            interEventDelay=500,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["STALL"]))
@@ -36,6 +37,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["PING"],
             address=address,
             endpoint=ep,
+            interEventDelay=500,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["STALL"]))
@@ -49,6 +51,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
@@ -61,6 +64,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
@@ -72,6 +76,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 

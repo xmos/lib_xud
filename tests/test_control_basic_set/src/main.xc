@@ -1,4 +1,4 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "shared.h"
 
@@ -27,7 +27,7 @@ int TestEp_Control(XUD_ep c_ep0_out, XUD_ep c_ep0_in, int epNum)
 
         res = XUD_GetBuffer(c_ep0_out, buffer, length);
 
-        res = SendTxPacket(c_ep0_in, 0, epNum);
+        res = XUD_DoSetRequestStatus(c_ep0_in);
 
         /* Checking for the Setup */
         if(sres != XUD_RES_OKAY)

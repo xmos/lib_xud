@@ -1,4 +1,4 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -28,6 +28,32 @@
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};
 
+void checkPacket(unsigned length, unsigned char buffer[])
+{
+    static unsigned char outCounter = 0;
+    static unsigned outLength = PKT_LENGTH_START;
+
+    if(length != outLength)
+    {
+        printstr("ERROR: Unexpected packet length. Expected: ");
+        printint(outLength);
+        printstr(" Received: ");
+        printintln(length);
+    }
+
+    for(size_t i = 0; i < outLength; i++)
+    {
+        if(buffer[i] != outCounter)
+        {
+            printstr("ERROR: Unexpected packet data. Expected: ");
+            printhex(outCounter);
+            printstr(" Received: ");
+            printhexln(buffer[i]);
+        }
+        outCounter++;
+    }
+    outLength++;
+}
 
 unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
@@ -55,6 +81,8 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed = (result != XUD_RES_OKAY);
     
+    checkPacket(length, outBuffer);
+
     result = XUD_SetBuffer(ep_in, inBuffer0, PKT_LENGTH_START);
     failed |= (result != XUD_RES_OKAY);
 
@@ -65,6 +93,11 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     /* Valid transaction on another EP, clear STALL on the test EP's */
     result = XUD_GetBuffer(ep_ctrl, outBuffer, length);
     failed = (result != XUD_RES_OKAY);
+
+    if(length != PKT_LENGTH_START)
+    {
+        printstr("ERROR: Bad packet length\n");
+    }
   
     /* Clear stall on the test EP's */ 
     XUD_ClearStall(ep_out);
@@ -73,6 +106,8 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     /* Ensure test EP's now operate as expected */
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
+   
+    checkPacket(length, outBuffer);
     
     result = XUD_SetBuffer(ep_in, inBuffer1, PKT_LENGTH_START);
     failed |= (result != XUD_RES_OKAY);
@@ -92,7 +127,9 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     /* Ensure test EP's now operate as expected */
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
-    
+   
+    checkPacket(length, outBuffer);
+
     result = XUD_SetBuffer(ep_in, inBuffer2, PKT_LENGTH_START);
     failed |= (result != XUD_RES_OKAY);
 

@@ -1,4 +1,4 @@
-# Copyright 2021 XMOS LIMITED.
+# Copyright 2021-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 from usb_event import UsbEvent
@@ -13,10 +13,10 @@ from usb_packet import (
 )
 from usb_phy import USB_PKT_TIMINGS
 
-INTER_TRANSACTION_DELAY = 500
-
 USB_TRANS_TYPES = ["OUT", "IN", "SETUP"]
 USB_EP_TYPES = ["CONTROL", "BULK", "ISO", "INTERRUPT"]
+
+INTER_TRANSACTION_DELAY = USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
 
 # TODO UsbTransaction_IN and UsbTransaction_OUT
 class UsbTransaction(UsbEvent):
@@ -36,6 +36,7 @@ class UsbTransaction(UsbEvent):
         rxeAssertDelay_data=0,
         halted=False,
         resetDataPid=False,
+        nacking=False,
     ):
 
         self._deviceAddress = deviceAddress
@@ -47,6 +48,7 @@ class UsbTransaction(UsbEvent):
         self._badDataCrc = badDataCrc
         self._rxeAssertDelay_data = rxeAssertDelay_data
         self._halted = halted
+        self._nacking = nacking
 
         assert endpointType in USB_EP_TYPES
         assert transType in USB_TRANS_TYPES
@@ -75,13 +77,11 @@ class UsbTransaction(UsbEvent):
                 or self._rxeAssertDelay_data
                 or endpointType == "ISO"
                 or halted
+                or resend
             ):
                 togglePid = False
             else:
                 togglePid = True
-
-            if halted:
-                resetDataPid = True
 
             expectHandshake = (
                 (not self._badDataCrc)
@@ -91,9 +91,15 @@ class UsbTransaction(UsbEvent):
             )
 
             if expectHandshake or self._endpointType == "ISO":
-                resend = False
+                needResend = False
             else:
-                resend = True
+                needResend = True
+
+            if halted:
+                resetDataPid = True
+                needResend = True
+
+            resend = resend or needResend
 
             # Generate packet data payload
             packetPayload = session.getPayload_out(
@@ -125,9 +131,12 @@ class UsbTransaction(UsbEvent):
                 )
             )
 
+            # Note precedence of halted here
             if expectHandshake:
-                if halted:
+                if self._halted:
                     packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                elif self._nacking:
+                    packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
                 else:
                     packets.append(RxHandshakePacket())
 
@@ -149,7 +158,8 @@ class UsbTransaction(UsbEvent):
                 self._badDataCrc
                 or self._rxeAssertDelay_data
                 or self._endpointType == "ISO"
-                or halted
+                or self._halted
+                or self._nacking
             ):
                 togglePid = False
             else:
@@ -163,16 +173,19 @@ class UsbTransaction(UsbEvent):
             )
 
             # Add data packet to packets list
-            if not halted:
+            if not halted and not self._nacking:
                 # Generate packet data payload
                 packetPayload = session.getPayload_in(endpointNumber, dataLength)
                 self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
 
-            if self._endpointType != "ISO" and not halted:
-                self._packets.append(TxHandshakePacket())
+            if self._endpointType != "ISO":
 
-            if halted:
-                self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                if self._halted:
+                    self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                elif self._nacking:
+                    self._packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
+                else:
+                    self._packets.append(TxHandshakePacket())
 
         super().__init__(time=eventTime)
 

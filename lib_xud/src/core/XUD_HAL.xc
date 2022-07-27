@@ -1,4 +1,4 @@
-// Copyright 2019-2021 XMOS LIMITED.
+// Copyright 2019-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -20,8 +20,8 @@ extern in port flag1_port; /* For XS3: RXE  or DM */
 extern buffered in port:32 p_usb_clk;
 void XUD_SetCrcTableAddr(unsigned addr);
 unsigned XtlSelFromMhz(unsigned m)
-{
-    switch(m)
+{   // NOCOVER
+    switch(m) //NOCOVER
     {
         case 10:
             return 0b000;
@@ -41,7 +41,7 @@ unsigned XtlSelFromMhz(unsigned m)
             return 0b111;
         default:
             /* Panic */
-            while(1);
+            while(1); //NOCOVER
             break;
     }
 
@@ -220,7 +220,7 @@ void XUD_HAL_EnterMode_PeripheralHighSpeed_Complete()
 #endif
 
 void XUD_HAL_EnterMode_PeripheralTestJTestK()
-{
+{ // NOCOVER
 #ifdef __XS2A__
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 0b1000);
 #else
@@ -247,12 +247,12 @@ void XUD_HAL_EnterMode_PeripheralTestJTestK()
     unsigned xtlSelVal = XtlSelFromMhz(XUD_OSC_MHZ);
     d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlSelVal);
 
-    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); // NOCOVER 
 #endif
 }
 
 void XUD_HAL_EnterMode_TristateDrivers()
-{
+{ // NOCOVER
 #ifdef __XS2A__
     write_periph_word(USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 4);
 #else
@@ -279,7 +279,7 @@ void XUD_HAL_EnterMode_TristateDrivers()
     unsigned xtlSelVal = XtlSelFromMhz(XUD_OSC_MHZ);
     d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlSelVal);
 
-    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); 
+    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d); //NOCOVER
 #endif
 }
 
@@ -375,7 +375,7 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     if (timeout != null)
         t :> time;
 
-#ifdef XS2A
+#ifdef __XS2A__
     unsigned se0 = currentLs == XUD_LINESTATE_SE0;
     unsigned j = currentLs == XUD_LINESTATE_HS_J_FS_K;
     unsigned k = currentLs == XUD_LINESTATE_HS_K_FS_J;
@@ -430,11 +430,15 @@ void XUD_HAL_SetDeviceAddress(unsigned char address)
 #endif
 }
 
-#ifdef __XS2A__
-unsigned read_vbus()
+/* Note, this is called from XUA_HAL.c (weak symbol) */
+unsigned int XUD_HAL_GetVBusState_(void)
 {
+#ifdef __XS2A__   
     unsigned int x;
     read_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_OTG_FLAGS_NUM, x);
     return x & (1 << XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT);
-}
+#else
+    return 1u;    
 #endif
+}
+

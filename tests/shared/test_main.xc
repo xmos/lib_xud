@@ -1,5 +1,11 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
+#include "shared.h"
+
+extern size_t g_dummyThreadCount;
+
+unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN]);
 
 #ifdef XUD_SIM_RTL
 int testmain()
@@ -12,12 +18,18 @@ int main()
     par
     {
         {
-#if defined(XUD_TEST_SPEED_FS)
-            const unsigned speed = XUD_SPEED_FS;
-#elif defined(XUD_TEST_SPEED_HS)
-            const unsigned speed = XUD_SPEED_HS;
+          
+#ifndef XUD_TEST_SPEED
+#error XUD_TEST_SPEED must be defined
 #endif
-            
+		 	const unsigned speed = XUD_TEST_SPEED;
+           
+            const int epCountOut = sizeof(epTypeTableOut)/sizeof(epTypeTableOut[0]);
+            const int epCountIn = sizeof(epTypeTableIn)/sizeof(epTypeTableIn[0]);
+
+            assert(epCountOut == EP_COUNT_OUT);
+            assert(epCountIn == EP_COUNT_IN);
+
             XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 speed, XUD_PWR_BUS);

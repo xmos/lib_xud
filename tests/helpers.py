@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import os
 import sys
@@ -73,13 +73,6 @@ def get_usb_clk_phy(
     return (clk, phy)
 
 
-def run_on_simulator(xe, simthreads, **kwargs):
-    for k in ["do_xe_prebuild", "build_env", "clean_before_build"]:
-        if k in kwargs:
-            kwargs.pop(k)
-    Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
-
-
 def run_on(**kwargs):
 
     for name, value in kwargs.items():
@@ -103,13 +96,13 @@ def generate_elf_disasm(binary, split_dir, disasm):
         sys.exit(1)
 
 
-FIXTURE_TO_DEFINE = {
+FIXTURE_TO_BUILD_OPTION = {
     "core_freq": "TEST_FREQ",
     "arch": "TEST_ARCH",
     "dummy_threads": "TEST_DTHREADS",
     "ep": "TEST_EP_NUM",
-    "address": "XUD_STARTUP_ADDRESS",
-    "bus_speed": "BUS_SPEED",
+    "address": "TEST_ADDRESS",
+    "bus_speed": "TEST_BUS_SPEED",
 }
 
 
@@ -126,26 +119,18 @@ def do_usb_test(
     test_file,
     extra_tasks=[],
     verbose=False,
+    capfd=None,
 ):
     build_options = []
 
     xcov = eval(os.getenv("xcov"))
 
     # Flags for makefile
-    for k, v in FIXTURE_TO_DEFINE.items():
+    for k, v in FIXTURE_TO_BUILD_OPTION.items():
         build_options += [str(v) + "=" + str(locals()[k])]
-
-    # Defines for DUT code
-    # TODO shoud the makefile set thease based on the above?
-    build_options_str = "CFLAGS="
-    for k, v in FIXTURE_TO_DEFINE.items():
-        build_options_str += "-D" + str(v) + "=" + str(locals()[k]) + " "
-
-    build_options = build_options + [build_options_str]
 
     # Shared test code for all RX tests using the test_rx application
     testname, _ = os.path.splitext(os.path.basename(test_file))
-    tester_list = []
 
     desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
     binary = f"{testname}/bin/{desc}/{testname}_{desc}.xe"
@@ -183,22 +168,19 @@ def do_usb_test(
 
             create_expect(session, expect_filename, verbose=verbose)
 
-            tester = testers.ComparisonTester(
-                open(expect_filename),
-                "lib_xud",
-                "xud_sim_tests",
-                testname,
-                {"clk": clk.get_name(), "arch": arch, "speed": bus_speed},
-            )
+            tester = testers.ComparisonTester(open(expect_filename))
 
-            tester_list.append(tester)
             simargs = get_sim_args(testname, desc)
             simthreads = [clk, phy] + extra_tasks
-            run_on_simulator(binary, simthreads, simargs=simargs)
+            return Pyxsim.run_on_simulator_(
+                binary,
+                simthreads=simthreads,
+                tester=tester,
+                simargs=simargs,
+                capfd=capfd,
+            )
     else:
-        tester_list.append("Build Failed")
-
-    return tester_list
+        return False
 
 
 def create_expect(session, filename, verbose=False):
@@ -231,7 +213,11 @@ def create_expect(session, filename, verbose=False):
 def get_sim_args(testname, desc):
     sim_args = []
 
-    if eval(os.getenv("enabletracing")):
+    instTracing = eval(os.getenv("enabletracing"))
+    vcdTracing = eval(os.getenv("enablevcdtracing"))
+
+    if instTracing or vcdTracing:
+
         log_folder = create_if_needed("logs")
 
         filename = "{log}/xsim_trace_{test}_{desc}".format(
@@ -240,11 +226,15 @@ def get_sim_args(testname, desc):
             desc=desc,
         )
 
+    if instTracing:
+
         sim_args += [
             "--trace-to",
             "{0}.txt".format(filename),
             "--enable-fnop-tracing",
         ]
+
+    if vcdTracing:
 
         vcd_args = "-o {0}.vcd".format(filename)
         vcd_args += (

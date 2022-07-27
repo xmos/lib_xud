@@ -1,11 +1,10 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
 #include <xs1.h>
-#include <print.h>
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
+#include "shared.h"
 
 #define EP_COUNT_OUT   (6)
 #define EP_COUNT_IN    (6)
@@ -24,65 +23,6 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL,
                                             XUD_EPTYPE_BUL,
                                             XUD_EPTYPE_BUL};
 
-void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend ?c_usb_test);
-
-void exit(int);
-
-#define FAIL_RX_DATAERROR 0
-#define FAIL_RX_LENERROR 1
-
-unsigned fail(int x)
-{
-
-    printstr("\nXCORE: ### FAIL ******");
-    switch(x)
-    {
-        case FAIL_RX_DATAERROR:
-            printstr("XCORE RX Data Error\n");
-            break;
-
-        case FAIL_RX_LENERROR:
-            printstr("XCORE RX Length Error\n");
-            break;
-
-    }
-
-    exit(1);
-}
-
-unsigned char g_rxDataCheck[EP_COUNT_OUT] = {0};
-unsigned char g_txDataCheck[EP_COUNT_IN] = {0};
-unsigned g_txLength[EP_COUNT_IN] = {0};
-
-
-#pragma unsafe arrays
-int RxDataCheck(unsigned char b[], int l, int epNum)
-{
-    int fail = 0;
-    unsigned char x;
-
-    for (int i = 0; i < l; i++)
-    {
-        unsigned char y;
-        //read_byte_via_xc_ptr_indexed(y, p_rxDataCheck, epNum);
-        if(b[i] != g_rxDataCheck[epNum])
-        {
-            printstr("#### Mismatch on EP: ");
-            printint(epNum); 
-            printstr(". Got:");
-            printhex(b[i]);
-            printstr(" Expected:");
-            printhexln(g_rxDataCheck[epNum]);
-            //printintln(l); // Packet length
-            return 1;
-        }
-
-        g_rxDataCheck[epNum]++;
-    }
-
-    return 0;
-}
-
 int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
 {
     unsigned int length;
@@ -99,17 +39,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
     {    
         XUD_GetBuffer(ep_out, buffer, length);
 
-        if(length != i)
-        {
-            printintln(length);
-            fail(FAIL_RX_LENERROR);
-        }
-
-        if(RxDataCheck(buffer, length, epNum))
-        {
-            fail(FAIL_RX_DATAERROR);
-        }
-
+        RxDataCheck(buffer, length, epNum, i);
     }
 
     XUD_Kill(ep_out_0);

@@ -43,3 +43,5 @@ tests/test_**/**test_xs3_*.xn
 tests/report.html
 tests/testplan.rst
 build/doctrees/environment.pickle
+*pca.xml*
+*.d

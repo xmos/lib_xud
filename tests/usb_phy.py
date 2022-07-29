@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import Pyxsim
 
@@ -19,7 +19,7 @@ USB_TIMINGS_SPEC = {
     "IDLE_TO_FS_MAX_US": 312,  # Spec: 3125
     "RESUME_FSK_MIN_US": 200,  # Spec: 20000us
     "RESUME_SE0_US": 1.25,  # 1.25uS - 1.5uS
-    "T_UCHEND": 7000,  # Upstream Chirp end time
+    "T_UCHEND_US": 7000,  # Upstream Chirp end time
     "T_UCH_US": 1000,  # Upstream Chirp length
     "T_WTDCH_US": 100,
     "T_SIGATT_US": 100000,  # Maximum time from Vbus valid to when the device
@@ -39,7 +39,7 @@ USB_TIMINGS_SHORT = {
     "IDLE_TO_FS_MAX_US": 312,  # Spec: 3125
     "RESUME_FSK_MIN_US": 200,  # Spec: 20000us
     "RESUME_SE0_US": 1.25,  # 1.25uS - 1.5uS
-    "T_UCHEND": 7000,  # Upstream Chirp end time
+    "T_UCHEND_US": 300,  # Upstream Chirp end time
     "T_UCH_US": 10,  # Upstream Chirp length
     "T_WTDCH_US": 50,
     "T_SIGATT_US": 100000,  # Maximum time from Vbus valid to when the device
@@ -56,11 +56,13 @@ USB_TIMINGS_SHORT = {
 
 
 USB_PKT_TIMINGS_TIGHT = {
-    "TX_TO_RX_PACKET_TIMEOUT": 14,  # Timeout between sending DUT a packet
+    "TX_TO_RX_PACKET_TIMEOUT": 18,  # Timeout between sending DUT a packet
     # and the expected response (in USB
     # clocks). This is SIE decision time in
     # UTMI spec
-    "TX_TO_TX_PACKET_DELAY": 4,  # Delay between transmitting two packets
+    # TODO this needs reducing to 14!
+    "TX_TO_TX_PACKET_DELAY": 5,  # Default delay between transmitting two packets
+    # TODO this needs reducing to 4!
 }
 
 

@@ -107,29 +107,20 @@ Looking at this in a more detail you can see the following:
 Configuring the USB Device ID
 .............................
 
-The USB ID values used for vendor id, product id and device version number are defined in the file ``endpoint0.xc``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
+The USB ID values used for vendor ID, product ID and device version number are defined in the file ``endpoint0.xc``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
 
-.. literalinclude:: endpoint0.xc
-   :start-on: USB HID Device
-   :end-before: Standard
-
-USB HID Class specific defines
-..............................
-
-The USB HID Class is configured in the file ``endpoint0.xc``. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB HID class device running on an xCORE microcontroller.
-
-.. literalinclude:: endpoint0.xc
-   :start-on: Standard HID
-   :end-before: Device Descriptor
+.. literalinclude:: hid_defs.h
+   :start-on: /* USB HID Device Product Defines
+   :end-before: /* Device Descriptor
 
 |newpage|
 
 USB Device Descriptor
 .....................
 
-``endpoint0.xc`` is where the standard USB device descriptor is declared for the HID class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
+``hid_defs.h`` is where the standard USB device descriptor is declared for the HID class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
 
-.. literalinclude:: endpoint0.xc
+.. literalinclude:: hid_defs.h
    :start-on: devDesc 
    :end-on: }
 
@@ -142,7 +133,7 @@ USB Configuration Descriptor
 
 The USB configuration descriptor is used to configure the device in terms of the device class and the endpoint setup. For the USB HID class device the configuration descriptor which is read by the host is as follows.
 
-.. literalinclude:: endpoint0.xc
+.. literalinclude:: hid_defs.h
    :start-on: cfgDesc
    :end-on: }
 
@@ -155,7 +146,7 @@ USB HID Class Descriptor
 
 For USB HID class devices there is a descriptor that is device in the HID device class specification which needs to be provided to the host in addition to the default decriptor types described above. The host will request this descriptor from the device when it enumerates as a HID class device. The HID descriptor for our mouse demo application is as follows.
 
-.. literalinclude:: endpoint0.xc
+.. literalinclude:: hid_defs.h
    :start-on: hidDescriptor
    :end-on: }
 
@@ -166,7 +157,7 @@ USB HID Report Descriptor
 
 Along with the HID class descriptor there is a HID report descriptor which describes to the host the usage of the device and the data it will be reporting when it communicates. As HID devices are supported by standard drivers on a host machine this allow a level of configuration between the host and the device. The HID report descriptor for our example application is below.
 
-.. literalinclude:: endpoint0.xc
+.. literalinclude:: hid_defs.h
    :start-on: hidReportDesc
    :end-on: }
 
@@ -179,7 +170,7 @@ There are two further descriptors within this file relating to the
 configuration of the USB Printer Class. These sections should also be
 modified to match the capabilities of the printer. 
 
-.. literalinclude:: endpoint0.xc
+.. literalinclude:: hid_defs.h
    :start-on: String table
    :end-on: }
 
@@ -191,7 +182,7 @@ USB HID Class requests
 Inside ``endpoint0.xc`` there is a function for handling the USB HID device class specific requests. The code for handling these requests is shown as follows:
 
 .. literalinclude:: endpoint0.xc
-   :lines: 142-198
+   :lines: 16-74
 
 These HID specific requests are implemented by the application as they do not form part of the standard requests which have to be accepted by all device classes via endpoint0.
 
@@ -203,7 +194,7 @@ USB HID Class Endpoint0
 The function ``Endpoint0()`` contains the code for dealing with device requests made from the host to the standard endpoint0 which is present in all USB devices. In addition to requests required for all devices, the code handles the requests specific to the HID class.
 
 .. literalinclude:: endpoint0.xc
-   :lines: 201-301
+   :lines: 75-176
 
 |newpage|
 

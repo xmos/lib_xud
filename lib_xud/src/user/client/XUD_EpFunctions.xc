@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /** @file      XUD_EPFunctions.xc
   * @brief     Implementation of user API functions.  See xud.h for documentation.
@@ -7,7 +7,7 @@
 
 #include <xs1.h>
 #include "xud.h"
-
+#include "XUD_USB_Defines.h"
 
 static inline int min(int x, int y)
 {
@@ -16,74 +16,14 @@ static inline int min(int x, int y)
     return y;
 }
 
-XUD_Result_t XUD_GetBuffer(XUD_ep c, unsigned char buffer[], unsigned &datalength)
-{
-    return XUD_GetData(c, buffer, datalength);
-}
-
-// To be deprecated - In favour of XUD_GetControlBuffer()
-XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], unsigned &length)
-{
-   return XUD_GetSetupData(ep_out, buffer, length);
-}
-
-XUD_Result_t XUD_SetBuffer(XUD_ep c, unsigned char buffer[], unsigned datalength)
-{
-    /* No PID reset, 0 start index */
-    return XUD_SetData(c, buffer, datalength, 0, 0);
-}
-
 void XUD_Kill(XUD_ep ep)
 {
     XUD_SetTestMode(ep, 0);
 }
 
-XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax)
-{
-    int i = 0;
-    XUD_Result_t result;
-
-    /* Note: We could encompass this in the SetData function */
-    if (datalength <= epMax)
-    {
-        /* Datalength is less than the maximum per transaction of the EP, so just send */
-        result = XUD_SetData(ep_in, buffer, datalength, 0, 0);
-        return result;
-    }
-    else
-    {
-        /* Send first packet out and reset PID */
-        if((result = XUD_SetData(ep_in, buffer, epMax, 0, 0)) != XUD_RES_OKAY)
-        {
-            return result;
-        }
-        i+= epMax;
-        datalength-=epMax;
-
-        while (1)
-	    {
-            if (datalength > epMax)
-	        {
-                /* PID Automatically toggled */
-                if ((result = XUD_SetData(ep_in, buffer, epMax, i, 0)) != XUD_RES_OKAY)
-                    return result;
-
-                datalength-=epMax;
-                i += epMax;
-	        }
-	        else
-	        {
-                /* PID automatically toggled */
-                if ((result = XUD_SetData(ep_in, buffer, datalength, i, 0)) != XUD_RES_OKAY)
-                    return result;
-
-	            break; //out of while loop
-	        }
-	    }
-    }
-
-    return XUD_RES_OKAY;
-}
+#ifndef EP0_MAX_PACKET_SIZE
+#define EP0_MAX_PACKET_SIZE (64)
+#endif
 
 /* TODO Should take ep max length as a param - currently hardcoded as 64 (#11384) */
 XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[], unsigned length, unsigned requested)
@@ -93,20 +33,20 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[
     unsigned sendLength = min(length, requested);
     XUD_Result_t result;
 
-    if ((result = XUD_SetBuffer_EpMax(ep_in, buffer, sendLength, 64)) != XUD_RES_OKAY)
+    if ((result = XUD_SetBuffer_EpMax(ep_in, buffer, sendLength, EP0_MAX_PACKET_SIZE)) != XUD_RES_OKAY)
     {
         return result;
     }
 
     /* USB 2.0 8.5.3.2: Send < 0 length packet when data-length % 64 is 0
      * Note, we also don't want to try and send 2 zero-length packets i.e. if sendLength = 0 */
-    if ((requested > length) && ((length % 64) == 0))
+    if ((requested > length) && ((length % EP0_MAX_PACKET_SIZE) == 0))
     {
         XUD_SetBuffer(ep_in, tmpBuffer, 0);
     }
 
     /* Status stage - this should return -1 for reset or 0 for 0 length status stage packet */
-    return XUD_GetData(ep_out, tmpBuffer, rxlength);
+    return XUD_GetBuffer(ep_out, tmpBuffer, rxlength);
 }
 
 XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
@@ -114,27 +54,7 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
     unsigned char tmp[8];
 
     /* Send 0 length packet */
-    return XUD_SetData(ep_in, tmp, 0, 0, 0);
-}
-
-void XUD_SetStall(XUD_ep ep)
-{
-    /* Get EP address from XUD_ep structure */
-    unsigned int epAddress;
-
-    asm ("ldw %0, %1[8]":"=r"(epAddress):"r"(ep));
-
-    XUD_SetStallByAddr(epAddress);
-}
-
-void XUD_ClearStall(XUD_ep ep)
-{
-    /* Get EP address from XUD_ep structure */
-    unsigned int epAddress;
-
-    asm ("ldw %0, %1[8]":"=r"(epAddress):"r"(ep));
-
-    XUD_ClearStallByAddr(epAddress);
+    return XUD_SetBuffer(ep_in, tmp, 0);
 }
 
 void XUD_CloseEndpoint(XUD_ep one)
@@ -195,5 +115,4 @@ XUD_ep XUD_InitEp(chanend c)
     XUD_ep ep = inuint(c);
     return ep;
 }
-
 

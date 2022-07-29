@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * \brief     User defines and functions for XMOS USB Device library
@@ -34,13 +34,19 @@
   #define USB_TILE tile[0]
 #endif
 
+// TODO use PLATFORM_REFERENCE_MHZ from platform.h
 #ifndef REF_CLK_FREQ
-#define REF_CLK_FREQ 100
+#define REF_CLK_FREQ (100)
 #endif
 
 #ifndef XUD_CORE_CLOCK
-#warning XUD_CORE_CLOCK not defined, using default (600MHz)
-#define XUD_CORE_CLOCK (600)
+    #ifdef __XS2A__
+        //#warning XUD_CORE_CLOCK not defined, using default (500MHz)
+        #define XUD_CORE_CLOCK (500)
+    #else
+        //#warning XUD_CORE_CLOCK not defined, using default (600MHz)
+        #define XUD_CORE_CLOCK (600)
+    #endif
 #endif
 
 #if !defined(PORT_USB_CLK)
@@ -108,7 +114,6 @@ typedef enum XUD_Result
     XUD_RES_ERR =  2,
 } XUD_Result_t;
 
-#if defined(__XC__) || defined(__DOXYGEN__)
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
@@ -154,7 +159,17 @@ int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 XUD_BusSpeed_t desiredSpeed,
                 XUD_PwrConfig pwrConfig);
-#endif
+
+/* Legacy API support */
+int XUD_Manager(chanend c_epOut[], int noEpOut,
+                chanend c_epIn[], int noEpIn,
+                NULLABLE_RESOURCE(chanend, c_sof),
+                XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
+                NULLABLE_RESOURCE(port, p_usb_rst),
+                NULLABLE_RESOURCE(xcore_clock_t, clk),
+                unsigned rstMask,
+                XUD_BusSpeed_t desiredSpeed,
+                XUD_PwrConfig pwrConfig);
 
 /**
  * \brief   This function must be called by a thread that deals with an OUT endpoint.
@@ -168,11 +183,6 @@ int XUD_Main(/*tileref * unsafe usbtileXUD_res_t &xudres, */
  **/
 XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
 
-
-//NEW API WORK IN PROGRESS
-//XUD_Result_t XUD_GetControlBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
-
-
 /**
  * \brief   Request setup data from usb buffer for a specific endpoint, pauses until data is available.
  * \param   ep_out      The OUT endpoint identifier (created by ``XUD_InitEP``).
@@ -181,7 +191,6 @@ XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARA
  * \return  XUD_RES_OKAY on success, for errors see ``Status Reporting``_.
  **/
 XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
-
 
 /**
  * \brief  This function must be called by a thread that deals with an IN endpoint.
@@ -193,10 +202,6 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
 XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
-
-
-//XUD_Result_t XUD_SetControlBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
-
 
 /**
  * \brief   Similar to XUD_SetBuffer but breaks up data transfers into smaller packets.
@@ -210,7 +215,6 @@ XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datale
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
 XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax);
-
 
 /**
  * \brief  Performs a combined ``XUD_SetBuffer`` and ``XUD_GetBuffer``.
@@ -228,7 +232,6 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
  **/
 XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested);
 
-
 /**
  * \brief   This function sends an empty packet back on the next IN request with
  *          PID1. It is normally used by Endpoint 0 to acknowledge success of a control transfer.
@@ -236,16 +239,6 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  **/
 XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
-
-
-/**
- * \brief   Sets the device's address. This function must be called by Endpoint 0
- *          once a ``setDeviceAddress`` request is made by the host.
- * \param   addr New device address.
- * \warning Must be run on USB core
- */
-XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
-
 
 /**
  * \brief   This function will complete a reset on an endpoint. Can take
@@ -256,7 +249,7 @@ XUD_Result_t XUD_SetDevAddr(/*tileref usbtile*/ unsigned addr);
  * \param   one      IN or OUT endpoint identifier to perform the reset on.
  * \param   two      Optional second IN or OUT endpoint structure to perform a reset on.
  * \return  Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
- *          at high speed, ``XUD_SPEED_FS`` - the device is runnig at full speed,
+ *          at high speed, ``XUD_SPEED_FS`` - the device is running at full speed,
  *          or ``XUD_SPEED_KILL`` to indicate that the USB stack has been shut down
  *          by another part of the user code (using XUD_Kill). If the last value is
  *          returned, the endpoint code should call XUD_CloseEndpoint and then
@@ -279,7 +272,6 @@ void XUD_CloseEndpoint(XUD_ep one);
  */
 XUD_ep XUD_InitEp(chanend c_ep);
 
-
 /**
  * \brief      Mark an endpoint as STALL based on its EP address.  Cleared automatically if a SETUP received on the endpoint.
  *             Note: the IN bit of the endpoint address is used.
@@ -287,7 +279,6 @@ XUD_ep XUD_InitEp(chanend c_ep);
  * \warning    Must be run on same tile as XUD core
  */
 void XUD_SetStallByAddr(int epNum);
-
 
 /**
  * \brief      Mark an endpoint as NOT STALLed based on its EP address.
@@ -303,7 +294,6 @@ void XUD_ClearStallByAddr(int epNum);
  * \warning Must be run on same tile as XUD core
  */
 void XUD_SetStall(XUD_ep ep);
-
 
 /**
  * \brief   Mark an endpoint as NOT STALLed
@@ -339,73 +329,12 @@ void XUD_SetTestMode(XUD_ep ep, unsigned testMode);
  */
 void XUD_Kill(XUD_ep ep);
 
-/**********************************************************************************************
- * Below are prototypes for main assembly functions for data transfer to/from USB I/O thread
- * All other Get/Set functions defined here use these.  These are implemented in XUD_EpFuncs.S
- * Wrapper functions are provided for conveniance (implemented in XUD_EpFunctions.xc).
- */
-
-/**
- * \brief      Gets a data buffer from XUD
- * \param      ep_out      The OUT endpoint identifier.
- * \param      buffer      The buffer to store received data into.
- * \param      length      Length of the buffer received
- * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
- */
-XUD_Result_t XUD_GetData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
-
-/**
- * \brief      Gets a setup data from XUD
- * \param      ep_out      OUT endpoint identifier.
- * \param      buffer      Buffer to store received data into.
- * \param      length      Length of the buffer received (expect 8)
- * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
- * TODO:       Use generic GetData for this
- */
-XUD_Result_t XUD_GetSetupData(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
-
-/**
- * \brief     Gives a data buffer to XUD from transmission to the host
- * \param     ep_in        The IN endpoint identifier.
- * \param     buffer       The packet buffer to send data from.
- * \param     datalength   The length of the packet to send (in bytes).
- * \param     startIndex   The start index of the packet in the buffer (typically 0).
- * \param     pidToggle    No longer used, value ignored
- * \return    XUD_RES_OKAY on success, for errors see `Status Reporting`.
- */
-XUD_Result_t XUD_SetData(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned startIndex, unsigned pidToggle);
-
 /***********************************************************************************************/
 
 /*
  * Advanced functions for supporting multple Endpoints in a single core
  */
 
-/**
- * \brief      Marks an OUT endpoint as ready to receive data
- * \param      ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
- * \param      buffer      The buffer in which to store data received from the host.
- *                         The buffer is assumed to be word aligned.
- * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
- */
-inline int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[])
-{
-    int chan_array_ptr;
-    int reset;
-
-    /* Firstly check if we have missed a USB reset - endpoint may would not want receive after a reset */
-    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
-    if(reset)
-    {
-        return -1;
-    }
-
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-    asm ("stw %0, %1[3]"::"r"(buffer),"r"(ep));            // Store buffer
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
-
-    return 0;
-}
 
 /**
  * \brief      Marks an OUT endpoint as ready to receive data
@@ -420,19 +349,28 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     int reset;
 
     /* Firstly check if we have missed a USB reset - endpoint may would not want receive after a reset */
-    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
+    asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
         return XUD_RES_RST;
     }
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-    asm ("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
+    asm volatile("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    asm volatile("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
+    asm volatile("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
     return XUD_RES_OKAY;
 }
 
-#if defined(__XC__) || defined(__DOXYGEN__)
+/**
+ * \brief      Marks an OUT endpoint as ready to receive data
+ * \param      ep          The OUT endpoint identifier (created by ``XUD_InitEp``).
+ * \param      buffer      The buffer in which to store data received from the host.
+ *                         The buffer is assumed to be word aligned.
+ * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
+ */
+int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]);
+
+
 /**
  * \brief      Marks an IN endpoint as ready to transmit data
  * \param      ep          The IN endpoint identifier (created by ``XUD_InitEp``).
@@ -451,14 +389,18 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     int reset;
 
     /* Firstly check if we have missed a USB reset - endpoint may not want to send out old data after a reset */
-    asm ("ldw %0, %1[9]":"=r"(reset):"r"(ep));
+    asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
         return XUD_RES_RST;
     }
 
     /* Tail length bytes to bits */
+#ifdef __XC__
     tailLength = zext((len << 3),5);
+#else
+    tailLength = (len << 3) & 0x1F;
+#endif
 
     /* Datalength (bytes) --> datalength (words) */
     wordLength = len >> 2;
@@ -471,23 +413,23 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     }
     
     /* Get end off buffer address */
-    asm ("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
+    asm volatile("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
 
     /* Produce negative offset from end of buffer */
-    asm ("neg %0, %1":"=r"(tmp2):"r"(wordLength));
+    asm volatile("neg %0, %1":"=r"(tmp2):"r"(wordLength));
 
     /* Store neg index */
-    asm ("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
+    asm volatile("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
 
     /* Store buffer pointer */
-    asm ("stw %0, %1[3]"::"r"(tmp),"r"(ep));
+    asm volatile("stw %0, %1[3]"::"r"(tmp),"r"(ep));
 
     /*  Store tail len */
-    asm ("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
+    asm volatile("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
 
     /* Finally, mark ready */
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-    asm ("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
+    asm volatile("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
+    asm volatile("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
 
     return XUD_RES_OKAY;
 }
@@ -504,7 +446,7 @@ inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
 {
     unsigned addr;
 
-    asm("mov %0, %1":"=r"(addr):"r"(buffer));
+    asm volatile("mov %0, %1":"=r"(addr):"r"(buffer));
 
     return XUD_SetReady_InPtr(ep, addr, len);
 }
@@ -517,8 +459,11 @@ inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
  *                   XUD_SetReady_Out())
  * \param   result   XUD_Result_t passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
+#ifdef __XC__
 #pragma select handler
+#endif
 void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length), REFERENCE_PARAM(XUD_Result_t, result));
+
 
 /**
  * \brief   Select handler function for transmitting IN endpoint data in a select.
@@ -526,9 +471,10 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
  * \param   ep       The IN endpoint identifier (created by ``XUD_InitEp``).
  * \param   result   Passed by reference. XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
+#ifdef __XC__
 #pragma select handler
+#endif
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
-#endif //__XC__ || __DOXYGEN__
 
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
@@ -537,6 +483,25 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 #define XUD_OSC_MHZ (24)
 #endif
 
-#endif //__ASSEMBLER__
+/* TODO pack this to save mem
+ * TODO size of this hardcoded in ResetEpStateByAddr_
+ */
+typedef struct XUD_ep_info
+{
+    unsigned int array_ptr;            // 0
+    unsigned int xud_chanend;          // 1
+    unsigned int client_chanend;       // 2 
+    unsigned int buffer;               // 3 Pointer to buffer
+    unsigned int pid;                  // 4 Expected out PID
+    unsigned int epType;               // 5 Data
+    unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.
+    unsigned int tailLength;           // 7 "tail" length for IN (bytes)
+    unsigned int epAddress;            // 8 EP address assigned by XUD (Used for marking stall etc)
+    unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
+    unsigned int halted;               // 10 NAK or STALL
+    unsigned int saved_array_ptr;      // 11
+    unsigned int array_ptr_setup;      // 12
+} XUD_ep_info;
 
+#endif
 #endif // _XUD_H_

@@ -13,6 +13,8 @@ The library provides functionality to act as a USB *device* only.
 
 This library is for use with xCORE-200 Series or xCORE-AI series devices only, previous generations of xCORE devices are no longer supported.
 
+Note, at points lib_xud will run in "fast mode" this is a requirement to meet timing.
+
 Features
 ........
 

@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 
@@ -19,16 +19,14 @@ def test_session(ep, address, bus_speed):
 
     for pktLength in range(start_length, end_length + 1):
 
-        # < 17 fails
         session.add_event(
             UsbTransaction(
                 session,
                 deviceAddress=address,
                 endpointNumber=ep,
                 endpointType="ISO",
-                direction="OUT",
+                transType="OUT",
                 dataLength=pktLength,
-                interEventDelay=20,
             )
         )
 
@@ -38,9 +36,8 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=address,
                 endpointNumber=ep,
                 endpointType="ISO",
-                direction="IN",
+                transType="IN",
                 dataLength=pktLength,
-                interEventDelay=58,
             )
         )
 

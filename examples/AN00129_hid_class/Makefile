@@ -16,8 +16,9 @@ APP_NAME = app_hid_mouse_demo
 # the xCORE.AI series.
 BUILD_FLAGS = -O3 -report -fxscope
 
-XCC_FLAGS_200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
-XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600
+XCC_FLAGS_200 = $(BUILD_FLAGS)
+XCC_FLAGS_AI = $(BUILD_FLAGS)
+XCC_FLAGS_AI_C = $(BUILD_FLAGS)
 
 USED_MODULES = lib_xud
 
@@ -28,10 +29,15 @@ USED_MODULES = lib_xud
 # In this case, the target depends on the build configuration.
 ifeq ($(CONFIG),AI)
 TARGET = XCORE-AI-EXPLORER
+EXCLUDE_FILES = main.c
+else ifeq ($(CONFIG),AI_C)
+TARGET = XCORE-AI-EXPLORER
+EXCLUDE_FILES = main.xc \
+				endpoint0.xc
 else
 TARGET = XCORE-200-EXPLORER
+EXCLUDE_FILES = main.c
 endif
-
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure
 # for compiling XMOS applications. You should not need to edit below here.

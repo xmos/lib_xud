@@ -1,4 +1,4 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _USB_DESCRIPTORS_H_
@@ -147,6 +147,36 @@ typedef struct
     unsigned char  bInterval;          /* Polling interval in milliseconds for the endpoint.
                                         * Relevant to Isochronous and Interrupt endpoints only */
 } __attribute__((packed)) USB_Descriptor_Endpoint_t;
+
+/* USB Standard Endpoint Descriptor (Section 9.6.6, table 9-13) */
+enum USB_Endpoint_TransType_t
+{
+    USB_ENDPOINT_TRANSTYPE_CTRL          = 0x0,
+    USB_ENDPOINT_TRANSTYPE_ISO           = 0x1,
+    USB_ENDPOINT_TRANSTYPE_BULK          = 0x2,
+    USB_ENDPOINT_TRANSTYPE_INT           = 0x3
+};
+#define  USB_ENDPOINT_TRANSTYPE_SHIFT     (0)
+
+enum USB_Endpoint_SyncType_t
+{
+    USB_ENDPOINT_SYNCTYPE_NONE          = 0x0,
+    USB_ENDPOINT_SYNCTYPE_ASYNC         = 0x1,
+    USB_ENDPOINT_SYNCTYPE_ADAPT         = 0x2,
+    USB_ENDPOINT_SYNCTYPE_SYNC          = 0x3
+};
+#define  USB_ENDPOINT_SYNCTYPE_SHIFT     (2)
+
+enum USB_Endpoint_UsageType_t
+{
+    USB_ENDPOINT_USAGETYPE_DATA          = 0x0,
+    USB_ENDPOINT_USAGETYPE_FEEDBACK      = 0x1,
+    USB_ENDPOINT_USAGETYPE_IMPLICIT      = 0x2,
+    USB_ENDPOINT_USAGETYPE_RESERVED      = 0x3
+};
+#define  USB_ENDPOINT_USAGETYPE_SHIFT     (4)
+
+
 
 /* USB String Descriptor (Section 9.6.7 table 9-15) */
 typedef struct

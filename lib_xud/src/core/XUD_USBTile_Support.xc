@@ -1,5 +1,6 @@
-// Copyright 2013-2021 XMOS LIMITED.
+// Copyright 2013-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+#ifdef __XS2A__
 
 #include <xs1.h>
 
@@ -63,3 +64,4 @@ void write_periph_word_two_part_end(chanend tmpchan, unsigned data)
     outuchar(tmpchan, data);
     outct(tmpchan, XS1_CT_END);
 }
+#endif

@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 
@@ -10,9 +10,6 @@ from usb_transaction import UsbTransaction
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    if bus_speed == "FS":
-        pytest.xfail("Known failure at FS")
-
     pktLength = 10
 
     session = UsbSession(
@@ -21,6 +18,31 @@ def test_session(ep, address, bus_speed):
 
     ep_ctrl = ep + 1
 
+    # Valid transactions on test EP's
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength,
+            interEventDelay=500,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="IN",
+            dataLength=pktLength,
+            interEventDelay=500,
+        )
+    )
+
     # Expect test EP's to be halted
     session.add_event(
         UsbTransaction(
@@ -28,9 +50,10 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             halted=True,
+            interEventDelay=500,
         )
     )
 
@@ -40,9 +63,10 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
             halted=True,
+            interEventDelay=500,
         )
     )
 
@@ -52,8 +76,9 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             halted=True,
+            interEventDelay=500,
         )
     )
 
@@ -63,8 +88,9 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             halted=True,
+            interEventDelay=500,
         )
     )
 
@@ -75,19 +101,21 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep_ctrl,
             endpointType="BULK",
-            direction="OUT",
+            transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
+    # Check EP no working as normal
     session.add_event(
         UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="OUT",
-            dataLength=pktLength,
+            transType="OUT",
+            dataLength=pktLength + 1,
             interEventDelay=1000,
         )
     )
@@ -98,16 +126,74 @@ def test_session(ep, address, bus_speed):
             deviceAddress=address,
             endpointNumber=ep,
             endpointType="BULK",
-            direction="IN",
+            transType="IN",
             dataLength=pktLength,
+            interEventDelay=500,
+        )
+    )
+
+    # EP now re-halted
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength,
+            halted=True,
+            interEventDelay=500,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="IN",
+            halted=True,
+            interEventDelay=500,
+        )
+    )
+
+    # Valid transaction to another EP informing test code to clear stall
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep_ctrl,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength,
+            interEventDelay=500,
+        )
+    )
+
+    # Check EP now working as normal
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="OUT",
+            dataLength=pktLength + 2,
+            interEventDelay=500,
+        )
+    )
+
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="BULK",
+            transType="IN",
+            dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
     return session
-
-
-#   for result in RunUsbTest(
-#        gen_test_session, test_arch, test_ep, test_address,
-#        test_bus_speed, __file__
-#    ):
-#        assert result

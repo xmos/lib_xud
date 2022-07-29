@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 
@@ -14,10 +14,7 @@ def test_session(ep, address, bus_speed):
     end_length = start_length + 5
 
     session = UsbSession(
-        bus_speed=bus_speed,
-        run_enumeration=False,
-        device_address=address,
-        initial_delay=100000,
+        bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
     for pktLength in range(start_length, end_length):
@@ -27,8 +24,9 @@ def test_session(ep, address, bus_speed):
                 deviceAddress=address,
                 endpointNumber=ep,
                 endpointType="ISO",
-                direction="IN",
+                transType="IN",
                 dataLength=pktLength,
+                interEventDelay=500,
             )
         )
 

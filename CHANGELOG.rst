@@ -1,6 +1,33 @@
 lib_xud Change Log
 ==================
 
+UNRELEASED
+----------
+
+  * CHANGE:    Further API functions re-authored in C (were Assembly)
+  * CHANGE:    Endpoints marked as Disabled now reply with STALL if the host
+    attempts to access them, previously they would NAK
+  * FIXED:     Exception if host accesses an endpoint that XUD believes to be
+    not in use
+  * FIXED:     Timeout event properly cleaned up after tx handshake received
+  * FIXED:     A control endpoint will respect the halt condition for OUT
+    transactions when marked ready to accept SETUP transactions
+
+2.1.0
+-----
+
+  * CHANGE:    Various optimisations to aid corner-case timings on XS3 based
+    devices
+  * CHANGE:    Some API functions re-authored in C (were Assembly)
+  * CHANGE:    Testbench now more accurately models XS3 based devices
+  * CHANGE:    Endpoint functions called on a halted endpoint will block until
+    the halt condition is cleared
+
+2.0.2
+-----
+
+  * ADDED:      Legacy API wrapper functions/header files
+
 2.0.1
 -----
 

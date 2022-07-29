@@ -12,10 +12,10 @@ APP_NAME = app_usb_image_demo
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to
 # xcc for the final link (mapping) stage.
 
-BUILD_FLAGS = -O3 -report
+BUILD_FLAGS = -O3 -report -fxscope -g
 
-XCC_FLAGS_200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
-XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600
+XCC_FLAGS_200 = $(BUILD_FLAGS)
+XCC_FLAGS_AI = $(BUILD_FLAGS)
 
 # The TARGET variable determines what target system the application is
 # compiled for. It either refers to an XN file in the source directories

@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /**
@@ -59,49 +59,40 @@ in port rx_rdy                 = PORT_USB_RX_READY;
 on USB_TILE: clock tx_usb_clk  = XS1_CLKBLK_4;
 on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_5;
 
-XUD_chan epChans[USB_MAX_NUM_EP];
+// We use a single array instrad of two here and append epAddr_Ready_setup on the end to save some instructions in the Setup 
+// token handling code. i.e. what we really want is the following, but's less efficient. 
+// unsigned epAddr_Ready[USB_MAN_NUM_EP]
+// unsigned epAddr_Ready[USB_MAX_NUM_EP_OUT]
+unsigned epAddr[USB_MAX_NUM_EP];                        // Used to store the addr of each EP in ep_info array
+unsigned epAddr_Ready[USB_MAX_NUM_EP + USB_MAX_NUM_EP_OUT];    // Used by the EP to mark itself as ready, essentially same as epAddr with 0 entries.
+
 XUD_chan epChans0[USB_MAX_NUM_EP];
 
-/* TODO pack this to save mem
- * TODO size of this hardcoded in ResetRpStateByAddr_
- */
-typedef struct XUD_ep_info
-{
-    unsigned int chan_array_ptr;       // 0
-    unsigned int ep_xud_chanend;       // 1
-    unsigned int ep_client_chanend;    // 2
-    unsigned int scratch;              // 3 used for datalength in
-    unsigned int pid;                  // 4 Expected out PID
-    unsigned int epType;               // 5 Data
-    unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.
-    unsigned int tailLength;           // 7 "tail" length for IN (bytes)
-    unsigned int epAddress;            // 8 EP address assigned by XUD (Used for marking stall etc)
-    unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
-} XUD_ep_info;
-
 XUD_ep_info ep_info[USB_MAX_NUM_EP];
+
+/* Location to store stack pointer (required for interrupt handler) */
+unsigned SavedSp;
 
 /* Tables storing if EP's are signed up to bus state updates */
 int epStatFlagTableIn[USB_MAX_NUM_EP_IN];
 int epStatFlagTableOut[USB_MAX_NUM_EP_OUT];
+
+
+unsigned sentReset = 0;
+
+unsigned chanArray;
+
+#define RESET_TIME_us               (5)
+#define RESET_TIME                  (RESET_TIME_us * REF_CLK_FREQ)
 
 extern unsigned XUD_LLD_IoLoop(
                             in buffered port:32 rxd_port,
                             in port rxa_port,
                             out buffered port:32 txd_port,
                             in port rxe_port, in port ?valtok_port,
-                            XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epChans[],
+                            XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], XUD_chan epAddr_Ready[],
                             int  epCount, chanend? c_sof) ;
 
-unsigned handshakeTable_IN[USB_MAX_NUM_EP_IN] = {0}; // 0 or STALL
-unsigned handshakeTable_OUT[USB_MAX_NUM_EP_OUT];     // NAK or STALL
-unsigned sentReset=0;
-
-unsigned crcmask = 0b11111111111;
-unsigned chanArray;
-
-#define RESET_TIME_us               (5)
-#define RESET_TIME                  (RESET_TIME_us * REF_CLK_FREQ)
 
 #if (XUD_OPT_SOFTCRC5 == 1)
 extern unsigned char crc5Table[2048];
@@ -113,7 +104,7 @@ void XUD_SetCrcTableAddr(unsigned addr);
 static int one = 1;
 
 #pragma unsafe arrays
-static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int token)
+static void SendResetToEps(XUD_chan c[], XUD_chan epAddr_Ready[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int token)
 {
     for(int i = 0; i < nOut; i++)
     {
@@ -124,7 +115,8 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
 
             /* Clear EP ready. Note. small race since EP might set ready after XUD sets resetting to 1
              * but this should be caught in time (EP gets CT) */
-            epChans[i] = 0;
+            epAddr_Ready[i] = 0;
+            epAddr_Ready[i+ USB_MAX_NUM_EP] = 0;
             XUD_Sup_outct(c[i], token);
         }
     }
@@ -133,7 +125,7 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epChans[], XUD_EpType epTypeTa
         if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
         {
             ep_info[i + USB_MAX_NUM_EP_OUT].resetting = 1;
-            epChans[i + USB_MAX_NUM_EP_OUT] = 0;
+            epAddr_Ready[i + USB_MAX_NUM_EP_OUT] = 0;
             XUD_Sup_outct(c[i + USB_MAX_NUM_EP_OUT], token);
         }
     }
@@ -155,11 +147,10 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
             XUD_Sup_outuint(c[i + USB_MAX_NUM_EP_OUT], speed);
         }
     }
-
 }
 
 // Main XUD loop
-static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, XUD_PwrConfig pwrConfig)
+static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, XUD_PwrConfig pwrConfig)
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
     
@@ -181,21 +172,18 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     #endif
 
     #ifdef XUD_SIM_XSIM
-        #if (XUD_CORE_CLOCK > 500)
-            #define RX_RISE_DELAY 2
-            #define RX_FALL_DELAY 5
-            #define TX_RISE_DELAY 2
-            #define TX_FALL_DELAY 3
-        #elif (XUD_CORE_CLOCK > 400)
-            #define RX_RISE_DELAY 5
-            #define RX_FALL_DELAY 5
-            #define TX_RISE_DELAY 2
-        #define TX_FALL_DELAY 3
-        #else /* 400 */
-            #define RX_RISE_DELAY 3
-            #define RX_FALL_DELAY 5
-            #define TX_RISE_DELAY 3  
-            #define TX_FALL_DELAY 3
+        #if (XUD_CORE_CLOCK >= 700)
+            #define RX_RISE_DELAY 0
+            #define RX_FALL_DELAY 0
+            #define TX_RISE_DELAY 0
+            #define TX_FALL_DELAY 7
+        #elif (XUD_CORE_CLOCK >= 600)
+            #define RX_RISE_DELAY 0
+            #define RX_FALL_DELAY 0
+            #define TX_RISE_DELAY 0
+            #define TX_FALL_DELAY 5
+        #else
+            #error XUD_CORE_CLOCK must be >= 600
         #endif
     #else
         #if (XUD_CORE_CLOCK >= 600)
@@ -203,7 +191,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             #define RX_FALL_DELAY 1
             #define TX_RISE_DELAY 1
             #define TX_FALL_DELAY 1
-
         #elif (XUD_CORE_CLOCK >= 500)
             #define RX_RISE_DELAY 1
             #define RX_FALL_DELAY 0
@@ -230,20 +217,18 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
     set_port_inv(p_usb_clk);
     set_port_sample_delay(p_usb_clk);
 
-#if !defined(XUD_SIM_XSIM)
-    //This delay controls the capture of rdy
+    // This delay controls the capture of rdy
     set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);
 
-    //this delay controls the launch of data.
+    // This delay controls the launch of data.
     set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY);
 
-    //this delay th capture of the rdyIn and data.
+    // This delay the capture of the rdyIn and data.
     set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
-#endif
 
 #ifdef __XS3A__
-    set_pad_delay(flag1_port, 3);
+    set_pad_delay(flag1_port, 2);
 #else
     set_pad_delay(flag1_port, 2);
 #endif
@@ -312,7 +297,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     /* Sample line state and check for reset (or suspend) */
                     XUD_LineState_t ls = XUD_HAL_GetLineState();
                     if(ls == XUD_LINESTATE_SE0)
-                        reset == 1;
+                        reset = 1;
                     else
                         reset = 0;
                 }
@@ -337,10 +322,9 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                 /* Test if coming back from reset or suspend */
                 if(reset == 1)
                 {
-
                     if(!sentReset)
                     {
-                        SendResetToEps(epChans0, epChans, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
+                        SendResetToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
                         sentReset = 1;
                     }
                     
@@ -364,17 +348,18 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
                     XUD_HAL_SetDeviceAddress(XUD_STARTUP_ADDRESS);
 
 #ifdef XUD_BYPASS_RESET
-    #if defined(XUD_TEST_SPEED_HS)
+                    if(XUD_TEST_SPEED == XUD_SPEED_HS)
+                    {
                         g_curSpeed = XUD_SPEED_HS;
                         g_txHandshakeTimeout = HS_TX_HANDSHAKE_TIMEOUT;
                         XUD_HAL_EnterMode_PeripheralHighSpeed();
-    #elif defined(XUD_TEST_SPEED_FS)
+                    }
+                    else
+                    {
                         g_curSpeed = XUD_SPEED_FS;
                         g_txHandshakeTimeout = FS_TX_HANDSHAKE_TIMEOUT;
                         XUD_HAL_EnterMode_PeripheralFullSpeed(); //Technically not required since we should already be in FS mode..
-    #else 
-                        #error XUD_TEST_SPEED_ must be defined if using XUD_BYPASS_RESET!
-    #endif
+                    }
 #else
                     if(g_desSpeed == XUD_SPEED_HS)
                     {
@@ -419,7 +404,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epChans[],  chanend ?c
             /* flag0: Rx Error
                flag1: Rx Active
                flag2: Null / Valid Token  */
-            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag0_port, flag2_port, epTypeTableOut, epTypeTableIn, epChans, noEpOut, c_sof);
+            noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag0_port, flag2_port, epTypeTableOut, epTypeTableIn, epAddr_Ready, noEpOut, c_sof);
             
             set_thread_fast_mode_off();
  
@@ -472,90 +457,103 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 XUD_BusSpeed_t speed, XUD_PwrConfig pwrConfig)
 {
-    /* Arrays for channels... */
-    /* TODO use two arrays? */
-
     g_desSpeed = speed;
-
-    for (int i=0; i < USB_MAX_NUM_EP;i++)
-    {
-        epChans[i] = 0;
-    }
 
     for(int i = 0; i < USB_MAX_NUM_EP_OUT; i++)
     {
-        handshakeTable_OUT[i] = USB_PIDn_NAK;
+        unsigned x;
+        epAddr_Ready[i] = 0;
+        epAddr_Ready[i+USB_MAX_NUM_EP] = 0; //epAddr_Ready_Setup
         ep_info[i].epAddress = i;
         ep_info[i].resetting = 0;
+
+        /* Mark all EP's as halted, we might later clear this if the EP is in use */
+        ep_info[i].halted = USB_PIDn_STALL;
+
+        asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"(i*sizeof(XUD_ep_info)/sizeof(unsigned)));
+        epAddr[i] = x;
     }
 
     for(int i = 0; i < USB_MAX_NUM_EP_IN; i++)
     {
-        handshakeTable_IN[i] = 0;
+        unsigned x;
+        ep_info[i].epAddress = i;
+        epAddr_Ready[USB_MAX_NUM_EP_OUT+i] = 0;
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
+        ep_info[USB_MAX_NUM_EP_OUT+i].halted = USB_PIDn_STALL;
+        
+        asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
+        epAddr[USB_MAX_NUM_EP_OUT+i] = x;
     }
 
-    /* Populate arrays of channels and status flag tabes */
+    /* Populate arrays of channels and status flag tables */
+    /* Note, if the epTypeTables don't match the provided size there could be trouble.. */
     for(int i = 0; i < noEpOut; i++)
     {
-      if(epTypeTableOut[i] != XUD_EPTYPE_DIS)
-      {
-        unsigned x;
-        epChans0[i] = XUD_Sup_GetResourceId(c_ep_out[i]);
+        if(epTypeTableOut[i] != XUD_EPTYPE_DIS)
+        {
+            unsigned x;
+            epChans0[i] = XUD_Sup_GetResourceId(c_ep_out[i]);
 
-        asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(i));
-        ep_info[i].chan_array_ptr = x;
+            asm("ldaw %0, %1[%2]":"=r"(x):"r"(epAddr_Ready),"r"(i));
+            ep_info[i].array_ptr = x;
+            ep_info[i].saved_array_ptr = 0;
 
-        asm("mov %0, %1":"=r"(x):"r"(c_ep_out[i]));
-        ep_info[i].ep_xud_chanend = x;
+            asm("ldaw %0, %1[%2]":"=r"(x):"r"(epAddr_Ready),"r"(i+USB_MAX_NUM_EP)); //epAddr_Ready_Setup
+            ep_info[i].array_ptr_setup = x;
 
-        asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_out[i]));
-        ep_info[i].ep_client_chanend = x;
+            asm("mov %0, %1":"=r"(x):"r"(c_ep_out[i]));
+            ep_info[i].xud_chanend = x;
 
-        asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"(i*sizeof(XUD_ep_info)/sizeof(unsigned)));
-        outuint(c_ep_out[i], x);
+            asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_out[i]));
+            ep_info[i].client_chanend = x;
 
-        epStatFlagTableOut[i] = epTypeTableOut[i] & XUD_STATUS_ENABLE;
-        epTypeTableOut[i] = epTypeTableOut[i] & 0x7FFFFFFF;
+            epStatFlagTableOut[i] = epTypeTableOut[i] & XUD_STATUS_ENABLE;
+            epTypeTableOut[i] = epTypeTableOut[i] & 0x7FFFFFFF;
 
-        ep_info[i].epType = epTypeTableOut[i];
+            ep_info[i].epType = epTypeTableOut[i];
+            ep_info[i].halted = USB_PIDn_NAK;      // Mark EP as not halted
 
 #ifdef __XS3A__
-        ep_info[i].pid = USB_PIDn_DATA0;
+            ep_info[i].pid = USB_PIDn_DATA0;
 #else
-        ep_info[i].pid = USB_PID_DATA0;
+            ep_info[i].pid = USB_PID_DATA0;
 #endif
-      }
+            asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"(i*sizeof(XUD_ep_info)/sizeof(unsigned)));
+            outuint(c_ep_out[i], x);
+        }
     }
 
     for(int i = 0; i< noEpIn; i++)
     {
-      if(epTypeTableIn[i] != XUD_EPTYPE_DIS)
-      {
-        int x;
-        epChans0[i+USB_MAX_NUM_EP_OUT] = XUD_Sup_GetResourceId(c_ep_in[i]);
+        if(epTypeTableIn[i] != XUD_EPTYPE_DIS)
+        {
+            int x;
+            epChans0[i+USB_MAX_NUM_EP_OUT] = XUD_Sup_GetResourceId(c_ep_in[i]);
 
-        asm("ldaw %0, %1[%2]":"=r"(x):"r"(epChans),"r"(USB_MAX_NUM_EP_OUT+i));
-        ep_info[USB_MAX_NUM_EP_OUT+i].chan_array_ptr = x;
+            asm("ldaw %0, %1[%2]":"=r"(x):"r"(epAddr_Ready),"r"(USB_MAX_NUM_EP_OUT+i));
+            ep_info[USB_MAX_NUM_EP_OUT+i].array_ptr = x;
+            ep_info[USB_MAX_NUM_EP_OUT+i].saved_array_ptr = 0;
 
-        asm("mov %0, %1":"=r"(x):"r"(c_ep_in[i]));
-        ep_info[USB_MAX_NUM_EP_OUT+i].ep_xud_chanend = x;
+            asm("mov %0, %1":"=r"(x):"r"(c_ep_in[i]));
+            ep_info[USB_MAX_NUM_EP_OUT+i].xud_chanend = x;
 
-        asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_in[i]));
-        ep_info[USB_MAX_NUM_EP_OUT+i].ep_client_chanend = x;
+            asm("getd %0, res[%1]":"=r"(x):"r"(c_ep_in[i]));
+            ep_info[USB_MAX_NUM_EP_OUT+i].client_chanend = x;
 
-        asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
+            ep_info[USB_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
 
-        outuint(c_ep_in[i], x);
+            epStatFlagTableIn[i] = epTypeTableIn[i] & XUD_STATUS_ENABLE;
+            epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;
 
-        ep_info[USB_MAX_NUM_EP_OUT+i].pid = USB_PIDn_DATA0;
+            ep_info[USB_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
+            
+            ep_info[USB_MAX_NUM_EP_OUT+i].halted = 0;    // Mark EP as not halted
 
-        epStatFlagTableIn[i] = epTypeTableIn[i] & XUD_STATUS_ENABLE;
-        epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;
-
-        ep_info[USB_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
-      }
+            asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
+            outuint(c_ep_in[i], x);
+        }
     }
 
     /* EpTypeTable Checks.  Note, currently this is not too crucial since we only really care if the EP is ISO or not */
@@ -570,19 +568,19 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     /* Check that if the required channel has a destination if the EP is marked as in use */
     for( int i = 0; i < noEpOut + noEpIn; i++ )
     {
-        if( XUD_Sup_getd( epChans[i] )  == 0 && epTypeTableOut[i] != XUD_EPTYPE_DIS )
+        if( XUD_Sup_getd( epAddr_Ready[i] )  == 0 && epTypeTableOut[i] != XUD_EPTYPE_DIS )
             XUD_Error_hex("XUD_Manager: OUT Ep marked as in use but chanend has no dest: ", i);
     }
 
     for( int i = 0; i < noEpOut + noEpIn; i++ )
     {
-        if( XUD_Sup_getd( epChans[i + XUD_EP_COUNT ] )  == 0 && epTypeTableIn[i] != XUD_EPTYPE_DIS )
+        if( XUD_Sup_getd( epAddr_Ready[i + XUD_EP_COUNT ] )  == 0 && epTypeTableIn[i] != XUD_EPTYPE_DIS )
             XUD_Error_hex("XUD_Manager: IN Ep marked as in use but chanend has no dest: ", i);
     }
 #endif
 
     /* Run the main XUD loop */
-    XUD_Manager_loop(epChans0, epChans, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, pwrConfig);
+    XUD_Manager_loop(epChans0, epAddr_Ready, c_sof, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, pwrConfig);
 
     // Need to close, drain, and check - three stages.
     for(int i = 0; i < 2; i++)
@@ -593,4 +591,19 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
     return 0;
 }
+
+/* Legacy API support */
+int XUD_Manager(chanend c_epOut[], int noEpOut,
+                chanend c_epIn[], int noEpIn,
+                NULLABLE_RESOURCE(chanend, c_sof),
+                XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
+                NULLABLE_RESOURCE(port, p_usb_rst),
+                NULLABLE_RESOURCE(clock, clk),
+                unsigned rstMask,
+                XUD_BusSpeed_t desiredSpeed,
+                XUD_PwrConfig pwrConfig)
+{
+    return XUD_Main(c_epOut, noEpOut, c_epIn, noEpIn, c_sof, epTypeTableOut, epTypeTableIn, desiredSpeed, pwrConfig); //NOCOVER
+}
+
 

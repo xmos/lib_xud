@@ -1,4 +1,4 @@
-# Copyright 2021 XMOS LIMITED.
+# Copyright 2021-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 from usb_packet import USB_DATA_VALID_COUNT
@@ -87,25 +87,25 @@ class UsbSession:
     def data_pid_in(self, n, togglePid=True, resetDataPid=False):
 
         if resetDataPid:
-            self._pidTable_in[n] = usb_packet.USB_PID["DATA1"]
-            pid = self._pidTable_in[n]
-            return pid
+            self._pidTable_in[n] = usb_packet.USB_PID["DATA0"]
 
         pid = self._pidTable_in[n]
+
         if togglePid:
             self._pid_toggle(self._pidTable_in, n)
+
         return pid
 
     def data_pid_out(self, n, togglePid=True, resetDataPid=False):
 
         if resetDataPid:
-            self._pidTable_out[n] = usb_packet.USB_PID["DATA1"]
-            pid = self._pidTable_out[n]
-            return pid
+            self._pidTable_out[n] = usb_packet.USB_PID["DATA0"]
 
         pid = self._pidTable_out[n]
+
         if togglePid:
             self._pid_toggle(self._pidTable_out, n)
+
         return pid
 
     def __str__(self):

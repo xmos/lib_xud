@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import os
 import sys
@@ -8,11 +8,9 @@ from Pyxsim import testers
 from usb_clock import Clock
 from usb_phy_utmi import UsbPhyUtmi
 import Pyxsim
+import subprocess
 
-ARCHITECTURE_CHOICES = ["xs2", "xs3"]
-BUSSPEED_CHOICES = ["FS", "HS"]
 args = {"arch": "xs3"}
-clean_only = False
 
 
 def create_if_needed(folder):
@@ -22,16 +20,15 @@ def create_if_needed(folder):
 
 
 def get_usb_clk_phy(
-    coreFreqMhz,
     verbose=True,
     do_timeout=True,
     complete_fn=None,
-    dut_exit_time=350000,
+    dut_exit_time=350000 * 1000 * 1000,  # in fs
     arch="xs2",
 ):
 
     if arch == "xs2":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -51,7 +48,7 @@ def get_usb_clk_phy(
         )
 
     elif arch == "xs3":
-        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz, coreFreqMhz)
+        clk = Clock("XS1_USB_CLK", Clock.CLK_60MHz)
         phy = UsbPhyUtmi(
             "XS1_USB_RXD",
             "XS1_USB_RXA",  # rxa
@@ -76,13 +73,6 @@ def get_usb_clk_phy(
     return (clk, phy)
 
 
-def run_on_simulator(xe, simthreads, **kwargs):
-    for k in ["do_xe_prebuild", "build_env", "clean_before_build"]:
-        if k in kwargs:
-            kwargs.pop(k)
-    Pyxsim.run_with_pyxsim(xe, simthreads, **kwargs)
-
-
 def run_on(**kwargs):
 
     for name, value in kwargs.items():
@@ -93,13 +83,26 @@ def run_on(**kwargs):
     return True
 
 
-FIXTURE_TO_DEFINE = {
+def generate_elf_disasm(binary, split_dir, disasm):
+    cmd_elf = (
+        "xobjdump --split " + binary + " --split-dir " + split_dir + " > /dev/null 2>&1"
+    )
+    cmd_disasm = "xobjdump -S " + binary + " -o " + disasm
+    try:
+        subprocess.run(cmd_elf, shell=True, check=True)
+        subprocess.run(cmd_disasm, shell=True, check=True)
+    except:
+        print("Error running build disasm")
+        sys.exit(1)
+
+
+FIXTURE_TO_BUILD_OPTION = {
     "core_freq": "TEST_FREQ",
     "arch": "TEST_ARCH",
     "dummy_threads": "TEST_DTHREADS",
     "ep": "TEST_EP_NUM",
-    "address": "XUD_STARTUP_ADDRESS",
-    "bus_speed": "BUS_SPEED",
+    "address": "TEST_ADDRESS",
+    "bus_speed": "TEST_BUS_SPEED",
 }
 
 
@@ -116,36 +119,41 @@ def do_usb_test(
     test_file,
     extra_tasks=[],
     verbose=False,
+    capfd=None,
 ):
     build_options = []
 
+    xcov = eval(os.getenv("xcov"))
+
     # Flags for makefile
-    for k, v in FIXTURE_TO_DEFINE.items():
+    for k, v in FIXTURE_TO_BUILD_OPTION.items():
         build_options += [str(v) + "=" + str(locals()[k])]
-
-    # Defines for DUT code
-    # TODO shoud the makefile set thease based on the above?
-    build_options_str = "CFLAGS="
-    for k, v in FIXTURE_TO_DEFINE.items():
-        build_options_str += "-D" + str(v) + "=" + str(locals()[k]) + " "
-
-    build_options = build_options + [build_options_str]
 
     # Shared test code for all RX tests using the test_rx application
     testname, _ = os.path.splitext(os.path.basename(test_file))
-    tester_list = []
 
     desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
     binary = f"{testname}/bin/{desc}/{testname}_{desc}.xe"
 
     # Do not need to clean since different build will different params go to
     # separate binaries
+    if eval(os.getenv("clean")):
+        clean_only = True
+    else:
+        clean_only = False
+
     build_success, _ = Pyxsim._build(
-        binary, do_clean=False, build_options=build_options
+        binary, do_clean=False, clean_only=clean_only, build_options=build_options
     )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
     if build_success:
+
+        if eval(os.getenv("xcov")):
+            split_dir = f"{testname}/bin/{desc}/"
+            disasm = f"{testname}/bin/{desc}/{testname}_{desc}.dump"
+            generate_elf_disasm(binary, split_dir, disasm)
+
         for session in sessions:
 
             phy.session = session
@@ -160,22 +168,19 @@ def do_usb_test(
 
             create_expect(session, expect_filename, verbose=verbose)
 
-            tester = testers.ComparisonTester(
-                open(expect_filename),
-                "lib_xud",
-                "xud_sim_tests",
-                testname,
-                {"clk": clk.get_name(), "arch": arch, "speed": bus_speed},
-            )
+            tester = testers.ComparisonTester(open(expect_filename))
 
-            tester_list.append(tester)
-            simargs = get_sim_args(testname, clk, arch)
+            simargs = get_sim_args(testname, desc)
             simthreads = [clk, phy] + extra_tasks
-            run_on_simulator(binary, simthreads, simargs=simargs)
+            return Pyxsim.run_on_simulator_(
+                binary,
+                simthreads=simthreads,
+                tester=tester,
+                simargs=simargs,
+                capfd=capfd,
+            )
     else:
-        tester_list.append("Build Failed")
-
-    return tester_list
+        return False
 
 
 def create_expect(session, filename, verbose=False):
@@ -205,24 +210,31 @@ def create_expect(session, filename, verbose=False):
             print("Test done\n")
 
 
-def get_sim_args(testname, clk, arch="xs2"):
+def get_sim_args(testname, desc):
     sim_args = []
 
-    if eval(os.getenv("enabletracing")):
+    instTracing = eval(os.getenv("enabletracing"))
+    vcdTracing = eval(os.getenv("enablevcdtracing"))
+
+    if instTracing or vcdTracing:
+
         log_folder = create_if_needed("logs")
 
-        filename = "{log}/xsim_trace_{test}_{clk}_{arch}".format(
+        filename = "{log}/xsim_trace_{test}_{desc}".format(
             log=log_folder,
             test=testname,
-            clk=clk.get_name(),
-            arch=arch,
+            desc=desc,
         )
+
+    if instTracing:
 
         sim_args += [
             "--trace-to",
             "{0}.txt".format(filename),
             "--enable-fnop-tracing",
         ]
+
+    if vcdTracing:
 
         vcd_args = "-o {0}.vcd".format(filename)
         vcd_args += (

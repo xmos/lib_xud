@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 from copy import deepcopy
 
@@ -14,6 +14,7 @@ from usb_packet import (
     USB_PID,
 )
 from usb_session import UsbSession
+from usb_transaction import UsbTransaction
 
 # Only test on EP 0 - Update params
 PARAMS = deepcopy(PARAMS)
@@ -29,93 +30,93 @@ def test_session(ep, address, bus_speed):
     trafficAddress1 = (address + 1) % 128
     trafficAddress2 = (address + 127) % 128
 
+    start_length = 0
+    end_length = start_length + 10
+
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    # SETUP to another address (Note, DUT would not see ACK)
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["SETUP"],
-            address=trafficAddress1,
-            endpoint=ep,
-        )
-    )
-    session.add_event(
-        TxDataPacket(
-            dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
-            pid=USB_PID["DATA0"],
-        )
-    )
+    for pktLength in range(start_length, end_length):
 
-    # SETUP transaction to DUT
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["SETUP"],
-            address=address,
-            endpoint=ep,
+        # SETUP to another address (Note, DUT would not see ACK)
+        session.add_event(
+            TokenPacket(
+                pid=USB_PID["SETUP"],
+                address=trafficAddress1,
+                endpoint=ep,
+                interEventDelay=ied,
+            )
         )
-    )
-    session.add_event(
-        TxDataPacket(
-            dataPayload=session.getPayload_out(ep, 8),
-            pid=USB_PID["DATA0"],
+        session.add_event(
+            TxDataPacket(
+                dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
+                pid=USB_PID["DATA0"],
+                interEventDelay=ied,
+            )
         )
-    )
-    session.add_event(RxHandshakePacket())
 
-    # IN transaction
-    # Note, quite big gap to avoid nak
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["IN"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=10000,
+        session.add_event(
+            UsbTransaction(
+                session,
+                deviceAddress=address,
+                endpointNumber=ep,
+                endpointType="CONTROL",
+                transType="SETUP",
+                dataLength=8,
+                interEventDelay=ied,
+            )
         )
-    )
-    session.add_event(
-        RxDataPacket(
-            dataPayload=session.getPayload_in(ep, 10),
-            pid=USB_PID["DATA1"],
-        )
-    )
-    session.add_event(TxHandshakePacket())
 
-    # SETUP to another address (Note, DUT would not see ACK)
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["SETUP"],
-            address=trafficAddress2,
-            endpoint=ep,
+        session.add_event(
+            UsbTransaction(
+                session,
+                deviceAddress=address,
+                endpointNumber=ep,
+                endpointType="CONTROL",
+                transType="IN",
+                dataLength=pktLength,
+                interEventDelay=ied,
+            )
         )
-    )
-    session.add_event(
-        TxDataPacket(
-            dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
-            pid=USB_PID["DATA0"],
-        )
-    )
 
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["IN"],
-            address=trafficAddress2,
-            endpoint=ep,
-            interEventDelay=1000,
+        # SETUP to another address (Note, DUT would not see ACK)
+        session.add_event(
+            TokenPacket(
+                pid=USB_PID["SETUP"],
+                address=trafficAddress2,
+                endpoint=ep,
+                interEventDelay=ied,
+            )
         )
-    )
+        session.add_event(
+            TxDataPacket(
+                dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
+                pid=USB_PID["DATA0"],
+                interEventDelay=ied,
+            )
+        )
 
-    # Send 0 length OUT transaction
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["OUT"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=ied,
+        session.add_event(
+            TokenPacket(
+                pid=USB_PID["IN"],
+                address=trafficAddress2,
+                endpoint=ep,
+                interEventDelay=1000,
+            )
         )
-    )
-    session.add_event(TxDataPacket(length=0, pid=USB_PID["DATA1"]))
-    session.add_event(RxHandshakePacket())
+
+        # Send 0 length OUT transaction
+        session.add_event(
+            UsbTransaction(
+                session,
+                deviceAddress=address,
+                endpointNumber=ep,
+                endpointType="CONTROL",
+                transType="OUT",
+                dataLength=0,
+                interEventDelay=ied,
+            )
+        )
 
     return session

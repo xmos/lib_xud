@@ -12,10 +12,10 @@ APP_NAME = app_test_and_measurement
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to
 # xcc for the final link (mapping) stage.
 
-BUILD_FLAGS = -O3 -report
+BUILD_FLAGS = -O3 -report -fxscope
 
-XCC_FLAGS_200 = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=500
-XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600
+XCC_FLAGS_200 = $(BUILD_FLAGS)
+XCC_FLAGS_AI = $(BUILD_FLAGS)
 
 # The TARGET variable determines what target system the application is
 # compiled for. It either refers to an XN file in the source directories
@@ -23,8 +23,14 @@ XCC_FLAGS_AI = $(BUILD_FLAGS) -DXUD_CORE_CLOCK=600
 
 ifeq ($(CONFIG),AI)
 TARGET = XCORE-AI-EXPLORER
+EXCLUDE_FILES = main.c
+else ifeq ($(CONFIG),AI_C)
+TARGET = XCORE-AI-EXPLORER
+EXCLUDE_FILES = main.xc \
+				usbtmc_endpoints.xc
 else
 TARGET = XCORE-200-EXPLORER
+EXCLUDE_FILES = main.c
 endif
 
 # The USED_MODULES variable lists other module used by the application.

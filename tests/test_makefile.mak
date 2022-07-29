@@ -12,7 +12,7 @@ APP_NAME =
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to
 # xcc for the final link (mapping) stage.
 
-SHARED_CODE = ../../shared_src
+SHARED_CODE = ../../shared
 
 COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
 			   -O3 \
@@ -20,7 +20,6 @@ COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
 			   -I$(SHARED_CODE) \
 			   -DUSB_TILE=tile[0] \
 			   -DXUD_SIM_XSIM=1 \
-			   -DXUD_TEST_SPEED_HS=1 \
 			   -Xmapper --retain \
 			   -g \
 			   -save-temps \
@@ -44,11 +43,28 @@ ifndef TEST_EP_NUM
 $(error TEST_EP_NUM is not set)
 endif
 
-ifndef XUD_STARTUP_ADDRESS
-$(error XUD_STARTUP_ADDRESS is not set)
+ifndef TEST_ADDRESS
+$(error TEST_ADDRESS is not set)
 endif
 
-XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM)_$(XUD_STARTUP_ADDRESS)_$(BUS_SPEED) = $(TEST_FLAGS) $(COMMON_FLAGS) 
+ifndef TEST_BUS_SPEED
+$(error TEST_BUS_SPEED is not set)
+endif
+
+ifeq ($(TEST_BUS_SPEED), FS)
+TEST_BUS_SPEED_INT = 1
+else
+TEST_BUS_SPEED_INT = 2
+endif
+
+SOURCE_DIRS = ./src ../shared/src
+
+
+XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM)_$(TEST_ADDRESS)_$(TEST_BUS_SPEED) = $(TEST_FLAGS) $(COMMON_FLAGS) \
+	-DXUD_TEST_SPEED=$(TEST_BUS_SPEED_INT) \
+	-DXUD_STARTUP_ADDRESS=$(TEST_ADDRESS) \
+	-DTEST_DTHREADS=$(TEST_DTHREADS) \
+	-DTEST_EP_NUM=$(TEST_EP_NUM)
 
 # The TARGET variable determines what target system the application is 
 # compiled for. It either refers to an XN file in the source directories

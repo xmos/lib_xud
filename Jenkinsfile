@@ -1,10 +1,10 @@
-@Library('xmos_jenkins_shared_library@v0.16.2') _
+@Library('xmos_jenkins_shared_library@v0.18.0') _
 
 getApproval()
 
 pipeline {
   agent {
-    label 'x86_64 && brew && macOS'
+    label 'x86_64 && macOS'
   }
   environment {
     REPO = 'lib_xud'
@@ -12,6 +12,12 @@ pipeline {
   }
   options {
     skipDefaultCheckout()
+    timestamps()
+    // on develop discard builds after a certain number else keep forever
+    buildDiscarder(logRotator(
+        numToKeepStr:         env.BRANCH_NAME ==~ /develop/ ? '100' : '',
+        artifactNumToKeepStr: env.BRANCH_NAME ==~ /develop/ ? '100' : ''
+    ))
   }
   stages {
     stage('Get view') {
@@ -37,11 +43,25 @@ pipeline {
         archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
       }
     }
-    // stage('Tests') {
-    //   steps {
-    //     runXmostest("${REPO}", 'tests')
-    //   }
-    // }
+    stage('Tests') 
+    {
+      steps {
+        dir("${REPO}/tests"){
+          viewEnv(){
+            withVenv{
+                runPytest('--numprocesses=4 --smoke --enabletracing')
+            }
+          }
+        }
+      }
+       post 
+       {
+        failure 
+        {
+          archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
+        }
+      }
+    }
   }
   post {
     success {

@@ -73,9 +73,9 @@ To start using the USB library, you need to add ``lib_xud`` to your makefile::
 
 	USED_MODULES = ... lib_xud lib_logging
 
-You can then access the USB functions in your source code via the usb_device.h header file::
+You can then access the USB functions in your source code via the xud_device.h header file::
 
-	#include <usb_device.h>
+	#include "xud_device.h"
 
 Declaring resource and setting up the USB components
 ....................................................
@@ -223,17 +223,16 @@ From this you can see the following.
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect the xCORE-USB sliceKIT USB-B and xTAG-2 USB-A
-connectors to separate USB connectors on your development PC. 
+To run the demo, connect the xCORE-200 EXPLORER board and xTAG
+to your development PC via USB (A to micro-b) cables. 
 
-On the xCORE-USB sliceKIT ensure that the xCONNECT LINK switch is set to ON, as per the image, 
-to allow xSCOPE to function. The use of xSCOPE is required in this application so 
+Note, the use of xSCOPE is required in this application so 
 that the print messages that are generated on the device as part of the demo
 do not interfere with the real-time behavior of the USB device.
 
-.. figure:: images/usb-slicekit.*
+.. figure:: images/explorerkit-200.*
 
-	XMOS xCORE-USB sliceKIT
+	XMOS xCORE-200 EXPLORER Board
 
 The hardware should be configured as displayed above for this demo:
 
@@ -243,9 +242,7 @@ The hardware should be configured as displayed above for this demo:
   - The xCORE-USB core board should have a USB cable connecting the device
     to the host machine
 
-  - The xSCOPE switch on the board should be set to the on position
-
-  - The xCORE-USB core board should have the power cable connected
+  - The xCORE-200 EXPLORER board required an additonal USB cable to provide 5V power
 
 |newpage|
 
@@ -254,7 +251,7 @@ Launching the demo device
 
 Once the demo example has been built either from the command line using
 xmake or via the build mechanism of xTIMEcomposer studio the application
-can be executed on the xCORE-USB sliceKIT. 
+can be executed on the xCORE EXPLORER board. 
 
 Once built there will be a ``bin`` directory within the project which
 contains the binary for the xCORE device. The xCORE binary has a XMOS standard 

@@ -1,4 +1,4 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* lib_xud simple bulk loopback test */
@@ -16,7 +16,6 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_E
 #if (KILL_EP >= EP_COUNT_OUT) || (KILL_EP >= EP_COUNT_IN) 
 #error KILL EP OUT OF RANGE
 #endif
-
 
 /* Loopback packet and terminate program */
 #pragma unsafe arrays

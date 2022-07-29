@@ -32,10 +32,10 @@ int main()
 #endif
 {
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
-            
+
     par
     {
-        { 
+        {
             XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                 null, epTypeTableOut, epTypeTableIn,
                 XUD_TEST_SPEED, XUD_PWR_BUS);
@@ -54,12 +54,12 @@ int main()
 
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);
-            
+
             if(fail)
                 TerminateFail(fail);
             else
-                TerminatePass(fail);    
-            
+                TerminatePass(fail);
+
         }
     }
 

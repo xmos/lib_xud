@@ -28,7 +28,7 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_E
 unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
     unsigned fail[4];
-    
+
     par
     {
         fail[0] = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PACKET_LEN_START, PACKET_LEN_END);

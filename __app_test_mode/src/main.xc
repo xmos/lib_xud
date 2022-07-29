@@ -9,7 +9,7 @@
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL};
 
- 
+
 int main()
 {
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];

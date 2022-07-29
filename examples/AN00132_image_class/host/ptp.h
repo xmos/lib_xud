@@ -466,7 +466,7 @@ typedef struct _PTPObjectInfo PTPObjectInfo;
 #define PTP_DPC_NIKON_E3AAFlashMode			0xD076
 #define PTP_DPC_NIKON_E4ModelingFlash			0xD077
 #define PTP_DPC_NIKON_BracketSet			0xD078
-#define PTP_DPC_NIKON_E6ManualModeBracketing		0xD079	
+#define PTP_DPC_NIKON_E6ManualModeBracketing		0xD079
 #define PTP_DPC_NIKON_BracketOrder			0xD07A
 #define PTP_DPC_NIKON_E8AutoBracketSelection		0xD07B
 #define PTP_DPC_NIKON_BracketingSet			0xD07C

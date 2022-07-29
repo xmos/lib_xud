@@ -20,13 +20,13 @@
                                                             // R4 set to 0 in L code with in from valid tok port
     {eq         r4, r4, r8;        shr         r10, r11, 7} // Extract EP number
     BRFT_ru6    r4,  5
-    
-    ldw         r11, sp[STACK_RXA_PORT]                     // Wait for RXA to gow low (i.e. end of packet) 
+
+    ldw         r11, sp[STACK_RXA_PORT]                     // Wait for RXA to gow low (i.e. end of packet)
     in          r10, res[r11]
     bt          r10, waitforRXALow0
     setc        res[RXD], XS1_SETC_RUN_CLRBUF
     bu          Loop_BadPid
-#else 
+#else
     // __XS2A__
     inpw      r10, res[RXD], 8;                             // Read EP Number
     shr       r10, r10, 24;                                 // Shift off junk

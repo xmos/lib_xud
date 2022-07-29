@@ -26,23 +26,23 @@ int TestEp_Control(XUD_ep ep0_out, XUD_ep ep0_in, int epNum)
         unsafe
         {
             GenTxPacketBuffer(buffer, i, epNum);
-           
+
             /* Wait for Setup data */
             sres = XUD_GetSetupBuffer(ep0_out, sbuffer, slength);
 
             res = XUD_DoGetRequest(ep0_out, ep0_in, buffer, i, i);
 
-            /* Do some checking */ 
+            /* Do some checking */
             if(slength != 8)
             {
                 return FAIL_RX_DATAERROR;
             }
-              
+
             if(res != XUD_RES_OKAY)
             {
                 return FAIL_RX_BAD_RETURN_CODE;
             }
-            
+
             if(sres != XUD_RES_OKAY)
             {
                 return FAIL_RX_BAD_RETURN_CODE;

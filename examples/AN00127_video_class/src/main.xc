@@ -36,7 +36,7 @@ int main() {
     par
     {
         on USB_TILE: XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
-                      null, epTypeTableOut, epTypeTableIn, 
+                      null, epTypeTableOut, epTypeTableIn,
                       XUD_SPEED_HS, XUD_PWR_BUS);
 
         on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);

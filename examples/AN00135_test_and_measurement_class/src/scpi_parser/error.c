@@ -2,7 +2,7 @@
  * Copyright (c) 2012-2013 Jan Breuer,
  *
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,10 +28,10 @@
 /**
  * @file   scpi_error.c
  * @date   Thu Nov 15 10:58:45 UTC 2012
- * 
+ *
  * @brief  Error handling and storing routines
- * 
- * 
+ *
+ *
  */
 
 #include <stdint.h>
@@ -95,7 +95,7 @@ int16_t SCPI_ErrorPop(scpi_t * context) {
 /**
  * Return number of errors/events in the queue
  * @param context
- * @return 
+ * @return
  */
 int32_t SCPI_ErrorCount(scpi_t * context) {
     int16_t result = 0;
@@ -176,7 +176,7 @@ const char * SCPI_ErrorTranslate(int16_t err) {
         case 0: return "No error";
         #define X(def, val, str) case def: return str;
         LIST_OF_ERRORS
-        #undef X        
+        #undef X
         default: return "Unknown error";
     }
 }

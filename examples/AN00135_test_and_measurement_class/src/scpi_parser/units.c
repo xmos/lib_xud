@@ -2,7 +2,7 @@
  * Copyright (c) 2012-2013 Jan Breuer,
  *
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,10 +28,10 @@
 /**
  * @file   scpi_units.c
  * @date   Thu Nov 15 10:58:45 UTC 2012
- * 
+ *
  * @brief  SCPI units
- * 
- * 
+ *
+ *
  */
 
 #include <string.h>
@@ -155,7 +155,7 @@ static const char * translateSpecialNumberInverse(const scpi_special_number_def_
     if (specs == NULL) {
         return NULL;
     }
-    
+
     for (i = 0; specs[i].name != NULL; i++) {
         if (specs[i].type == type) {
             return specs[i].name;
@@ -174,11 +174,11 @@ static const char * translateSpecialNumberInverse(const scpi_special_number_def_
  */
 static const scpi_unit_def_t * translateUnit(const scpi_unit_def_t * units, const char * unit, size_t len) {
     int i;
-    
+
     if (units == NULL) {
         return NULL;
     }
-    
+
     for (i = 0; units[i].name != NULL; i++) {
         if (compareStr(unit, len, units[i].name, strlen(units[i].name))) {
             return &units[i];
@@ -196,11 +196,11 @@ static const scpi_unit_def_t * translateUnit(const scpi_unit_def_t * units, cons
  */
 static const char * translateUnitInverse(const scpi_unit_def_t * units, const scpi_unit_t unit) {
     int i;
-    
+
     if (units == NULL) {
         return NULL;
     }
-    
+
     for (i = 0; units[i].name != NULL; i++) {
         if ((units[i].unit == unit) && (units[i].mult == 1)) {
             return units[i].name;
@@ -246,7 +246,7 @@ static scpi_bool_t transformNumber(scpi_t * context, const char * unit, size_t l
  * @param context
  * @param value return value
  * @param mandatory if the parameter is mandatory
- * @return 
+ * @return
  */
 scpi_bool_t SCPI_ParamNumber(scpi_t * context, scpi_number_t * value, scpi_bool_t mandatory) {
     scpi_bool_t result;

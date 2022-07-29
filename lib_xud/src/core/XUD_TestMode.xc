@@ -35,9 +35,9 @@ int XUD_UsbTestModeHandler(unsigned cmd)
     switch(cmd)
     {
         case USB_WINDEX_TEST_J:
-          
+
             XUD_HAL_EnterMode_PeripheralTestJTestK();
-            
+
             while(1)
             {
                 p_usb_txd <: 0xffffffff;
@@ -45,9 +45,9 @@ int XUD_UsbTestModeHandler(unsigned cmd)
             break;
 
         case USB_WINDEX_TEST_K:
-            
+
             XUD_HAL_EnterMode_PeripheralTestJTestK();
-            
+
             while(1)
             {
                 p_usb_txd <: 0;
@@ -57,7 +57,7 @@ int XUD_UsbTestModeHandler(unsigned cmd)
         case USB_WINDEX_TEST_SE0_NAK:
 
             XUD_HAL_EnterMode_PeripheralHighSpeed();
-            
+
             /* Drop into asm to deal with this mode */
             XUD_UsbTestSE0();
             break;

@@ -18,12 +18,12 @@ int main()
     par
     {
         {
-          
+
 #ifndef XUD_TEST_SPEED
 #error XUD_TEST_SPEED must be defined
 #endif
 		 	const unsigned speed = XUD_TEST_SPEED;
-           
+
             const int epCountOut = sizeof(epTypeTableOut)/sizeof(epTypeTableOut[0]);
             const int epCountIn = sizeof(epTypeTableIn)/sizeof(epTypeTableIn[0]);
 

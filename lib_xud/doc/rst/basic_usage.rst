@@ -1,3 +1,5 @@
+|newpage|
+
 Basic Usage
 ===========
 
@@ -6,7 +8,7 @@ Basic use is termed to mean each endpoint runs in its own dedicated core.
 Multiple endpoints in a single core are possible, please see Advanced Usage.
 
 XUD Core: ``XUD_Main()``
----------------------------
+------------------------
 
 This is the main XUD task that interfaces with the USB transceiver.
 It performs power-signalling/handshaking on the USB bus, and passes packets
@@ -44,7 +46,7 @@ If the device is bus-powered ``XUD_PWR_BUS`` can be used since is assumed that t
 ``XUD_PWR_BUS`` can be used in order to run on a self-powered board without provision for VBUS wiring to the PHY/device, but this is not advised.
 
 Endpoint Communication with ``XUD_Main()``
----------------------------------------------
+------------------------------------------
 
 Communication state between a core and the XUD library is encapsulated
 in an opaque type:

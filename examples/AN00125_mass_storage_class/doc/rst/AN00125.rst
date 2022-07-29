@@ -45,7 +45,7 @@ USB Mass Storage Device Class application note
 
 The demo in this note uses the XMOS USB device library and shows a simple program that receives data from and sends data to the host.
 
-For the USB Mass storage device class application example, the system comprises three tasks running in separate logical cores of a xCORE-USB multicore microcontroller.
+For the USB Mass storage device class application example, the system comprises three tasks running in separate logical cores of a xCORE multicore microcontroller.
 
 The tasks perform the following operations.
   
@@ -68,9 +68,9 @@ To start using the USB library, you need to add **lib_xud** to your makefile::
 
 	USED_MODULES = lib_xud
 
-You can then access the USB functions on your source code via the **usb.h** header file::
+You can then access the USB functions on your source code via the **xud_device.h** header file::
 
-	#include <usb_device.h>
+	#include <xud_device.h>
 
 Declaring resource and setting up the USB components
 ....................................................
@@ -114,7 +114,7 @@ The USB ID values used for vendor id, product id and device version number are d
 USB Mass storage Class specific defines
 .......................................
 
-The USB Mass storage Class is configured in the file **endpoint0.xc**. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB mass storage device running on an xCORE-USB microcontroller.
+The USB Mass storage Class is configured in the file **endpoint0.xc**. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB mass storage device running on an xCORE microcontroller.
 
 .. literalinclude:: endpoint0.xc
    :start-on: /* USB Mass Storage
@@ -243,27 +243,26 @@ The below implementation does write/read operation onto the on-board serial flas
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect the xCORE-USB sliceKIT USB-B and xTAG-2 USB-A connectors to separate USB connectors on your development PC.
+To run the demo, connect the xCORE EXPLORER and xTAG USB recepticals to separate USB connectors on your development PC.
 
-On the xCORE-USB sliceKIT ensure that the xCONNECT LINK switch is set to ON, as per the image, to allow xSCOPE to function. The use of xSCOPE is required in this application so that the print message that are generated on the device as part of the demo do not interfere with the real-time behavior of the USB device. 
+Note, the application makes use use of xSCOPE (rather than JTAG) such that the print message that are generated on the device as part of the demo do not interfere with the real-time behavior of the USB device. 
 
-.. figure:: images/usb-slicekit.*
+.. figure:: images/explorerkit-200.*
   
-   XMOS xCORE-USB sliceKIT
+   XMOS xCORE-200 EXPLORER Board
 
 The hardware should be configured as displayed above for this demo:
  
   - The XTAG debug adapter should be connected to the XSYS connector and the XTAG USB cable should be connected to the host machine
-  - The xCORE-USB core board should have a USB cable connecting the device to the host machine
-  - The xSCOPE switch on the board should be set to the ON position
-  - The xCORE-USB core board should have the power cable connected
+  - The xCORE EXPLORER board should have a USB cable connecting the device to the host machine
 
 |newpage|
 
 Launching the demo device
 --------------------------
 
-Once the demo example has been built either from the command line using xmake or via the build mechanism of xTIMEcomposer studio the application can be executed on the xCORE-USB sliceKIT.
+Once the demo example has been built either from the command line using xmake or via the build mechanism of xTIMEcomposer studio the application can be executed on the xCORE-200 or xCORE.AI
+EXPLORER board.
 
 Once built there will be a bin directory within the project which contains the binary for the xCORE device. The xCORE binary has a XMOS standard .xe extension.
 

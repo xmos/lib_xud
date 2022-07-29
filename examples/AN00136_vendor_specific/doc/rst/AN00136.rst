@@ -141,7 +141,7 @@ USB Vendor Specific Class specific defines
 The USB Vendor Specific Class is configured in the file ``endpoint0.xc``. 
 Below there are a set of standard defines which are used to configure the 
 USB device descriptors to setup a USB vendor specific device running on an 
-xCORE-USB microcontroller.
+xCORE microcontroller.
 
 .. literalinclude:: endpoint0.xc
    :start-on: VENDOR_SPECIFIC_CLASS
@@ -223,32 +223,34 @@ From this you can see the following.
 |appendix|
 |newpage|
 
-Example Hardware Setup
-----------------------
+Demo Hardware Setup
+-------------------
 
-To run the example, connect the xCORE-USB sliceKIT USB-B and xTAG-2 USB-A
-connectors to separate USB connectors on your development PC. 
+To setup the demo hardware the following boards are required.
 
-On the xCORE-USB sliceKIT ensure that the xCONNECT LINK switch is set to ON, as per the image, 
-to allow xSCOPE to function. The use of xSCOPE is required in this application so 
-that the print messages that are generated on the device as part of the demo
-do not interfere with the real-time behavior of the USB device.
+  - xCORE-200 or xCORE.AI EXPLORER Board
+  - xTAG debug adaptor
+  - 1 x Micro-B USB cable
+  - The xCORE-200 EXPLORER board requires an additonal USB Micro-b cable to supply power
 
-.. figure:: images/usb-slicekit.*
+.. figure:: images/explorerkit-200.*
+   :scale: 110%
+   :align: center
 
-	XMOS xCORE-USB sliceKIT
+   XMOS xCORE-200 EXPLORER Board
 
-The hardware should be configured as displayed above for this demo:
+The hardware should be configured as follows for this demonstration:
 
   - The XTAG debug adapter should be connected to the XSYS connector and
-    the XTAG USB cable should be connected to the host machine
+    the XTAG USB should be connected to the host machine.
 
-  - The xCORE-USB core board should have a USB cable connecting the device
-    to the host machine
+  - The EXPLORER board should be connected to the host machine using a USB 
+    cable.
 
-  - The xSCOPE switch on the board should be set to the on position
+  - (The xCORE-200 EXPLOERE board should have the power supplied via the *5V IN* receptical)
 
-  - The xCORE-USB core board should have the power cable connected
+The use of xSCOPE is required in this application so that the print messages that are generated on 
+the device as part of the demo do not interfere with the real-time behavior of the USB device.
 
 |newpage|
 
@@ -309,7 +311,7 @@ Launching the demo application
 
 Once the demo example has been built either from the command line using
 xmake or via the build mechanism of xTIMEcomposer studio the applcation
-can be executed on the xCORE-USB sliceKIT. 
+can be executed on the xCORE-200 or xCORE.AI EXPLORER Board. 
 
 Once built there will be a ``bin`` directory within the project which
 contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
@@ -319,7 +321,7 @@ Launching from the command line
 ...............................
 
 From the command line the ``xrun`` tool is used to download code to the
-xCORE-USB device. Changing into the bin directory of the project
+xCORE device. Changing into the bin directory of the project
 the code can be executed on the xCORE microcontroller as follows::
 
 > xrun app_vendor_specific_demo.xe          <-- Download and execute the xCORE code

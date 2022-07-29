@@ -219,32 +219,34 @@ From this you can see the following.
 |appendix|
 |newpage|
 
-Example Hardware Setup
-----------------------
+Demo Hardware Setup
+-------------------
 
-To run the example, connect the xCORE-USB sliceKIT USB-B and xTAG-2 USB-A
-connectors to separate USB connectors on your development PC. 
+To setup the demo hardware the following boards are required.
 
-On the xCORE-USB sliceKIT ensure that the xCONNECT LINK switch is set to ON, as per the image, 
-to allow xSCOPE to function. The use of xSCOPE is required in this application so 
-that the print messages that are generated on the device as part of the demo
-do not interfere with the real-time behavior of the USB device.
+  - xCORE-200 or xCORE.AI EXPLORER board
+  - xTAG debug adaptor
+  - 1 x Micro-B USB cable
+  - The xCORE-200 EXPLOER board requires an additonal USB Micro-b cable to supply power
 
-.. figure:: images/usb-slicekit.*
+.. figure:: images/explorerkit-200.*
+   :scale: 110%
+   :align: center
 
-	XMOS xCORE-USB sliceKIT
+   XMOS xCORE-200 EXPLORER Board
 
-The hardware should be configured as displayed above for this demo:
+The hardware should be configured as follows for this demonstration:
 
   - The XTAG debug adapter should be connected to the XSYS connector and
-    the XTAG USB cable should be connected to the host machine
+    the XTAG USB should be connected to the host machine.
 
-  - The xCORE-USB core board should have a USB cable connecting the device
-    to the host machine
+  - The EXPLORER board should be connected to the host machine using a USB 
+    cable.
 
-  - The xSCOPE switch on the board should be set to the on position
+  - (The xCORE-200 EXPLORER board should have the power supplied via the *5V IN* receptical)
 
-  - The xCORE-USB core board should have the power cable connected
+The use of xSCOPE is required in this application so that the print messages that are generated on 
+the device as part of the demo do not interfere with the real-time behavior of the USB device.
 
 |newpage|
 

@@ -16,7 +16,6 @@ BUILD_FLAGS = -O3 -report -fxscope
 
 XCC_FLAGS_200 = $(BUILD_FLAGS)
 XCC_FLAGS_AI = $(BUILD_FLAGS)
-XCC_FLAGS_AI_C = $(BUILD_FLAGS)
 
 # The TARGET variable determines what target system the application is
 # compiled for. It either refers to an XN file in the source directories

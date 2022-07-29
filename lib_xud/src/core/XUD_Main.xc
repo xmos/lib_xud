@@ -430,34 +430,32 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 void _userTrapHandleRegister(void);
 
 #pragma unsafe arrays
-static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[]) {
-    for(int i = 0; i < n; i++) {
-        if(epTypeTable[i] != XUD_EPTYPE_DIS) {
-            switch(op) {
-            case 0:
-                outct(chans[i], XS1_CT_END);
-                outuint(chans[i], XUD_SPEED_KILL);
-                break;
-            case 1:
-                outct(chans[i], XS1_CT_END);
-                while (!testct(chans[i]))
-                    inuchar(chans[i]);
-                chkct(chans[i], XS1_CT_END);
-                break;
+static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[]) 
+{
+    for(int i = 0; i < n; i++) 
+    {
+        if(epTypeTable[i] != XUD_EPTYPE_DIS) 
+        {
+            switch(op) 
+            {
+                case 0:
+                    outct(chans[i], XS1_CT_END);
+                    outuint(chans[i], XUD_SPEED_KILL);
+                    break;
+                case 1:
+                    outct(chans[i], XS1_CT_END);
+                    while (!testct(chans[i]))
+                        inuchar(chans[i]);
+                    chkct(chans[i], XS1_CT_END);
+                     break;
             }
         }
     }
 }
 
-
 #pragma unsafe arrays
-int XUD_Main(chanend c_ep_out[], int noEpOut,
-                chanend c_ep_in[], int noEpIn,
-                chanend ?c_sof,
-                XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
-                XUD_BusSpeed_t speed, XUD_PwrConfig pwrConfig)
+void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEpIn, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[])
 {
-    g_desSpeed = speed;
 
     for(int i = 0; i < USB_MAX_NUM_EP_OUT; i++)
     {
@@ -563,7 +561,20 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     {
         __builtin_trap();
     }
+}
 
+
+#pragma unsafe arrays
+int XUD_Main(chanend c_ep_out[], int noEpOut,
+                chanend c_ep_in[], int noEpIn,
+                chanend ?c_sof,
+                XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
+                XUD_BusSpeed_t speed, XUD_PwrConfig pwrConfig)
+{
+    g_desSpeed = speed;
+
+    SetupEndpoints(c_ep_out, noEpOut, c_ep_in, noEpIn, epTypeTableOut, epTypeTableIn);
+    
 #if 0
     /* Check that if the required channel has a destination if the EP is marked as in use */
     for( int i = 0; i < noEpOut + noEpIn; i++ )

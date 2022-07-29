@@ -28,12 +28,11 @@ TARGET = XCORE-200-EXPLORER
 endif
 
 # The USED_MODULES variable lists other module used by the application.
-
 USED_MODULES = lib_xud
 
+# Exclude the "host" dir
 SOURCE_DIRS = src
 
-#=============================================================================
 # The following part of the Makefile includes the common build infrastructure
 # for compiling XMOS applications. You should not need to edit below here.
 

@@ -12,7 +12,7 @@ APP_NAME = app_usb_image_demo
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to
 # xcc for the final link (mapping) stage.
 
-BUILD_FLAGS = -O3 -report
+BUILD_FLAGS = -O3 -report -fxscope -g
 
 XCC_FLAGS_200 = $(BUILD_FLAGS)
 XCC_FLAGS_AI = $(BUILD_FLAGS)
@@ -28,12 +28,11 @@ TARGET = XCORE-200-EXPLORER
 endif
 
 # The USED_MODULES variable lists other module used by the application.
-
 USED_MODULES = lib_xud
 
+# Exclude the "host" dir
 SOURCE_DIRS = src
 
-#=============================================================================
 # The following part of the Makefile includes the common build infrastructure
 # for compiling XMOS applications. You should not need to edit below here.
 

@@ -25,7 +25,7 @@ XUD_EnableUsbPortMux:
   ldc       r1, XS1_PS_XCORE_CTRL0
   get       r0, ps[r1]
   ldc       r2, 2
-  or        r0, r0, r2 
+  or        r0, r0, r2
   set       ps[r1], r0
 
   //Sanity check, read back and check

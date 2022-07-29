@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include "xud.h"
@@ -28,29 +28,29 @@ int XUD_Init()
     while (1)
     {
         XUD_LineState_t currentLs = XUD_HAL_GetLineState();
-       
+
         switch (currentLs)
         {
             /* SE0 State */
            case XUD_LINESTATE_SE0:
 
                 unsigned timedOut = XUD_HAL_WaitForLineStateChange(currentLs, T_WTRSTFS);
-    
+
                 /* If no change in LS then return 1 for reset */
-                if(timedOut) 
-                    return 1; 
+                if(timedOut)
+                    return 1;
 
                 /* Otherwise SE0 went away.. keep looking */
                 break;
 
             /* J State */
             case XUD_LINESTATE_HS_K_FS_J:
-    
+
                 unsigned timedOut = XUD_HAL_WaitForLineStateChange(currentLs, STATE_START_TO);
-    
+
                 /* If no change in LS then return 0 for suspend */
-                if(timedOut) 
-                    return 0; 
+                if(timedOut)
+                    return 0;
 
                 /* Otherwise J went away.. keep looking */
                 break;
@@ -74,7 +74,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
     unsigned time;
 
     XUD_LineState_t currentLs = XUD_LINESTATE_HS_K_FS_J;
-    
+
     while(1)
     {
         unsigned timeOutTime = 0;
@@ -98,7 +98,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 continue;
             }
         }
-        
+
         switch(currentLs)
         {
             /* Reset signalliung */
@@ -132,24 +132,24 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 while(1)
                 {
                     XUD_HAL_WaitForLineStateChange(currentLs, 0);
-                
+
                     switch(currentLs)
                     {
                         /* J, unexpected, return */
                         case XUD_LINESTATE_HS_K_FS_J:
 #ifdef __XS2A__
-                            /* For XS2 we have to complete the high-speed switch now, since we started it already.. 
+                            /* For XS2 we have to complete the high-speed switch now, since we started it already..
                                we then revert to full speed straight away - causes a blip on the bus, non-ideal */
                             if (g_curSpeed == XUD_SPEED_HS)
                             {
-                                unsafe 
+                                unsafe
                                 {
                                     XUD_HAL_EnterMode_PeripheralHighSpeed_Complete();
                                 }
                             }
-                            
+
                             XUD_HAL_EnterMode_PeripheralFullSpeed();
-#endif 
+#endif
                             return 0;
 
                          /* SE0, end of resume */
@@ -162,7 +162,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 #else
                                 /* Move back into high-speed mode - Notes, writes to XS3A registers orders of magnitude faster than XS2A */
                                 XUD_HAL_EnterMode_PeripheralHighSpeed();
-#endif              
+#endif
                             }
                             /* Return 0 for resumed */
                             return 0;
@@ -174,7 +174,10 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 }
 
             break;
-        }      
+
+            default:
+                break;
+        }
     }
 }
 

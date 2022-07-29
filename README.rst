@@ -1,8 +1,13 @@
 XMOS USB Device (XUD) Library
 =============================
 
+:Latest release: 2.2.0rc0
+
+
+:Scope: General Use
+
 Overview
---------
+........
 
 lib_xud merges the existing sc_xud and lib_usb (a fork of sc_xud) and replaces them both. It includes an API that supports both previous libraries providing a unified and maintained library going forward.
 
@@ -34,7 +39,7 @@ Software version and dependencies
 The CHANGELOG contains information about the current and previous versions.
 For a list of direct dependencies, look for DEPENDENT_MODULES in lib_xud/module_build_info.
 
-Related application notes
+Related Application Notes
 .........................
 
 The following application notes use this library:
@@ -48,3 +53,9 @@ The following application notes use this library:
    * AN00124 - USB CDC VCOM device class
    * AN00135 - USB Test and Measurement device class
    * AN00136 - USB Vendor specific device
+
+Required software (dependencies)
+================================
+
+  * None
+

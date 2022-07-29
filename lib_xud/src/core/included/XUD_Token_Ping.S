@@ -31,11 +31,11 @@ PrimaryBufferFull_PING:                             // Send NAK (or STALL)
     nop
     nop
 #endif
-    
-    ldaw         r11, dp[ep_addr]
+
+    ldaw         r11, dp[epAddr]
     ldw          r11, r11[r10]
     ldw          r11, r11[10]
-    
+
     outpw        res[TXD], r11, 8
     bu           NextTokenAfterPing
 .scheduling default

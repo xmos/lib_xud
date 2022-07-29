@@ -79,7 +79,7 @@ void write_periph_word_two_part_start(chanend tmpchan, tileref tile, unsigned pe
 
   event(PHY_WRITE_TWO_PART_START, data);
 }
-    
+
 void write_periph_word_two_part_end(chanend tmpchan, unsigned data)
 {
   printf("W G part2\n");

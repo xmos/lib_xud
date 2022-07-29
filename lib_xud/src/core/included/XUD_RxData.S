@@ -1,4 +1,4 @@
-// Copyright 2019-2021 XMOS LIMITED.
+// Copyright 2019-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #define PASTER(x,y) x ## _ ## y
@@ -6,8 +6,8 @@
 #define LABEL(fun) fun
 
 // r0: RXD: Rx Data port
-// r1: Buffer 
-// r2: Tx Port 
+// r1: Buffer
+// r2: Tx Port
 // r3: Ep structure
 // r4: Zero (set in XUD_CrcAddCheck.S) then buffer index
 // r5: EP structures array
@@ -31,7 +31,7 @@ Pid_Bad_RxData:
 doRXData:
     inpw        r4, res[r0], 8                                  // Input PID
 
-    ldw         r8, sp[STACK_RXA_PORT] 
+    ldw         r8, sp[STACK_RXA_PORT]
 #ifdef __XS2A__
     // If pid != DATAx then jump and handle as a token. DATA0, DATA1, DATA2 & MDATA all of the form 0bxx11.
     // This is a fast alternative to a "timeout"
@@ -56,33 +56,33 @@ GotRxPid:
     {eeu        res[r8];            mkmsk r4, 32}               // Enable events on RxA
                                                                 // Init buffer index to -1
 
-NextRxWord:				                                        // Partially un-rolled to assist with timing           
+NextRxWord:				                                        // Partially un-rolled to assist with timing
     in          r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     bu          NextRxWord
 
@@ -90,18 +90,18 @@ NextRxWord:				                                        // Partially un-rolled to
 .align 32
 .skip 16
 RxALow:
-    stw         r11, r1[r4]                                 // Extra stw, if not enough MIPS STW in loop above may not have chance to run             
+    stw         r11, r1[r4]                                 // Extra stw, if not enough MIPS STW in loop above may not have chance to run
     {in         r8, res[r8];        add r4, r4, 1}          // Clear event data on RXA
     endin       r8, res[r0]
 LABEL(RxTail):
-    {in          r11, res[r0];      bru      r8}  
+    {in          r11, res[r0];      bru      r8}
 
 // Word aligned data (0 byte tail)
 .align 32
 OutTail0:
     crc32       r6, r8, r9                      // CRC zero step
     ldw         r11, sp[STACK_RXCRC_TAIL0]
-    RETSP_u6   0
+    {RETSP_u6   0;  ldc r1, 0}
 
 // 1 Tail Byte
 .align 32
@@ -110,7 +110,7 @@ OutTail1:
     crc32       r6, r11, r9
     stw         r11, r1[r4]                     // Store last data
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL1]
-    RETSP_u6   0
+    {RETSP_u6   0;  ldc r1, 0}
 
 // Two Tail Bytes
 .align 32
@@ -119,7 +119,7 @@ OutTail2:
     crc32       r6, r11, r9
     stw         r11, r1[r4]                      // Store last data
     ldw         r11, sp[STACK_RXCRC_TAIL2]
-    RETSP_u6   0
+    {RETSP_u6   0;  ldc r1, 0}
 
 // Three Tail Bytes
 .align 32
@@ -129,5 +129,5 @@ OutTail3:
     crc32       r6, r11, r9
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL3]
     crc8        r6, r1, r2, r9                  // Use the fact the the bottom byte of port id is 0.. saves us an ldc
-    RETSP_u6   0
+    {RETSP_u6   0;  ldc r1, 0}
 

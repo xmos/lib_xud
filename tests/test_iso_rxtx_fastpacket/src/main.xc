@@ -1,6 +1,5 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
 #include "shared.h"
 
 #define EP_COUNT_OUT       (6)
@@ -24,15 +23,24 @@ int main()
 
     par
     {
-        
+
         XUD_Main( c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
         TestEp_Tx(c_ep_in[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
-		
+
 		{
         	TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
+
+            /* Allow a little time for Tx data to make it's way of the port - important for FS tests */
+            {
+                timer t;
+                unsigned time;
+                t :> time;
+                t when timerafter(time + 500) :> int _;
+            }
+
     		XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
 			XUD_Kill(ep0);
 			exit(0);	// TODO should be able to move this out of the par

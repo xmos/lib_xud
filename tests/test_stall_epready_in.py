@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Directed test for (github) issue #58
@@ -31,6 +31,7 @@ def test_session(ep, address, bus_speed):
             transType="IN",
             dataLength=pktLength,
             halted=True,
+            interEventDelay=500,
         )
     )
 
@@ -43,6 +44,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 
@@ -55,6 +57,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="IN",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
     pktLength += 1
@@ -70,6 +73,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="IN",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
     pktLength += 1
@@ -96,6 +100,7 @@ def test_session(ep, address, bus_speed):
             transType="IN",
             dataLength=pktLength,
             halted=True,
+            interEventDelay=500,
         )
     )
 
@@ -119,6 +124,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="IN",
             dataLength=pktLength,
+            interEventDelay=500,
         )
     )
 

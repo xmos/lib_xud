@@ -1,4 +1,4 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief      Implements USB Device standard requests
@@ -6,7 +6,7 @@
  */
 
 #include "xud_device.h"          /* Defines related to the USB 2.0 Spec */
-
+#include "XUD_HAL.h"
 #include <string.h>
 #include <xs1.h>
 #include <print.h>
@@ -36,7 +36,6 @@ XUD_Result_t USB_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, USB_SetupPacket_t &
     XUD_Result_t result;
 
     if((result = XUD_GetSetupBuffer(ep_out, sbuffer, length)) != XUD_RES_OKAY)
-   // if((result = XUD_GetControlBuffer(ep_out, sbuffer, length)) != XUD_RES_CTL) // New API 
     {
         return result;
     }
@@ -143,7 +142,8 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
                         }
 
                         /* Set the device address in XUD */
-                        return XUD_SetDevAddr(sp.wValue);
+                        XUD_HAL_SetDeviceAddress(sp.wValue);
+                        return XUD_RES_OKAY;
 
                     }
                     break;
@@ -230,11 +230,11 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
 
                     /* Pull self/bus powered bit from the config descriptor */
                     unsigned char self_powered = 0;
-                    if((usbBusSpeed == XUD_SPEED_FS) && (cfgDescLength_fs != 0)) 
+                    if((usbBusSpeed == XUD_SPEED_FS) && (cfgDescLength_fs != 0))
                     {
                         self_powered = (cfgDesc_fs[7] & 0x40) != 0;
-                    } 
-                    else if(cfgDescLength_hs != 0) 
+                    }
+                    else if(cfgDescLength_hs != 0)
                     {
                         self_powered = (cfgDesc_hs[7] & 0x40) != 0;
                     }

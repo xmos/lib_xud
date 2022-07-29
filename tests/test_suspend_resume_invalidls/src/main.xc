@@ -1,4 +1,4 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <print.h>
@@ -19,7 +19,11 @@
 #endif
 
 #ifndef TEST_EP_NUM
-#error
+#error TEST_EP_NUM not defined
+#endif
+
+#ifndef XUD_TEST_SPEED
+#error XUD_TEST_SPEED not defined
 #endif
 
 /* Endpoint type tables */
@@ -33,34 +37,24 @@ int main()
 #endif
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-            
+
     par
     {
-        { 
-            #if defined(XUD_TEST_SPEED_FS)
-            unsigned speed = XUD_SPEED_FS;
-            #elif defined(XUD_TEST_SPEED_HS)
-            unsigned speed = XUD_SPEED_HS;
-            #else
-            #error XUD_TEST_SPEED_XX not defined
-            #endif
-
-            XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
-                null, epTypeTableOut, epTypeTableIn, speed, XUD_PWR_BUS);
-        }
+        XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
+                null, epTypeTableOut, epTypeTableIn, XUD_TEST_SPEED, XUD_PWR_BUS);
 
         {
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
 
-           
+
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);
-            
+
             if(fail)
                 TerminateFail(fail);
             else
-                TerminatePass(fail);    
-            
+                TerminatePass(fail);
+
         }
     }
 

@@ -58,7 +58,7 @@ void print_string(unsigned char *string, unsigned size)
 void printer_main(chanend c_ep_prt_out)
 {
     unsigned size;
-    unsigned char print_packet[1024]; // Buffer for storing printer packets sent from host 
+    unsigned char print_packet[1024]; // Buffer for storing printer packets sent from host
 
     debug_printf("USB printer class demo started\n");
 
@@ -68,7 +68,7 @@ void printer_main(chanend c_ep_prt_out)
     while (1)
     {
         // Perform a blocking read waiting for data to be received at the endpoint
-        XUD_GetBuffer(ep_out, print_packet, size); 
+        XUD_GetBuffer(ep_out, print_packet, size);
         debug_printf("**** Received %d byte print buffer ****\n", size);
         print_string(print_packet, size);
     }
@@ -83,7 +83,7 @@ int main()
     par
     {
         on USB_TILE: XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
-                                null, epTypeTableOut, epTypeTableIn, 
+                                null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
         on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);

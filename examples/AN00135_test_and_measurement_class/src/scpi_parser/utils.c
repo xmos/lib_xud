@@ -4,7 +4,7 @@
  * Copyright (c) 2012 Jan Breuer
  *
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -30,10 +30,10 @@
 /**
  * @file   scpi_utils.c
  * @date   Thu Nov 15 10:58:45 UTC 2012
- * 
+ *
  * @brief  Conversion routines and string manipulation routines
- * 
- * 
+ *
+ *
  */
 
 #include <stdio.h>
@@ -52,7 +52,7 @@ static size_t cmdSeparatorPos(const char * cmd, size_t len);
  * @param str
  * @param size
  * @param set
- * @return 
+ * @return
  */
 const char * strnpbrk(const char *str, size_t size, const char *set) {
     const char *scanp;
@@ -342,7 +342,7 @@ static scpi_bool_t locateStrAutomaton(locate_text_nfa * nfa, unsigned char c) {
             break;
 
         default:
-            break;            
+            break;
     }
 
     /* if it is terminating state, break from for loop */
@@ -463,7 +463,7 @@ size_t cmdSeparatorPos(const char * cmd, size_t len) {
  * @param pattern_len
  * @param str
  * @param str_len
- * @return 
+ * @return
  */
 scpi_bool_t matchPattern(const char * pattern, size_t pattern_len, const char * str, size_t str_len) {
     int pattern_sep_pos_short;
@@ -618,28 +618,28 @@ scpi_bool_t matchCommand(const char * pattern, const char * cmd, size_t len) {
 
 /**
  * Compose command from previsou command anc current command
- * 
+ *
  * @param ptr_prev pointer to previous command
  * @param len_prev length of previous command
  * @param pptr pointer to pointer of current command
  * @param plen pointer to length of current command
- * 
+ *
  * ptr_prev and ptr should be in the same memory buffer
- * 
+ *
  * Function will add part of previous command prior to ptr_prev
- * 
+ *
  * char * cmd = "meas:volt:dc?;ac?"
  * char * ptr_prev = cmd;
  * size_t len_prev = 13;
  * char * ptr = cmd + 14;
  * size_t len = 3;
- * 
+ *
  * composeCompoundCommand(ptr_prev, len_prev, &ptr, &len);
- * 
+ *
  * after calling this
- * 
- * 
- * 
+ *
+ *
+ *
  */
 scpi_bool_t composeCompoundCommand(char * ptr_prev, size_t len_prev,
                               char ** pptr, size_t * plen) {
@@ -654,33 +654,33 @@ scpi_bool_t composeCompoundCommand(char * ptr_prev, size_t len_prev,
     /* no previous command - nothing to do*/
     if (ptr_prev == NULL || len_prev == 0)
         return TRUE;
-       
+
     ptr = *pptr;
     len = *plen;
-    
+
     /* No current command */
     if (len == 0 || ptr == NULL)
         return FALSE;
-    
+
     /* Common command or command root - nothing to do */
     if (ptr[0] == '*' || ptr[0] == ':')
         return TRUE;
-        
+
     /* Previsou command was common command - nothing to do */
     if (ptr_prev[0] == '*')
         return TRUE;
-        
+
     /* Find last occurence of ':' */
     for (i = len_prev; i > 0; i--) {
         if (ptr_prev[i-1] == ':') {
             break;
         }
     }
-    
+
     /* Previous command was simple command - nothing to do*/
     if (i == 0)
         return TRUE;
-    
+
     ptr -= i;
     len += i;
     memmove(ptr, ptr_prev, i);

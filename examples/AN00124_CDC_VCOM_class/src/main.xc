@@ -17,25 +17,29 @@ XUD_EpType epTypeTableOut[XUD_EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABL
 XUD_EpType epTypeTableIn[XUD_EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_INT, XUD_EPTYPE_BUL};
 
 /* Application task */
-void app_virtual_com(client interface usb_cdc_interface cdc) {
-  while (1) {
-    char cdc_char = cdc.get_char();
-    cdc.put_char(cdc_char);
-    if (cdc_char == '\r')
-      cdc.put_char('\n');
-  }
+void app_virtual_com(client interface usb_cdc_interface cdc)
+{
+    while (1)
+    {
+        char cdc_char = cdc.get_char();
+        cdc.put_char(cdc_char);
+        if (cdc_char == '\r')
+            cdc.put_char('\n');
+    }
 }
 
-int main() {
+int main()
+{
     /* Channels to communicate with USB endpoints */
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
+
     /* Interface to communicate with USB CDC (Virtual Serial) */
     interface usb_cdc_interface cdc_data;
 
     par
     {
         on USB_TILE: XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
-                      null, epTypeTableOut, epTypeTableIn, 
+                      null, epTypeTableOut, epTypeTableIn,
                       XUD_SPEED_HS, XUD_PWR_BUS);
 
         on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);

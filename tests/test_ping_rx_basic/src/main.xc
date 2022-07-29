@@ -1,4 +1,4 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "shared.h"
 
@@ -16,14 +16,14 @@ int TestEp_PingTest(XUD_ep ep_out1, XUD_ep ep_out2, int epNum1, int epNum2)
     unsigned char buffer[1024];
 
     int i = 10;
-    
+
     XUD_GetBuffer(ep_out1, buffer, length);
 
     if(RxDataCheck(buffer, length, epNum1, i))
     {
         return FAIL_RX_DATAERROR;
     }
-        
+
 	XUD_GetBuffer(ep_out2, buffer, length);
 
 	if(RxDataCheck(buffer, length, epNum2, i))
@@ -38,7 +38,7 @@ int TestEp_PingTest(XUD_ep ep_out1, XUD_ep ep_out2, int epNum1, int epNum2)
     {
         return FAIL_RX_DATAERROR;
     }
-	
+
 	return 0;
 }
 
@@ -57,16 +57,16 @@ int main()
         {
             XUD_ep ep_out1 = XUD_InitEp(c_ep_out[CTRL_EP_NUM]);
             XUD_ep ep_out2 = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
-			
+
             unsigned fail = TestEp_PingTest(ep_out1, ep_out2, CTRL_EP_NUM, TEST_EP_NUM);
-            
+
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);
-    		
+
             if(fail)
                 TerminateFail(fail);
             else
-                TerminatePass(fail);    
+                TerminatePass(fail);
 		}
 
     }

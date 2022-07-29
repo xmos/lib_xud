@@ -44,8 +44,8 @@ int TestEp(chanend c_out, chanend c_in, int epNum, chanend c_sof)
 
     /* Receive SOFs */
     /* Host sends 5 SOFs, but one has its CRC nobbled so we should only see 4. */
-    for (int i = 0; i< 5; i++) 
-    { 
+    for (int i = 0; i< 5; i++)
+    {
         if(i == 3)
             continue;
 
@@ -94,19 +94,19 @@ int main()
 
     par
     {
-        
+
         XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 c_sof, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
         {
             unsigned fail = TestEp(c_ep_out[1], c_ep_in[1], 1, c_sof);
-            
+
             if(fail)
                 TerminateFail(fail);
             else
-                TerminatePass(fail);    
-            
+                TerminatePass(fail);
+
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);
             exit(0);

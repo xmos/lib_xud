@@ -2,7 +2,7 @@
  * Copyright (c) 2012-2013 Jan Breuer,
  *
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,10 +28,10 @@
 /**
  * @file   scpi_ieee488.c
  * @date   Thu Nov 15 10:58:45 UTC 2012
- * 
+ *
  * @brief  Implementation of IEEE488.2 commands and state model
- * 
- * 
+ *
+ *
  */
 
 #include "scpi/parser.h"
@@ -105,7 +105,7 @@ void SCPI_RegSet(scpi_t * context, scpi_reg_name_t name, scpi_reg_val_t val) {
     if ((name >= SCPI_REG_COUNT) || (context->registers == NULL)) {
         return;
     }
-    
+
     /* store old register value */
     old_val = context->registers[name];
 
@@ -148,8 +148,8 @@ void SCPI_RegSet(scpi_t * context, scpi_reg_name_t name, scpi_reg_val_t val) {
         case SCPI_REG_OPERE:
             regUpdate(context, SCPI_REG_OPER);
             break;
-            
-            
+
+
         case SCPI_REG_COUNT:
             /* nothing to do */
             break;
@@ -191,10 +191,10 @@ void SCPI_EventClear(scpi_t * context) {
 }
 
 /**
- * *CLS - This command clears all status data structures in a device. 
+ * *CLS - This command clears all status data structures in a device.
  *        For a device which minimally complies with SCPI. (SCPI std 4.1.3.2)
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreCls(scpi_t * context) {
     SCPI_EventClear(context);
@@ -207,7 +207,7 @@ scpi_result_t SCPI_CoreCls(scpi_t * context) {
 /**
  * *ESE
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreEse(scpi_t * context) {
     int32_t new_ESE;
@@ -220,7 +220,7 @@ scpi_result_t SCPI_CoreEse(scpi_t * context) {
 /**
  * *ESE?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreEseQ(scpi_t * context) {
     SCPI_ResultInt(context, SCPI_RegGet(context, SCPI_REG_ESE));
@@ -230,7 +230,7 @@ scpi_result_t SCPI_CoreEseQ(scpi_t * context) {
 /**
  * *ESR?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreEsrQ(scpi_t * context) {
     SCPI_ResultInt(context, SCPI_RegGet(context, SCPI_REG_ESR));
@@ -240,14 +240,14 @@ scpi_result_t SCPI_CoreEsrQ(scpi_t * context) {
 
 /**
  * *IDN?
- * 
+ *
  * field1: MANUFACTURE
  * field2: MODEL
  * field4: SUBSYSTEMS REVISIONS
- * 
+ *
  * example: MANUFACTURE,MODEL,0,01-02-01
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreIdnQ(scpi_t * context) {
     SCPI_ResultString(context, context->idn[0]);
@@ -260,7 +260,7 @@ scpi_result_t SCPI_CoreIdnQ(scpi_t * context) {
 /**
  * *OPC
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreOpc(scpi_t * context) {
     SCPI_RegSetBits(context, SCPI_REG_ESR, ESR_OPC);
@@ -270,7 +270,7 @@ scpi_result_t SCPI_CoreOpc(scpi_t * context) {
 /**
  * *OPC?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreOpcQ(scpi_t * context) {
     /* Operation is always completed */
@@ -281,7 +281,7 @@ scpi_result_t SCPI_CoreOpcQ(scpi_t * context) {
 /**
  * *RST
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreRst(scpi_t * context) {
     if (context && context->interface && context->interface->reset) {
@@ -293,7 +293,7 @@ scpi_result_t SCPI_CoreRst(scpi_t * context) {
 /**
  * *SRE
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreSre(scpi_t * context) {
     int32_t new_SRE;
@@ -306,7 +306,7 @@ scpi_result_t SCPI_CoreSre(scpi_t * context) {
 /**
  * *SRE?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreSreQ(scpi_t * context) {
     SCPI_ResultInt(context, SCPI_RegGet(context, SCPI_REG_SRE));
@@ -316,7 +316,7 @@ scpi_result_t SCPI_CoreSreQ(scpi_t * context) {
 /**
  * *STB?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreStbQ(scpi_t * context) {
     SCPI_ResultInt(context, SCPI_RegGet(context, SCPI_REG_STB));
@@ -326,7 +326,7 @@ scpi_result_t SCPI_CoreStbQ(scpi_t * context) {
 /**
  * *TST?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreTstQ(scpi_t * context) {
     int result = 0;
@@ -340,7 +340,7 @@ scpi_result_t SCPI_CoreTstQ(scpi_t * context) {
 /**
  * *WAI
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_CoreWai(scpi_t * context) {
     (void) context;

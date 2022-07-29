@@ -1,9 +1,10 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xcore/parallel.h>
 #include <xcore/chanend.h>
 #include <xcore/channel.h>
+#include <xcore/hwtimer.h>
 
 #include <xud_device.h>
 #include "hid_defs.h"
@@ -172,10 +173,15 @@ void Endpoint0(chanend_t chan_ep0_out, chanend_t chan_ep0_in)
             /* Returns  XUD_RES_OKAY if handled okay,
              *          XUD_RES_ERR if request was not handled (STALLed),
              *          XUD_RES_RST for USB Reset */
+
+            hwtimer_realloc_xc_timer(); // realocate logical core xC hw timer
+
             result = USB_StandardRequests(ep0_out, ep0_in, devDesc,
                         sizeof(devDesc), cfgDesc, sizeof(cfgDesc),
                         NULL, 0, NULL, 0, stringDescriptors, sizeof(stringDescriptors)/sizeof(stringDescriptors[0]),
                         &sp, usbBusSpeed);
+
+            hwtimer_free_xc_timer();    // free timer
         }
 
         /* USB bus reset detected, reset EP and get new bus speed */
@@ -188,7 +194,7 @@ void Endpoint0(chanend_t chan_ep0_out, chanend_t chan_ep0_in)
 
 DECLARE_JOB(hid_mouse, (chanend_t));
 /*
- * This function responds to the HID requests 
+ * This function responds to the HID requests
  * - It draws a square using the mouse moving 40 pixels in each direction
  * - The sequence repeats every 500 requests.
  */
@@ -196,7 +202,7 @@ void hid_mouse(chanend_t chan_ep_hid)
 {
     unsigned int counter = 0;
     enum {RIGHT, DOWN, LEFT, UP} state = RIGHT;
-    
+
     printf("hid_mouse: %x\n", chan_ep_hid);
     XUD_ep ep_hid = XUD_InitEp(chan_ep_hid);
 

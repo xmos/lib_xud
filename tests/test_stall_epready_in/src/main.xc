@@ -13,7 +13,7 @@
 #define TEST_EP_NUM         (1)
 #endif
 
-#ifndef CTRL_EP_NUM   
+#ifndef CTRL_EP_NUM
 #define CTRL_EP_NUM         (TEST_EP_NUM + 1)
 #endif
 
@@ -29,7 +29,7 @@ unsigned test_ctrl(chanend c_ctrl, chanend c)
     unsigned length;
     XUD_Result_t result;
     uint32_t failed = 0;
-    
+
     XUD_ep ep_ctrl = XUD_InitEp(c_ctrl);
 
     c <: 1;
@@ -43,12 +43,12 @@ unsigned test_ctrl(chanend c_ctrl, chanend c)
 
     XUD_GetBuffer(ep_ctrl, ctrlBuffer, length);
     failed |= (length != PKT_LENGTH_START);
-    
+
     XUD_SetStallByAddr(TEST_EP_NUM | 0x80);
-    
+
     XUD_GetBuffer(ep_ctrl, ctrlBuffer, length);
     failed |= (length != PKT_LENGTH_START);
-   
+
     XUD_ClearStallByAddr(TEST_EP_NUM | 0x80);
 
     return failed;
@@ -63,7 +63,7 @@ unsigned test_ep(chanend c_ep_out, chanend c_ep_in, chanend c)
     unsigned length = PKT_LENGTH_START;
     XUD_Result_t result;
     unsigned x = 0;
-   
+
     for(size_t i = 0; i < 3; i++)
     {
         for(size_t j = 0; j < length; j++)
@@ -72,7 +72,7 @@ unsigned test_ep(chanend c_ep_out, chanend c_ep_in, chanend c)
         }
         length++;
     }
-    
+
     length = PKT_LENGTH_START;
 
     XUD_ep ep_in = XUD_InitEp(c_ep_in);
@@ -80,18 +80,18 @@ unsigned test_ep(chanend c_ep_out, chanend c_ep_in, chanend c)
 
     c :> x;
 
-    /* First test marking EP ready whilst halted 
+    /* First test marking EP ready whilst halted
      * Then subsequently marked un-halted - this should pause until un-halted */
     XUD_SetBuffer(ep_in, inBuffer[0], length++);
-   
+
     /* Additional normal IN transaction */
     XUD_SetBuffer(ep_in, inBuffer[1], length++);
 
-    c :> x; 
+    c :> x;
 
     /* Next test EP marked ready then subsequently marked as halted */
     XUD_SetBuffer(ep_in, inBuffer[2], length);
-    
+
     /* TODO not currently set */
     return failed;
 }
@@ -109,6 +109,6 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     }
 
     return failedCtrl | failedEp;
-} 
+}
 
 #include "test_main.xc"

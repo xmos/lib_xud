@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 from copy import deepcopy
 
@@ -45,12 +45,14 @@ def test_session(ep, address, bus_speed):
                 pid=USB_PID["SETUP"],
                 address=trafficAddress1,
                 endpoint=ep,
+                interEventDelay=ied,
             )
         )
         session.add_event(
             TxDataPacket(
                 dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
                 pid=USB_PID["DATA0"],
+                interEventDelay=ied,
             )
         )
 
@@ -62,6 +64,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="SETUP",
                 dataLength=8,
+                interEventDelay=ied,
             )
         )
 
@@ -73,6 +76,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="IN",
                 dataLength=pktLength,
+                interEventDelay=ied,
             )
         )
 
@@ -82,12 +86,14 @@ def test_session(ep, address, bus_speed):
                 pid=USB_PID["SETUP"],
                 address=trafficAddress2,
                 endpoint=ep,
+                interEventDelay=ied,
             )
         )
         session.add_event(
             TxDataPacket(
                 dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
                 pid=USB_PID["DATA0"],
+                interEventDelay=ied,
             )
         )
 
@@ -109,6 +115,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="OUT",
                 dataLength=0,
+                interEventDelay=ied,
             )
         )
 

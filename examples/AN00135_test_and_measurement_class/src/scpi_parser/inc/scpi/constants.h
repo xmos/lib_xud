@@ -2,7 +2,7 @@
  * Copyright (c) 2012-2013 Jan Breuer,
  *
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,10 +28,10 @@
 /**
  * @file   scpi_constants.h
  * @date   Thu Nov 15 10:58:45 UTC 2012
- * 
+ *
  * @brief  SCPI Device constants
- * 
- * 
+ *
+ *
  */
 
 #ifndef SCPI_CONSTANTS_H
@@ -49,7 +49,7 @@ extern "C" {
 #define SCPI_DEFAULT_3 "1"
 #define SCPI_DEFAULT_4_REVISION "01-01"
 
-/* 21.21 :VERSion? 
+/* 21.21 :VERSion?
  * YYYY.V
  * YYYY = SCPI year
  * V = SCPI revision

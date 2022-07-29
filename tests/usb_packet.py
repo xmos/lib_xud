@@ -1,4 +1,4 @@
-# Copyright 2016-2021 XMOS LIMITED.
+# Copyright 2016-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 """ Define packet types
 
@@ -255,12 +255,18 @@ class RxPacket(UsbPacket):
                 in_rx_packet = True
                 break
 
+        txrdy_pulse = USB_DATA_VALID_COUNT[bus_speed] - 1
+
         if not in_rx_packet:
             print("ERROR: Timed out waiting for packet")
         else:
             while in_rx_packet:
 
-                # TODO txrdy pulsing
+                # Tx Rdy pulsing
+                for i in range(txrdy_pulse):
+                    wait(lambda x: usb_phy._clock.is_high())
+                    wait(lambda x: usb_phy._clock.is_low())
+
                 xsi.drive_port_pins(usb_phy._txrdy, 1)
                 data = xsi.sample_port_pins(usb_phy._txd)
 
@@ -269,6 +275,9 @@ class RxPacket(UsbPacket):
 
                 wait(lambda x: usb_phy._clock.is_high())
                 wait(lambda x: usb_phy._clock.is_low())
+
+                # Note, for HS this will be set high again before another clock
+                xsi.drive_port_pins(usb_phy._txrdy, 0)
 
                 if xsi.sample_port_pins(usb_phy._txv) == 0:
                     # TxV low, break out of loop

@@ -29,7 +29,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
     unsigned char buffer[1024];
 
     for(int i = 10; i <= 11; i++)
-    {    
+    {
         XUD_GetBuffer(ep_out, buffer, length);
 
         if(length != i)
@@ -56,7 +56,7 @@ int main()
 
     par
     {
-        
+
         XUD_Main( c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);

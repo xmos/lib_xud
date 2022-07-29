@@ -1,4 +1,4 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <print.h>
@@ -33,7 +33,7 @@ int TestEp_LoopbackForever(chanend c_out1, chanend c_in1)
     {
         XUD_GetBuffer(ep_out1, buffer, length);
         XUD_SetBuffer(ep_in1, buffer, length);
-        
+
         XUD_GetBuffer(ep_out1, buffer, length);
         XUD_SetBuffer(ep_in1, buffer, length);
     }
@@ -54,6 +54,14 @@ int TestEp_LoopbackOnce(chanend c_out, chanend c_in, chanend c_out_0)
 
     XUD_GetBuffer(ep_out, buffer, length);
     XUD_SetBuffer(ep_in, buffer, length);
+
+    /* Allow a little time for Tx data to make it's way of the port - important for FS tests */
+    {
+        timer t;
+        unsigned time;
+        t :> time;
+        t when timerafter(time + 500) :> int _;
+    }
 
     XUD_Kill(ep_out_0);
     exit(0);

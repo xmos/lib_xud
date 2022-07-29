@@ -1,8 +1,8 @@
 lib_xud Change Log
 ==================
 
-UNRELEASED
-----------
+2.2.0
+-----
 
   * CHANGE:    Further API functions re-authored in C (were Assembly)
   * CHANGE:    Endpoints marked as Disabled now reply with STALL if the host
@@ -12,6 +12,8 @@ UNRELEASED
   * FIXED:     Timeout event properly cleaned up after tx handshake received
   * FIXED:     A control endpoint will respect the halt condition for OUT
     transactions when marked ready to accept SETUP transactions
+  * FIXED:     USB Disconnect on self-powered devices intermittently causing Iso
+    EP's to be set to not-ready indefinitely
 
 2.1.0
 -----

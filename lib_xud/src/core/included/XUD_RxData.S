@@ -6,8 +6,8 @@
 #define LABEL(fun) fun
 
 // r0: RXD: Rx Data port
-// r1: Buffer 
-// r2: Tx Port 
+// r1: Buffer
+// r2: Tx Port
 // r3: Ep structure
 // r4: Zero (set in XUD_CrcAddCheck.S) then buffer index
 // r5: EP structures array
@@ -31,7 +31,7 @@ Pid_Bad_RxData:
 doRXData:
     inpw        r4, res[r0], 8                                  // Input PID
 
-    ldw         r8, sp[STACK_RXA_PORT] 
+    ldw         r8, sp[STACK_RXA_PORT]
 #ifdef __XS2A__
     // If pid != DATAx then jump and handle as a token. DATA0, DATA1, DATA2 & MDATA all of the form 0bxx11.
     // This is a fast alternative to a "timeout"
@@ -56,33 +56,33 @@ GotRxPid:
     {eeu        res[r8];            mkmsk r4, 32}               // Enable events on RxA
                                                                 // Init buffer index to -1
 
-NextRxWord:				                                        // Partially un-rolled to assist with timing           
+NextRxWord:				                                        // Partially un-rolled to assist with timing
     in          r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     in 	        r11, res[r0]
-    crc32_inc   r6, r11, r9, r4, 1 
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]
     bu          NextRxWord
 
@@ -90,11 +90,11 @@ NextRxWord:				                                        // Partially un-rolled to
 .align 32
 .skip 16
 RxALow:
-    stw         r11, r1[r4]                                 // Extra stw, if not enough MIPS STW in loop above may not have chance to run             
+    stw         r11, r1[r4]                                 // Extra stw, if not enough MIPS STW in loop above may not have chance to run
     {in         r8, res[r8];        add r4, r4, 1}          // Clear event data on RXA
     endin       r8, res[r0]
 LABEL(RxTail):
-    {in          r11, res[r0];      bru      r8}  
+    {in          r11, res[r0];      bru      r8}
 
 // Word aligned data (0 byte tail)
 .align 32

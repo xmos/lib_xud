@@ -411,7 +411,7 @@ inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
         wordLength = wordLength - 1;
         tailLength = 32;
     }
-    
+
     /* Get end off buffer address */
     asm volatile("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
 
@@ -490,7 +490,7 @@ typedef struct XUD_ep_info
 {
     unsigned int array_ptr;            // 0
     unsigned int xud_chanend;          // 1
-    unsigned int client_chanend;       // 2 
+    unsigned int client_chanend;       // 2
     unsigned int buffer;               // 3 Pointer to buffer
     unsigned int pid;                  // 4 Expected out PID
     unsigned int epType;               // 5 Data

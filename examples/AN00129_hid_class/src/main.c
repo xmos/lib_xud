@@ -194,7 +194,7 @@ void Endpoint0(chanend_t chan_ep0_out, chanend_t chan_ep0_in)
 
 DECLARE_JOB(hid_mouse, (chanend_t));
 /*
- * This function responds to the HID requests 
+ * This function responds to the HID requests
  * - It draws a square using the mouse moving 40 pixels in each direction
  * - The sequence repeats every 500 requests.
  */
@@ -202,7 +202,7 @@ void hid_mouse(chanend_t chan_ep_hid)
 {
     unsigned int counter = 0;
     enum {RIGHT, DOWN, LEFT, UP} state = RIGHT;
-    
+
     printf("hid_mouse: %x\n", chan_ep_hid);
     XUD_ep ep_hid = XUD_InitEp(chan_ep_hid);
 

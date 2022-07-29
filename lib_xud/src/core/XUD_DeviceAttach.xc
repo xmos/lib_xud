@@ -39,16 +39,16 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    unsigned int chirpCount = 0;
 
    clearbuf(p_usb_txd);
-   
+
    /* On detecting the SE0 move into chirp mode */
    XUD_HAL_EnterMode_PeripheralChirp();
 
    /* output k-chirp for required time */
 #if defined(XUD_SIM_RTL) || (XUD_SIM_XSIM)
    for (int i = 0; i < 800; i++)
-#else  
+#else
    for (int i = 0; i < 16000; i++)    // 16000 words @ 480 MBit = 1.066 ms
-#endif    
+#endif
     {
         p_usb_txd <: 0;
     }
@@ -61,9 +61,9 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #endif
 
     t :> start_time;
-    while(1) 
+    while(1)
     {
-        select 
+        select
         {
             case t when timerafter(start_time + INVALID_DELAY) :> void:
 
@@ -78,7 +78,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                     unsigned dp, dm;
                     flag0_port :> dm;
                     flag1_port :> dp;
-                        
+
                     if(dp || dm)
                     {
                         /* SE0 gone, return 0 to indicate FULL SPEED */
@@ -87,13 +87,13 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #else
                     flag2_port :> tmp;
 
-                    if(!tmp) 
+                    if(!tmp)
                     {
                         /* SE0 gone, return 0 to indicate FULL SPEED */
-                        return 0;    
+                        return 0;
                     }
 #endif
-                    if(pwrConfig == XUD_PWR_SELF) 
+                    if(pwrConfig == XUD_PWR_SELF)
                     {
                         if(!XUD_HAL_GetVBusState())
                         {
@@ -114,7 +114,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 #endif
             case detecting_k => k_port when pinseq(1):> void @ tx:       // K Chirp
                 k_port @ tx + T_FILT_ticks :> tmp;
-                if (tmp) 
+                if (tmp)
                 {
                     detecting_k = 0;
                 }
@@ -122,13 +122,13 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
 
              case !detecting_k => j_port when pinseq(1) :> void @ tx:    // J Chirp
                 j_port @ tx + T_FILT_ticks :> tmp;
-                if (tmp == 1) 
-                {                                              
+                if (tmp == 1)
+                {
                     chirpCount++;                                            // Seen an extra K-J pair
                     detecting_k = 1;
-               
-                    if (chirpCount == 3) 
-                    {                                                        
+
+                    if (chirpCount == 3)
+                    {
                         /* Three pairs of KJ received. Enter high-speed mode */
                         XUD_HAL_EnterMode_PeripheralHighSpeed();
 
@@ -138,10 +138,10 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                         while (XUD_HAL_GetLineState() != XUD_LINESTATE_SE0);
 #else
                         flag2_port when pinseq(1) :> tmp;
-#endif 
-                  
-                        /* Return 1 to indicate successful HS handshake*/ 
-                        return 1;                                               
+#endif
+
+                        /* Return 1 to indicate successful HS handshake*/
+                        return 1;
 
                     }
                 }

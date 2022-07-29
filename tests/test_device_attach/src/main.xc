@@ -38,7 +38,7 @@ int main()
 #endif
 {
     chan c_ep_out[XUD_EP_COUNT_OUT], c_ep_in[XUD_EP_COUNT_IN];
-            
+
     par
     {
         XUD_Main(c_ep_out, XUD_EP_COUNT_OUT, c_ep_in, XUD_EP_COUNT_IN,
@@ -47,15 +47,15 @@ int main()
         {
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
 
-           
+
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);
-            
+
             if(fail)
                 TerminateFail(fail);
             else
-                TerminatePass(fail);    
-            
+                TerminatePass(fail);
+
         }
     }
 

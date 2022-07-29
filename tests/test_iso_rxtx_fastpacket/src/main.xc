@@ -23,19 +23,19 @@ int main()
 
     par
     {
-        
+
         XUD_Main( c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
         TestEp_Tx(c_ep_in[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
-		
+
 		{
         	TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
 
             /* Allow a little time for Tx data to make it's way of the port - important for FS tests */
             {
-                timer t; 
+                timer t;
                 unsigned time;
                 t :> time;
                 t when timerafter(time + 500) :> int _;

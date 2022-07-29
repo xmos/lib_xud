@@ -4,7 +4,7 @@
  * Copyright (c) 2012 Jan Breuer
  *
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -30,10 +30,10 @@
 /**
  * @file   scpi_types.h
  * @date   Thu Nov 15 10:58:45 UTC 2012
- * 
+ *
  * @brief  SCPI data types
- * 
- * 
+ *
+ *
  */
 
 #ifndef SCPI_TYPES_H
@@ -172,7 +172,7 @@ extern "C" {
         const char * name;
         scpi_special_number_t type;
     };
-    #define SCPI_SPECIAL_NUMBERS_LIST_END   {NULL, SCPI_NUM_NUMBER}    
+    #define SCPI_SPECIAL_NUMBERS_LIST_END   {NULL, SCPI_NUM_NUMBER}
     typedef struct _scpi_special_number_def_t scpi_special_number_def_t;
 
     struct _scpi_number_t {

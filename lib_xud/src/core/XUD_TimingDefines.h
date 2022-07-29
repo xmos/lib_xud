@@ -9,7 +9,7 @@
 
 // Defines relating to USB/ULPI/UTMI/Phy specs
 #ifndef SUSPEND_TIMEOUT_us
-#define SUSPEND_TIMEOUT_us          (3000) 
+#define SUSPEND_TIMEOUT_us          (3000)
 #endif
 #define SUSPEND_TIMEOUT_ticks       (SUSPEND_TIMEOUT_us * REF_CLK_FREQ)
 

@@ -19,7 +19,7 @@
 #error
 #endif
 
-#ifndef CTRL_EP_NUM   
+#ifndef CTRL_EP_NUM
 #define CTRL_EP_NUM        (TEST_EP_NUM + 1)
 #endif
 
@@ -64,7 +64,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     uint8_t inBuffer2[128];
     unsigned length;
     XUD_Result_t result;
-    
+
     for(size_t i = 0; i < PKT_LENGTH_START; i++)
     {
         inBuffer0[i] = i;
@@ -75,12 +75,12 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     XUD_ep ep_out = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
     XUD_ep ep_in = XUD_InitEp(c_ep_in[TEST_EP_NUM]);
     XUD_ep ep_ctrl = XUD_InitEp(c_ep_out[CTRL_EP_NUM]);
-    
+
     /* Valid transaction on test OUT EP */
     /* This is somewhat important as this will toggle the expected PID - which should be reset on an un-stall */
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed = (result != XUD_RES_OKAY);
-    
+
     checkPacket(length, outBuffer);
 
     result = XUD_SetBuffer(ep_in, inBuffer0, PKT_LENGTH_START);
@@ -98,21 +98,21 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     {
         printstr("ERROR: Bad packet length\n");
     }
-  
-    /* Clear stall on the test EP's */ 
+
+    /* Clear stall on the test EP's */
     XUD_ClearStall(ep_out);
     XUD_ClearStall(ep_in);
 
     /* Ensure test EP's now operate as expected */
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
-   
+
     checkPacket(length, outBuffer);
-    
+
     result = XUD_SetBuffer(ep_in, inBuffer1, PKT_LENGTH_START);
     failed |= (result != XUD_RES_OKAY);
 
-    /* Stall both EP's using Addr */  
+    /* Stall both EP's using Addr */
     XUD_SetStallByAddr(TEST_EP_NUM);
     XUD_SetStallByAddr(TEST_EP_NUM | 0x80);
 
@@ -127,14 +127,14 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     /* Ensure test EP's now operate as expected */
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
-   
+
     checkPacket(length, outBuffer);
 
     result = XUD_SetBuffer(ep_in, inBuffer2, PKT_LENGTH_START);
     failed |= (result != XUD_RES_OKAY);
 
     return failed;
-} 
+}
 
 #include "test_main.xc"
 

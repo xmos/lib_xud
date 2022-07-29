@@ -118,7 +118,7 @@ ResetIntHandler:
     set     sp, r10
 
     ldc        r0, 1                               // Load non-zero (zero is kill)
-    bu         Return                        
+    bu         Return
 
 .cc_bottom ResetIntHandler.func
 
@@ -176,7 +176,7 @@ XUD_LLD_IoLoop:
     stw         r10, sp[7]
 PortsOnStack:                                   // Put ports on stack (loads therefore short insts)
     stw         r1, sp[STACK_RXA_PORT]
-    stw         r3, sp[STACK_RXE_PORT] 
+    stw         r3, sp[STACK_RXE_PORT]
 
 SaveStackPointer:
     ldaw        r11, sp[0]
@@ -202,12 +202,12 @@ ConfigRxA:                                      // Configure a event on RXA goin
 
 ConfigValidToken:
 #ifdef __XS2A__
-    ldw         r10, sp[STACK_VTOK_PORT]        // ValidToken is used for timing timeout period when expecting an ack after tx     
+    ldw         r10, sp[STACK_VTOK_PORT]        // ValidToken is used for timing timeout period when expecting an ack after tx
 #else
     ldw         r10, dp[rx_rdy]                 // TODO use from stack
 #endif
     setc        res[r10], XS1_SETC_COND_NONE
-    ldap        r11, TxHandshakeTimeOut           
+    ldap        r11, TxHandshakeTimeOut
     setv        res[r10], r11
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
@@ -228,8 +228,8 @@ SetupUsbTestMode:
     setv        res[r10], r11
     eeu         res[r10]
 #endif
-   
-CrcRxResidualsOnStack: 
+
+CrcRxResidualsOnStack:
     ldc        r11, 0x7000
     stw        r11, sp[STACK_RXCRC_TAIL0]
     ldc        r11, 0x80be
@@ -239,12 +239,12 @@ CrcRxResidualsOnStack:
     ldc        r11, 0x3ffe
     stw        r11, sp[STACK_RXCRC_TAIL3]
 
-    ldc        r11, 0xf335                       // CRC16 init (in) 
+    ldc        r11, 0xf335                       // CRC16 init (in)
     stw        r11, sp[STACK_TXCRC_INIT]
-   
-    ldc        r11, 0x3334                      // CRC16 init (out) 
+
+    ldc        r11, 0x3334                      // CRC16 init (out)
     stw        r11, sp[STACK_RXCRC_INIT]
-    
+
     ldw        r11, sp[STACK_EPCHANS]
     stw        r11, dp[chanArray]
 
@@ -264,7 +264,7 @@ ConfigSofJump_Done:
 
     ldaw       r10, dp[PidJumpTable_RxData]
     stw        r10, sp[STACK_PIDJUMPTABLE_RXDATA]
-    
+
     ldaw       r10, dp[crc5Table_Addr]
     stw        r10, sp[STACK_CRC5TABLE_ADDR]
 
@@ -324,7 +324,7 @@ NextTokenAfterPing:
     #include "XUD_TokenJmp.S"
 
 // Un-implemented PID list
-Pid_Reserved:                                   
+Pid_Reserved:
 Pid_Ack:
 Pid_NYet:
 Pid_Nyet:
@@ -359,7 +359,7 @@ Return:
     edu        res[r11]
     setc       res[r11], XS1_SETC_IE_MODE_EVENT
 
-    ldw        r11, sp[STACK_RXA_PORT]              
+    ldw        r11, sp[STACK_RXA_PORT]
     edu        res[r11]
 
     ldw        r4, sp[1]                            // Register restore

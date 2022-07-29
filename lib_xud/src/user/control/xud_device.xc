@@ -230,11 +230,11 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
 
                     /* Pull self/bus powered bit from the config descriptor */
                     unsigned char self_powered = 0;
-                    if((usbBusSpeed == XUD_SPEED_FS) && (cfgDescLength_fs != 0)) 
+                    if((usbBusSpeed == XUD_SPEED_FS) && (cfgDescLength_fs != 0))
                     {
                         self_powered = (cfgDesc_fs[7] & 0x40) != 0;
-                    } 
-                    else if(cfgDescLength_hs != 0) 
+                    }
+                    else if(cfgDescLength_hs != 0)
                     {
                         self_powered = (cfgDesc_hs[7] & 0x40) != 0;
                     }

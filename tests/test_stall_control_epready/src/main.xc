@@ -15,10 +15,10 @@ int TestEp_Control(XUD_ep ep0_out, XUD_ep ep0_in, int epNum)
     unsigned int slength1;
     unsigned char sbuffer0[128];
     unsigned char sbuffer1[128];
-    
+
     unsigned int length;
     unsigned char buffer[128];
-    
+
     XUD_Result_t sres;
     XUD_Result_t res;
 
@@ -29,7 +29,7 @@ int TestEp_Control(XUD_ep ep0_out, XUD_ep ep0_in, int epNum)
     XUD_SetStall(ep0_in);
 
     sres |= XUD_GetSetupBuffer(ep0_out, sbuffer1, slength1);
-    
+
     /* Host will send an out here - which we expect to stall */
     /* Issue #339 means it is acked */
 
@@ -63,7 +63,7 @@ int TestEp_Control(XUD_ep ep0_out, XUD_ep ep0_in, int epNum)
     {
         return 1;
     }
- 
+
     return 0;
 }
 
@@ -76,7 +76,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     unsigned failed = TestEp_Control(ep0_out, ep0_in, 0);
 
     XUD_Kill(ep0_out);
-    
+
     return failed;
 }
 #include "test_main.xc"

@@ -8,7 +8,7 @@
 #define PACKET_LEN_START   (10)
 #define PACKET_LEN_END     (19)
 
-#define PACKET_COUNT       (PACKET_LEN_END - PACKET_LEN_START + 2) 
+#define PACKET_COUNT       (PACKET_LEN_END - PACKET_LEN_START + 2)
 
 /* Check for clashes with TEST_EP and traffic EP */
 #if TEST_EP_NUM == 4
@@ -34,7 +34,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     unsigned char buffer[PACKET_COUNT][512];
     XUD_Result_t result;
     unsigned exit = 0;
-    
+
     unsigned pktLength[TEST_EP_COUNT];
     unsigned bufferIndex[TEST_EP_COUNT];
 
@@ -57,14 +57,14 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
             buffer[i][j] = counter++;
         }
         length++;
-    } 
+    }
 
     XUD_ep ep_in0 = XUD_InitEp(c_ep_in[TEST_EP_NUM]);
     XUD_SetReady_In(ep_in0, buffer[bufferIndex[0]++], pktLength[0]++);
-    
+
     XUD_ep ep_in1 = XUD_InitEp(c_ep_in[TEST_EP_NUM+1]);
     XUD_SetReady_In(ep_in1, buffer[bufferIndex[1]++], pktLength[1]++);
-    
+
     XUD_ep ep_in2 = XUD_InitEp(c_ep_in[TEST_EP_NUM+2]);
     XUD_SetReady_In(ep_in2, buffer[bufferIndex[2]++], pktLength[2]++);
 
@@ -75,7 +75,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
             case XUD_SetData_Select(c_ep_in[TEST_EP_NUM], ep_in0, result):
                 XUD_SetReady_In(ep_in0, buffer[bufferIndex[0]++], pktLength[0]++);
                 break;
-        
+
             case XUD_SetData_Select(c_ep_in[TEST_EP_NUM+1], ep_in1, result):
                 XUD_SetReady_In(ep_in1, buffer[bufferIndex[1]++], pktLength[1]++);
                 break;
@@ -84,7 +84,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
                 XUD_SetReady_In(ep_in2, buffer[bufferIndex[2]++], pktLength[2]++);
                 break;
         }
-        
+
         exit = 1;
         for (size_t i = 0; i < 3; i++)
         {

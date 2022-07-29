@@ -8,7 +8,7 @@
 #define PKT_LENGTH_START   (10)
 #endif
 
-#ifndef CTRL_EP_NUM   
+#ifndef CTRL_EP_NUM
 #define CTRL_EP_NUM        (TEST_EP_NUM + 1)
 #endif
 
@@ -23,28 +23,28 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     uint8_t outBuffer[128];
     unsigned length;
     XUD_Result_t result;
-    
+
     /* Stall test EP */
     XUD_ep ep_out = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
     XUD_SetStall(ep_out);
-    
+
     XUD_ep ep_ctrl = XUD_InitEp(c_ep_out[CTRL_EP_NUM]);
 
     /* Valid transaction on another EP, clear STALL on the test EP's */
     result = XUD_GetBuffer(ep_ctrl, outBuffer, length);
     failed = (result != XUD_RES_OKAY);
-   
-    /* Clear stall on the test EP's */ 
+
+    /* Clear stall on the test EP's */
     XUD_ClearStall(ep_out);
 
     /* Ensure test EP's now operate as expected */
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
-    
+
     result = XUD_GetBuffer(ep_out, outBuffer, length);
     failed |= (result != XUD_RES_OKAY);
 
     return failed;
-} 
+}
 
 #include "test_main.xc"

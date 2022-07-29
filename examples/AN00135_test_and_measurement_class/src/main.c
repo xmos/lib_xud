@@ -49,7 +49,7 @@ void _usbtmc_bulk_endpoints(chanend_t c_ep_out, chanend_t c_ep_in)
     XUD_SetReady_Out (ep_out, host_transfer_buf);
 
     SCPI_initialize_parser();
-    
+
     SELECT_RES(
         CASE_THEN(c_ep_out, xud_getdata_select_handler),
         CASE_THEN(c_ep_in, xud_setdata_select_handler))
@@ -91,11 +91,11 @@ void _usbtmc_bulk_endpoints(chanend_t c_ep_out, chanend_t c_ep_in)
                 case REQUEST_VENDOR_SPECIFIC_IN:
                     /* Handle any vendor specific command messages */
                 break;
-    
+
                 default:
                 break;
             }
-    
+
                 /* Mark EP as ready again */
             XUD_SetReady_Out (ep_out, host_transfer_buf);
             continue;
@@ -110,7 +110,7 @@ void _usbtmc_bulk_endpoints(chanend_t c_ep_out, chanend_t c_ep_in)
             XUD_SetReady_Out (ep_out, host_transfer_buf);
             continue;
     }
-    
+
 }
 
 

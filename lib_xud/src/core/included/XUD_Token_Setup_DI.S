@@ -25,11 +25,11 @@ XUD_Setup_ClearStall:                           // CRC OK
                                                 // Have received a Setup so clear any STALL condition on IN/OUT endpoint.
                                                 // Note, we can speed this up by assuming Setup only received on EP 0
     ldaw         r6, dp[epAddr]
-    
+
     ldaw         r11, r10[4]                    // R11 = R10 + 16
     ldw          r11, r6[r11]
     stw          r1, r11[10]                    // r1: 0
-    
+
     ldw          r11, r6[r10]
     ldc          r6, USB_PIDn_NAK
     stw          r6, r11[10]

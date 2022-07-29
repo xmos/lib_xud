@@ -13,7 +13,7 @@
 #define TEST_EP_NUM         (1)
 #endif
 
-#ifndef CTRL_EP_NUM   
+#ifndef CTRL_EP_NUM
 #define CTRL_EP_NUM         (TEST_EP_NUM + 1)
 #endif
 
@@ -29,7 +29,7 @@ unsigned test_ctrl(chanend c_ctrl, chanend c)
     unsigned length;
     XUD_Result_t result;
     uint32_t failed = 0;
-    
+
     XUD_ep ep_ctrl = XUD_InitEp(c_ctrl);
 
     c <: 1;
@@ -43,12 +43,12 @@ unsigned test_ctrl(chanend c_ctrl, chanend c)
 
     XUD_GetBuffer(ep_ctrl, ctrlBuffer, length);
     failed |= (length != PKT_LENGTH_START);
-    
+
     XUD_SetStallByAddr(TEST_EP_NUM);
-    
+
     XUD_GetBuffer(ep_ctrl, ctrlBuffer, length);
     failed |= (length != PKT_LENGTH_START);
-   
+
     XUD_ClearStallByAddr(TEST_EP_NUM);
 
     return failed;
@@ -61,24 +61,24 @@ unsigned test_ep(chanend c_ep_out, chanend c)
     unsigned length;
     XUD_Result_t result;
     unsigned x;
-    
+
     XUD_ep ep_out = XUD_InitEp(c_ep_out);
     XUD_SetStall(ep_out);
 
     c :> x;
 
-    /* First test marking EP ready whilst halted 
+    /* First test marking EP ready whilst halted
       Then subsequently marked un-halted - this should pause until un-halted */
     XUD_GetBuffer(ep_out, outBuffer, length);
-   
-    /* Additional normal OUT transaction */  
+
+    /* Additional normal OUT transaction */
     XUD_GetBuffer(ep_out, outBuffer, length);
 
-    c :> x; 
+    c :> x;
 
     /* Next test EP marked ready then subsequently marked as halted */
     XUD_GetBuffer(ep_out, outBuffer, length);
-    
+
     return failed;
 
 }
@@ -96,6 +96,6 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     }
 
     return failedCtrl | failedEp;
-} 
+}
 
 #include "test_main.xc"

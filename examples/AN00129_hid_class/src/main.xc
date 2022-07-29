@@ -1,7 +1,7 @@
 // Copyright 2015-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xud_device.h"
-#include "hid_defs.h" 
+#include "hid_defs.h"
 
 /* Number of Endpoints used by this app */
 #define EP_COUNT_OUT   1
@@ -17,7 +17,7 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, X
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in);
 
 /*
- * This function responds to the HID requests 
+ * This function responds to the HID requests
  * - It draws a square using the mouse moving 40 pixels in each direction
  * - The sequence repeats every 500 requests.
  */
@@ -25,7 +25,7 @@ void hid_mouse(chanend chan_ep_hid)
 {
     unsigned int counter = 0;
     enum {RIGHT, DOWN, LEFT, UP} state = RIGHT;
-    
+
     XUD_ep ep_hid = XUD_InitEp(chan_ep_hid);
 
     for(;;)
@@ -67,7 +67,7 @@ void hid_mouse(chanend chan_ep_hid)
             unsafe {
                 /* global buffer 'g_reportBuffer' defined in hid_defs.h */
                 char * unsafe p_reportBuffer = g_reportBuffer;
-                
+
                 p_reportBuffer[1] = x;
                 p_reportBuffer[2] = y;
 

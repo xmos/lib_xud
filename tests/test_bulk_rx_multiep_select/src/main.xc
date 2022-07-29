@@ -46,10 +46,10 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 
     XUD_ep ep_out0 = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
     XUD_SetReady_Out(ep_out0, buffer0[bufferIndex[0]++]);
-    
+
     XUD_ep ep_out1 = XUD_InitEp(c_ep_out[TEST_EP_NUM+1]);
     XUD_SetReady_Out(ep_out1, buffer1[bufferIndex[1]++]);
-    
+
     XUD_ep ep_out2 = XUD_InitEp(c_ep_out[TEST_EP_NUM+2]);
     XUD_SetReady_Out(ep_out2, buffer2[bufferIndex[2]++]);
 
@@ -58,15 +58,15 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
         select
         {
             case XUD_GetData_Select(c_ep_out[TEST_EP_NUM], ep_out0, length, result):
-               
+
                 if (length != pktLength[0]++)
                     return 1;
 
                 XUD_SetReady_Out(ep_out0, buffer0[bufferIndex[0]++]);
                 break;
-        
+
             case XUD_GetData_Select(c_ep_out[TEST_EP_NUM+1], ep_out1, length, result):
-               
+
                 if (length != pktLength[1]++)
                     return 1;
 
@@ -74,14 +74,14 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
                 break;
 
             case XUD_GetData_Select(c_ep_out[TEST_EP_NUM+2], ep_out2, length, result):
-               
+
                 if (length != pktLength[2]++)
                     return 1;
 
                 XUD_SetReady_Out(ep_out2, buffer2[bufferIndex[2]++]);
                 break;
         }
-        
+
         exit = 1;
         for (size_t i = 0; i < 3; i++)
         {
@@ -111,7 +111,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
                 printstr("Mismatch:");
                 printhexln(buffer1[i][j]);
                 return 1;
-            } 
+            }
             if(buffer2[i][j] != counter)
             {
                 printstr("Mismatch:");

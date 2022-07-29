@@ -59,8 +59,8 @@ in port rx_rdy                 = PORT_USB_RX_READY;
 on USB_TILE: clock tx_usb_clk  = XS1_CLKBLK_4;
 on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_5;
 
-// We use a single array instrad of two here and append epAddr_Ready_setup on the end to save some instructions in the Setup 
-// token handling code. i.e. what we really want is the following, but's less efficient. 
+// We use a single array instrad of two here and append epAddr_Ready_setup on the end to save some instructions in the Setup
+// token handling code. i.e. what we really want is the following, but's less efficient.
 // unsigned epAddr_Ready[USB_MAN_NUM_EP]
 // unsigned epAddr_Ready[USB_MAX_NUM_EP_OUT]
 unsigned epAddr[USB_MAX_NUM_EP];                        // Used to store the addr of each EP in ep_info array
@@ -153,7 +153,7 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
 static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chanend ?c_sof, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn, XUD_PwrConfig pwrConfig)
 {
     int reset = 1;            /* Flag for if device is returning from a reset */
-    
+
     /* Make sure ports are on and reset port states */
     set_port_use_on(p_usb_clk);
     set_port_use_on(p_usb_txd);
@@ -166,7 +166,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 #endif
 
 #if defined(__XS3A__)
-    
+
     #ifndef XUD_CORE_CLOCK
         #error XUD_CORE_CLOCK not defined (in MHz)
     #endif
@@ -206,7 +206,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     #define TX_RISE_DELAY 5
     #define TX_FALL_DELAY 1
 #endif
-    
+
     // Handshaken ports need USB clock
     configure_clock_src(tx_usb_clk, p_usb_clk);
     configure_clock_src(rx_usb_clk, p_usb_clk);
@@ -232,7 +232,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 #else
     set_pad_delay(flag1_port, 2);
 #endif
-        
+
     start_clock(tx_usb_clk);
     start_clock(rx_usb_clk);
 
@@ -247,10 +247,10 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     while(noExit)
     {
         unsigned settings[] = {0};
-    
+
         /* Enable USB funcitonality in the device */
         XUD_HAL_EnableUsb(pwrConfig);
-        
+
         while(1)
         {
             {
@@ -272,16 +272,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
                         t when timerafter(time):> void;
                     }
                 }
-                
+
                 /* Go into full speed mode: XcvrSelect and Term Select (and suspend) high */
                 XUD_HAL_EnterMode_PeripheralFullSpeed();
- 
+
                 /* Setup flags for power signalling - i.e. J/K/SE0 line state*/
                 XUD_HAL_Mode_Signalling();
-                
+
                 if (one)
                 {
-#if defined(XUD_BYPASS_CONNECT) 
+#if defined(XUD_BYPASS_CONNECT)
                     reset = 1;
 #else
                     reset = XUD_Init();
@@ -327,7 +327,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
                         SendResetToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
                         sentReset = 1;
                     }
-                    
+
                     /* Reset the OUT ep structures */
                     for(int i = 0; i< noEpOut; i++)
                     {
@@ -399,15 +399,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
             XUD_HAL_Mode_DataTransfer();
 
             set_thread_fast_mode_on();
-            
+
             /* Run main IO loop */
             /* flag0: Rx Error
                flag1: Rx Active
                flag2: Null / Valid Token  */
             noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag0_port, flag2_port, epTypeTableOut, epTypeTableIn, epAddr_Ready, noEpOut, c_sof);
-            
+
             set_thread_fast_mode_off();
- 
+
             if(!noExit)
                 break;
         }
@@ -430,13 +430,13 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 void _userTrapHandleRegister(void);
 
 #pragma unsafe arrays
-static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[]) 
+static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[])
 {
-    for(int i = 0; i < n; i++) 
+    for(int i = 0; i < n; i++)
     {
-        if(epTypeTable[i] != XUD_EPTYPE_DIS) 
+        if(epTypeTable[i] != XUD_EPTYPE_DIS)
         {
-            switch(op) 
+            switch(op)
             {
                 case 0:
                     outct(chans[i], XS1_CT_END);
@@ -480,7 +480,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
         ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
         ep_info[USB_MAX_NUM_EP_OUT+i].halted = USB_PIDn_STALL;
-        
+
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
         epAddr[USB_MAX_NUM_EP_OUT+i] = x;
     }
@@ -546,7 +546,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
             epTypeTableIn[i] = epTypeTableIn[i] & 0x7FFFFFFF;
 
             ep_info[USB_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
-            
+
             ep_info[USB_MAX_NUM_EP_OUT+i].halted = 0;    // Mark EP as not halted
 
             asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
@@ -574,7 +574,7 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     g_desSpeed = speed;
 
     SetupEndpoints(c_ep_out, noEpOut, c_ep_in, noEpIn, epTypeTableOut, epTypeTableIn);
-    
+
 #if 0
     /* Check that if the required channel has a destination if the EP is marked as in use */
     for( int i = 0; i < noEpOut + noEpIn; i++ )

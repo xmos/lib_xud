@@ -31,7 +31,7 @@ void TerminateFail(unsigned failReason)
         case FAIL_RX_EXPECTED_CTL:
             printstr("\nXCORE: ### FAIL ### : Expected a setup\n");
             break;
-        
+
         case FAIL_RX_BAD_RETURN_CODE:
             printstr("\nXCORE: ### FAIL ### : Unexpected return code\n");
             break;
@@ -52,7 +52,7 @@ void TerminatePass(unsigned x)
 void GenTxPacketBuffer(unsigned char buffer[], int length, int epNum)
 {
     for (int i = 0; i < length; i++)
-    unsafe 
+    unsafe
     {
         buffer[i] = g_txDataCheck[epNum]++;
     }
@@ -73,7 +73,7 @@ XUD_Result_t SendTxPacket(XUD_ep ep, int length, int epNum)
 int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode runMode)
 {
     XUD_ep ep_in  = XUD_InitEp(c_in);
-    
+
     unsigned char buffer[MAX_PKT_COUNT][1024];
 
     int counter = 0;
@@ -100,7 +100,7 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
 
     /* Allow a little time for Tx data to make it's way of the port - important for FS tests */
     {
-        timer t; 
+        timer t;
         unsigned time;
         t :> time;
         t when timerafter(time + 500) :> int _;
@@ -118,7 +118,7 @@ int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
     if (l != expectedLength)
     {
         printstr("#### Unexpected length on EP: ");
-        printint(epNum); 
+        printint(epNum);
         printstr(". Got: ");
         printint(l);
         printstr(" Expected: ");
@@ -129,14 +129,14 @@ int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
     for (int i = 0; i < l; i++)
     {
         unsigned char y;
-        
+
         unsafe
         {
             if(b[i] != g_rxDataCheck[epNum])
             {
 #ifdef XUD_SIM_XSIM
                 printstr("#### Mismatch on EP: ");
-                printint(epNum); 
+                printint(epNum);
                 printstr(". Got:");
                 printhex(b[i]);
                 printstr(" Expected:");
@@ -179,9 +179,9 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
         {
             unsigned expectedLength = start+i;
             unsigned fail = RxDataCheck(buffer[i], length[i], epNum, expectedLength);
-            if (fail) 
+            if (fail)
                 return fail;
-                       
+
         }
     }
 
@@ -194,7 +194,7 @@ int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode)
 {
     unsigned int length;
     XUD_Result_t res;
-    
+
     set_core_fast_mode_on();
 
     XUD_ep ep_out1 = XUD_InitEp(c_out1);
@@ -207,12 +207,12 @@ int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode)
     {
         XUD_GetBuffer(ep_out1, buffer, length);
         XUD_SetBuffer(ep_in1, buffer, length);
-        
+
         /* Loop back once and return */
         if(runMode == RUNMODE_DIE)
             break;
-       
-        /* Partial un-roll */ 
+
+        /* Partial un-roll */
         XUD_GetBuffer(ep_out1, buffer, length);
         XUD_SetBuffer(ep_in1, buffer, length);
     }

@@ -38,7 +38,7 @@ unsigned TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_sof)
     }
 
     /* Receive SOFs */
-    for (int i = 0; i< 5; i++) 
+    for (int i = 0; i< 5; i++)
         frames[i] = inuint(c_sof);
 
     XUD_GetBuffer(ep_out, buffer, length);
@@ -77,21 +77,21 @@ int main()
 
     par
     {
-        
+
         XUD_Main( c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 c_sof, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);
 
         {
             unsigned fail = TestEp_Bulk(c_ep_out[TEST_EP_NUM], c_ep_in[TEST_EP_NUM], TEST_EP_NUM, c_sof);
-            
+
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);
 
             if(fail)
                 TerminateFail(fail);
             else
-                TerminatePass(fail);  
+                TerminatePass(fail);
 
         }
     }

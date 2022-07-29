@@ -103,7 +103,7 @@ SetupTimeout:                                      // Timeout done using another
     ldw        r1, dp[rx_rdy]                      // TODO load from stack
 #endif
     eeu        res[RXD]                            // Events on RXD always enabled - Can't be any more due to using events on channels
-    
+
     in         r11, res[r1]                        // Do input and get port time/timestamps
     getts      r11, res[r1]
     ldw        r9, dp[g_txHandshakeTimeout]
@@ -125,7 +125,7 @@ TxHandshakeTimeOut:
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align FUNCTION_ALIGNMENT
 TxHandShakeReceived:
-    clre 
+    clre
     in         r11, res[RXD]                       // Input data from RXD port
     {clrpt     res[r1];                            // Clear port time on valid token port
     shr        r11, r11, 24}                       // Shift off junk data to leave ACK
@@ -187,7 +187,7 @@ TxTail2s:                                           // Two tail byte
     crcn        r7, r8, r9, r6
     crc32       r7, r4, r9                          // r4: 0
 XUD_IN_TxPid_TailS2:
-    outpw       res[TXD], r1, 8                     // Output PID 
+    outpw       res[TXD], r1, 8                     // Output PID
     outpw       res[TXD], r8, 16                    // Output data[0:1]
     not         r7, r7
 XUD_IN_TxCrc_TailS2:

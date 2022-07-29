@@ -8,7 +8,7 @@
 #ifndef PKT_LENGTH_END
 #define PKT_LENGTH_END        (13)
 #endif
-    
+
 #define EP_COUNT_OUT          (6)
 #define EP_COUNT_IN           (6)
 
@@ -20,7 +20,7 @@ XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL};
-XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, 
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,
                                                 XUD_EPTYPE_BUL,

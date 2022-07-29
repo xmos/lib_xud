@@ -14,7 +14,7 @@ void exit(int);
 
 #define FAIL_RX_DATAERROR        1
 #define FAIL_RX_LENERROR         2
-#define FAIL_RX_EXPECTED_CTL     3   
+#define FAIL_RX_EXPECTED_CTL     3
 #define FAIL_RX_BAD_RETURN_CODE  4
 #define FAIL_RX_FRAMENUMBER      5
 
@@ -26,7 +26,7 @@ void exit(int);
 #define PKT_LEN_END         (21)
 #endif
 
-#ifndef MAX_PKT_COUNT 
+#ifndef MAX_PKT_COUNT
 #define MAX_PKT_COUNT       (50)
 #endif
 

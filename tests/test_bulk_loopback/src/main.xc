@@ -13,7 +13,7 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_E
 
 #define KILL_EP         (TEST_EP_NUM + 1)
 
-#if (KILL_EP >= EP_COUNT_OUT) || (KILL_EP >= EP_COUNT_IN) 
+#if (KILL_EP >= EP_COUNT_OUT) || (KILL_EP >= EP_COUNT_IN)
 #error KILL EP OUT OF RANGE
 #endif
 

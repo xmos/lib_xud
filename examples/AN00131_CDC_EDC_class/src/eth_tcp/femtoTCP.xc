@@ -58,7 +58,7 @@ void tcpString(char s[], unsigned int rsp_packet[], unsigned &rsp_len) {
     (rsp_packet, unsigned char[])[HEADERS_LEN_TCP+len] = 0;
 
     patchTCPHeader(rsp_packet, len, ACK | PSH | FIN);
-    
+
     rsp_len = HEADERS_LEN_TCP + len;
     stream[stream_index].sequenceNumber += len;
     return;

@@ -108,9 +108,9 @@ void massStorageClass(chanend chan_ep1_out,chanend chan_ep1_in, int writeProtect
         int Operation_Code = 0;
         XUD_Result_t result;
         int ready = 1;
-        
+
         debug_printf("USB Mass Storage class demo started\n");
-        
+
         /* Load some default CSW to reduce response time delay */
         memset(commandStatus,0,CSW_SHORT_PACKET_SIZE);
         /* Signature helps identify this data packet as a CSW */
@@ -138,69 +138,69 @@ void massStorageClass(chanend chan_ep1_out,chanend chan_ep1_in, int writeProtect
                 dCBWSignature = commandBlock[0] | commandBlock[1] << 8 |
                 commandBlock[2] << 16 | commandBlock[3] << 24;
                 assert(dCBWSignature == CBW_SIGNATURE);
-                
+
                 bCBWDataTransferLength = commandBlock[8] | commandBlock[9]<<8 |
                 commandBlock[10] << 16 | commandBlock[11] << 24;
-                
+
                 bmCBWFlags = commandBlock[12]; bCBWLUN = (commandBlock[13] & 0x0F);
                 assert(bCBWCBLength = (commandBlock[14] & 0x1F) <= 16);
                 Operation_Code = commandBlock[15];
-                
+
                 switch(Operation_Code)
                 {
                     case TEST_UNIT_READY_CMD: // Test unit ready:
                         bCSWStatus = ready ? CSW_STATUS_CMD_PASSED : CSW_STATUS_CMD_FAILED;
                             break;
-                            
+
                     case REQUEST_SENSE_CMD: // Request sense
                             requestSenseAnswer[2] = ready ? STATUS_GOOD : STATUS_CHECK_CONDITION;
                                 result = XUD_SetBuffer(ep1_in, requestSenseAnswer, sizeof(requestSenseAnswer));
                                 break;
-                                
+
                     case INQUIRY_CMD: // Inquiry
                                 result = XUD_SetBuffer(ep1_in, inquiryAnswer, sizeof(inquiryAnswer));
                                     break;
-                                    
+
                     case START_STOP_CMD: // start/stop
                                     ready = ((commandBlock[19] >> 1) & 1) == 0;
                                         break;
-                                        
+
                     case MODE_SENSE_6_CMD:  // Mode sense (6)
                     case MODE_SENSE_10_CMD: // Mode sense (10) // For Mac OSX
                                         if (writeProtect) modeSenseAnswer[2] |= 0x80;
-                                            
+
                                                 result = XUD_SetBuffer(ep1_in, modeSenseAnswer, sizeof(modeSenseAnswer));
                                                 break;
-                                                
-                                                
+
+
                     case MEDIUM_REMOVAL_CMD: // Medium removal
                                                 break;
-                                                    
+
                     case RECEIVE_DIAGNOSTIC_RESULT_CMD:
                                                        memset(readCapacity,0x0000,sizeof(readCapacity));
                                                            result = XUD_SetBuffer(ep1_in, (readCapacity, unsigned char[8]), 32);
                                                            break;
-                                                           
+
                     case READ_FORMAT_CAPACITY_CMD: // Read Format capacity (UFI Command Spec)
                                                            readCapacity[0] = byterev(8);
                                                                readCapacity[1] = byterev(massStorageSize());
                                                                readCapacity[2] = byterev(MASS_STORAGE_BLOCKLENGTH) | (DETECT_AS_FLOPPY ? NO_CARTRIDGE_IN_DRIVE : FORMATTED_MEDIA);
                                                                result = XUD_SetBuffer(ep1_in, (readCapacity, unsigned char[8]), 12);
                                                                break;
-                                                               
+
                     case READ_CAPACITY_CMD: // Read capacity
                                                                readCapacity[0] = byterev(massStorageSize()-1);
                                                                    readCapacity[1] = byterev(MASS_STORAGE_BLOCKLENGTH);
                                                                    result = XUD_SetBuffer(ep1_in, (readCapacity, unsigned char[8]), 8);
                                                                    break;
-                                                                   
+
                     case READ_CAPACITY_16_CMD:
                                               memset(readCapacity,0x0000,sizeof(readCapacity));
                                                   readCapacity[1] = byterev(massStorageSize()-1);
                                                   readCapacity[2] = byterev(MASS_STORAGE_BLOCKLENGTH);
                                                   result = XUD_SetBuffer(ep1_in, (readCapacity, unsigned char[8]), 32);
                                                   break;
-                                                  
+
                     case READ_10_CMD: // Read (10)
                                                   readLength = commandBlock[22] << 8 | commandBlock[23];
                                                       readAddress = commandBlock[17] << 24 | commandBlock[18] << 16 |
@@ -210,7 +210,7 @@ void massStorageClass(chanend chan_ep1_out,chanend chan_ep1_in, int writeProtect
                                                               result = XUD_SetBuffer(ep1_in, blockBuffer, MASS_STORAGE_BLOCKLENGTH);
                                                               readAddress++; }
                                                               break;
-                                                              
+
                     case WRITE_10_CMD: // Write
                                                               readLength = commandBlock[22] << 8 | commandBlock[23];
                                                                   readAddress = commandBlock[17] << 24 | commandBlock[18] << 16 |
@@ -220,20 +220,20 @@ void massStorageClass(chanend chan_ep1_out,chanend chan_ep1_in, int writeProtect
                                                                           bCSWStatus |= massStorageWrite(readAddress, blockBuffer);
                                                                           readAddress++; }
                                                                           break;
-                                                                          
+
                     default:
                             debug_printf("Invalid Operation Code Received : 0x%x\n",Operation_Code);
                                 bCSWStatus = CSW_STATUS_CMD_FAILED;
                                 break;
                 }
         }
-        
+
             /* Check for result, if it is found as XUD_RES_RST, then reset Endpoints */
             if(result == XUD_RES_RST) {
                 XUD_ResetEndpoint(ep1_out,ep1_in);
                     break;
             }
-        
+
             /* Setup Command Status Wrapper (CSW). The CSW shall start on a packet boundry
              * and shall end as a short packet with exactly 13 (0x0D) bytes transferred */
             /* The device shall echo the contents of dCBWTag back to the host in the dCSWTag */
@@ -242,9 +242,9 @@ void massStorageClass(chanend chan_ep1_out,chanend chan_ep1_in, int writeProtect
             commandStatus[6] = commandBlock[6];
             commandStatus[7] = commandBlock[7];
             commandStatus[12] = bCSWStatus;
-            
+
             if(XUD_RES_RST == XUD_SetBuffer(ep1_in, commandStatus, CSW_SHORT_PACKET_SIZE))
                 XUD_ResetEndpoint(ep1_out,ep1_in);
-                    
+
     } //while(1)
 } // END of massStorageClass

@@ -9,7 +9,7 @@
 #define EP_COUNT_OUT   (6)
 #define EP_COUNT_IN    (6)
 
-XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, 
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
                                             XUD_EPTYPE_BUL,
                                             XUD_EPTYPE_BUL,
                                             XUD_EPTYPE_BUL,
@@ -36,7 +36,7 @@ int TestEp_Bulk(chanend c_out, chanend c_in, int epNum, chanend c_out_0)
     unsigned char buffer[1024];
 
     for(int i = 10; i <= 14; i++)
-    {    
+    {
         XUD_GetBuffer(ep_out, buffer, length);
 
         RxDataCheck(buffer, length, epNum, i);
@@ -52,7 +52,7 @@ int main()
 
     par
     {
-        
+
         XUD_Main( c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
                                 XUD_SPEED_HS, XUD_PWR_BUS);

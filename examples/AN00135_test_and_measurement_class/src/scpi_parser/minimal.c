@@ -2,7 +2,7 @@
  * Copyright (c) 2012-2013 Jan Breuer,
  *
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,10 +28,10 @@
 /**
  * @file   scpi_minimal.c
  * @date   Thu Nov 15 10:58:45 UTC 2012
- * 
+ *
  * @brief  SCPI minimal implementation
- * 
- * 
+ *
+ *
  */
 
 
@@ -44,7 +44,7 @@
 /**
  * Command stub function
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_Stub(scpi_t * context) {
     (void) context;
@@ -54,7 +54,7 @@ scpi_result_t SCPI_Stub(scpi_t * context) {
 /**
  * Query command stub function
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_StubQ(scpi_t * context) {
     SCPI_ResultString(context, "");
@@ -64,7 +64,7 @@ scpi_result_t SCPI_StubQ(scpi_t * context) {
 /**
  * SYSTem:VERSion?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_SystemVersionQ(scpi_t * context) {
     SCPI_ResultString(context, SCPI_STD_VERSION_REVISION);
@@ -74,7 +74,7 @@ scpi_result_t SCPI_SystemVersionQ(scpi_t * context) {
 /**
  * SYSTem:ERRor[:NEXT]?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_SystemErrorNextQ(scpi_t * context) {
     int16_t err = SCPI_ErrorPop(context);
@@ -88,7 +88,7 @@ scpi_result_t SCPI_SystemErrorNextQ(scpi_t * context) {
 /**
  * SYSTem:ERRor:COUNt?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_SystemErrorCountQ(scpi_t * context) {
     SCPI_ResultInt(context, SCPI_ErrorCount(context));
@@ -99,7 +99,7 @@ scpi_result_t SCPI_SystemErrorCountQ(scpi_t * context) {
 /**
  * STATus:QUEStionable[:EVENt]?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_StatusQuestionableEventQ(scpi_t * context) {
     /* return value */
@@ -114,7 +114,7 @@ scpi_result_t SCPI_StatusQuestionableEventQ(scpi_t * context) {
 /**
  * STATus:QUEStionable:ENABle?
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_StatusQuestionableEnableQ(scpi_t * context) {
     /* return value */
@@ -126,7 +126,7 @@ scpi_result_t SCPI_StatusQuestionableEnableQ(scpi_t * context) {
 /**
  * STATus:QUEStionable:ENABle
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_StatusQuestionableEnable(scpi_t * context) {
     int32_t new_QUESE;
@@ -139,7 +139,7 @@ scpi_result_t SCPI_StatusQuestionableEnable(scpi_t * context) {
 /**
  * STATus:PRESet
  * @param context
- * @return 
+ * @return
  */
 scpi_result_t SCPI_StatusPreset(scpi_t * context) {
     /* clear STATUS:... */

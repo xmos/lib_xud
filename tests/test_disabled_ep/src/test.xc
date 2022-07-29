@@ -26,7 +26,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     uint8_t inBuffer0[128];
     unsigned length;
     XUD_Result_t result;
-    
+
     for(size_t i = 0; i < PKT_LENGTH_START; i++)
     {
         inBuffer0[i] = i;
@@ -34,7 +34,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 
     XUD_ep ep_out = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
     XUD_ep ep_in = XUD_InitEp(c_ep_in[TEST_EP_NUM]);
-    
+
     result = XUD_GetBuffer(ep_out, outBuffer0, length);
     failed = (result != XUD_RES_OKAY);
 
@@ -43,7 +43,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 
     result = XUD_GetBuffer(ep_out, outBuffer0, length);
     failed = (result != XUD_RES_OKAY);
-   
+
     return failed;
 }
 

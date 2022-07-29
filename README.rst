@@ -1,7 +1,8 @@
 XMOS USB Device (XUD) Library
 =============================
 
-:Latest release: 2.1.0
+:Latest release: 2.2.0rc0
+
 
 :Scope: General Use
 
@@ -52,3 +53,9 @@ The following application notes use this library:
    * AN00124 - USB CDC VCOM device class
    * AN00135 - USB Test and Measurement device class
    * AN00136 - USB Vendor specific device
+
+Required software (dependencies)
+================================
+
+  * None
+

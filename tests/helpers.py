@@ -15,7 +15,8 @@ args = {"arch": "xs3"}
 
 def create_if_needed(folder):
     if not os.path.exists(folder):
-        os.makedirs(folder)
+        # exist_ok avoids exception when multiple test processes create at the same time
+        os.makedirs(folder, exist_ok=True)
     return folder
 
 

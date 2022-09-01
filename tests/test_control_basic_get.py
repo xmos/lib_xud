@@ -27,7 +27,7 @@ def test_session(ep, address, bus_speed):
 
     start_length = 0
     end_length = start_length + 10
-    interEventDelay=500
+    interEventDelay = 500
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address

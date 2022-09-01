@@ -9,8 +9,8 @@
 .align FUNCTION_ALIGNMENT
 Pid_Setup:
     #include "XUD_CrcAddrCheck.S"
-    ldaw       r3, r10[8]                       // R11 = R10 + 32. Read Past end of epAddr to epAddr_Setup
-    ldw        r3, r5[r3]                       // Load relevant EP pointer
+    ldaw       r7, r10[8]                       // R3 = R10 + 32. Read Past end of epAddr to epAddr_Setup
+    ldw        r3, r5[r7]                       // Load relevant EP pointer
     bf         r3, XUD_Setup_BuffFull
     ldw        r1, r3[3]                        // Load buffer
 
@@ -39,7 +39,7 @@ XUD_Setup_SendSetupAck:
     outpw      res[TXD], r11, 8
 
 XUD_Setup_StoreTailData:                        // TODO: don't assume setups are 8 bytes + crc
-    stw        r1, r5[r10]                      // Clear ready
+    stw        r1, r5[r7]                      // Clear ready
     ldw        r11, r3[1]                       // Load chanend
 
     out        res[r11], r4

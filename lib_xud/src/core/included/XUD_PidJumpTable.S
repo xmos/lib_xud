@@ -283,7 +283,7 @@ PidJumpTable:
 
 #endif
 
-#if defined(__XS3A__)
+#if !defined(__XS2A__)
 // Generated using genpidtable.c
 .section .dp.data, "adw", @progbits
 .globl PidJumpTable

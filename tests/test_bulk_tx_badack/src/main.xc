@@ -12,7 +12,7 @@
 #define EP_COUNT_OUT          (6)
 #define EP_COUNT_IN           (6)
 
-#include "shared.h"
+#include "xud_shared.h"
 
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
                                                 XUD_EPTYPE_BUL,

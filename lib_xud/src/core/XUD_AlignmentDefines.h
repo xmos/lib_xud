@@ -6,7 +6,7 @@
 
 #ifndef _XUD_ALIGNMENT_DEFINES_
 #define _XUD_ALIGNMENT_DEFINES_
-#if defined(__XS3A__)
+#if !defined(__XS2A__)
 #define IBUFFER_FETCH_CORRECTION 1
 #else
 #define IBUFFER_FETCH_CORRECTION 0

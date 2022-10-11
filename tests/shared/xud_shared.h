@@ -1,7 +1,7 @@
 // Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef _SHARED_H_
-#define _SHARED_H_
+#ifndef _XUD_SHARED_H_
+#define _XUD_SHARED_H_
 #include <xs1.h>
 #include <print.h>
 #include <stdio.h>

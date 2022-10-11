@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "xud.h"
 #include "platform.h"
-#include "shared.h"
+#include "xud_shared.h"
 
 #define XUD_EP_COUNT_OUT    (6)
 #define XUD_EP_COUNT_IN     (6)

@@ -12,7 +12,7 @@
 #define PKT_LENGTH_END      (19)
 #endif
 
-#include "shared.h"
+#include "xud_shared.h"
 
 /* The test bench will use either ep 1, 2, or 4 for the "test EP" */
 

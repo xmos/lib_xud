@@ -2,7 +2,7 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <print.h>
-#include "shared.h"
+#include "xud_shared.h"
 
 unsigned char g_rxDataCheck_[16] = {0};
 unsigned char g_txDataCheck_[16] = {0};
@@ -16,7 +16,7 @@ unsafe
 
 #ifdef XUD_SIM_XSIM
 /* Alternatives to the RTL sim testbench functions */
-void TerminateFail(unsigned failReason)
+void TerminateFail(int failReason)
 {
     switch(failReason)
     {
@@ -42,7 +42,7 @@ void TerminateFail(unsigned failReason)
     }
     exit(failReason);
 }
-void TerminatePass(unsigned x)
+void TerminatePass(int x)
 {
     exit(0);
 }

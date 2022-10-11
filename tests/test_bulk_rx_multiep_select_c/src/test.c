@@ -3,7 +3,7 @@
 #include <xcore/select.h>
 #include "xud.h"
 #include "test.h"
-#include "shared.h"
+#include "xud_shared.h"
 
 #define PACKET_LEN_START   (10)
 #define PACKET_LEN_END     (19)

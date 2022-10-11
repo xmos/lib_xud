@@ -9,7 +9,7 @@
 
 #include <platform.h>
 
-#if defined(__XS3A__)
+#if !defined(__XS2A__)
 #define XUD_OPT_SOFTCRC5 (1)
 #else
 #define XUD_OPT_SOFTCRC5 (0)

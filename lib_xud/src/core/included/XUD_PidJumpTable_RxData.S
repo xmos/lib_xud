@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #if defined (__XS2A__)
 
@@ -283,7 +283,7 @@ PidJumpTable_RxData:
 
 #endif
 
-#if defined(__XS3A__)
+#if !defined(__XS2A__)
 // Generated using genpidtable.c
 .section .dp.data, "adw", @progbits
 .globl PidJumpTable_RxData

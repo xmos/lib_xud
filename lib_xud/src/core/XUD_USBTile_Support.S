@@ -8,8 +8,8 @@
 #ifdef __XS2A__
 #include <xs2a_registers.h>
 #endif
-#ifdef __XS3A__
-#include <xs3a_registers.h>
+#if !defined(__XS2A__)
+#include <xs1.h>
 #endif
 #include <XUD_AlignmentDefines.h>
 

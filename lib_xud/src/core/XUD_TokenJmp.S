@@ -1,7 +1,7 @@
 // Copyright 2013-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#ifndef __XS3A__
+#if defined(__XS2A__)
     ldaw       r10, dp[PidJumpTable]                  // TODO Could load from sp here
                                                       // We receive: | 0000 4-bit EP | 0000 4-bit PID |
     inpw       r11, res[RXD], 8                       // Read 8 bit PID
@@ -9,7 +9,7 @@
 
     ldw        r10, r10[r11]                          // Load relevant branch address
     bau        r10
-#else //__XS3A__
+#else 
     {ldw         r10, sp[STACK_PIDJUMPTABLE]
     ldc         r8, 16}
 

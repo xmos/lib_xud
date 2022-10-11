@@ -17,7 +17,7 @@
 #define PKT_LENGTH_END 		(14)
 #endif
 
-#include "shared.h"
+#include "xud_shared.h"
 
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
                                                 XUD_EPTYPE_ISO,

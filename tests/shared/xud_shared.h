@@ -1,7 +1,7 @@
 // Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef _SHARED_H_
-#define _SHARED_H_
+#ifndef _XUD_SHARED_H_
+#define _XUD_SHARED_H_
 #include <xs1.h>
 #include <print.h>
 #include <stdio.h>
@@ -47,8 +47,10 @@ int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode);
 
 void dummyThreads();
 
-void TerminateFail(unsigned failReason);
-void TerminatePass(unsigned x);
+#ifdef XUD_SIM_XSIM
+void TerminateFail(int failReason);
+void TerminatePass(int x);
+#endif
 
 int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength);
 void GenTxPacketBuffer(unsigned char buffer[], int length, int epNum);

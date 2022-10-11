@@ -165,7 +165,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     set_port_use_on(flag2_port);
 #endif
 
-#if defined(__XS3A__)
+#if !defined(__XS2A__)
 
     #ifndef XUD_CORE_CLOCK
         #error XUD_CORE_CLOCK not defined (in MHz)
@@ -227,7 +227,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
 
-#ifdef __XS3A__
+#if !defined(__XS2A__)
     set_pad_delay(flag1_port, 2);
 #else
     set_pad_delay(flag1_port, 2);
@@ -331,7 +331,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
                     /* Reset the OUT ep structures */
                     for(int i = 0; i< noEpOut; i++)
                     {
-#ifdef __XS3A__
+#if !defined(__XS2A__)
                         ep_info[i].pid = USB_PIDn_DATA0;
 #else
                         ep_info[i].pid = USB_PID_DATA0;
@@ -513,7 +513,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
             ep_info[i].epType = epTypeTableOut[i];
             ep_info[i].halted = USB_PIDn_NAK;      // Mark EP as not halted
 
-#ifdef __XS3A__
+#if !defined(__XS2A__)
             ep_info[i].pid = USB_PIDn_DATA0;
 #else
             ep_info[i].pid = USB_PID_DATA0;

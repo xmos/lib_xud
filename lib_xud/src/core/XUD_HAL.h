@@ -11,8 +11,8 @@
 
 #define USB_TILE_REF usb_tile
 
-#ifdef __XS3A__
-#include <xs3a_registers.h>
+#if !defined(__XS2A__)
+#include <xs1.h>
 // TODO should be properly in HAL
 unsigned XtlSelFromMhz(unsigned m);
 #else

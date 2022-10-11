@@ -74,7 +74,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 while(1)
                 {
                     /* TODO Use a timer to save some juice...*/
-#ifdef __XS3A__
+#if !defined(__XS2A__)
                     unsigned dp, dm;
                     flag0_port :> dm;
                     flag1_port :> dp;
@@ -104,7 +104,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                 }
                 break;
 
-#ifdef __XS3A__
+#if !defined(__XS2A__)
 // Note, J and K definitions are reversed in XS3A
 #define j_port flag1_port
 #define k_port flag0_port
@@ -133,7 +133,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                         XUD_HAL_EnterMode_PeripheralHighSpeed();
 
                         // Wait for SE0 (TODO consume other chirps?)
-#ifdef __XS3A__
+#if !defined(__XS2A__)
                         // TODO ideally dont use a polling loop here
                         while (XUD_HAL_GetLineState() != XUD_LINESTATE_SE0);
 #else

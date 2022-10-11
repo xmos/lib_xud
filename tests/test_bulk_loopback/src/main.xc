@@ -2,7 +2,7 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* lib_xud simple bulk loopback test */
-#include "shared.h"
+#include "xud_shared.h"
 
 #define EP_COUNT_OUT   (6)
 #define EP_COUNT_IN    (6)

@@ -17,7 +17,7 @@
 #define CTRL_EP_NUM         (TEST_EP_NUM + 1)
 #endif
 
-#include "shared.h"
+#include "xud_shared.h"
 
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL, XUD_EPTYPE_BUL};

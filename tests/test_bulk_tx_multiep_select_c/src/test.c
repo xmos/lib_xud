@@ -2,7 +2,7 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xcore/select.h>
 #include "test.h"
-#include "shared.h"
+#include "xud_shared.h"
 
 #define PACKET_LEN_START   (10)
 #define PACKET_LEN_END     (19)

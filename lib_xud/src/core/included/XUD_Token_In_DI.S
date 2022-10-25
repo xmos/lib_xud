@@ -31,18 +31,18 @@ XUD_IN_NotReady:
     #include "XUD_TokenJmp.S"
 
 XUD_IN_TxHandshake:                                // Non-Iso
-    ldaw         r11, dp[epAddr]
-    ldw          r11, r11[r3]
-    ldw          r11, r11[10]
+    ldaw        r11, dp[epAddr]
+    ldw         r11, r11[r3]
+    ldw         r11, r11[10]
 
-    bf         r11, XUD_IN_TxNak
+    bf          r11, XUD_IN_TxNak
 XUD_IN_TxStall:
-    outpw     res[TXD], r11, 8                     // Output STALL
+    outpw       res[TXD], r11, 8                    // Output STALL
     #include "XUD_TokenJmp.S"
 
 XUD_IN_TxNak:
-    ldc        r11, USB_PIDn_NAK
-    outpw     res[TXD], r11, 8
+    ldc         r11, USB_PIDn_NAK
+    outpw       res[TXD], r11, 8
     #include "XUD_TokenJmp.S"
 
 .align FUNCTION_ALIGNMENT

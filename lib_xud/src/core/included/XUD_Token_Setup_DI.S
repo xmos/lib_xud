@@ -39,7 +39,7 @@ XUD_Setup_SendSetupAck:
     outpw      res[TXD], r11, 8
 
 XUD_Setup_StoreTailData:                        // TODO: don't assume setups are 8 bytes + crc
-    stw        r1, r5[r7]                      // Clear ready
+    stw        r1, r5[r7]                       // Clear ready
     ldw        r11, r3[1]                       // Load chanend
 
     out        res[r11], r4

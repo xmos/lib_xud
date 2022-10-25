@@ -316,7 +316,6 @@ NextTokenAfterOut:
     ldw         r1, sp[STACK_VTOK_PORT]
 #endif
 
-NextTokenAfterInNak:
 Loop_BadPid:
 NextTokenAfterPing:
     setsr       1                               // Enable thread events

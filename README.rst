@@ -1,7 +1,7 @@
 XMOS USB Device (XUD) Library
 =============================
 
-:Latest release: 2.2.0
+:Latest release: 2.2.1
 
 
 :Scope: General Use

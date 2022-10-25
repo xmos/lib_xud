@@ -1,19 +1,26 @@
 lib_xud Change Log
 ==================
 
+2.3.0
+-----
+
+  * FIXED:     Control endpoint ready flag not properly cleared on receipt of
+    SETUP transaction (#356)
+
 2.2.0
 -----
 
   * CHANGE:    Further API functions re-authored in C (were Assembly)
   * CHANGE:    Endpoints marked as Disabled now reply with STALL if the host
-    attempts to access them, previously they would NAK
+    attempts to access them, previously they would NAK (#342)
   * FIXED:     Exception if host accesses an endpoint that XUD believes to be
     not in use
   * FIXED:     Timeout event properly cleaned up after tx handshake received
+    (#312)
   * FIXED:     A control endpoint will respect the halt condition for OUT
-    transactions when marked ready to accept SETUP transactions
+    transactions when marked ready to accept SETUP transactions (#339)
   * FIXED:     USB Disconnect on self-powered devices intermittently causing Iso
-    EP's to be set to not-ready indefinitely
+    EP's to be set to not-ready indefinitely (#351)
 
 2.1.0
 -----

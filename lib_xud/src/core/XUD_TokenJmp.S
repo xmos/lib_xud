@@ -9,7 +9,7 @@
 
     ldw        r10, r10[r11]                          // Load relevant branch address
     bau        r10
-#else 
+#else
     {ldw         r10, sp[STACK_PIDJUMPTABLE]
     ldc         r8, 16}
 

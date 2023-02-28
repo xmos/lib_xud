@@ -1,4 +1,4 @@
-// Copyright 2019-2022 XMOS LIMITED.
+// Copyright 2019-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /**
@@ -6,6 +6,7 @@
  * \brief   USB HAL Layer
 **/
 
+#include <xccompat.h>
 #include "xud.h"
 #include <platform.h>
 
@@ -55,7 +56,7 @@ XUD_LineState_t XUD_HAL_GetLineState();
  * \param   Reference to current linestate (updated with new linestate
  * \return  1 for timed out, otherwise 0
 **/
-unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned timeout);
+unsigned XUD_HAL_WaitForLineStateChange(REFERENCE_PARAM(XUD_LineState_t, currentLs), unsigned timeout);
 
 /**
  *  \brief   HAL function to set xCORE into signalling mode

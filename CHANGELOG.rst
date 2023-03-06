@@ -1,6 +1,13 @@
 lib_xud Change Log
 ==================
 
+2.2.2
+-----
+
+  * FIXED:     Syntax error when including xud.h from C
+  * CHANGE:    Various API functions optionally marked as a weak symbol based on
+    XUD_WEAK_API
+
 2.2.1
 -----
 

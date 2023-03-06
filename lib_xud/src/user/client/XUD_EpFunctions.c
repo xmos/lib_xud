@@ -169,7 +169,15 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     return XUD_RES_OKAY;
 }  // NOCOVER
 
-XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
+XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
+{
+    unsigned char tmp[8];
+
+    /* Send 0 length packet */
+    return XUD_SetBuffer(ep_in, tmp, 0);
+}
+
+XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength) 
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 

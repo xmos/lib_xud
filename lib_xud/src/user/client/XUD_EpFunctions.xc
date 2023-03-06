@@ -49,13 +49,7 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[
     return XUD_GetBuffer(ep_out, tmpBuffer, rxlength);
 }
 
-XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
-{
-    unsigned char tmp[8];
 
-    /* Send 0 length packet */
-    return XUD_SetBuffer(ep_in, tmp, 0);
-}
 
 void XUD_CloseEndpoint(XUD_ep one)
 {

@@ -1,7 +1,8 @@
 XMOS USB Device (XUD) Library
 =============================
 
-:Latest release: 2.2.1
+:Version: 2.2.2
+:Vendor: XMOS
 
 
 :Scope: General Use
@@ -54,8 +55,18 @@ The following application notes use this library:
    * AN00135 - USB Test and Measurement device class
    * AN00136 - USB Vendor specific device
 
-Required software (dependencies)
+Required Software (dependencies)
 ================================
 
   * None
+
+Documentation
+=============
+
+You can find the documentation for this software in the /doc directory of the package.
+
+Support
+=======
+
+This package is supported by XMOS Ltd. Issues can be raised against the software at: http://www.xmos.com/support
 

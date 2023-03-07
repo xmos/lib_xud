@@ -1,5 +1,6 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
 /*
  * \brief     User defines and functions for XMOS USB Device library
  */
@@ -29,6 +30,16 @@
 #include <platform.h>
 #include <print.h>
 #include <xccompat.h>
+
+#ifndef XUD_WEAK_API
+#define XUD_WEAK_API       (0)
+#endif
+
+#if defined(__STDC__) && XUD_WEAK_API
+#define ATTRIB_WEAK __attribute__((weak));
+#else
+#define ATTRIB_WEAK
+#endif
 
 #if !defined(USB_TILE)
   #define USB_TILE tile[0]
@@ -181,7 +192,7 @@ int XUD_Manager(chanend c_epOut[], int noEpOut,
  * \param   length      The number of bytes written to the buffer
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  **/
-XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
+XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length)) ATTRIB_WEAK;
 
 /**
  * \brief   Request setup data from usb buffer for a specific endpoint, pauses until data is available.
@@ -190,7 +201,7 @@ XUD_Result_t XUD_GetBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARA
  * \param   length      Length of the buffer received (expect 8 bytes)
  * \return  XUD_RES_OKAY on success, for errors see ``Status Reporting``_.
  **/
-XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length));
+XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE_PARAM(unsigned, length)) ATTRIB_WEAK;
 
 /**
  * \brief  This function must be called by a thread that deals with an IN endpoint.
@@ -201,7 +212,7 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep ep_out, unsigned char buffer[], REFERENCE
  * \param   datalength  The number of bytes in the buffer.
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
-XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength);
+XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datalength) ATTRIB_WEAK;
 
 /**
  * \brief   Similar to XUD_SetBuffer but breaks up data transfers into smaller packets.
@@ -214,7 +225,7 @@ XUD_Result_t XUD_SetBuffer(XUD_ep ep_in, unsigned char buffer[], unsigned datale
  * \param   epMax       The maximum packet size in bytes.
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  */
-XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax);
+XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned datalength, unsigned epMax) ATTRIB_WEAK;
 
 /**
  * \brief  Performs a combined ``XUD_SetBuffer`` and ``XUD_GetBuffer``.
@@ -230,7 +241,7 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
  * \param   requested   The length that the host requested, (Typically pass the value ``wLength``).
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_
  **/
-XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested);
+XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer[], unsigned length, unsigned requested) ATTRIB_WEAK;
 
 /**
  * \brief   This function sends an empty packet back on the next IN request with
@@ -238,7 +249,7 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer
  * \param   ep_in       The Endpoint 0 IN identifier to the XUD manager.
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
  **/
-XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in);
+XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in) ATTRIB_WEAK;
 
 /**
  * \brief   This function will complete a reset on an endpoint. Can take

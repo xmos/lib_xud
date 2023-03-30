@@ -49,7 +49,7 @@ unsigned XtlSelFromMhz(unsigned m)
 }
 #endif
 extern clock rx_usb_clk;
-clock clk_ref = XS1_CLKBLK_REF;
+on USB_TILE: clock clk_ref = XS1_CLKBLK_REF;
 
 unsigned int XUD_EnableUsbPortMux();
 

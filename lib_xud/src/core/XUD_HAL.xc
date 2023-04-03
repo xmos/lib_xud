@@ -49,7 +49,6 @@ unsigned XtlSelFromMhz(unsigned m)
 }
 #endif
 extern clock rx_usb_clk;
-on USB_TILE: clock clk_ref = XS1_CLKBLK_REF;
 
 unsigned int XUD_EnableUsbPortMux();
 
@@ -288,7 +287,8 @@ void XUD_HAL_EnterMode_TristateDrivers()
 
 void XUD_HAL_Mode_Signalling()
 {
-    configure_in_port(flag1_port, clk_ref);
+    /* Reset port to use XS1_CLKBLK_REF (from rx_usb_clk) */
+    set_port_use_on(flag1_port);
 #ifdef __XS2A__
     /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */
   	set_port_no_inv(flag2_port);

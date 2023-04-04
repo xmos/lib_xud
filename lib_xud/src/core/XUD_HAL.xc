@@ -1,4 +1,4 @@
-// Copyright 2019-2022 XMOS LIMITED.
+// Copyright 2019-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -48,6 +48,7 @@ unsigned XtlSelFromMhz(unsigned m)
     return 0b000;
 }
 #endif
+extern clock rx_usb_clk;
 
 unsigned int XUD_EnableUsbPortMux();
 
@@ -286,6 +287,9 @@ void XUD_HAL_EnterMode_TristateDrivers()
 
 void XUD_HAL_Mode_Signalling()
 {
+    /* Reset port to use XS1_CLKBLK_REF (from rx_usb_clk) */
+    set_port_use_on(flag1_port);
+
 #ifdef __XS2A__
     /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */
   	set_port_no_inv(flag2_port);
@@ -303,6 +307,9 @@ void XUD_HAL_Mode_Signalling()
 
 void XUD_HAL_Mode_DataTransfer()
 {
+    configure_in_port(flag1_port, rx_usb_clk);
+    set_pad_delay(flag1_port, 2);
+
 #ifdef __XS2A__
     /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
      * NOTE: Need to do this every iteration since CHKTOK would break power signaling */

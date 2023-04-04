@@ -227,11 +227,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
 
-#if !defined(__XS2A__)
     set_pad_delay(flag1_port, 2);
-#else
-    set_pad_delay(flag1_port, 2);
-#endif
 
     start_clock(tx_usb_clk);
     start_clock(rx_usb_clk);

@@ -289,6 +289,7 @@ void XUD_HAL_Mode_Signalling()
 {
     /* Reset port to use XS1_CLKBLK_REF (from rx_usb_clk) */
     set_port_use_on(flag1_port);
+
 #ifdef __XS2A__
     /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */
   	set_port_no_inv(flag2_port);
@@ -307,6 +308,8 @@ void XUD_HAL_Mode_Signalling()
 void XUD_HAL_Mode_DataTransfer()
 {
     configure_in_port(flag1_port, rx_usb_clk);
+    set_pad_delay(flag1_port, 2);
+
 #ifdef __XS2A__
     /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
      * NOTE: Need to do this every iteration since CHKTOK would break power signaling */

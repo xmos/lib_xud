@@ -179,5 +179,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 break;
         }
     }
+
+    return 0; // unreachable
 }
 

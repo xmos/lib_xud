@@ -1,6 +1,13 @@
 lib_xud Change Log
 ==================
 
+2.2.3
+-----
+
+  * FIXED:     XUD_UserSuspend() and XUD_UserResume() now properly marked as
+    weak symbols (#374)
+  * FIXED:     Incorrect time reference used during device attach process (#367)
+
 2.2.2
 -----
 

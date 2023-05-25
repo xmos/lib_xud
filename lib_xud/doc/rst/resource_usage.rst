@@ -153,13 +153,13 @@ Core Frequency
 
 Due to I/O requirements, the library requires a guaranteed MIPS rate to
 ensure correct operation. This means that core count restrictions must
-be observed. The XUD core must run at at least 80 MIPS.
+be observed. The XUD core must run at at least 85 MIPS.
 
-This means that for an xCORE device running at 500MHz there should be no more
-than six cores executing at any time when using the XUD. xCORE devices allow setting cores to
+This means that for an xCORE device running at 600MHz there should be no more
+than seven cores executing at any time when using the XUD. xCORE devices allow setting cores to
 "priority" mode. Priority cores are guarenteed 20% of the processor bandwidth. If XUD is assigned
 a priority core then up to eight cores may be used with the remaining seven getting
-(500 * 0.8) / 7 = 57.1MHz each.
+(600 * 0.8) / 7 = 68.6MIPS each.
 
 This restriction is only a requirement on the tile on which the ``XUD_Main`` is running.
 For example, the other tile on an dual-core device is unaffected by this restriction.

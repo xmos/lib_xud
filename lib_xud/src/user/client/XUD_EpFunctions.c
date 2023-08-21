@@ -190,7 +190,7 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
             return XUD_RES_RST;
         }
 
-        result = XUD_GetBuffer_Finish(ep->client_chanend, ep, datalength);
+        result = XUD_GetBuffer_Finish(ep->client_chanend, e, datalength);
 
         /* If error (e.g. bad PID seq) try again */
         if(result != XUD_RES_ERR)
@@ -211,7 +211,7 @@ void XUD_GetData_Select(chanend c, XUD_ep e, unsigned *datalength, XUD_Result_t 
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
-    *result = XUD_GetBuffer_Finish(ep->client_chanend, ep, datalength);
+    *result = XUD_GetBuffer_Finish(ep->client_chanend, e, datalength);
 }
 
 XUD_Result_t XUD_GetSetupBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
@@ -345,7 +345,7 @@ XUD_Result_t XUD_SetBuffer(XUD_ep e, unsigned char buffer[], unsigned datalength
         return result;
     }
 
-    return XUD_SetBuffer_Finish(ep->client_chanend, ep);
+    return XUD_SetBuffer_Finish(ep->client_chanend, e);
 }
 
 void XUD_SetData_Select(chanend c, XUD_ep e, XUD_Result_t *result)

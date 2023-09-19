@@ -349,7 +349,10 @@ void XUD_Kill(XUD_ep ep);
  *                         The buffer is assumed to be word aligned.
  * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
-static inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
+#if (XUD_WEAK_API)
+XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr);
+#else
+static inline XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
     int chan_array_ptr;
     int reset;
@@ -366,6 +369,7 @@ static inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 
     return XUD_RES_OKAY;
 }
+#endif
 
 /**
  * \brief      Marks an OUT endpoint as ready to receive data
@@ -374,7 +378,7 @@ static inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
  *                         The buffer is assumed to be word aligned.
  * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
-int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]);
+int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]) ATTRIB_WEAK;
 
 
 /**
@@ -385,6 +389,9 @@ int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]);
  * \param      len         The length of the data to transmit.
  * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
+#if (XUD_WEAK_API)
+XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len);
+#else
 static inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 {
     int chan_array_ptr;
@@ -439,6 +446,7 @@ static inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
 
     return XUD_RES_OKAY;
 }
+#endif
 
 /**
  * \brief   Marks an IN endpoint as ready to transmit data
@@ -469,7 +477,6 @@ static inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], in
 #pragma select handler
 #endif
 void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length), REFERENCE_PARAM(XUD_Result_t, result));
-
 
 /**
  * \brief   Select handler function for transmitting IN endpoint data in a select.

@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 
@@ -8,7 +8,7 @@
 extern out buffered port:32 p_usb_txd;
 
 #define T_INTER_TEST_PACKET_us 2
-#define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * REF_CLK_FREQ)
+#define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * PLATFORM_REFERENCE_MHZ)
 
 #ifndef XUD_TEST_MODE_SUPPORT_DISABLED
 unsigned int test_packet[] =

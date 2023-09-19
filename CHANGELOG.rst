@@ -1,6 +1,14 @@
 lib_xud Change Log
 ==================
 
+2.2.4
+-----
+
+  * CHANGE:    Removed definition and use of REF_CLK_FREQ in favour of
+    PLATFORM_REFERENCE_MHZ from platform.h
+  * FIXED:     Do not include implementations of inline functions when
+    XUD_WEAK_API is set
+
 2.2.3
 -----
 
@@ -165,7 +173,7 @@ Note: Forked from sc_xud at this point.
 
 2.3.2
 -----
-    * CHANGE:     Interrupts disabled during any access to usb_tile. Allows greater reliability 
+    * CHANGE:     Interrupts disabled during any access to usb_tile. Allows greater reliability
       if user suspend/resume functions enabled interrupts e.g. for role-switch
 
 2.3.1

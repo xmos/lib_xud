@@ -83,7 +83,7 @@ unsigned sentReset = 0;
 unsigned chanArray;
 
 #define RESET_TIME_us               (5)
-#define RESET_TIME                  (RESET_TIME_us * REF_CLK_FREQ)
+#define RESET_TIME                  (RESET_TIME_us * PLATFORM_REFERENCE_MHZ)
 
 extern unsigned XUD_LLD_IoLoop(
                             in buffered port:32 rxd_port,
@@ -264,7 +264,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
                             break;
                         }
                         t :> time;
-                        time += (200 * REF_CLK_FREQ); // 200us poll
+                        time += (200 * PLATFORM_REFERENCE_MHZ); // 200us poll
                         t when timerafter(time):> void;
                     }
                 }

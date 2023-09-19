@@ -8,12 +8,12 @@
 
 #define T_WTRSTFS_us        26 // 26us
 #ifndef T_WTRSTFS
-#define T_WTRSTFS            (T_WTRSTFS_us * REF_CLK_FREQ)
+#define T_WTRSTFS            (T_WTRSTFS_us * PLATFORM_REFERENCE_MHZ)
 #endif
 #define STATE_START_TO_us 3000 // 3ms
-#define STATE_START_TO       (STATE_START_TO_us * REF_CLK_FREQ)
+#define STATE_START_TO       (STATE_START_TO_us * PLATFORM_REFERENCE_MHZ)
 #define DELAY_6ms_us      6000
-#define DELAY_6ms            (DELAY_6ms_us * REF_CLK_FREQ)
+#define DELAY_6ms            (DELAY_6ms_us * PLATFORM_REFERENCE_MHZ)
 #define T_FILTSE0          250
 
 #ifndef SUSPEND_VBUS_POLL_TIMER_TICKS

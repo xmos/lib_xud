@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #if !defined(XUD_BYPASS_RESET)
 #include <xs1.h>
@@ -14,13 +14,13 @@ extern in  port flag2_port;
 extern out buffered port:32 p_usb_txd;
 
 #define TUCHEND_DELAY_us   (1500) // 1.5ms
-#define TUCHEND_DELAY      (TUCHEND_DELAY_us * REF_CLK_FREQ)
+#define TUCHEND_DELAY      (TUCHEND_DELAY_us * PLATFORM_REFERENCE_MHZ)
 
 #ifndef INVALID_DELAY_us
 #define INVALID_DELAY_us   (2500) // 2.5ms
 #endif
 
-#define INVALID_DELAY      (INVALID_DELAY_us * REF_CLK_FREQ)
+#define INVALID_DELAY      (INVALID_DELAY_us * PLATFORM_REFERENCE_MHZ)
 
 extern int resetCount;
 

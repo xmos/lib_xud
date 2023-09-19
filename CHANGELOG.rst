@@ -6,7 +6,7 @@ lib_xud Change Log
 
   * CHANGE:    Removed definition and use of REF_CLK_FREQ in favour of
     PLATFORM_REFERENCE_MHZ from platform.h
-  * FIXED:     Do not include implementations of inline funcitons when
+  * FIXED:     Do not include implementations of inline functions when
     XUD_WEAK_API is set
 
 2.2.3

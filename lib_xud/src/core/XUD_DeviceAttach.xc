@@ -14,13 +14,13 @@ extern in  port flag2_port;
 extern out buffered port:32 p_usb_txd;
 
 #define TUCHEND_DELAY_us   (1500) // 1.5ms
-#define TUCHEND_DELAY      (TUCHEND_DELAY_us * REF_CLK_FREQ)
+#define TUCHEND_DELAY      (TUCHEND_DELAY_us * PLATFORM_REFERENCE_MHZ)
 
 #ifndef INVALID_DELAY_us
 #define INVALID_DELAY_us   (2500) // 2.5ms
 #endif
 
-#define INVALID_DELAY      (INVALID_DELAY_us * REF_CLK_FREQ)
+#define INVALID_DELAY      (INVALID_DELAY_us * PLATFORM_REFERENCE_MHZ)
 
 extern int resetCount;
 

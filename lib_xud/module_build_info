@@ -2,7 +2,6 @@ VERSION = 2.2.3
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \
-                   -DREF_CLK_FREQ=100 \
                    -fasm-linenum \
                    -fcomment-asm \
                    -DXUD_FULL_PIDTABLE=1 \

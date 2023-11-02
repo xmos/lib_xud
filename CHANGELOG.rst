@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+UNRELEASED
+----------
+
+  * ADDED:     Support for XCommon CMake build system
+
 2.2.4
 -----
 

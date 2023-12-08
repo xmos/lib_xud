@@ -44,7 +44,7 @@ unsigned XtlSelFromMhz(unsigned m)
 }
 #endif
 
-extern XUD_resources_t * unsafe resource_ptr;
+extern XUD_resources_t XUD_resources;
 
 unsigned int XUD_EnableUsbPortMux();
 
@@ -84,12 +84,10 @@ void XUD_HAL_EnableUsb(unsigned pwrConfig)
 #endif
 
     /* Wait for USB clock (typically 1ms after reset) */
-    unsafe{
-        resource_ptr->p_usb_clk when pinseq(1) :> int _;
-        resource_ptr->p_usb_clk when pinseq(0) :> int _;
-        resource_ptr->p_usb_clk when pinseq(1) :> int _;
-        resource_ptr->p_usb_clk when pinseq(0) :> int _;
-    }
+    XUD_resources.p_usb_clk when pinseq(1) :> int _;
+    XUD_resources.p_usb_clk when pinseq(0) :> int _;
+    XUD_resources.p_usb_clk when pinseq(1) :> int _;
+    XUD_resources.p_usb_clk when pinseq(0) :> int _;
 
 #ifdef __XS2A__
     /* Some extra settings are required for proper operation on XS2A */
@@ -287,11 +285,11 @@ void XUD_HAL_EnterMode_TristateDrivers()
 void XUD_HAL_Mode_Signalling()
 {
     /* Reset port to use XS1_CLKBLK_REF (from rx_usb_clk) */
-    unsafe{set_port_use_on(resource_ptr->flag1_port);}
+    set_port_use_on(XUD_resources.flag1_port);
 
 #ifdef __XS2A__
     /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */
-  	set_port_no_inv(resource_ptr->flag2_port);
+  	set_port_no_inv(XUD_resources.flag2_port);
 
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM,
         ((1<<XS1_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
@@ -306,10 +304,8 @@ void XUD_HAL_Mode_Signalling()
 
 void XUD_HAL_Mode_DataTransfer()
 {
-    unsafe{
-        configure_in_port(resource_ptr->flag1_port, resource_ptr->rx_usb_clk);
-        set_pad_delay(resource_ptr->flag1_port, 2);
-    }
+    configure_in_port(XUD_resources.flag1_port, XUD_resources.rx_usb_clk);
+    set_pad_delay(XUD_resources.flag1_port, 2);
 
 #ifdef __XS2A__
     /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
@@ -326,7 +322,7 @@ void XUD_HAL_Mode_DataTransfer()
              | ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)<<16)));
 
     /* Flag 2 (VALID_TOKEN) port is inverted as an optimisation (having a zero is useful) */
-  	unsafe{set_port_inv(flag2_port);}
+  	set_port_inv(flag2_port);
 #else
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 0);
@@ -354,11 +350,9 @@ XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
 {
 #ifdef __XS2A__
     unsigned j, k, se0;
-    unsafe{
-        resource_ptr->flag0_port :> j;
-        resource_ptr->flag1_port :> k;
-        resource_ptr->flag2_port :> se0;
-    }
+    XUD_resources.flag0_port :> j;
+    XUD_resources.flag1_port :> k;
+    XUD_resources.flag2_port :> se0;
 
     if(j)
         return XUD_LINESTATE_HS_J_FS_K;
@@ -370,10 +364,8 @@ XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
     return XUD_LINESTATE_SE1;
 #else
     unsigned dp, dm;
-    unsafe{
-        resource_ptr->dp_port :> dp;
-        resource_ptr->dm_port :> dm;
-    }
+    XUD_resources.dp_port :> dp;
+    XUD_resources.dm_port :> dm;
     return LinesToLineState(dp, dm);
 #endif
 }
@@ -393,18 +385,16 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     unsigned k = currentLs == XUD_LINESTATE_HS_K_FS_J;
 
     /* Wait for a change on any flag port */
-    unsafe{
-        select
-        {
-            case resource_ptr->flag0_port when pinsneq(j) :> void:
-                break;
-            case resource_ptr->flag1_port when pinsneq(k) :> void:
-                break;
-            case resource_ptr->flag2_port when pinsneq(se0) :> void:
-                break;
-            case timeout != null => t when timerafter(time + timeout) :> int _:
-                return 1;
-        }
+    select
+    {
+        case XUD_resources.flag0_port when pinsneq(j) :> void:
+            break;
+        case XUD_resources.flag1_port when pinsneq(k) :> void:
+            break;
+        case XUD_resources.flag2_port when pinsneq(se0) :> void:
+            break;
+        case timeout != null => t when timerafter(time + timeout) :> int _:
+            return 1;
     }
 
     /* Read current line state - two lines may have change e.g k/j to SE0 */
@@ -417,18 +407,16 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     {dp, dm} = LineStateToLines(currentLs);
 
     /* Wait for change */
-    unsafe{
-        select
-        {
-            case resource_ptr->dp_port when pinsneq(dp) :> dp:
-                resource_ptr->dm_port :> dm; //Both might have changed!
-                break;
-            case resource_ptr->dm_port when pinsneq(dm) :> dm:
-                resource_ptr->dp_port :> dp; //Both might have changed!
-                break;
-            case timeout != null => t when timerafter(time + timeout) :> int _:
-                return 1;
-        }
+    select
+    {
+        case XUD_resources.dp_port when pinsneq(dp) :> dp:
+            XUD_resources.dm_port :> dm; //Both might have changed!
+            break;
+        case XUD_resources.dm_port when pinsneq(dm) :> dm:
+            XUD_resources.dp_port :> dp; //Both might have changed!
+            break;
+        case timeout != null => t when timerafter(time + timeout) :> int _:
+            return 1;
     }
 
     /* Return new linestate */

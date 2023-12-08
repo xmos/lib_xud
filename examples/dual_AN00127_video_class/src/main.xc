@@ -88,7 +88,7 @@ int main() {
     {
         on USB_TILE:
                     {
-                        init_xud_resources(&resources);
+                        init_xud_resources(resources);
                         printstr("XUD\n");
                         XUD_Main(c_ep_out, EP_COUNT_OUT, c_ep_in, EP_COUNT_IN,
                                 null, epTypeTableOut, epTypeTableIn,
@@ -104,7 +104,7 @@ int main() {
 
         on USB_TILE: 
                     {
-                        init_xud_resources(&resources2);
+                        init_xud_resources(resources2);
                         printstr("XUD\n");
                         XUD_Main_wrapper(c_ep_out2, EP_COUNT_OUT, c_ep_in2, EP_COUNT_IN,
                                 null, epTypeTableOut2, epTypeTableIn2,

@@ -71,6 +71,10 @@
     #endif
 #endif // PORT_USB_CLK
 
+#ifndef XUD_EXTERNAL_RESOURCES
+#define XUD_EXTERNAL_RESOURCES 0
+#endif
+
 /**
  * \var        typedef     XUD_EpTransferType
  * \brief      Typedef for endpoint data transfer types.  Note: it is important that ISO is 0
@@ -532,5 +536,14 @@ typedef struct XUD_ep_info
     unsigned int array_ptr_setup;      // 12
 } XUD_ep_info;
 
-#endif
+/**
+ * \brief   Resource initialisation for cases where we have multiple instances of XUD in a project.
+ *          This MUST be called prior to running XUD_Main otherwise XUD will assert 0
+ * \param   resources   A struct of type XUD_resources_t declared in XC containing the XUD
+ *                      resources which must be placed on a specific tile.
+ */
+void init_xud_resources(REFERENCE_PARAM(XUD_resources_t, resources));
+
+#endif // __ASSEMBLER__
+
 #endif // _XUD_H_

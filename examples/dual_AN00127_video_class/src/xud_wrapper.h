@@ -13,4 +13,3 @@ int XUD_Main_wrapper(chanend c_epOut[], int noEpOut,
 
 void Endpoint0_wrapper(chanend chan_ep0_out, chanend chan_ep0_in, unsigned short PID);
 void VideoEndpointsHandler_wrapper(chanend c_epint_in, chanend c_episo_in, unsigned instance);
-void init_xud_resources(XUD_resources_t * resources);

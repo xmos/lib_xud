@@ -64,56 +64,14 @@ on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_5;
 
 #else
 
-#if XUD_EXTERNAL_RESOURCES
-/* These are globals to allow assembler functions to access resource IDs */
+/*  These are globals to allow assembler functions to access resource IDs 
+    using the DP relative addressing mode*/
 int rx_rdy = 0;
 int flag1_port = 0;
 int p_usb_rxd = 0;
 int p_usb_txd = 0;
 
 extern XUD_resources_t XUD_resources;
-
-// XUD_resources_t XUD_resources = {
-//     PORT_USB_FLAG0,
-//     PORT_USB_FLAG1,
-// #ifdef __XS2A__
-//     PORT_USB_FLAG2
-// #else
-//     null,
-// #endif
-//     PORT_USB_CLK,
-//     PORT_USB_TXD,
-//     PORT_USB_RXD,
-//     PORT_USB_TX_READYOUT,
-//     PORT_USB_TX_READYIN,
-//     PORT_USB_RX_READY,
-//     XS1_CLKBLK_4,
-//     XS1_CLKBLK_5
-// };
-/*
-    port flag1_port;
-    NULLABLE_RESOURCE(port, flag2_port);
-    in_buffered_port_32_t p_usb_clk;
-    out_buffered_port_32_t p_usb_txd;
-    in_buffered_port_32_t p_usb_rxd ;
-    port tx_readyout;
-    port tx_readyin;
-    port rx_rdy;
-    xcore_clock_t tx_usb_clk;
-    xcore_clock_t rx_usb_clk;
-        #define PORT_USB_CLK         on USB_TILE: XS1_PORT_1J
-    #define PORT_USB_TXD         on USB_TILE: XS1_PORT_8A
-    #define PORT_USB_RXD         on USB_TILE: XS1_PORT_8B
-    #define PORT_USB_TX_READYOUT on USB_TILE: XS1_PORT_1K
-    #define PORT_USB_TX_READYIN  on USB_TILE: XS1_PORT_1H
-    #define PORT_USB_RX_READY    on USB_TILE: XS1_PORT_1I
-    #define PORT_USB_FLAG0       on USB_TILE: XS1_PORT_1E
-    #define PORT_USB_FLAG1       on USB_TILE: XS1_PORT_1F
-        #define PORT_USB_FLAG2       on USB_TILE: XS1_PORT_1G;
-*/
-unsafe{ XUD_resources_t * unsafe resource_ptr = &XUD_resources;}
-#endif
-
 #endif
 
 // We use a single array instrad of two here and append epAddr_Ready_setup on the end to save some instructions in the Setup
@@ -212,16 +170,16 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     int reset = 1;            /* Flag for if device is returning from a reset */
 
     /* Make sure ports are on and reset port states */
-    unsafe{
-    set_port_use_on(resource_ptr->p_usb_clk);
-    set_port_use_on(resource_ptr->p_usb_txd);
-    set_port_use_on(resource_ptr->p_usb_rxd);
-    set_port_use_on(resource_ptr->flag0_port);
-    set_port_use_on(resource_ptr->flag1_port);
+    set_port_use_on(XUD_resources.p_usb_clk);
+    set_port_use_on(XUD_resources.p_usb_txd);
+    set_port_use_on(XUD_resources.p_usb_rxd);
+    set_port_use_on(XUD_resources.flag0_port);
+    set_port_use_on(XUD_resources.flag1_port);
+
 
 #if defined(__XS2A__)
     /* Extra flag port in XS2 */
-    set_port_use_on(resource_ptr->flag2_port);
+    set_port_use_on(XUD_resources.flag2_port);
 #endif
 
 #if !defined(__XS2A__)
@@ -267,37 +225,35 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 #endif
 
     // Handshaken ports need USB clock
-    configure_clock_src(resource_ptr->tx_usb_clk, resource_ptr->p_usb_clk);
-    configure_clock_src(resource_ptr->rx_usb_clk, resource_ptr->p_usb_clk);
+    configure_clock_src(XUD_resources.tx_usb_clk, XUD_resources.p_usb_clk);
+    configure_clock_src(XUD_resources.rx_usb_clk, XUD_resources.p_usb_clk);
 
     // This, along with the following delays,  forces the clock
     // to the ports to be effectively controlled by the
     // previous usb clock edges
-    set_port_inv(resource_ptr->p_usb_clk);
-    set_port_sample_delay(resource_ptr->p_usb_clk);
+    set_port_inv(XUD_resources.p_usb_clk);
+    set_port_sample_delay(XUD_resources.p_usb_clk);
 
     // This delay controls the capture of rdy
-    set_clock_rise_delay(resource_ptr->tx_usb_clk, TX_RISE_DELAY);
+    set_clock_rise_delay(XUD_resources.tx_usb_clk, TX_RISE_DELAY);
 
     // This delay controls the launch of data.
-    set_clock_fall_delay(resource_ptr->tx_usb_clk, TX_FALL_DELAY);
+    set_clock_fall_delay(XUD_resources.tx_usb_clk, TX_FALL_DELAY);
 
     // This delay the capture of the rdyIn and data.
-    set_clock_rise_delay(resource_ptr->rx_usb_clk, RX_RISE_DELAY);
-    set_clock_fall_delay(resource_ptr->rx_usb_clk, RX_FALL_DELAY);
+    set_clock_rise_delay(XUD_resources.rx_usb_clk, RX_RISE_DELAY);
+    set_clock_fall_delay(XUD_resources.rx_usb_clk, RX_FALL_DELAY);
 
-    set_pad_delay(resource_ptr->flag1_port, 2);
+    set_pad_delay(XUD_resources.flag1_port, 2);
 
-    start_clock(resource_ptr->tx_usb_clk);
-    start_clock(resource_ptr->rx_usb_clk);
+    start_clock(XUD_resources.tx_usb_clk);
+    start_clock(XUD_resources.rx_usb_clk);
 
- 	configure_out_port_handshake(resource_ptr->p_usb_txd, resource_ptr->tx_readyin, resource_ptr->tx_readyout, resource_ptr->tx_usb_clk, 0);
-  	configure_in_port_strobed_slave(resource_ptr->p_usb_rxd, resource_ptr->rx_rdy, resource_ptr->rx_usb_clk);
+ 	configure_out_port_handshake(XUD_resources.p_usb_txd, XUD_resources.tx_readyin, XUD_resources.tx_readyout, XUD_resources.tx_usb_clk, 0);
+  	configure_in_port_strobed_slave(XUD_resources.p_usb_rxd, XUD_resources.rx_rdy, XUD_resources.rx_usb_clk);
 
     /* Clock RxA port from USB clock - helps fall event */
-    configure_in_port(resource_ptr->flag1_port, resource_ptr->rx_usb_clk);
-
-    } // unsafe
+    configure_in_port(XUD_resources.flag1_port, XUD_resources.rx_usb_clk);
 
     unsigned noExit = 1;
 
@@ -463,11 +419,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
                flag1: Rx Active
                flag2: Null / Valid Token  */
             unsafe{
-                noExit = XUD_LLD_IoLoop(resource_ptr->p_usb_rxd,
-                                        resource_ptr->flag1_port,
-                                        resource_ptr->p_usb_txd,
-                                        resource_ptr->flag0_port,
-                                        resource_ptr->flag2_port,
+                noExit = XUD_LLD_IoLoop(XUD_resources.p_usb_rxd,
+                                        XUD_resources.flag1_port,
+                                        XUD_resources.p_usb_txd,
+                                        XUD_resources.flag0_port,
+                                        XUD_resources.flag2_port,
                                         epTypeTableOut,
                                         epTypeTableIn,
                                         epAddr_Ready,
@@ -487,14 +443,14 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     unsafe{
 
     /* Turn ports off */
-    set_port_use_off(resource_ptr->p_usb_txd);
-    set_port_use_off(resource_ptr->p_usb_rxd);
-    set_port_use_off(resource_ptr->flag0_port);
-    set_port_use_off(resource_ptr->flag1_port);
+    set_port_use_off(XUD_resources.p_usb_txd);
+    set_port_use_off(XUD_resources.p_usb_rxd);
+    set_port_use_off(XUD_resources.flag0_port);
+    set_port_use_off(XUD_resources.flag1_port);
 #ifdef __XS2A__
-    set_port_use_off(resource_ptr->flag2_port);
+    set_port_use_off(XUD_resources.flag2_port);
 #endif
-    set_port_use_off(resource_ptr->p_usb_clk);
+    set_port_use_off(XUD_resources.p_usb_clk);
     } // unsafe 
     return 0;
 }
@@ -646,13 +602,16 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 
     printstr("XUD\n");
 #if XUD_EXTERNAL_RESOURCES
+    for(int i = 0; i < sizeof(XUD_resources_t) / 4; i++){
+        int resid = 0;
+        // assert()
+    }
     /* Ensure global resids accessed by ASM are initt'd */ 
-    assert(resource_ptr);
     unsafe{
-        rx_rdy = (int)resource_ptr->rx_rdy;
-        flag1_port = (int)resource_ptr->flag1_port;
-        p_usb_rxd = (int)resource_ptr->p_usb_rxd;
-        p_usb_txd = (int)resource_ptr->p_usb_txd;
+        rx_rdy = (int)XUD_resources.rx_rdy;
+        flag1_port = (int)XUD_resources.flag1_port;
+        p_usb_rxd = (int)XUD_resources.p_usb_rxd;
+        p_usb_txd = (int)XUD_resources.p_usb_txd;
     }
 #endif
 

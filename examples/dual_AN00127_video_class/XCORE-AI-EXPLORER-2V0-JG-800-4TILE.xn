@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Network xmlns="http://www.xmos.com"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.xmos.com http://www.xmos.com">
+  <Type>Board</Type>
+  <Name>xcore.ai Explorer Kit x2 Wired as 4 tile system</Name>
+
+  <Declarations>
+    <Declaration>tileref tile[4]</Declaration>
+  </Declarations>
+
+  <Packages>
+    <!-- Package on first explorer board -->
+    <Package id="0" Type="XS3-UnA-1024-FB265">
+      <Nodes>
+        <Node Id="0" InPackageId="0" Type="XS3-L16A-1024" Oscillator="24MHz" SystemFrequency="800MHz" ReferenceFrequency="100MHz">
+          <Boot>
+            <Source Location="bootFlash"/>
+            <Bootee NodeId="1"/>
+          </Boot>
+          <Tile Number="0" Reference="tile[0]">
+            <Port Location="XS1_PORT_1B" Name="PORT_SQI_CS"/>
+            <Port Location="XS1_PORT_1C" Name="PORT_SQI_SCLK"/>
+            <Port Location="XS1_PORT_4B" Name="PORT_SQI_SIO"/>
+            <Port Location="XS1_PORT_4C" Name="PORT_LEDS"/>
+          </Tile>
+          <Tile Number="1" Reference="tile[1]"/>
+        </Node>
+      </Nodes>
+    </Package>
+    <!-- Package on second explorer board -->
+    <Package id="1" Type="XS3-UnA-1024-FB265">
+      <Nodes>
+        <Node Id="1" InPackageId="0" Type="XS3-L16A-1024" Oscillator="24MHz" SystemFrequency="800MHz" ReferenceFrequency="100MHz">
+          <Boot>
+            <Source Location="LINK" BootMode="6"/>
+          </Boot>
+          <Tile Number="0" Reference="tile[2]"/>
+          <Tile Number="1" Reference="tile[3]"/>
+        </Node>
+      </Nodes>
+    </Package>
+  </Packages>
+
+  <!-- XTAG-4 Node -->
+  <Nodes>
+    <Node Id="2" Type="device:" RoutingId="0x8000">
+      <Service Id="0" Proto="xscope_host_data(chanend c);">
+        <Chanend Identifier="c" end="3"/>
+      </Service>
+    </Node>
+  </Nodes>
+
+  <Links>
+    <!-- Two 5 wire links between the two boards -->
+<!--     <Link Encoding="5wire" Delays="4clk">
+      <LinkEndpoint NodeId="0" Link="1"/>
+      <LinkEndpoint NodeId="1" Link="2"/>
+    </Link> -->
+    <!-- Delays - inter token (10b) delay, inter-symbol (1b for 2wire link) -->
+    <Link Encoding="2wire" Delays="5,5">
+      <LinkEndpoint NodeId="0" Link="2"/>
+      <LinkEndpoint NodeId="1" Link="1"/>
+    </Link>
+    <!-- Single 2 wire link between Node 0 device and XTAG-4 for XScope -->
+    <Link Encoding="2wire" Delays="6clk" Flags="XSCOPE">
+      <LinkEndpoint NodeId="0" Link="0"/>
+      <LinkEndpoint NodeId="2" Chanend="1"/>
+    </Link>
+  </Links>
+
+  <ExternalDevices>
+    <Device NodeId="0" Tile="0" Class="SQIFlash" Name="bootFlash" Type="AT25FF321A" PageSize="256" SectorSize="4096" NumPages="16384">
+      <Attribute Name="PORT_SQI_CS" Value="PORT_SQI_CS"/>
+      <Attribute Name="PORT_SQI_SCLK"   Value="PORT_SQI_SCLK"/>
+      <Attribute Name="PORT_SQI_SIO"  Value="PORT_SQI_SIO"/>
+      <Attribute Name="QE_REGISTER" Value="flash_qe_location_status_reg_1"/>
+      <Attribute Name="QE_BIT" Value="flash_qe_bit_1"/>
+    </Device>
+  </ExternalDevices>
+
+  <JTAGChain>
+    <JTAGDevice NodeId="0"/>
+    <JTAGDevice NodeId="1"/>
+  </JTAGChain>
+
+</Network>

@@ -120,6 +120,22 @@ typedef enum XUD_Result
     XUD_RES_ERR =  2,
 } XUD_Result_t;
 
+/* All of the resources accessed by XUD */
+typedef struct XUD_resources_t
+{
+    port flag0_port;
+    port flag1_port;
+    NULLABLE_RESOURCE(port, flag2_port);
+    in_buffered_port_32_t p_usb_clk;
+    out_buffered_port_32_t p_usb_txd;
+    in_buffered_port_32_t p_usb_rxd ;
+    port tx_readyout;
+    port tx_readyin;
+    port rx_rdy;
+    xcore_clock_t tx_usb_clk;
+    xcore_clock_t rx_usb_clk;
+} XUD_resources_t;
+
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.

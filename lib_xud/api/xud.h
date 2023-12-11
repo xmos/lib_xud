@@ -538,9 +538,10 @@ typedef struct XUD_ep_info
 
 /**
  * \brief   Resource initialisation for cases where we have multiple instances of XUD in a project.
- *          This MUST be called prior to running XUD_Main otherwise XUD will assert 0
- * \param   resources   A struct of type XUD_resources_t declared in XC containing the XUD
- *                      resources which must be placed on a specific tile.
+ *          This is only relevant when the XUD_EXTERNAL_RESOURCES define is set to non-zero.
+ *          This MUST be called prior to running XUD_Main otherwise XUD will assert 0.
+ * \param   resources   A struct of type XUD_resources_t declared in XC by the user application
+ *          containing the XUD resources (see XUD_resources_t). These must be placed on a specific tile.
  */
 void init_xud_resources(REFERENCE_PARAM(XUD_resources_t, resources));
 

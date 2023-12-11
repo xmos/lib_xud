@@ -16,6 +16,5 @@ extern XUD_resources_t XUD_resources;
 
 void init_xud_resources(XUD_resources_t * resources)
 {
-    printf("d: %p s: %p\n", &XUD_resources, resources);
     memcpy(&XUD_resources, resources, sizeof(XUD_resources_t));
 }

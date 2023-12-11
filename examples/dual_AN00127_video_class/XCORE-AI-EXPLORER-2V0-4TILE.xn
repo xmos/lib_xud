@@ -13,7 +13,7 @@
     <!-- Package on first explorer board -->
     <Package id="0" Type="XS3-UnA-1024-FB265">
       <Nodes>
-        <Node Id="0" InPackageId="0" Type="XS3-L16A-1024" Oscillator="24MHz" SystemFrequency="800MHz" ReferenceFrequency="100MHz">
+        <Node Id="0" InPackageId="0" Type="XS3-L16A-1024" Oscillator="24MHz" SystemFrequency="600MHz" ReferenceFrequency="100MHz">
           <Boot>
             <Source Location="bootFlash"/>
             <Bootee NodeId="1"/>
@@ -31,7 +31,7 @@
     <!-- Package on second explorer board -->
     <Package id="1" Type="XS3-UnA-1024-FB265">
       <Nodes>
-        <Node Id="1" InPackageId="0" Type="XS3-L16A-1024" Oscillator="24MHz" SystemFrequency="800MHz" ReferenceFrequency="100MHz">
+        <Node Id="1" InPackageId="0" Type="XS3-L16A-1024" Oscillator="24MHz" SystemFrequency="600MHz" ReferenceFrequency="100MHz">
           <Boot>
             <Source Location="LINK" BootMode="6"/>
           </Boot>

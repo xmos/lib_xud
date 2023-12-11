@@ -42,37 +42,40 @@ unsigned g_txHandshakeTimeout;
 
 #if !XUD_EXTERNAL_RESOURCES
 
-in port flag0_port = PORT_USB_FLAG0; /* For XS3: Mission: RXE, XS2 is configurable and set to RXE in mission mode */
-in port flag1_port = PORT_USB_FLAG1; /* For XS3: Mission: RXA, XS2 is configuratble and set to RXA in mission mode*/
-
 /* XS2A has an additonal flag port. In Mission mode this is set to VALID_TOKEN */
 #ifdef __XS2A__
-in port flag2_port = PORT_USB_FLAG2;
+#define FLAG2_PORT PORT_USB_FLAG2
 #else
-#define flag2_port null
+#define FLAG2_PORT null
 #endif
 
-in buffered port:32 p_usb_clk  = PORT_USB_CLK;
-out buffered port:32 p_usb_txd = PORT_USB_TXD;
-in  buffered port:32 p_usb_rxd = PORT_USB_RXD;
-out port tx_readyout           = PORT_USB_TX_READYOUT;
-in port tx_readyin             = PORT_USB_TX_READYIN;
-in port rx_rdy                 = PORT_USB_RX_READY;
-
-on USB_TILE: clock tx_usb_clk  = XS1_CLKBLK_4;
-on USB_TILE: clock rx_usb_clk  = XS1_CLKBLK_5;
+XUD_resources_t XUD_resources = {
+    PORT_USB_FLAG0, /* For XS3: Mission: RXE, XS2 is configurable and set to RXE in mission mode */
+    PORT_USB_FLAG1, /* For XS3: Mission: RXA, XS2 is configuratble and set to RXA in mission mode*/
+    FLAG2_PORT,
+    PORT_USB_CLK,
+    PORT_USB_TXD,
+    PORT_USB_RXD,
+    PORT_USB_TX_READYOUT,
+    PORT_USB_TX_READYIN,
+    PORT_USB_RX_READY,
+    on USB_TILE: XS1_CLKBLK_4,
+    on USB_TILE: XS1_CLKBLK_5
+};
 
 #else
+
+extern XUD_resources_t XUD_resources;
+
+#endif
 
 /*  These are globals to allow assembler functions to access resource IDs 
     using the DP relative addressing mode*/
 int rx_rdy = 0;
 int flag1_port = 0;
+int flag2_port = 0;
 int p_usb_rxd = 0;
 int p_usb_txd = 0;
-
-extern XUD_resources_t XUD_resources;
-#endif
 
 // We use a single array instrad of two here and append epAddr_Ready_setup on the end to save some instructions in the Setup
 // token handling code. i.e. what we really want is the following, but's less efficient.
@@ -600,18 +603,20 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
 {
     g_desSpeed = speed;
 
+    /* Ensure global resids accessed by ASM are initt'd */ 
+    unsafe{
+        rx_rdy = (int)XUD_resources.rx_rdy;
+        flag1_port = (int)XUD_resources.flag1_port;
+        flag2_port = (int)XUD_resources.flag2_port;
+        p_usb_rxd = (int)XUD_resources.p_usb_rxd;
+        p_usb_txd = (int)XUD_resources.p_usb_txd;
+    }
+
     printstr("XUD\n");
 #if XUD_EXTERNAL_RESOURCES
     for(int i = 0; i < sizeof(XUD_resources_t) / 4; i++){
         int resid = 0;
         // assert()
-    }
-    /* Ensure global resids accessed by ASM are initt'd */ 
-    unsafe{
-        rx_rdy = (int)XUD_resources.rx_rdy;
-        flag1_port = (int)XUD_resources.flag1_port;
-        p_usb_rxd = (int)XUD_resources.p_usb_rxd;
-        p_usb_txd = (int)XUD_resources.p_usb_txd;
     }
 #endif
 

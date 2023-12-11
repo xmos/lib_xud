@@ -51,7 +51,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
    // XS3 has raw linestate on flag port 0 and 1
    // Wait for fs chirp k (i.e. HS chirp j)
 #if defined(__XS2A__)
-    flag1_port when pinseq(0) :> tmp; // Wait for out k to go
+    XUD_resources.flag1_port when pinseq(0) :> tmp; // Wait for out k to go
 #endif
 
     t :> start_time;
@@ -131,7 +131,7 @@ int XUD_DeviceAttachHS(XUD_PwrConfig pwrConfig)
                         // TODO ideally dont use a polling loop here
                         while (XUD_HAL_GetLineState() != XUD_LINESTATE_SE0);
 #else
-                        flag2_port when pinseq(1) :> tmp;
+                        XUD_resources.flag2_port when pinseq(1) :> tmp;
 #endif
 
                         /* Return 1 to indicate successful HS handshake*/

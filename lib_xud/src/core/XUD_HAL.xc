@@ -322,7 +322,7 @@ void XUD_HAL_Mode_DataTransfer()
              | ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)<<16)));
 
     /* Flag 2 (VALID_TOKEN) port is inverted as an optimisation (having a zero is useful) */
-  	set_port_inv(flag2_port);
+  	set_port_inv(XUD_resources.flag2_port);
 #else
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 0);
@@ -332,8 +332,8 @@ void XUD_HAL_Mode_DataTransfer()
 
 /* In full-speed and low-speed mode, LineState(0) always reflects DP and LineState(1) reflects DM */
 /* Note, this port ordering is the opposite of what might be expected - but linestate is swapped in the USB shim */
-#define dp_port flag0_port      // DP: LINESTATE[0]
-#define dm_port flag1_port      // DM: LINESTATE[1]
+#define dp_port XUD_resources.flag0_port      // DP: LINESTATE[0]
+#define dm_port XUD_resources.flag1_port      // DM: LINESTATE[1]
 
 {unsigned, unsigned} LineStateToLines(XUD_LineState_t ls)
 {
@@ -364,8 +364,8 @@ XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
     return XUD_LINESTATE_SE1;
 #else
     unsigned dp, dm;
-    XUD_resources.dp_port :> dp;
-    XUD_resources.dm_port :> dm;
+    dp_port :> dp;
+    dm_port :> dm;
     return LinesToLineState(dp, dm);
 #endif
 }
@@ -409,11 +409,11 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     /* Wait for change */
     select
     {
-        case XUD_resources.dp_port when pinsneq(dp) :> dp:
-            XUD_resources.dm_port :> dm; //Both might have changed!
+        case dp_port when pinsneq(dp) :> dp:
+            dm_port :> dm; //Both might have changed!
             break;
-        case XUD_resources.dm_port when pinsneq(dm) :> dm:
-            XUD_resources.dp_port :> dp; //Both might have changed!
+        case dm_port when pinsneq(dm) :> dm:
+            dp_port :> dp; //Both might have changed!
             break;
         case timeout != null => t when timerafter(time + timeout) :> int _:
             return 1;

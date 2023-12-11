@@ -612,14 +612,6 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
         p_usb_txd = (int)XUD_resources.p_usb_txd;
     }
 
-    printstr("XUD\n");
-#if XUD_EXTERNAL_RESOURCES
-    for(int i = 0; i < sizeof(XUD_resources_t) / 4; i++){
-        int resid = 0;
-        // assert()
-    }
-#endif
-
     SetupEndpoints(c_ep_out, noEpOut, c_ep_in, noEpIn, epTypeTableOut, epTypeTableIn);
 
 #if 0

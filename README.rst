@@ -1,7 +1,7 @@
 XMOS USB Device (XUD) Library
 =============================
 
-:Version: 2.2.4
+:Version: 2.3.0
 :Vendor: XMOS
 
 
@@ -30,7 +30,7 @@ Features
 
 Known Issues
 ............
- 
+
   * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc)
   * Documentation not updated for removal of XS1 and addition of XS3 based devices
 
@@ -45,12 +45,12 @@ Related Application Notes
 
 The following application notes use this library:
 
-   * AN00125 - USB mass storage device class 
-   * AN00126 - USB printer device class 
-   * AN00127 - USB video device class 
-   * AN00129 - USB HID device class 
-   * AN00131 - USB CDC-EDC device class 
-   * AN00132 - USB Image device class 
+   * AN00125 - USB mass storage device class
+   * AN00126 - USB printer device class
+   * AN00127 - USB video device class
+   * AN00129 - USB HID device class
+   * AN00131 - USB CDC-EDC device class
+   * AN00132 - USB Image device class
    * AN00124 - USB CDC VCOM device class
    * AN00135 - USB Test and Measurement device class
    * AN00136 - USB Vendor specific device

@@ -1,5 +1,5 @@
 set(LIB_NAME lib_xud)
-set(LIB_VERSION 2.2.4)
+set(LIB_VERSION 2.3.0)
 set(LIB_INCLUDES api src/user api/legacy src/core src/user/class)
 set(LIB_DEPENDENT_MODULES "")
 set(LIB_OPTIONAL_HEADERS xud_conf.h)

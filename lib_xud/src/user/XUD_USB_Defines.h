@@ -62,6 +62,7 @@
 #define USB_WINDEX_TEST_SE0_NAK         (0x3<<8)
 #define USB_WINDEX_TEST_PACKET          (0x4<<8)
 #define USB_WINDEX_TEST_FORCE_ENABLE    (0x5<<8)
+#define USB_WINDEX_TEST_IN_ADDR1        (0x6<<8)
 
 #define USB_MAX_NUM_EP_OUT              (16)
 #define USB_MAX_NUM_EP_IN               (16)

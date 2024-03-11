@@ -1,4 +1,4 @@
-// Copyright 2020-2021 XMOS LIMITED.
+// Copyright 2020-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -39,22 +39,22 @@ XUD_UsbTestSE0_loop:
     bf          r10, XUD_UsbTestSE0_loop
 #else
     ldc         r8, 16
-    inpw        r11, res[r0], 8                            // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
-    {setpsc     res[r0], r8;       shr      r11, r11, 24}
+    inpw        r9, res[r0], 8                             // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
+    {setpsc     res[r0], r8;       shr      r9, r9, 24}    // r9: PID
                                                            // TODO ideally share this with XUD_CrcAddrCheck rather than a duplication here..
-    {in          r10, res[r0];     sub      r1, r8, 5}     // ldc r1, 11
+    {in         r10, res[r0];      sub      r1, r8, 5}     // ldc r1, 11
     {shr        r10, r10, 16;      mkmsk    r11, r1}
     {and        r11, r10, r11;     shr      r4, r10, r1}   // r4: Received CRC
 
-    ldaw        r8, dp[crc5Table_Addr]
+    ldaw        r8, dp[crc5Table]                          // Note, accepting any address
     ld8u        r8, r8[r11]                                // Correct CRC
 
     xor         r4, r4, r8                                 // Check received CRC against expected CRC
     bt          r4, InvalidTestToken;                      // Note, EP number is ignored
 
     ldc         r4, USB_PIDn_IN
-    eq          r11, r11, r4                               // Check received PID
-    bf          r11, XUD_UsbTestSE0_loop
+    eq          r9, r9, r4                                 // Check received PID
+    bf          r9, XUD_UsbTestSE0_loop
 #endif
 
     nop                                                    // If all is well respond with a NAK to any IN token..

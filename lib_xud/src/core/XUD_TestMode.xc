@@ -87,7 +87,7 @@ int XUD_UsbTestModeHandler(unsigned cmd)
             }
             break;
 
-            case USB_WINDEX_XMOS_TEST_IN_ADDR1:
+            case USB_WINDEX_TEST_XMOS_IN_ADDR1:
             {
                 XUD_HAL_EnterMode_PeripheralHighSpeed();
 

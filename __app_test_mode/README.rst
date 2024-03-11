@@ -14,7 +14,7 @@ This application provide stand-alone binaries for USB test modes. There are five
 
 The fifth build configuration is for internal use only and is special build to output IN packets in the specific format (address = 0x01) for use in the receiver sensitivity test.
 
-    - XMOS_TEST_IN_ADDR1
+    - TEST_XMOS_IN_ADDR1
 
 The application enters it's respective test mode from boot, thus removing the requirement to set the mode from a host via the  USBHSETT tool.
 

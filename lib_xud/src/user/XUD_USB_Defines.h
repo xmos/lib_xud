@@ -1,4 +1,4 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief     Defines from the Universal Serial Bus Specification Revision 2.0
@@ -62,6 +62,7 @@
 #define USB_WINDEX_TEST_SE0_NAK         (0x3<<8)
 #define USB_WINDEX_TEST_PACKET          (0x4<<8)
 #define USB_WINDEX_TEST_FORCE_ENABLE    (0x5<<8)
+#define USB_WINDEX_TEST_XMOS_IN_ADDR1   (0x6<<8)
 
 #define USB_MAX_NUM_EP_OUT              (16)
 #define USB_MAX_NUM_EP_IN               (16)

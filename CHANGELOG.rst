@@ -6,6 +6,7 @@ lib_xud Change Log
 
   * FIXED:     XS3A based devices not responding to IN packets in SE0_NAK test
     mode
+  * ADDED:     XMOS proprietary test mode XMOS_IN_ADDR1
 
 2.3.0
 -----

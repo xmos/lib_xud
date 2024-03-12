@@ -1,6 +1,12 @@
 lib_xud Change Log
 ==================
 
+2.3.1
+-----
+
+  * FIXED:     XS3A based devices not responding to IN packets in SE0_NAK test
+    mode
+
 2.3.0
 -----
 

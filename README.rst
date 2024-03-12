@@ -1,9 +1,8 @@
 XMOS USB Device (XUD) Library
 =============================
 
-:Version: 2.3.0
+:Version: 2.3.1
 :Vendor: XMOS
-
 
 :Scope: General Use
 
@@ -69,4 +68,3 @@ Support
 =======
 
 This package is supported by XMOS Ltd. Issues can be raised against the software at: http://www.xmos.com/support
-

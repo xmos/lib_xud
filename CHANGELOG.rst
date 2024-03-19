@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+2.3.2
+-----
+
+  * test release
+
 2.3.1
 -----
 

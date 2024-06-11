@@ -201,7 +201,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
         #endif
     #endif
 #else
-    #define RX_RISE_DELAY 5
+    #define RX_RISE_DELAY 1
     #define RX_FALL_DELAY 5
     #define TX_RISE_DELAY 5
     #define TX_FALL_DELAY 1

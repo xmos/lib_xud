@@ -1,6 +1,11 @@
 lib_xud Change Log
 ==================
 
+UNRELEASED
+----------
+
+  * CHANGE:   RX_RISE_DELAY for XS2 to fix MIDI test failures
+
 2.3.1
 -----
 

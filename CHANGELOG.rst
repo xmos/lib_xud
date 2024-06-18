@@ -4,7 +4,7 @@ lib_xud Change Log
 UNRELEASED
 ----------
 
-  * CHANGE:   RX_RISE_DELAY for XS2 to fix MIDI test failures
+  * CHANGE:   RX_RISE_DELAY for XS2A based devices to resolve intermittent transmit timing issues
 
 2.3.1
 -----

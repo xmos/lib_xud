@@ -18,10 +18,6 @@ set(LIB_COMPILER_FLAGS -O3
 
 set(LIB_COMPILER_FLAGS_XUD_IoLoop.S   ${LIB_COMPILER_FLAGS} -fschedule)
 
-set(LIB_COMPILER_FLAGS_endpoint0.xc   ${LIB_COMPILER_FLAGS} -Os)
-set(LIB_COMPILER_FLAGS_dfu.xc         ${LIB_COMPILER_FLAGS} -Os)
-set(LIB_COMPILER_FLAGS_dfu_flash.xc   ${LIB_COMPILER_FLAGS} -Os)
-
 set(LIB_COMPILER_FLAGS_XUD_Client.xc         ${LIB_COMPILER_FLAGS} -mno-dual-issue)
 set(LIB_COMPILER_FLAGS_XUD_Main.xc           ${LIB_COMPILER_FLAGS} -mno-dual-issue)
 set(LIB_COMPILER_FLAGS_XUD_PhyResetUser.xc   ${LIB_COMPILER_FLAGS} -mno-dual-issue)

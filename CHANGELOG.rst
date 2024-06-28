@@ -1,8 +1,8 @@
 lib_xud Change Log
 ==================
 
-UNRELEASED
-----------
+2.3.2
+-----
 
   * CHANGE:   RX_RISE_DELAY for XS2A based devices to resolve intermittent transmit timing issues
 

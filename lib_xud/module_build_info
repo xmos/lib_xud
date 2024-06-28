@@ -9,10 +9,6 @@ MODULE_XCC_FLAGS = $(XCC_FLAGS) \
 
 XCC_FLAGS_XUD_IoLoop.S = $(MODULE_XCC_FLAGS) -fschedule
 
-XCC_FLAGS_endpoint0.xc = $(MODULE_XCC_FLAGS) -Os
-XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os
-XCC_FLAGS_dfu_flash.xc = $(MODULE_XCC_FLAGS) -Os
-
 XCC_FLAGS_XUD_Client.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_Main.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue
 XCC_FLAGS_XUD_PhyResetUser.xc = $(MODULE_XCC_FLAGS) -mno-dual-issue

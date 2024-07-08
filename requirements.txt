@@ -21,8 +21,8 @@ black==21.5b1
 filelock==3.0.12
 # Pin importlib-metadata to <5 due to https://github.com/python/importlib_metadata/issues/409.
 importlib-metadata==4.13.0
-pytest==6.2.4
-pytest-xdist==2.3.0
+pytest
+pytest-xdist
 filelock==3.0.12
 
 # Development dependencies

@@ -4,7 +4,7 @@ getApproval()
 
 pipeline {
   agent {
-    label 'x86_64 && macOS'
+    label 'x86_64 && linux'
   }
   environment {
     REPO = 'lib_xud'

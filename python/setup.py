@@ -1,4 +1,4 @@
-# Copyright 2020-2021 XMOS LIMITED.
+# Copyright 2020-2024 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import setuptools
 
@@ -13,9 +13,9 @@ setuptools.setup(
     name="lib_xud",
     packages=setuptools.find_packages(),
     install_requires=[
-        "black~=21.5b1",
-        "pytest~=6.2",
-        "pytest-xdist~=2.3",
+        "black",
+        "pytest",
+        "pytest-xdist",
     ],
     dependency_links=[],
 )

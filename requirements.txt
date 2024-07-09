@@ -17,8 +17,8 @@
 # pip-install this one as editable using this repository's setup.py file.  The
 # same modules should appear in the setup.py list as given below.
 
-black==21.5b1
-filelock==3.0.12
+black
+filelock
 pytest
 pytest-xdist
 

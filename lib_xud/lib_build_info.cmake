@@ -1,15 +1,17 @@
 set(LIB_NAME lib_xud)
 set(LIB_VERSION 2.3.2)
 set(LIB_INCLUDES api src/user api/legacy src/core src/user/class)
+
 set(LIB_DEPENDENT_MODULES "")
+
 set(LIB_OPTIONAL_HEADERS xud_conf.h)
+
 set(LIB_ASM_SRCS src/core/XUD_IoLoop.S
                  src/core/XUD_TestMode.S
                  src/core/XUD_CRC5_Table.S
                  src/core/XUD_USBTile_Support.S
                  src/core/XUD_CRC5_Table_Addr.S
                  src/user/client/XUD_EpFuncs.S)
-
 set(LIB_COMPILER_FLAGS -O3
                        -fasm-linenum
                        -fcomment-asm

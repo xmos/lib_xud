@@ -1,62 +1,72 @@
-@Library('xmos_jenkins_shared_library@v0.18.0') _
+// This file relates to internal XMOS infrastructure and should be ignored by external users
+
+@Library('xmos_jenkins_shared_library@develop') _
 
 getApproval()
 
 pipeline {
   agent {
-    label 'x86_64 && macOS'
+    label 'x86_64 && linux'
   }
   environment {
     REPO = 'lib_xud'
     VIEW = getViewName(REPO)
   }
   options {
+    buildDiscarder(xmosDiscardBuildSettings())
     skipDefaultCheckout()
     timestamps()
-    // on develop discard builds after a certain number else keep forever
-    buildDiscarder(logRotator(
-        numToKeepStr:         env.BRANCH_NAME ==~ /develop/ ? '100' : '',
-        artifactNumToKeepStr: env.BRANCH_NAME ==~ /develop/ ? '100' : ''
-    ))
   }
+  parameters {
+    string(
+      name: 'TOOLS_VERSION',
+      defaultValue: '15.3.0',
+      description: 'The XTC tools version'
+    )
+  }
+
   stages {
     stage('Get view') {
       steps {
         xcorePrepareSandbox("${VIEW}", "${REPO}")
       }
     }
-    stage('Library checks') {
+    stage('Build examples') {
       steps {
-        xcoreLibraryChecks("${REPO}")
-      }
-    }
-    stage('xCORE builds') {
-      steps {
+        println "Stage running on ${env.NODE_NAME}"
         dir("${REPO}") {
-          // xcoreAllAppsBuild('examples')
-          xcoreAllAppNotesBuild('examples')
-          dir("${REPO}") {
-            runXdoc('doc')
+          checkout scm
+
+          dir("examples") {
+            withTools(params.TOOLS_VERSION) {
+              sh 'cmake -G "Unix Makefiles" -B build'
+              sh 'xmake -C build -j'
+            }
           }
         }
-        // Archive all the generated .pdf docs
-        archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
+      }
+    }  // Build examples
+
+    stage('Library checks') {
+      steps {
+        runLibraryChecks("${WORKSPACE}/${REPO}")
       }
     }
-    stage('Tests') 
+
+    stage('Tests')
     {
       steps {
         dir("${REPO}/tests"){
           viewEnv(){
             withVenv{
-                runPytest('--numprocesses=4 --smoke --enabletracing')
+                runPytest('--numprocesses=8 --smoke --enabletracing')
             }
           }
         }
       }
-       post 
-       {
-        failure 
+      post
+      {
+        failure
         {
           archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
         }

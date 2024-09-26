@@ -1,6 +1,6 @@
 // This file relates to internal XMOS infrastructure and should be ignored by external users
 
-@Library('xmos_jenkins_shared_library@develop') _
+@Library('xmos_jenkins_shared_library@v0.34.0') _
 
 getApproval()
 
@@ -49,9 +49,49 @@ pipeline {
 
     stage('Library checks') {
       steps {
-        runLibraryChecks("${WORKSPACE}/${REPO}")
+        runLibraryChecks("${WORKSPACE}/${REPO}", "v2.0.1")
       }
     }
+
+    stage('Build documentation') {
+          steps {
+            dir("${REPO}") {
+              withXdoc("feature/update_xdoc_3_3_0") {
+                withTools(params.TOOLS_VERSION) {
+                  dir("${REPO}/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00124_CDC_VCOM_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00125_mass_storage_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00126_printer_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00127_video_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00129_hid_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00131_CDC_EDC_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00132_image_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00135_test_and_measurement_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                }
+              }
+            }
+            // Archive all the generated .pdf docs
+            archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf"
+          }
+        }  // Build documentation
 
     stage('Tests')
     {
@@ -59,7 +99,7 @@ pipeline {
         dir("${REPO}/tests"){
           viewEnv(){
             withVenv{
-                runPytest('--numprocesses=8 --smoke --enabletracing')
+                runPytest('--numprocesses auto --smoke --enabletracing')
             }
           }
         }

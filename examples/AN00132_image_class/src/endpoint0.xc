@@ -1,4 +1,4 @@
-// Copyright 2015-2022 XMOS LIMITED.
+// Copyright 2015-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /*
@@ -46,8 +46,6 @@ static unsigned char devDesc[] =
     0x03,                  /* 16 iSerialNumber */
     0x01                   /* 17 bNumConfigurations */
 };
-
-
 
 static unsigned char cfgDesc[] = {
     /* Configuration Descriptor */
@@ -100,17 +98,18 @@ static unsigned char cfgDesc[] = {
 
 };
 
-
-unsafe{
-/* String table */
-static char * unsafe stringDescriptors[]=
+unsafe
 {
-    "\x09\x04",                   // Language ID string (US English)
-    "XMOS",                       // iManufacturer
-    "USB Still Image Capture",    // iProduct
-    "0123456789",                 // iSerialNumber
-    "config",                     // iConfiguration
-};}
+    /* String table */
+    static char * unsafe stringDescriptors[]=
+    {
+        "\x09\x04",                   // Language ID string (US English)
+        "XMOS",                       // iManufacturer
+        "USB Still Image Capture",    // iProduct
+        "0123456789",                 // iSerialNumber
+        "config",                     // iConfiguration
+    };
+}
 
 /* Still Image Class-Specific Requests */
 XUD_Result_t StillImageClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t sp)

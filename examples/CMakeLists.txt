@@ -4,6 +4,7 @@ include($ENV{XMOS_CMAKE_PATH}/xcommon.cmake)
 project(lib_xud_examples)
 
 add_subdirectory(AN00124_CDC_VCOM_class)
+add_subdirectory(AN00125_mass_storage_class)
 add_subdirectory(AN00126_printer_class)
 add_subdirectory(AN00127_video_class)
 add_subdirectory(AN00129_hid_class)

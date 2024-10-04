@@ -180,14 +180,14 @@ USB string descriptors
 ......................
 
 String descriptors provide human readable information for your device and you can configure them
-with your USB product information.. The descriptors are placed in an array as shown in the below
-code.
+with your USB product information.. The descriptors are placed in an array as shown in the code
+below.
 
 .. literalinclude:: endpoint0.xc
    :start-on: String table
    :end-on: }
 
-The `XMOS` USB library will take care of encoding the strings into Unicode and structures the
+The `XMOS` USB library will take care of encoding the strings into Unicode and structure the
 content into USB string descriptor format.
 
 The last value corresponds to the `iSerialNumber` of the device, which should contain a non-zero
@@ -204,13 +204,13 @@ to the standard control endpoint 0 which is present in all USB devices.
    :start-on: Endpoint 0 Task
    :end-on: } //if(result == XUD_RES_OKAY)
 
-The control interface class requests are handled using the below function.
+The control interface class requests are handled using the function below.
 
 .. literalinclude:: endpoint0.xc
    :start-on: XUD_Result_t ControlInterfaceClassRequests
    :end-on: return XUD_RES_ERR;
 
-The application implements ``GET_CAPABILITIES`` request and uses it to send the device capabilities
+The application implements the ``GET_CAPABILITIES`` request and uses it to send the device capabilities
 to the host.
 
 |newpage|

@@ -248,9 +248,9 @@ Demo Hardware Setup
 To run the demo, connect the `XK-EVK-XU316` **DEBUG** and **USB** recepticals to separate USB
 connectors on your development PC.
 
-Note, the application makes use use of xSCOPE (rather than JTAG) such that the print message that
-are generated on the device as part of the demo do not interfere with the real-time behavior of the
-USB device.
+Note, the application makes use of xSCOPE (rather than JTAG) such that the print message that are
+generated on the device as part of the demo do not interfere with the real-time behavior of the USB
+device.
 
 .. figure:: images/xk-evk-xu316.png
 
@@ -269,7 +269,8 @@ To configure the build run the following from an XTC command prompt::
     cd AN00125_mass_storage_class
     cmake -G "Unix Makefiles" -B build
 
-If any dependencies are missing it is at this configure step that they will be downloaded by the build system.
+If any dependencies are missing it is at this configure step that they will be downloaded by the
+build system.
 
 Finally, the application binary can be built using ``xmake``::
 
@@ -288,7 +289,9 @@ device. The `xcore` binary has a `XMOS` standard .xe extension.
 Launching from the command line
 ...............................
 
-From the command line the xrun tool is used to download code to both the xCORE devices. Changing into the bin directory of the project we can execute the code on the xCORE microcontroller as follows::
+From the command line the xrun tool is used to download code to both the xCORE devices. Changing
+into the bin directory of the project we can execute the code on the xCORE microcontroller as
+follows::
 
     xrun --xscope app_mass_storage.xe
 
@@ -300,7 +303,9 @@ Detecting the Mass Storage
 Windows Host
 ............
 
- * There is no specific driver installation is required. Windows will automatically install a driver for the mass storage class. You should be able to get the below message screen once enumeration is complete.
+ * There no specific driver installation is required. Windows will automatically install a driver
+   for the mass storage class. You should be able to get the below message screen once enumeration
+   is complete.
 
    .. figure:: images/DriverSw_Installation.*
       :scale: 80%
@@ -318,7 +323,7 @@ Windows Host
 
       USB Mass Storage Device detection on Device Manager (On Windows 7)
 
-  * The Mass Storage Device should be seen as an **Removable Disk** (Drive ID may vary depending upon the number of drives available on your machine).
+  * The Mass Storage Device should be seen as a **Removable Disk** (Drive ID may vary depending upon the number of drives available on your machine).
 
     .. figure:: images/removable_disk.*
        :scale: 78%
@@ -337,7 +342,7 @@ Windows Host
 macOS Host
 ..........
 
- * There is no specific driver installtion is required. macOS will automatically detect and you
+ * No specific driver installation is required. macOS will automatically detect and you
    should be able to get the below message screen once enumeration is complete.
 
    .. figure:: images/device_detection_mac.*

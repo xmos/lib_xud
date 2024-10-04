@@ -216,21 +216,25 @@ hierarchy of the demo application.
    :start-on: USB Configuration Descriptor
    :end-on: }
 
-The configuration descriptor tells host about the power requirements of the device and the number of interfaces it supports.
+The configuration descriptor tells host about the power requirements of the device and the number
+of interfaces it supports.
 
-The interface descriptors describe on how the host should communicate with the device in the class level. There are two interface descriptors in a USB CDC device.
+The interface descriptors describe on how the host should communicate with the device in the class
+level. There are two interface descriptors in a USB CDC device.
 
-The **CDC Communication interface** descriptor is for device management. You can see from the
-code that the device uses Abstract Control Model and supports AT Command V.25ter protocol.
-Though this example device doesn't support AT V.25ter protocol, it is mentioned to make the
-device compatible with standard host drivers. This interface has subordinate descriptors like
-CDC functional descriptors and a notification endpoint descriptor. The class-specific
-functional descriptors are discussed in detail in the next section. The notification endpoint
-is an interrupt IN endpoint and is used to report device's serial state to the host. This
-endpoint is not used in this example application but will be employed when bridging a UART to
-the USB Virtual COM port.
+The **CDC Communication interface** descriptor is for device management. You can see from the code
+that the device uses Abstract Control Model and supports AT Command V.25ter protocol.
+Though this example device doesn't support AT V.25ter protocol, it is mentioned to make the device
+compatible with standard host drivers. This interface has subordinate descriptors like CDC
+functional descriptors and a notification endpoint descriptor. The class-specific functional
+descriptors are discussed in detail in the next section. The notification endpoint is an interrupt
+IN endpoint and is used to report the device's serial state to the host. This endpoint is not used
+in this example application but will be employed when bridging a UART to the USB Virtual COM port.
 
-The **CDC Data interface** descriptor defines the interface for data transmission and reception between host and device. This interface has two endpoints, one bulk OUT endpoint for data transmissions from host to device and one bulk IN endpoint for data transmissions from device to host.
+The **CDC Data interface** descriptor defines the interface for data transmission and reception
+between host and device. This interface has two endpoints, one bulk OUT endpoint for data
+transmissions from host to device and one bulk IN endpoint for data transmissions from device to
+host.
 
 .. literalinclude:: xud_cdc.xc
    :lines: 146-147

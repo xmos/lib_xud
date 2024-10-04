@@ -1,70 +1,66 @@
-XMOS USB Device (XUD) Library
-=============================
+:orphan:
 
-:Version: 2.3.2
-:Vendor: XMOS
+###########################
+lib_xud: USB Device Library
+###########################
 
-:Scope: General Use
+:vendor: XMOS
+:version: 2.3.2
+:scope: General Use
+:description: USB device library
+:category: General Purpose
+:keywords: USB, bulk, HID
+:devices: xcore.ai, xcore-200
 
-Overview
-........
+*******
+Summary
+*******
 
-lib_xud merges the existing sc_xud and lib_usb (a fork of sc_xud) and replaces them both. It includes an API that supports both previous libraries providing a unified and maintained library going forward.
-
-The XMOS USB Device (XUD) library provides a low-level interface to USB.  lib_xud is a software defined, industry-standard, USB library
-that allows you to control an USB bus via xCORE ports.
+The XMOS USB Device (XUD) library provides a low-level interface to USB.  lib_xud is a software
+defined, industry-standard, USB library that allows you to control an USB bus via `xcore` ports.
 
 The library provides functionality to act as a USB *device* only.
 
-This library is for use with xCORE-200 Series or xCORE-AI series devices only, previous generations of xCORE devices are no longer supported.
-
 Note, at points lib_xud will run in "fast mode" this is a requirement to meet timing.
 
+********
 Features
-........
+********
 
- * USB 2.0 Full-speed (12Mbps) and High-speed (480Mbps)
- * Device mode
- * Bulk, control, interrupt and isochronous endpoint types supported
+  * USB 2.0 Full-speed (12Mbps) and High-speed (480Mbps)
+  * Device mode
+  * Bulk, control, interrupt and isochronous endpoint types supported
 
+************
 Known Issues
-............
+************
 
-  * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc)
-  * Documentation not updated for removal of XS1 and addition of XS3 based devices
+  * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc) (#99)
 
-Software version and dependencies
-.................................
+**************
+Required Tools
+**************
 
-The CHANGELOG contains information about the current and previous versions.
-For a list of direct dependencies, look for DEPENDENT_MODULES in lib_xud/module_build_info.
+  * XMOS XTC Tools: 15.3.0
 
-Related Application Notes
-.........................
-
-The following application notes use this library:
-
-   * AN00125 - USB mass storage device class
-   * AN00126 - USB printer device class
-   * AN00127 - USB video device class
-   * AN00129 - USB HID device class
-   * AN00131 - USB CDC-EDC device class
-   * AN00132 - USB Image device class
-   * AN00124 - USB CDC VCOM device class
-   * AN00135 - USB Test and Measurement device class
-   * AN00136 - USB Vendor specific device
-
-Required Software (dependencies)
-================================
+*********************************
+Required Libraries (dependencies)
+*********************************
 
   * None
 
-Documentation
-=============
+*************************
+Related Application Notes
+*************************
 
-You can find the documentation for this software in the /doc directory of the package.
+The following application notes use this library:
 
+   * `AN00136 - Example USB Vendor Specific Device <https://www.xmos.com/file/an00136>`_
+
+*******
 Support
-=======
+*******
 
-This package is supported by XMOS Ltd. Issues can be raised against the software at: http://www.xmos.com/support
+This package is supported by XMOS Ltd. Issues can be raised against the software at:
+http://www.xmos.com/support
+

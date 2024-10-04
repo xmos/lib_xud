@@ -1,4 +1,4 @@
-// Copyright 2015-2022 XMOS LIMITED.
+// Copyright 2015-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <string.h>
@@ -6,7 +6,6 @@
 #include "xud_device.h"
 #include "ptp.h"
 
-/* USB endpoint defines */
 #define XUD_EP_COUNT_OUT   2
 #define XUD_EP_COUNT_IN    2
 
@@ -41,8 +40,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in);
 /*
  * This function responds to the USB image data and control requests from the host
  */
-
-void bulk_endpoint(chanend chan_ep_from_host, chanend chan_ep_to_host)
+void bulk_endpoints(chanend chan_ep_from_host, chanend chan_ep_to_host)
 {
     PTPContainer operation_response;
     PTPObjectInfo image_info;
@@ -148,9 +146,7 @@ void bulk_endpoint(chanend chan_ep_from_host, chanend chan_ep_to_host)
         {
             XUD_ResetEndpoint(ep_from_host, ep_to_host);
         }
-
     }
-
 }
 
 
@@ -170,7 +166,7 @@ int main()
 
         on USB_TILE: Endpoint0(c_ep_out[0], c_ep_in[0]);
 
-        on USB_TILE: bulk_endpoint(c_ep_out[1], c_ep_in[1]);
+        on USB_TILE: bulk_endpoints(c_ep_out[1], c_ep_in[1]);
 
     }
 

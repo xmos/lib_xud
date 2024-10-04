@@ -1,16 +1,13 @@
 .. _xmos_usb_device_library:
 
+********
 Overview
-========
+********
 
-The XUD library allows the implementation of both full-speed and
-high-speed USB 2.0 devices on xCORE-200 and xCORE.AI series devices.
+`xcore.ai` devices and selected `xcore-200` devices include an integrated USB transceiver.
+``lib_xud`` supports both architectures with an identical API.
 
-Selected xCORE-200 and xCORE.AI devies include an integrated USB transceiver. 
-Two libraries, with an identical API, are provided - one each for each
-architecture.
-
-Please note, XS1-G, XS1-L and XS1-U series devices are not recommended for 
+Please note, XS1-G, XS1-L and XS1-U series devices are not recommended for
 new designs.
 
 The library performs all of the low-level I/O operations required to meet

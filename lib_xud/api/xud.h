@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /*
@@ -379,7 +379,6 @@ static inline XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
  * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]) ATTRIB_WEAK;
-
 
 /**
  * \brief      Marks an IN endpoint as ready to transmit data

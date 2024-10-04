@@ -10,22 +10,23 @@ Overview
 Introduction
 ............
 
-The HID class consists primarily of devices that are used by humans to control 
-the operation of computer systems. Typical examples of HID class include: 
+The HID class consists primarily of devices that are used by humans to control the operation of
+computer systems. Typical examples of HID class include:
 
-  - Keyboards and pointing devices, for example, standard mouse devices, trackballs, and joysticks. 
-  - Front-panel controls, for example: knobs, switches, buttons, and sliders. 
-  - Controls that might be found on devices such as telephones, VCR remote controls, games or simulation devices, for example: data gloves, throttles, steering wheels, and rudder pedals. 
-  - Devices that may not require human interaction but provide data in a similar format to HID class devices, for example, bar-code readers, thermometers, or voltmeters. 
+  - Keyboards and pointing devices, for example, standard mouse devices, trackballs, and joysticks.
+  - Front-panel controls, for example: knobs, switches, buttons, and sliders.
+  - Controls that might be found on devices such as telephones, VCR remote controls, games or
+    simulation devices, for example: data gloves, throttles, steering wheels, and rudder pedals.
+  - Devices that may not require human interaction but provide data in a similar format to HID
+    class devices, for example, bar-code readers, thermometers, or voltmeters.
 
-Many typical HID class devices include indicators, specialized displays, audio 
-feedback, and force or tactile feedback. Therefore, the HID class definition 
-includes support for various types of output directed to the end user. 
+Many typical HID class devices include indicators, specialized displays, audio feedback, and force
+or tactile feedback. Therefore, the HID class definition includes support for various types of
+output directed to the end user.
 
-The USB specification provides a standard device class for the implementation 
-of HID class devices. 
+The USB specification provides a standard device class for the implementation of HID class devices.
 
-(http://www.usb.org/developers/devclass_docs/HID1_11.pdf)
+(https://usb.org/document-library/device-class-definition-hid-111)
 
 Block diagram
 .............
@@ -39,9 +40,11 @@ Block diagram
 USB HID Class application note
 ------------------------------
 
-The example in this application note uses the XMOS USB device library and shows a simple program that creates a basic mouse device which controls the mouse pointer on the host PC.
+The example in this application note uses the `XMOS` USB device library (``lib_xud``) and shows a
+simple program that creates a basic mouse device which controls the mouse pointer on the host PC.
 
-For the USB HID device class application example, the system comprises three tasks running on separate logical cores of a xCORE multicore microcontroller. 
+For the USB HID device class application example, the system comprises three tasks running on
+separate threads a `xcore` device.
 
 The tasks perform the following operations.
 
@@ -60,19 +63,20 @@ class application example.
 .. figure:: images/task_diagram.*
 
         Task diagram of USB HID application example
-    
+
 |newpage|
 
-Makefile additions for this example
-...................................
+CMakeLists.txt additions for this application
+.............................................
 
-To start using the USB library, you need to add ``lib_xud`` to your ``Makefile``::
+To start using the USB library, you need to add ``lib_xud`` to your `xcommon` compatible
+`CMakeLists.txt`::
 
-        USED_MODULES = ... lib_xud
+    set (APP_DEPENDENT_MODULES "lib_xud")
 
-You can then access the USB functions in your source code via the xud_device.h header file::
+You can then access the USB functions in your source code via the ``xud_device.h`` header file::
 
-        #include "xud_device.h"
+	#include "xud_device.h"
 
 The application main() function
 ...............................
@@ -87,27 +91,27 @@ Looking at this in a more detail you can see the following:
 
   - The par functionality describes running three separate tasks in parallel
 
-  - There is a function call to configure and execute the USB library: ``XUD_Main()``
+  - There is a function to configure and execute the USB library: ``XUD_Main()``
 
-  - There is a function call to startup and run the Endpoint0 code: ``Endpoint0()``
+  - There is a function to run the Endpoint 0 code: ``Endpoint0()``
 
   - There is a function to deal with ID request generation and sending to the host ``hid_mouse()``
 
-  - In this example all tasks run on the ``tile[0]`` which is the same
-    tile as the USB PHY on this device.
+  - In this example all tasks run on the ``tile[0]``
 
-  - The xCONNECT communication channels used by the application are
-    set up at the beginning of ``main()``
+  - The `xCONNECT` communication channels used by the application are set up at the beginning of
+    ``main()``
 
   - The last two arguments to ``XUD_Main()`` set the library to run in high
-    speed mode (via the ``XUD_SPEED_HS`` argument) and to be
-    assume that the device self-powered via an external power supply
-    (the ``XUD_PWR_SELF`` argument).
+    speed mode (via the ``XUD_SPEED_HS`` argument) and to assume that the device is self-powered
+    via an external power supply (the ``XUD_PWR_SELF`` argument).
 
 Configuring the USB Device ID
 .............................
 
-The USB ID values used for vendor ID, product ID and device version number are defined in the file ``endpoint0.xc``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
+The USB ID values used for vendor ID, product ID and device version number are defined in the file
+``endpoint0.xc``. These are used by the host machine to determine the vendor of the device (in this
+case `XMOS`) and the product plus the firmware version.
 
 .. literalinclude:: hid_defs.h
    :start-on: /* USB HID Device Product Defines
@@ -118,26 +122,35 @@ The USB ID values used for vendor ID, product ID and device version number are d
 USB Device Descriptor
 .....................
 
-``hid_defs.h`` is where the standard USB device descriptor is declared for the HID class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
+``hid_defs.h`` is where the standard USB device descriptor is declared for the HID class device.
+Below is the structure which contains this descriptor. This will be requested by the host when the
+device is enumerated on the USB bus.
 
 .. literalinclude:: hid_defs.h
-   :start-on: devDesc 
+   :start-on: devDesc
    :end-on: }
 
-From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise the HID mouse when it is connected to the USB bus.
+From this descriptor you can see that product, vendor and device firmware revision are all coded
+into this structure. This will allow the host machine to recognise the HID mouse when it is
+connected to the USB bus.
 
 |newpage|
 
 USB Configuration Descriptor
 ............................
 
-The USB configuration descriptor is used to configure the device in terms of the device class and the endpoint setup. For the USB HID class device the configuration descriptor which is read by the host is as follows.
+The USB configuration descriptor is used to configure the device in terms of the device class and
+the endpoint setup. For the USB HID class device the configuration descriptor which is read by the
+host is as follows.
 
 .. literalinclude:: hid_defs.h
    :start-on: cfgDesc
    :end-on: }
 
-From this you can see that the USB HID class defines described earlier are encoded into the configuration descriptor along with the bulk USB endpoint description for allowing the HID mouse device to report information to the host. This endpoint allows us to simulation a mouse device inside our application and report the mouse movement information.
+From this you can see that the USB HID class defines described earlier are encoded into the
+configuration descriptor along with the bulk USB endpoint description for allowing the HID mouse
+device to report information to the host. This endpoint allows us to simulation a mouse device
+inside our application and report the mouse movement information.
 
 |newpage|
 
@@ -163,38 +176,53 @@ Along with the HID class descriptor there is a HID report descriptor which descr
 
 |newpage|
 
+
 USB string descriptors
 ......................
 
-There are two further descriptors within this file relating to the
-configuration of the USB Printer Class. These sections should also be
-modified to match the capabilities of the printer. 
+The final table is used to hold strings for the device. It should be noted that the device descriptor
+contains indexes into this table for the manufacturer (`iManufacturer`) and product (`iProduct`)
+strings.
 
 .. literalinclude:: hid_defs.h
-   :start-on: String table
-   :end-on: }
+   :start-on: stringDescriptors
+   :end-on: };
+
+.. note::
+   The string table is passed to the function ``USB_StandardRequests()`` which handles the conversion
+   of the raw strings to valid USB string descriptors.
+
+.. note::
+    The string at index 0 must always contain the *Language ID Descriptor*. This descriptor
+    indicates the languages that the device supports for string descriptors.
 
 |newpage|
 
 USB HID Class requests
 ......................
 
-Inside ``endpoint0.xc`` there is a function for handling the USB HID device class specific requests. The code for handling these requests is shown as follows:
+Inside ``endpoint0.xc`` there is a function for handling the USB HID device class specific requests.
+The code for handling these requests is shown as follows:
 
 .. literalinclude:: endpoint0.xc
-   :lines: 16-74
+    :start-on: HID Class Requests
+    :end-on: /* HidInterfaceClassRequests
 
-These HID specific requests are implemented by the application as they do not form part of the standard requests which have to be accepted by all device classes via endpoint0.
+These HID specific requests are implemented by the application as they do not form part of the
+standard requests which have to be accepted by all device classes via endpoint 0.
 
 |newpage|
 
 USB HID Class Endpoint0
 .......................
 
-The function ``Endpoint0()`` contains the code for dealing with device requests made from the host to the standard endpoint0 which is present in all USB devices. In addition to requests required for all devices, the code handles the requests specific to the HID class.
+The function ``Endpoint0()`` contains the code for dealing with device requests made from the host
+to the standard endpoint0 which is present in all USB devices. In addition to requests required for
+all devices, the code handles the requests specific to the HID class.
 
 .. literalinclude:: endpoint0.xc
-   :lines: 75-176
+    :start-on: /* Endpoint 0 Task
+    :end-on: /* Endpoint0
 
 |newpage|
 
@@ -204,123 +232,129 @@ Reporting HID mouse data to the host
 The application endpoint for reporting mouse movement data to the host machine is implemented in the file ``main.xc``. This is contained within the function ``hid_mouse()`` which is shown below:
 
 .. literalinclude:: main.xc
-   :lines: 24-80
+   :start-on: void hid_mouse
+   :end-on: /* hid_mouse
 
 From this you can see the following.
 
-  - A buffer is declared to communicate the HID report data to the host, this is accessed via shared memory from endpoint0 and also used from this function.
+  - A buffer is declared to communicate the HID report data to the host, this is accessed via
+    shared memory from endpoint0 and also used from this function.
 
-  - This task operates inside a ``while (1)`` loop which streams mouse movement data to the host machine. It moves the mouse pointer in a square shape on the host machine desktop.
+  - This task operates inside a ``while (1)`` loop which streams mouse movement data to the host
+    machine. It moves the mouse pointer in a square shape on the host machine desktop.
 
-  - A blocking call is made to the XMOS USB device library to send data to the host machine at every loop iteration
+  - A blocking call is made to the XMOS USB device library to send data to the host machine at
+    every loop iteration
 
-  - The function emulates a mouse device in the code but this could
-    easily be replaced by connecting an external piece of hardware
+  - The function emulates a mouse device in the code but this could easily be replaced by connecting
+    an external piece of hardware
 
-  - The buffer is shared with another task running in parallel. To
-    access common buffers the ``unsafe`` keyword is used and an
-    ``unsafe`` pointer is delcared. This allows the application to
-    access memory that could have a potential race condition - it is
-    then the applications reponsibility to ensure that the concurrent
-    access to data is acceptable.
- 
+  - The buffer is shared with another task running in parallel. To access common buffers the
+    ``unsafe`` keyword is used and an ``unsafe`` pointer is delcared. This allows the application to
+    access memory that could have a potential race condition - it is  then the applications
+    reponsibility to ensure that the concurrent access to data is acceptable.
+
 |appendix|
 |newpage|
 
-Demo Hardware Setup
+Demo hardware setup
 -------------------
 
-To run the demo, connect the xCORE.AI/xCORE-200 EXPLORER board and xTAG USB-microB
-connectors to separate USB connectors on your development PC via a USB cable. 
+To setup the demo hardware the following boards are required.
 
-.. figure:: images/explorerkit-200.*
+  - `XK-EVK-XU316` board
+  - 2 x Micro-B USB cable
 
-	XMOS xCORE-200 EXPLORER Board
+.. figure:: images/xk-evk-xu316.png
+   :scale: 110%
+   :align: center
 
-The hardware should be configured as follows for this demonstration:
+   XMOS `XK-EVK-316` Board
 
-  - The XTAG debug adapter should be connected to the XSYS connector and
-    the XTAG USB cable should be connected to the host machine
+The hardware should be configured as follows:
 
-  - The xCORE EXPLORER board should have a USB cable connecting the device
-    to the host machine
+  - Connect the **USB** receptacle of the `XK-EVK-XU316` to the host machine using a USB cable
+
+  - Connect the **DEBUG** receptacle `XK-EVK-XU316` to the host machine using a USB cable
 
 |newpage|
+
+Building the application
+------------------------
+
+The application uses the `xcommon-cmake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+build system as bundled with the XTC tools.
+
+To configure the build run the following from an XTC command prompt::
+
+    cd AN00129_hid_class
+    cmake -G "Unix Makefiles" -B build
+
+If any dependencies are missing it is at this configure step that they will be downloaded by the build system.
+
+Finally, the application binary can be built using ``xmake``::
+
+    xmake -C build
+
+This command will cause a binary (.xe file) to be generated in the `bin` directory,
 
 Launching the demo application
 ------------------------------
 
-Once the demo example has been built either from the command line using
-xmake or via the build mechanism of xTIMEcomposer studio we can execute
-the application on the xCORE.AI EXPLORER board. 
+Once the demo example has been built the application can be executed on the `XK-EVK-XU316`.
 
-Once built there will be a ``bin`` directory within the project which
-contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
-.xe extension.
+Once built there will be a ``bin`` directory within the project which contains the binary for the
+`xcore` device. The `xcore` binary has a `XMOS` standard .xe extension.
 
 Launching from the command line
 ...............................
 
-From the command line we use the ``xrun`` tool to download code to both the
-xCORE devices. If we change into the bin directory of the project
-we can execute the code on the xCORE microcontroller as follows::
+From the command line we use the ``xrun`` tool to download code to the `xcore` device. If we change
+into the bin directory of the project we can execute the code on the `xcore` device as follows::
 
-> xrun app_hid_mouse_demo_<ARCH>.xe   <-- Download and execute the xCORE code
+    xrun app_hid_mouse.xe
 
-where <ARCH> is the xcore architecture variant, 200 or AI.
-Once this command has executed the HID mouse device will have enumerated on 
-your host machine.
-
-Launching from xTIMEcomposer Studio
-...................................
-
-From xTIMEcomposer Studio we use the run mechanism to download code to 
-xCORE device. Select the xCORE binary from the bin directory, right click 
-and then run as xCORE application will execute the code on the xCORE device.
-
-Once this command has executed the HID mouse device will have enumerated on 
-your host machine.
+Once this command has executed the HID mouse device will have enumerated on your host machine.
 
 Running the HID mouse demo
 ..........................
 
-The USB mouse device once enumerated will start acting as if you have plugged
-a new USB mouse into your host machine.
+The USB mouse device once enumerated will start acting as if you have plugged a new USB mouse into
+your host machine.
 
-This will be shown to be working by the mouse pointer which will now be moving
-around the screen controlled by the HID endpoint code running on the xCORE
-microcontroller as described in this application note.
+This will be shown to be working by the mouse pointer which will now be moving around the screen
+controlled by the HID endpoint code running on the `xcore` as described in this application note.
 
 |newpage|
 
 References
 ----------
-  
+
 .. nopoints::
 
-  * XMOS Tools User Guide
+  * `XMOS` XTC Tools Installation Guide
 
-    http://www.xmos.com/published/xtimecomposer-user-guide
+    https://xmos.com/xtc-install-guide
 
-  * XMOS xCORE Programming Guide
+  * `XMOS` XTC Tools User Guide
 
-    http://www.xmos.com/published/xmos-programming-guide
-  
-  * XMOS xCORE-USB Device Library: 
+    https://www.xmos.com/view/Tools-15-Documentation
 
-    http://www.xmos.com/published/xuddg
+  * USB 2.0 Specification
 
-  * XMOS USB Device Design Guide: 
+    https://www.usb.org/sites/default/files/usb_20_20240604.zip
 
-    http://www.xmos.com/published/xmos-usb-device-design-guide
+  * `XMOS` application build and dependency management system; `xcommon-cmake`
 
-  * USB HID Class Specification, USB.org: 
-
-    http://www.usb.org/developers/devclass_docs/HID1_11.pdf
+    https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest
 
   * USB 2.0 Specification
 
     http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
+
+  * USB HID Class Specification, USB.org
+
+    https://usb.org/document-library/device-class-definition-hid-111
 
 |newpage|
 

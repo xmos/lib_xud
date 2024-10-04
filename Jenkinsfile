@@ -1,6 +1,13 @@
 // This file relates to internal XMOS infrastructure and should be ignored by external users
 
-@Library('xmos_jenkins_shared_library@develop') _
+@Library('xmos_jenkins_shared_library@v0.34.0') _
+
+def clone_test_deps() {
+  dir("${WORKSPACE}") {
+    sh "git clone git@github.com:xmos/test_support"
+    sh "git -C test_support checkout c820ebe67bea0596dabcdaf71a590c671385ac35"
+  }
+}
 
 getApproval()
 
@@ -10,7 +17,6 @@ pipeline {
   }
   environment {
     REPO = 'lib_xud'
-    VIEW = getViewName(REPO)
   }
   options {
     buildDiscarder(xmosDiscardBuildSettings())
@@ -26,11 +32,7 @@ pipeline {
   }
 
   stages {
-    stage('Get view') {
-      steps {
-        xcorePrepareSandbox("${VIEW}", "${REPO}")
-      }
-    }
+
     stage('Build examples') {
       steps {
         println "Stage running on ${env.NODE_NAME}"
@@ -49,21 +51,26 @@ pipeline {
 
     stage('Library checks') {
       steps {
-        runLibraryChecks("${WORKSPACE}/${REPO}")
+        runLibraryChecks("${WORKSPACE}/${REPO}", "v2.0.1")
       }
     }
 
     stage('Tests')
     {
       steps {
-        dir("${REPO}/tests"){
-          viewEnv(){
-            withVenv{
+
+          // Note, moves to WORKSPACE
+          clone_test_deps()
+
+          withTools(params.TOOLS_VERSION) {
+            dir("${REPO}/tests") {
+              createVenv(reqFile: "requirements.txt")
+              withVenv{
                 runPytest('--numprocesses=8 --smoke --enabletracing')
-            }
-          }
-        }
-      }
+              }
+            } // dir
+          } // withTools
+      } // steps
       post
       {
         failure
@@ -74,9 +81,6 @@ pipeline {
     }
   }
   post {
-    success {
-      updateViewfiles()
-    }
     cleanup {
       xcoreCleanSandbox()
     }

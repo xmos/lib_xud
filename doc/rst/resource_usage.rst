@@ -1,25 +1,25 @@
-Resource Usage
-==============
 
-The XUD library requires the resources described in the following
-sections.
+**************
+Resource Usage
+**************
+
+This section describes the resources required by ``lib_xud``.
 
 Ports/Pins
-----------
+==========
 
-xCORE.AI Series
-...............
+`xcore.ai` series
+-----------------
 
-The xCORE.AI series of devices have an integrated USB transceiver. Some ports
-are used to communicate with the USB transceiver inside the xCORE.AI
-series packages.
+The `xcore.ai` series of devices have an integrated USB transceiver. Some ports are used to
+communicate with the USB transceiver inside the `xcore.ai` series packages.
 
 These ports/pins should not be used when USB functionality is enabled.
-The ports/pins are shown in :ref:`table_xud_xai_required_pin_port`.
+The ports/pins are shown in :numref:`table_xud_xai_required_pin_port`.
 
 .. _table_xud_xai_required_pin_port:
 
-.. table:: xCORE.AI series required pin/port connections
+.. table:: `xcore.ai` series required pin/port connections
     :class: horizontal-borders vertical_borders
 
     +-------+-------+------+-------+-------+--------+
@@ -75,21 +75,18 @@ The ports/pins are shown in :ref:`table_xud_xai_required_pin_port`.
 
 |newpage|
 
+`xcore-200` series
+------------------
 
+The `xcore-200` series of devices have an integrated USB transceiver. Some ports are used to
+communicate with the USB transceiver inside the `xcore-200` series packages.
 
-xCORE-200 Series
-................
-
-The xCORE 200 series of devices have an integrated USB transceiver. Some ports
-are used to communicate with the USB transceiver inside the xCORE-200
-series
-packages.
 These ports/pins should not be used when USB functionality is enabled.
-The ports/pins are shown in :ref:`table_xud_x200_required_pin_port`.
+The ports/pins are shown in :numref:`table_xud_x200_required_pin_port`.
 
 .. _table_xud_x200_required_pin_port:
 
-.. table:: xCORE-200 series required pin/port connections
+.. table:: `xcore-200` series required pin/port connections
     :class: horizontal-borders vertical_borders
 
     +-------+-------+------+-------+-------+--------+
@@ -147,39 +144,39 @@ The ports/pins are shown in :ref:`table_xud_x200_required_pin_port`.
 
 |newpage|
 
+Thread Frequency
+================
 
-Core Frequency
---------------
+Due to I/O requirements, the ``lib_xud`` requires a guaranteed MIPS rate to ensure correct
+operation. This means that thread count restrictions must be observed. The XUD thread must run at
+at least 85 MIPS.
 
-Due to I/O requirements, the library requires a guaranteed MIPS rate to
-ensure correct operation. This means that core count restrictions must
-be observed. The XUD core must run at at least 85 MIPS.
+This means that for an `xcore` device running at 600 MHz there should be no more than seven cores
+executing at any time when using ``lib_xud``.
 
-This means that for an xCORE device running at 600MHz there should be no more
-than seven cores executing at any time when using the XUD. xCORE devices allow setting cores to
-"priority" mode. Priority cores are guarenteed 20% of the processor bandwidth. If XUD is assigned
-a priority core then up to eight cores may be used with the remaining seven getting
-(600 * 0.8) / 7 = 68.6MIPS each.
+`xcore` devices allow setting threads to "priority" mode. Priority threads are guaranteed 20% of
+the processor bandwidth. If XUD is assigned a priority core then up to eight cores may be used with
+the remaining seven getting (600 * 0.8) / 7 = 68.6MIPS each.
 
-This restriction is only a requirement on the tile on which the ``XUD_Main`` is running.
-For example, the other tile on an dual-core device is unaffected by this restriction.
+This restriction is only a requirement on the tile on which the ``XUD_Main()`` is running.
+For example, the other tile on an dual-tile device is unaffected by this restriction.
 
 Clock Blocks
-------------
+============
 
-The XUD library uses two clock blocks, one for receive and one for transmit. 
-Clocks blocks 4 and 5 are used respectively.  These clock blocks are configured such
-that they are clocked by the 60MHz clock from the UTMI transceiver.
-The ports used by lib_xud are in turn clocked from these clock blocks.
+``lib_xud`` uses two clock blocks, one for receive and one for transmit.
+Clocks blocks 4 and 5 are used for transmit and receive respectively.  These clock blocks are
+configured such that they are clocked by the 60MHz clock from the USB transceiver.
+The ports used by ``lib_xud`` are in turn clocked from these clock blocks.
 
 Timers
-------
+======
 
-The XUD library allocates and uses four timers.
+``lib_xud`` internally allocates and uses four timers.
 
 Memory
-------
+======
 
-The XUD library requires about 9 Kbytes of memory, of which around 6 Kbytes
-is code or initialized variables that must be stored in boot memory.
+``lib_xud`` requires about 16 Kbytes of memory, of which around 15 Kbytes is code or initialised
+variables that must be stored in boot memory.
 

@@ -1,6 +1,13 @@
 lib_xud change log
 ==================
 
+UNRELEASED
+----------
+
+  * CHANGE:   Documentation updates
+  * CHANGE:   Examples now build using xcommon-cmake build system (was xcommon)
+  * REMOVED:  AN00136 - now maintained as a seperate application note
+
 2.3.2
 -----
 

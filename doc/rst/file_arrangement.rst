@@ -1,8 +1,9 @@
-File Arrangement
-================
 
-The following list gives a brief description of the files that make up
-the XUD layer:
+****************
+File Arrangement
+****************
+
+The following list gives a brief description of the files that make up ``lib_xud``:
 
 api/xud.h
     User defines and functions for the XUD library.

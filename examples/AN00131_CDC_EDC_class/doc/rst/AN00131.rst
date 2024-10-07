@@ -1,4 +1,3 @@
-.. include:: ../../../../lib_xud/doc/rst/version.rst
 
 .. include:: ../../README.rst
 
@@ -10,9 +9,9 @@ Overview
 Introduction
 ............
 
-USB Communications Class is a USB standard that defines mechanism for connecting
-Networking devices to host machines. USB CDC has specified multiple Subclass standards to support different networking devices.
-For Ethernet-style networking over USB, one of the following Subclass specifications is used:
+USB Communications Class is a USB standard that defines mechanism for connecting Networking devices
+to host machines. USB CDC has specified multiple Subclass standards to support different networking
+devices. For Ethernet-style networking over USB, one of the following Subclass specifications is used:
 
  1. Ethernet Control Model (ECM).
  2. Ethernet Emulation Model (EEM).
@@ -28,13 +27,14 @@ Ethernet over USB provides the following advantages:
    - Abstraction for USB application developers at network level like sockets, HTTP (web pages) etc.
    - USB-to-Ethernet Adaptors etc.
 
-In this application note, the USB CDC-ECM class is chosen for the implementation of Ethernet 
-emulation of USB device and it is discussed in detail which will help you to develop your own 
-USB CDC-ECM product using xCORE-USB device or acts as a reference to implement other Ethernet 
-supporting subclass on xCORE-USB device.
+In this application note, the USB CDC-ECM class is chosen for the implementation of Ethernet
+emulation of USB device and it is discussed in detail which will help you to develop your own
+USB CDC-ECM product using an `xcore` device or act as a reference to implement other Ethernet
+supporting subclass on `xcore` devices.
 
 The standard USB CDC-ECM class is specified in a document **ECM 120.pdf** which can be found in the USB-IF website.
-(http://www.usb.org/developers/docs/devclass_docs/CDC1.2_WMC1.1_012011.zip)
+
+(https://www.usb.org/sites/default/files/CDC1.2_WMC1.1_012011.zip)
 
 Block diagram
 .............
@@ -45,26 +45,35 @@ Block diagram
 
    Block diagram of USB CDC-ECM applications
 
-USB CDC-ECM Class application note
-----------------------------------
+USB CDC-ECM Class application
+-----------------------------
 
-The example in this application note uses the XMOS USB device library and shows a simple program that enumerates a USB CDC-ECM Class device. The host side driver of this device will emulate an Ethernet interface that seamlessly connects with the network stack of host's operating system. The USB device runs a very simple web server and acts like another device on Ethernet network i.e. the USB device imitates a network interface card of the host machine and a server connected to the host machine through Ethernet network.
+The example in this application note uses the XMOS USB device library (``lib_xud``) and shows a
+simple program that enumerates a USB CDC-ECM Class device. The host side driver of this device will
+emulate an Ethernet interface that seamlessly connects with the network stack of host's operating
+system. The USB device runs a very simple web server and acts like another device on Ethernet network
+i.e. the USB device imitates a network interface card of the host machine and a server connected to
+the host machine through Ethernet network.
 
-For this USB CDC-ECM device application example, the system comprises four tasks running on separate logical cores of an xCORE-USB multicore microcontroller.
+For this USB CDC-ECM device application example, the system comprises four tasks running on separate
+logical threads of an `xcore` device.
 
 The tasks perform the following operations.
 
    - A task containing the USB library functionality to communicate over USB.
 
-   - A task implementing Endpoint0 responding to both standard and CDC-ECM class-specific USB requests.
+   - A task implementing Endpoint 0 responding to both standard and CDC-ECM class-specific USB
+     requests.
 
-   - A task implementing the data endpoints and notification endpoint of the CDC-ECM class. It handles tx and rx buffers and provides APIs for applications to receive and transmit Ethernet frames.
+   - A task implementing the data endpoints and notification endpoint of the CDC-ECM class. It
+     handles tx and rx buffers and provides APIs for applications to receive and transmit Ethernet
+     frames.
 
    - A task containing Ethernet frame handler and simple HTTP server.
 
-These tasks communicate via the use of xCONNECT channels which allow data to be 
-passed between application code running on separate logical cores. In this 
-example, XC interfaces are used, which abstracts out the channel communication 
+These tasks communicate via the use of `xCONNECT` channels which allow data to be
+passed between application code running on separate logical cores. In this
+example, XC interfaces are used, which abstracts out the channel communication
 details with function level interface.
 
 The following diagram shows the task and communication structure for this USB CDC-ECM
@@ -78,51 +87,54 @@ class application example.
 
 |newpage|
 
-Makefile additions for this example
-...................................
+CMakeLists.txt additions for this application
+.............................................
 
-To start using the USB library, you need to add **lib_usb** to your makefile::
+To start using the USB library, you need to add ``lib_xud`` to your `xcommon` compatible
+`CMakeLists.txt`::
 
-  USED_MODULES = ... lib_xud ...
+    set (APP_DEPENDENT_MODULES "lib_xud")
 
-You can then access the USB functions in your source code via the *xud_device.h* header file::
+You can then access the USB functions in your source code via the ``xud_device.h`` header file::
 
-  #include "xud_device.h"
+	#include "xud_device.h"
 
 Source code files
 .................
 
 The example application consists of several source code files and the following list provides an overview of how the source code is organized.
 
-  - *xud_ecm.xc*, *xud_ecm.h* - Contains the USB CDC-ECM implementation which includes the USB 
-    descriptors, endpoints handler tasks (functions), class-specific defines, xC interface to 
+  - *xud_ecm.xc*, *xud_ecm.h* - Contains the USB CDC-ECM implementation which includes the USB
+    descriptors, endpoints handler tasks (functions), class-specific defines, xC interface to
     read/write Ethernet frames.
 
-  - *main.xc* - Contains main() function and some USB defines.
+  - *main.xc* - Contains ``main()`` function and some USB defines.
 
-  - *packet_buffer.xc*, *queue.xc* - Buffer implementation to hold Ethernet frames (Max of 
-    1514 bytes) and to allocate and deallocate dynamically from buffer pool. Queue 
+  - *packet_buffer.xc*, *queue.xc* - Buffer implementation to hold Ethernet frames (Max of
+    1514 bytes) and to allocate and deallocate dynamically from buffer pool. Queue
     implementation to queue up the tx and rx frame buffers in a FIFO fashion.
 
-  - *ethernet.xc* - Contains implementation of application handling the Ethernet frames and 
+  - *ethernet.xc* - Contains implementation of application handling the Ethernet frames and
     upper layer protocols like ICMP, DNS etc
 
-  - *eth_tcp* - This folder has TCP/IP and HTTP server implementation source files. 
+  - *eth_tcp* - This folder has TCP/IP and HTTP server implementation source files.
     Note: This is not a complete TCP/IP stack.
 
-Declaring resource and setting up the USB components
-....................................................
+Setting up the USB library
+..........................
 
-*main.xc* has some defines in it that are used to configure the XMOS USB device library. These are displayed below.
+``main.xc`` has some arrays in it that are used to configure the endpoints for the the `XMOS` USB
+device library. These are displayed below.
 
 .. literalinclude:: main.xc
    :start-on: USB Endpoint
    :end-before: int main(
 
-The above set of defines describe the endpoints configuration for this device. This example
-has bi-directional communication with the host machine via the standard endpoint0 and three other endpoints for implementing the part of our CDC-ECM class.
+The tables above describe the endpoint configurations for this device.
+This example has bi-directional communication with the host machine via the standard endpoint 0
+and three other endpoints for implementing the CDC-ECM class.
 
-All these defines are passed to the setup function for the USB library which is called from **main()**.
+These tables are passed to the function for the USB library which is called from ``main()``.
 
 The application main() function
 ...............................
@@ -135,37 +147,42 @@ the source file ``main.xc``
 
 Looking at this in a more detail you can see the following:
 
-  - The par statement starts four separate tasks in parallel.
+  - The ``par`` statement starts four separate tasks in parallel.
 
-  - There is a task to configure and execute the USB library: ``XUD_Main()``. This library 
-    call runs in an infinite loop and handles all the underlying USB communications and provides abstraction at the endpoints level.
+  - There is a task to configure and execute the USB library: ``XUD_Main()``. This library
+    call runs in an infinite loop and handles all the underlying USB communications and provides
+    abstraction at the endpoints level.
 
-  - There is a task to startup and run the Endpoint0 code: ``Endpoint0()``. It handles the 
-    control endpoint zero and must be run in a separate logical core inorder to promptly respond to the control requests from host.
+  - There is a task to startup and run the Endpoint0 code: ``Endpoint0()``. It handles the
+    control endpoint zero and must be run in a separate logical core inorder to promptly respond
+    to the control requests from host.
 
-  - There is a task to handle all the other three endpoints required for the CDC-ECM class: 
-    ``CdcEcmEnpointsHandler()``. This function handles one bulk OUT and one bulk IN 
-    endpoints for Ethernet frame transmissions and one interrupt IN endpoint for sending notifications to host.
+  - There is a task to handle all the other three endpoints required for the CDC-ECM class:
+    ``CdcEcmEnpointsHandler()``. This function handles one bulk OUT and one bulk IN
+    endpoints for Ethernet frame transmissions and one interrupt IN endpoint for sending
+    notifications to host.
 
   - There is a task to handle the Ethernet frames received from the host:
-    ``EthernetFrameHandler()``. This task implements network stack and hosts the HTTP server. It also handles DNS queries, DHCP requests and ICMP pings.
+    ``EthernetFrameHandler()``. This task implements network stack and hosts the HTTP server. It
+    also handles DNS queries, DHCP requests and ICMP pings.
 
   - The define USB_TILE describes the tile on which the individual tasks will run.
 
-  - In this example all tasks run on the same tile as the USB PHY although this is only a 
-    requirement of ``XUD_Main()``.
+  - In this example all tasks run on the same tile, this is a requirement of ``XUD_Main()``.
 
-  - The xCONNECT communication channels and the xC interface *cdc_ecm* used for inter-task 
+  - The `xCONNECT` communication channels and the xC interface *cdc_ecm* used for inter-task
     communication are setup at the beginning of ``main()`` and passed on to respective tasks.
 
-  - The USB defines discussed earlier are passed into the function ``XUD_Main()``.
+  - The endpoint type tables discussed earlier are passed into the function ``XUD_Main()``.
 
 |newpage|
 
 Configuring the USB Device ID
 .............................
 
-The USB ID values used for vendor ID, product ID and device version number are defined in the file ``xud_ecm.xc``. These are used by the host machine to determine the vendor of the device (in this case XMOS) and the product plus the firmware version.
+The USB ID values used for vendor ID, product ID and device version number are defined in the file
+``xud_ecm.xc``. These are used by the host machine to determine the vendor of the device (in this
+case `XMOS`) and the product plus the firmware version.
 
 .. literalinclude:: xud_ecm.xc
    :start-on: USB CDC device
@@ -176,11 +193,10 @@ The USB ID values used for vendor ID, product ID and device version number are d
 USB Descriptors
 ...............
 
-USB CDC class device has to support class-specific descriptors apart from the 
-standard descriptors defined in the USB specifications. These class specific 
-descriptors are customized according to the need of the USB CDC device. In the
-example application code, the descriptors implement the ECM model of the CDC 
-class to support Ethernet emulation at the host machine.
+USB CDC class device has to support class-specific descriptors apart from the standard descriptors
+defined in the USB specifications. These class specific descriptors are customized according to the
+need of the USB CDC device. In the example application code, the descriptors implement the ECM model
+of the CDC class to support Ethernet emulation at the host machine.
 
 The following figure shows the descriptors used in the example code.
 
@@ -194,82 +210,104 @@ The following figure shows the descriptors used in the example code.
 USB Device Descriptor
 ~~~~~~~~~~~~~~~~~~~~~
 
-``xud_ecm.xc`` is where the standard USB device descriptor is declared for the CDC-ECM class device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
+``xud_ecm.xc`` is where the standard USB device descriptor is declared for the CDC-ECM class device.
+Below is the structure which contains this descriptor. This will be requested by the host when the
+device is enumerated on the USB bus.
 
 .. literalinclude:: xud_ecm.xc
-   :start-on: USB Device Descriptor 
+   :start-on: USB Device Descriptor
    :end-on: }
 
-From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise the CDC device when it is connected to the USB bus.
+From this descriptor you can see that product, vendor and device firmware revision are all coded
+into this structure. This will allow the host machine to recognise the CDC device when it is
+connected to the USB bus.
 
 |newpage|
 
 USB Configuration Descriptor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The USB configuration descriptor is used to configure the device in terms of the device class and the endpoints setup. The hierarchy of descriptors under a configuration includes interfaces descriptors, class-specific descriptors and endpoints descriptors.
+The USB configuration descriptor is used to configure the device in terms of the device class and
+the endpoints setup. The hierarchy of descriptors under a configuration includes interfaces
+descriptors, class-specific descriptors and endpoints descriptors.
 
-when a host requests a configuration descriptor, the entire configuration hierarchy including all the related descriptors are returned to the host. The following
-code shows the configuration hierarchy of the demo application.
+when a host requests a configuration descriptor, the entire configuration hierarchy including all
+the related descriptors are returned to the host. The following code shows the configuration
+hierarchy of the demo application.
 
 .. literalinclude:: xud_ecm.xc
    :largelisting:
    :start-on: USB Configuration Descriptor
    :end-on: }
 
-The configuration descriptor tells host about the power requirements of the device and the number of interfaces it supports. 
+The configuration descriptor tells host about the power requirements of the device and the number
+of interfaces it supports.
 
-The interface descriptors describe on how the host should communicate with the device in the class level. There are two interface descriptors in a USB CDC-ECM device.
+The interface descriptors describe on how the host should communicate with the device in the class
+level. There are two interface descriptors in a USB CDC-ECM device.
 
-The **CDC Communication interface** descriptor is for device management. You can see from the 
-code that the device uses Etherner Control Model as the interface subclass, this will make hosts to load default driver for CDC Ethernet. This interface has subordinate descriptors like 
-CDC functional descriptors and a notification endpoint descriptor. The class-specific 
-functional descriptors are discussed in detail in the next section. The notification endpoint 
-is an interrupt IN endpoint and is used to report device's network connection state to the host. This endpoint is not used in this example application but will be employed when bridging an Ethernet interface to the USB-ECM device.
+The **CDC Communication interface** descriptor is for device management. You can see from the
+code that the device uses Etherner Control Model as the interface subclass, this will make hosts to
+load default driver for CDC Ethernet. This interface has subordinate descriptors like
+CDC functional descriptors and a notification endpoint descriptor. The class-specific
+functional descriptors are discussed in detail in the next section. The notification endpoint
+is an interrupt IN endpoint and is used to report device's network connection state to the host.
+This endpoint is not used in this example application but will be employed when bridging an Ethernet
+interface to the USB-ECM device.
 
-The **CDC Data interface** descriptor defines the interface for Ethernet frames transmission and reception between host and device. This interface has two endpoints, one bulk OUT endpoint for data transmissions from host to device and one bulk IN endpoint for data transmissions from device to host. 
+The **CDC Data interface** descriptor defines the interface for Ethernet frames transmission and
+reception between host and device. This interface has two endpoints, one bulk OUT endpoint for data
+transmissions from host to device and one bulk IN endpoint for data transmissions from device to
+host.
 
 .. literalinclude:: xud_ecm.xc
    :lines: 157-158
 
-The above code from the endpoint descriptors shows that the maximum packet size of these endpoints to be 512 bytes (0x200) which is suited for handling Ethernet frames in less number of transactions.
+The above code from the endpoint descriptors shows that the maximum packet size of these endpoints
+to be 512 bytes (`0x200`) which is suited for handling Ethernet frames in less number of transactions.
 
 |newpage|
 
 USB CDC-ECM Functional Descriptors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Functional descriptors describe the content of class-specific information within the 
-Communication Class interface. The 'USB_DESCTYPE_CS_INTERFACE' define is used in the 
-descriptor structures to identify them. There are three functional descriptors used in this CDC-ECM example. They are:
+Functional descriptors describe the content of class-specific information within the Communication
+Class interface. The `USB_DESCTYPE_CS_INTERFACE` define is used in the descriptor structures to
+identify them. There are three functional descriptors used in this CDC-ECM example. They are:
 
   1. Header Functional Descriptor.
   2. Union Functional Descriptor.
   3. Ethernet Networking Functional Descriptor.
 
-The Header and Union functional descriptors are generally used in all CDC subclasses and the Ethernet Networking functional descriptor is meant for the ECM subclass.
+The Header and Union functional descriptors are generally used in all CDC subclasses and the
+Ethernet Networking functional descriptor is meant for the ECM subclass.
 
-Header functional descriptor mentions the version of the CDC specification the interface comply with and it is shown below as found in the *cfgDesc[]* structure.
+Header functional descriptor mentions the version of the CDC specification the interface comply
+with and it is shown below as found in the *cfgDesc[]* structure.
 
 .. literalinclude:: xud_ecm.xc
    :lines: 112-114
 
 Note: The CDC version number (1.10) is mentioned as BCD in little endian format.
 
-Union functional descriptor groups the interfaces that forms a CDC functional unit. It specifies one of the interfaces as master to handle control messages of the unit.
-Following code from the CDC-ECM example shows that the the Communication Class interface 0 acts as master and the Data Class interface 1 acts as subordinate and together forming a single functional unit.
+Union functional descriptor groups the interfaces that forms a CDC functional unit. It specifies
+one of the interfaces as master to handle control messages of the unit.
+Following code from the CDC-ECM example shows that the the Communication Class interface 0 acts as
+master and the Data Class interface 1 acts as subordinate and together forming a single functional
+unit.
 
 .. literalinclude:: xud_ecm.xc
    :lines: 118-121
 
-Ethernet networking functional descriptor provides the Ethernet related capabilities and parameters to the host. Following code shows the fields of the descriptor.
+Ethernet networking functional descriptor provides the Ethernet related capabilities and parameters
+to the host. Following code shows the fields of the descriptor.
 
 .. literalinclude:: xud_ecm.xc
    :lines: 125-131
 
 The above code shows the followings:
 
- 	- 48-bit MAC address is provided through the string descriptor index, the string 
+ 	- 48-bit MAC address is provided through the string descriptor index, the string
  	  descriptor will carry the MAC address in a Unicode string format (example: 00229708A003).
 
  	- Ethernet statistics which the device collects. All bits are set to '0' in this example
@@ -283,20 +321,23 @@ The above code shows the followings:
 USB String Descriptors
 ~~~~~~~~~~~~~~~~~~~~~~
 
-String descriptors provide human readable information for your device and you can configure them with your USB product information. In CDC-ECM class it also provides the 48-bit MAC address of the device. The descriptors are placed in an array as shown in the below code.
+String descriptors provide human readable information for your device and you can configure them
+with your USB product information. In CDC-ECM class it also provides the 48-bit MAC address of the
+device. The descriptors are placed in an array as shown in the below code.
 
 .. literalinclude:: xud_ecm.xc
    :start-on: String table
    :end-on: }
 
-The XMOS USB library will take care of encoding the strings into Unicode and structures the content into USB string descriptor format.
+The `XMOS` USB library will take care of encoding the strings into Unicode and structures the
+content into USB string descriptor format.
 
 |newpage|
 
 USB Standard and Class-Specific requests
 ........................................
 
-In *xud_ecm.xc* there is a function *Endpoint0()* which handles all the USB control requests sent by host to control endpoint 0. USB control requests includes both standard USB requests and the CDC-ECM class-specific requests. 
+In *xud_ecm.xc* there is a function *Endpoint0()* which handles all the USB control requests sent by host to control endpoint 0. USB control requests includes both standard USB requests and the CDC-ECM class-specific requests.
 
 In *Endpoint0()* function, a USB request is received as a setup packet by calling *USB_GetSetupPacket()* library function. The setup packet structure is then examined to distinguish between standard and class-specific requests.
 
@@ -311,7 +352,7 @@ The CDC Communication interface uses endpoint 0 as management element and receiv
 
 .. literalinclude:: xud_ecm.xc
    :start-on: switch(bmRequestType)
-   :end-before: } /* if ends 
+   :end-before: } /* if ends
 
 The *ControlInterfaceClassRequests()* function is the place to handle all CDC-ECM requests, These requests are defined in the *xud_ecm.xc* as follows:
 
@@ -319,10 +360,10 @@ The *ControlInterfaceClassRequests()* function is the place to handle all CDC-EC
    :start-on: /* CDC ECM Class requests
    :end-before: /* CDC ECM Class notification
 
-According to ECM specification, except *SET_ETHERNET_PACKET_FILTER* all the other requests are 
-optional. These requests are not used in this example application but will be used when 
-bridging an Ethernet interface to the USB device. In case of bridging an Ethernet interface, 
-the Ethernet MAC software layer and PHY software layer will be employed and the MAC API 
+According to ECM specification, except *SET_ETHERNET_PACKET_FILTER* all the other requests are
+optional. These requests are not used in this example application but will be used when
+bridging an Ethernet interface to the USB device. In case of bridging an Ethernet interface,
+the Ethernet MAC software layer and PHY software layer will be employed and the MAC API
 functions can be directly used to perform the actions requested by the class-specific requests.
 
 Ethernet frame handling
@@ -370,7 +411,7 @@ Demo application
 
 In this USB CDC-ECM example, the Ethernet frames received from the host are handled by the *EthernetFrameHandler()* task. This application task runs a simple HTTP server acting as a virtual network device. This task performs the following:
 
-  - Handles DHCP requests from the host PC to provide an IP address to it. The IP addresses are 
+  - Handles DHCP requests from the host PC to provide an IP address to it. The IP addresses are
     defined in the *ethernet.xc* file as shown below
 
 	.. literalinclude:: ethernet.xc
@@ -379,7 +420,7 @@ In this USB CDC-ECM example, the Ethernet frames received from the host are hand
 
 	The client IP address corresponds to the host PC and the server IP address belongs to the USB device.
 
-  - Handles DNS queries containing the server name defined in the *ethernet.xc* file. The 
+  - Handles DNS queries containing the server name defined in the *ethernet.xc* file. The
     server name is as shown below.
 
 	.. literalinclude:: ethernet.xc
@@ -390,100 +431,80 @@ In this USB CDC-ECM example, the Ethernet frames received from the host are hand
 
   - Handles HTTP webpage requests and ICMP control ping requests.
 
-  - Collects a statistics of the different packets received from the host PC and embeds the 
+  - Collects a statistics of the different packets received from the host PC and embeds the
     information in the web page.
 
 |appendix|
 |newpage|
 
-Demo Hardware Setup
+Demo hardware setup
 -------------------
 
 To setup the demo hardware the following boards are required.
 
-  - xCORE-200 or xCORE.AI EXPLORER board
-  - xTAG debug adaptor
-  - 1 x Micro-B USB cable
-  - The xCORE-200 EXPLORER board requires an additonal USB Micro-b cable to supply power
+  - `XK-EVK-XU316` board
+  - 2 x Micro-B USB cable
 
-.. figure:: images/explorerkit-200.*
+.. figure:: images/xk-evk-xu316.png
    :scale: 110%
    :align: center
 
-   XMOS xCORE-200 EXPLORER Board
+   XMOS `XK-EVK-316` Board
 
-The hardware should be configured as follows for this demonstration:
+The hardware should be configured as follows:
 
-  - The XTAG debug adapter should be connected to the XSYS connector and
-    the XTAG USB should be connected to the host machine.
+  - Connect the **USB** receptacle of the `XK-EVK-XU316` to the host machine using a USB cable
 
-  - The EXPLORER board should be connected to the host machine using a USB 
-    cable.
+  - Connect the **DEBUG** receptacle `XK-EVK-XU316` to the host machine using a USB cable
 
-  - (The xCORE-200 EXPLOERE board should have the power supplied via the *5V IN* receptical)
-
-The use of xSCOPE is required in this application so that the print messages that are generated on 
+The use of `xSCOPE` is required in this application so that the print messages that are generated on
 the device as part of the demo do not interfere with the real-time behavior of the USB device.
 
 |newpage|
 
+Building the application
+------------------------
+
+The application uses the `xcommon-cmake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+build system as bundled with the XTC tools.
+
+To configure the build run the following from an XTC command prompt::
+
+    cd AN00131_video_class
+    cmake -G "Unix Makefiles" -B build
+
+If any dependencies are missing it is at this configure step that they will be downloaded by the build system.
+
+Finally, the application binary can be built using ``xmake``::
+
+    xmake -C build
+
+This command will cause a binary (.xe file) to be generated in the `bin` directory,
+
 Launching the demo application
 ------------------------------
 
-Once the demo example has been built either from the command line using
-xmake or via the build mechanism of xTIMEcomposer studio we can execute
-the application on the xCORE-USB sliceKIT. 
+Once the demo example has been built the application can be executed on the `XK-EVK-XU316`.
 
-Once built there will be a *bin* directory within the project which
-contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
-.xe extension.
+Once built there will be a ``bin`` directory within the project which contains the binary for the
+`xcore` device. The `xcore` binary has a `XMOS` standard .xe extension.
 
 Launching from the command line
 ...............................
 
 From the command line the ``xrun`` tool is used to download code to both the
 xCORE devices. Changing into the bin directory of the project
-we can execute the code on the xCORE microcontroller as follows::
+we can execute the code on the `xcore` device as follows::
 
-> xrun --xscope app_usb_ecm.xe          <-- Download and execute the xCORE code
+    xrun --xscope app_usb_ecm.xe
 
-Once this command has executed the CDC Ethernet device should have 
+Once this command has executed the CDC Ethernet device should have
 enumerated on your machine and you will see the following text in the console window::
 
   --XMOS USB CDC-ECM Class demo--
 
   Server IP Address: 169.254.85.85
   Server URL: http://xmos-cdc.local
-
-Launching from xTIMEcomposer Studio
-...................................
-
-From xTIMEcomposer Studio the run mechanism is used to download code to 
-xCORE device. Select the xCORE binary from the bin directory, right click 
-and then follow the instructions below.
-
-* Select **Run As**.
-
-* Select **Run Configurations**.
-
-* Double click on xCORE application**.
-
-* Enable xSCOPE in Target I/O options:
-
-  .. figure:: images/xtime-run-xscope.*
-
-     xTIMEcomposer xSCOPE configuration
-
-* Click **Apply** and then **Run**.
-
-Once the application is launched the CDC Ethernet device should have 
-enumerated on your machine and you will see the following text in the console window::
-
-  --XMOS USB CDC-ECM Class demo--
-
-  Server IP Address: 169.254.85.85
-  Server URL: http://xmos-cdc.local
-
 
 |newpage|
 
@@ -491,14 +512,16 @@ Running the demo
 ................
 
 This demo works right away on platforms that have native support for USB CDC-ECM class.
-Most of the Linux OS have native support for this CDC Ethernet. The demo application is tested on Ubuntu 12.04LTS version.
+Most versons of Linux have native support for this CDC Ethernet. The demo application is
+tested on Ubuntu 12.04LTS version.
 
 Running on Linux
 ~~~~~~~~~~~~~~~~
 
-Once the USB device is enumerated in the host machine, the default CDC Ethernet driver will be loaded. This host driver emulates the virtual Ethernet interface. 
+Once the USB device is enumerated in the host machine, the default CDC Ethernet driver will be
+loaded. This host driver emulates the virtual Ethernet interface.
 
-  - Run the command *ifconfig* in a terminal to view the emulated Ethernet interface as shown 
+  - Run the command *ifconfig* in a terminal to view the emulated Ethernet interface as shown
     in the following figure.
 
   .. figure:: images/linux_cdc_ethernet.*
@@ -506,7 +529,7 @@ Once the USB device is enumerated in the host machine, the default CDC Ethernet 
 
 	 Emulated Ethernet interface in the host PC
 
-  - Run *ping 169.254.85.85* command to ping the server running in the USB device. This ping 
+  - Run *ping 169.254.85.85* command to ping the server running in the USB device. This ping
     command sends ICMP request packets to the server and it is shown in the following figure
 
     .. figure:: images/linux_demo_ping.*
@@ -514,7 +537,7 @@ Once the USB device is enumerated in the host machine, the default CDC Ethernet 
 
        Pinging server from host PC
 
-  - Open the URL *http://xmos-cdc.local* in a standard web browser like Mozilla or Chrome to 
+  - Open the URL *http://xmos-cdc.local* in a standard web browser like Mozilla or Chrome to
     see the web page hosted by the USB device. The web page provides a statistics of the packets handled by the USB device and it is shown below:
 
     .. figure:: images/linux_demo_webpage.*
@@ -522,39 +545,39 @@ Once the USB device is enumerated in the host machine, the default CDC Ethernet 
 
        Webpage hosted by USB CDC-ECM device
 
-  - Refresh the opened webpage to see the packets count updated. Also note the number of ICMP 
+  - Refresh the opened webpage to see the packets count updated. Also note the number of ICMP
     packets is same as the number of ping requests sent out previously.
 
 |newpage|
 
 References
 ----------
-  
+
 .. nopoints::
 
-  * XMOS Tools User Guide
+  * `XMOS` XTC Tools Installation Guide
 
-    http://www.xmos.com/published/xtimecomposer-user-guide
+    https://xmos.com/xtc-install-guide
 
-  * XMOS xCORE Programming Guide
+  * `XMOS` XTC Tools User Guide
 
-    http://www.xmos.com/published/xmos-programming-guide
-  
-  * XMOS xCORE-USB Device Library
+    https://www.xmos.com/view/Tools-15-Documentation
 
-    http://www.xmos.com/published/xuddg
+  * USB 2.0 Specification
 
-  * XMOS USB Device Design Guide 
+    https://www.usb.org/sites/default/files/usb_20_20240604.zip
 
-    http://www.xmos.com/published/xmos-usb-device-design-guide
+  * `XMOS` application build and dependency management system; `xcommon-cmake`
 
-  * USB CDC Class Specification, USB.org: 
-
-    http://www.usb.org/developers/docs/devclass_docs/
+    https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest
 
   * USB 2.0 Specification
 
     http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
+
+  * USB CDC Class Specification, USB.org:
+
+    https://www.usb.org/sites/default/files/CDC1.2_WMC1.1_012011.zip
 
   * Ethernet Frame Format
 

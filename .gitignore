@@ -15,7 +15,7 @@
 # Python
 *.pyc
 **/*.egg-info/
-**/*venv/*
+**/.venv*/
 
 # XMOS temp files
 **/*build*/*
@@ -29,6 +29,9 @@
 *.o
 *.i
 *.a
+*.d
+*.decouple
+*.pca.xml
 **/CMakeFiles/*
 
 # XMOS binaries

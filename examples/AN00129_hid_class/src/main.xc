@@ -1,4 +1,4 @@
-// Copyright 2015-2022 XMOS LIMITED.
+// Copyright 2015-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xud_device.h"
 #include "hid_defs.h"
@@ -77,7 +77,7 @@ void hid_mouse(chanend chan_ep_hid)
             }
         }
     }
-}
+} /* hid_mouse() */
 
 
 /* The main function runs three cores: the XUD manager, Endpoint 0, and a HID endpoint. An array of

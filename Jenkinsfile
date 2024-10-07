@@ -55,10 +55,49 @@ pipeline {
       }
     }
 
+    stage('Build documentation') {
+          steps {
+            dir("${REPO}") {
+              withXdoc("feature/update_xdoc_3_3_0") {
+                withTools(params.TOOLS_VERSION) {
+                  dir("${REPO}/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00124_CDC_VCOM_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00125_mass_storage_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00126_printer_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00127_video_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00129_hid_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00131_CDC_EDC_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00132_image_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                  dir("examples/AN00135_test_and_measurement_class/doc") {
+                    sh "xdoc xmospdf"
+                  }
+                }
+              }
+            }
+            // Archive all the generated .pdf docs
+            archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf"
+          }
+        }  // Build documentation
+
     stage('Tests')
     {
       steps {
-
           // Note, moves to WORKSPACE
           clone_test_deps()
 

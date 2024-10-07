@@ -1,4 +1,4 @@
-// Copyright 2015-2022 XMOS LIMITED.
+// Copyright 2015-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* Includes */
@@ -17,7 +17,7 @@ void xscope_user_init(void) {
 }
 #endif
 
-/* USB Endpoint Defines */
+/* Endpoint count defines */
 #define EP_COUNT_OUT   1    // 1 OUT EP0
 #define EP_COUNT_IN    3    // (1 IN EP0 + 1 INTERRUPT IN EP + 1 ISO IN EP)
 
@@ -26,7 +26,6 @@ void xscope_user_init(void) {
  */
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_INT, XUD_EPTYPE_ISO};
-
 
 int main() {
 

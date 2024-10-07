@@ -11,7 +11,7 @@ Introduction
 ............
 
 The Universal Serial Bus (USB) is a communication architecture that gives a PC the ability to interconnect a variety of devices via a simple four-wire cable. One such device is the mass storage. Traditionally, mass storage device class provides adaptability for devices like
- 
+
   - USB flash drive
   - memory card reader
   - digital audio player
@@ -20,7 +20,7 @@ The Universal Serial Bus (USB) is a communication architecture that gives a PC t
 
 The USB specification provides as standard device class for the implementation of USB mass storage.
 
-(http://www.usb.org/developers/docs/devclass_docs/usbmassbulk_10.pdf)
+(https://www.usb.org/sites/default/files/usbmassbulk_10.pdf)
 
 Block diagram
 .............
@@ -36,9 +36,9 @@ This section describes the features that are supported by the demo application. 
 
  * Enumerates as Mass Storage device
  * On Windows host, the display appears as `` drive labelled as unformatted **Removable Disk** ``
- * On Mac, it displays as `` **XMOSLTD Flash Disk Media** `` 
+ * On Mac, it displays as `` **XMOSLTD Flash Disk Media** ``
 
-As there is no file system supported by the application, formatting the drive, read and write operations on the drive is not featured.      
+As there is no file system supported by the application, formatting the drive, read and write operations on the drive is not featured.
 
 USB Mass Storage Device Class application note
 ----------------------------------------------
@@ -48,7 +48,7 @@ The demo in this note uses the XMOS USB device library and shows a simple progra
 For the USB Mass storage device class application example, the system comprises three tasks running in separate logical cores of a xCORE multicore microcontroller.
 
 The tasks perform the following operations.
-  
+
   * A task containing the USB library functionality to communicate over USB
   * A task implementing Endpoint0 responding both standard and mass storage class USB requests
   * A task implementing the application code for receiving and sending mass storage data into the device
@@ -62,11 +62,12 @@ The following diagram shows the task and communication structure for this USB ma
 
    Task diagram of USB mass storage application example
 
-Makefile additions for this application
-........................................
-To start using the USB library, you need to add **lib_xud** to your makefile::
+CMakeLists.tx additions for this application
+............................................
 
-	USED_MODULES = lib_xud
+To start using the USB library, you need to add **lib_xud** to your `CMakeLists.txt`::
+
+    set (APP_DEPENDENT_MODULES "lib_xud")
 
 You can then access the USB functions on your source code via the **xud_device.h** header file::
 
@@ -126,7 +127,7 @@ USB Device Descriptor
 **endpoint0.xc** is where the standard USB device descriptor is declared for the mass storage device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
 
 .. literalinclude:: endpoint0.xc
-   :start-on: devDesc 
+   :start-on: devDesc
    :end-on: }
 
 From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise the mass storage device when it is connected to the USB bus.
@@ -157,7 +158,7 @@ Inside **endpoint0.xc** there is some code for handling the USB Mass storage dev
 
 .. literalinclude:: endpoint0.xc
    :start-on: Mass Storage Class Request
-   :end-before: Endpoint 0 
+   :end-before: Endpoint 0
 
 These mass storage specific request are implemented by the application as they do not form part of the standard requests which have to be accepted by all device classes via endpoint0.
 
@@ -188,7 +189,7 @@ From this you can see the following.
 
 * Two buffers are declared, one to receive the Command transport CBW (Command Block Wrapper) data which is streamed into the application from the host and the other to send Status transport CSW (Command Status Wrapper) to the host.
 * This task operates inside a while (1) loop which waits for data to arrive and then processes it.
-* It checks for the CBW Signature and packet size that get received from the host. 
+* It checks for the CBW Signature and packet size that get received from the host.
 * Based on the Operation code available on the CBWCB (CBW Command Block) field, SCSI commands corresponding to flash drive are executed.
 
   - Operation code received may correspond to SCSI commands like `Inquiry, Test Unit Ready, Request Sense, Read Capacity, Mode Sense, Read/Write,` etc.
@@ -200,42 +201,43 @@ SCSI Command Implementation
 
 Some of the SCSI command definitions and the reponse from the device are mentioned below.
 
- * **INQUIRY:** command requests that information regarding parameters of the Device be sent to the Host. 
- 
+ * **INQUIRY:** command requests that information regarding parameters of the Device be sent to the Host.
+
    - The response to this command provides standard INQUIRY data of (36 bytes) PDT, RMB (Removable Medium Bit), Vendor Identification, Product Identification and Product Revison Level, etc.
  * **TEST UNIT READY:** command provides a means to check if the Device is ready. This command is useful in that it allows a Host to poll a Device until it is ready without the need to allocate space for returned data.
-   
+
    - The response to this command returns GOOD, if the device accepts an appropriate medium access command or CHECK CONDITION status with a sense key of NOT READY.
  * **REQUEST SENSE:** command requests the device to transfer sense data to the host whenever an error is reported. The sense data  describes what caused the error condition.
- 
-   - The response to this command is a sense key, Additional Sense Code (ASC) or ASC Qualifier (ASCQ) depending on which error occured [#]_. 
- * **READ CAPACITY:** command requests the device to transfer 8 bytes of parameter data describing the capacity of the installed medium of the device. 
-   
-   - The response to this command returns Logical Block Address (LBA) and block length in bytes of the memory device. 
+
+   - The response to this command is a sense key, Additional Sense Code (ASC) or ASC Qualifier (ASCQ) depending on which error occured [#]_.
+ * **READ CAPACITY:** command requests the device to transfer 8 bytes of parameter data describing the capacity of the installed medium of the device.
+
+   - The response to this command returns Logical Block Address (LBA) and block length in bytes of the memory device.
  * **MODE SENSE:** command requests the device to transfer parameter data describing the medium type, block descriptor length, read/write error recovery mode.
- 
+
    - The response to this command returns PDT type as medium type, error recovery mode, descriptor length.
  * **READ/WRITE:** command requests the device to read/write data onto the medium.
- 
+
    - The response to `READ` transfers the most recent data value written in the addressed logical block of the medium to host.
-   - The response to `WRITE` writes the data transferred by the host to the medium.  
-    
+   - The response to `WRITE` writes the data transferred by the host to the medium.
+
 .. [#] http://www.t10.org/lists/asc-num.htm
-     
+
 |newpage|
 
 Serial Flash Functions
 ......................
 
-For accessing the on-board serial flash, you need to add the flash library **lflash** in `Makefile` as one of the `XCC_FLAGS` and use **flashlib.h** to access the flash library functions.
-`Note: No separate core is required to handle the SPI read/write`
- 
+For accessing the on-board serial flash, you need to add the flash library **lflash** in
+`CMakeLists` as one of the `APP_COMPILER_FLAGS` and use **flashlib.h** to access the flash library
+functions.`Note: No separate core is required to handle the SPI read/write`
+
 The below implementation does write/read operation onto the on-board serial flash M25P16.
 
 .. literalinclude:: mass_storage.xc
    :start-after: //Flash_Functions_start
    :end-before: //Flash_Functions_end
-      
+
 |newpage|
 
 |appendix|
@@ -243,61 +245,57 @@ The below implementation does write/read operation onto the on-board serial flas
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect the xCORE EXPLORER and xTAG USB recepticals to separate USB connectors on your development PC.
+To run the demo, connect the `XK-EVK-XU316` **DEBUG** and **USB** recepticals to separate USB
+connectors on your development PC.
 
-Note, the application makes use use of xSCOPE (rather than JTAG) such that the print message that are generated on the device as part of the demo do not interfere with the real-time behavior of the USB device. 
+Note, the application makes use of xSCOPE (rather than JTAG) such that the print message that are
+generated on the device as part of the demo do not interfere with the real-time behavior of the USB
+device.
 
-.. figure:: images/explorerkit-200.*
-  
-   XMOS xCORE-200 EXPLORER Board
+.. figure:: images/xk-evk-xu316.png
 
-The hardware should be configured as displayed above for this demo:
- 
-  - The XTAG debug adapter should be connected to the XSYS connector and the XTAG USB cable should be connected to the host machine
-  - The xCORE EXPLORER board should have a USB cable connecting the device to the host machine
+   XMOS XK-EVK-XU316 Board
 
 |newpage|
+
+Building the application
+------------------------
+
+The application uses the `xcommon-cmake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+build system as bundled with the XTC tools.
+
+To configure the build run the following from an XTC command prompt::
+
+    cd AN00125_mass_storage_class
+    cmake -G "Unix Makefiles" -B build
+
+If any dependencies are missing it is at this configure step that they will be downloaded by the
+build system.
+
+Finally, the application binary can be built using ``xmake``::
+
+    xmake -C build
+
+This command will cause a binary (.xe file) to be generated in the `bin` directory,
 
 Launching the demo device
 --------------------------
 
-Once the demo example has been built either from the command line using xmake or via the build mechanism of xTIMEcomposer studio the application can be executed on the xCORE-200 or xCORE.AI
-EXPLORER board.
+Once the demo example has been built the application can be executed on the `XK-EVK-XU316` board.
 
-Once built there will be a bin directory within the project which contains the binary for the xCORE device. The xCORE binary has a XMOS standard .xe extension.
+Once built there will be a bin directory within the project which contains the binary for the `xcore`
+device. The `xcore` binary has a `XMOS` standard .xe extension.
 
 Launching from the command line
 ...............................
 
-From the command line the xrun tool is used to download code to both the xCORE devices. Changing into the bin directory of the project we can execute the code on the xCORE microcontroller as follows::
+From the command line the xrun tool is used to download code to both the xCORE devices. Changing
+into the bin directory of the project we can execute the code on the xCORE microcontroller as
+follows::
 
-	> xrun --xscope AN00125.xe 	                     <-- Download and execute the xCORE code
+    xrun --xscope app_mass_storage.xe
 
 Once this command has executed the mass storage USB device should have enumerated on your machine
-
-Launching from xTIMEcomposer Studio
-...................................
-
-From xTIMEcomposer Studio the run mechanism is used to download code to xCORE device. Select the xCORE binary from the bin directory, right click and then follow the instructions below.
-
-* Select **Run As**.
-* Select **Run Configurations**.
-* Double click on xCORE application**.
-* Enable xSCOPE in Target I/O options:
-
-  .. figure:: images/xtime-run-xscope.*
-
-     xTIMEcomposer xSCOPE configuration
-
-* Click **Apply** and then **Run**.
-
-Once this command has executed the mass storage USB device should have enumerated on your machine and the below message should get displayed on your xTIMEcomposer console window
-
-.. figure:: images/demo_start.*
-
-   xTIMEcomposer Console Window
-
-|newpage|
 
 Detecting the Mass Storage
 --------------------------
@@ -305,48 +303,51 @@ Detecting the Mass Storage
 Windows Host
 ............
 
- * There is no specific driver installtion is required. Windows will automatically install a driver for the mass storage class. You should be able to get the below message screen once enumeration is complete.
-   
+ * There no specific driver installation is required. Windows will automatically install a driver
+   for the mass storage class. You should be able to get the below message screen once enumeration
+   is complete.
+
    .. figure:: images/DriverSw_Installation.*
       :scale: 80%
-   
+
       Driver Software Installation Screen (On Windows 7)
-       
+
  * You can also verify the device using **Device Manager** Menu
- 
+
    - `Click` on **Start Menu** goto **My Computer** - `Right click` and navigate to **Manage** option.
    - On **Computer Management** screen `double click` **Device Manager** on left and navigate to **Universal Serial Bus controllers** option on right.
    - `Double click` on **Universal Serial Bus controllers** and you should be able to see **USB Mass Storage Device**
-   
+
    .. figure:: images/device_detection.*
       :scale: 80%
-      
-      USB Mass Storage Device detection on Device Manager (On Windows 7)  
-      
-  * The Mass Storage Device should be seen as an **Removable Disk** (Drive ID may vary depending upon the number of drives available on your machine). 
-  
+
+      USB Mass Storage Device detection on Device Manager (On Windows 7)
+
+  * The Mass Storage Device should be seen as a **Removable Disk** (Drive ID may vary depending upon the number of drives available on your machine).
+
     .. figure:: images/removable_disk.*
        :scale: 78%
-       
+
        USB Mass Storage Device detecting as Removable Disk(I:) (On Windows 7)
 
  * You could see the successful installation of driver after enumeration is done.
- 
+
    .. figure:: images/installation.*
       :scale: 80%
-      
+
       XMOS LTD Flash Disk - Device Driver software installated successfully
 
 |newpage|
-      
-OSX Host
-........
 
- * There is no specific driver installtion is required. Mac will automatically detect and you should be able to get the below message screen once enumeration is complete.
-   
+macOS Host
+..........
+
+ * No specific driver installation is required. macOS will automatically detect and you
+   should be able to get the below message screen once enumeration is complete.
+
    .. figure:: images/device_detection_mac.*
       :scale: 80%
-   
+
       USB Mass Storage Device detection (On Mac)
 
 |newpage|
@@ -356,46 +357,42 @@ References
 
 .. nopoints::
 
-  * XMOS Tools User Guide
+  * `XMOS` XTC Tools Installation Guide
 
-    http://www.xmos.com/published/xtimecomposer-user-guide
+    https://xmos.com/xtc-install-guide
 
-  * XMOS xCORE Programming Guide
+  * `XMOS` XTC Tools User Guide
 
-    http://www.xmos.com/published/xmos-programming-guide
-  
-  * XMOS xCORE-USB Device Library: 
+    https://www.xmos.com/view/Tools-15-Documentation
 
-    http://www.xmos.com/published/xuddg
+  * XMOS xCORE-USB Device Library:
 
-  * XMOS USB Device Design Guide: 
-
-    http://www.xmos.com/published/xmos-usb-device-design-guide
+    https://www.xmos.com/file/lib_xud
 
   * USB Mass Storage Class Bulk-Only Transport
 
-    http://www.usb.org/developers/docs/devclass_docs/usbmassbulk_10.pdf
+    https://www.usb.org/sites/default/files/usbmassbulk_10.pdf
 
   * USB 2.0 Specification
 
-    http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
-  
+    https://www.usb.org/sites/default/files/usb_20_20240604.zip
+
   * USB Mass Storage Specification For Bootability
-  
-    http://www.usb.org/developers/docs/devclass_docs/usb_msc_boot_1.0.pdf
-    
+    https://www.usb.org/sites/default/files/usb_msc_boot_1.0.pdf
+
   * SCSI Command
-  
+
     http://en.wikipedia.org/wiki/SCSI_command
-    
+
   * SCSI Commands Reference Manual (Seagate)
-  
+
     http://www.seagate.com/staticfiles/support/disc/manuals/Interface%20manuals/100293068c.pdf
-    
-  * USB Mass Storage Device Specification Overview [#]_.  
-    
-.. [#] http://www.usb.org/developers/docs/devclass_docs/Mass_Storage_Specification_Overview_v1.4_2-19-2010.pdf    
-    
+
+  * USB Mass Storage Device Specification Overview
+
+    https://usb.org/sites/default/files/Mass_Storage_Specification_Overview_v1.4_2-19-2010.pdf
+
+
 Full Source Code listing
 ------------------------
 
@@ -404,7 +401,7 @@ Source Code for main.xc
 
 .. literalinclude:: main.xc
    :largelisting:
-   
+
 Source Code for endpoint0.xc
 .............................
 

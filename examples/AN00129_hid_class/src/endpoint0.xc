@@ -1,4 +1,4 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * @brief Implements endpoint zero for an example HID mouse device.
@@ -70,7 +70,7 @@ XUD_Result_t HidInterfaceClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_Se
     }
 
     return XUD_RES_ERR;
-}
+} /* HidInterfaceClassRequests */
 
 /* Endpoint 0 Task */
 void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
@@ -173,4 +173,4 @@ void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
             usbBusSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
         }
     }
-}
+} /* Endpoint0 */

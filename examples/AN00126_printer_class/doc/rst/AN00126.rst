@@ -1,6 +1,3 @@
-.. appnote:: AN00126
-
-.. include:: ../../../../lib_xud/doc/rst/version.rst
 
 .. include:: ../../README.rst
 
@@ -26,7 +23,7 @@ There are other, more sophisticated printer interfaces, but the ones previously 
 offers a much greater throughput capability than the serial port and is comparable in speed to the parallel port. This
 makes both parallel and serial printers good candidates for interfacing with USB.
 
-The USB specification provides as standard device class for the implementation of USB printers. 
+The USB specification provides as standard device class for the implementation of USB printers.
 
 (http://www.usb.org/developers/devclass_docs/usbprint11.pdf)
 
@@ -42,10 +39,10 @@ Block diagram
 USB Printer Device Class application note
 -----------------------------------------
 
-The demo in this note uses the XMOS USB device library and shows a simple program that receives data in PCL format from the host and outputs this data to 
+The demo in this note uses the XMOS USB device library and shows a simple program that receives data in PCL format from the host and outputs this data to
 the console in the form of a log.
 
-For the USB printer device class application example, the system comprises three tasks running on separate logical cores of a xCORE-USB multicore microcontroller.  
+For the USB printer device class application example, the system comprises three tasks running on separate logical cores of a `xcore` device.
 
 The tasks perform the following operations.
 
@@ -64,26 +61,27 @@ class application example.
 .. figure:: images/task_diagram.*
 
         Task diagram of USB printer application example
-    
 
-Makefile additions for this application
-.......................................
 
-To start using the USB library, you need to add ``lib_xud`` to your makefile::
+CMakeLists.txt additions for this application
+.............................................
 
-	USED_MODULES = ... lib_xud lib_logging
+To start using the USB library, you need to add ``lib_xud`` to your `xcommon` compatible
+`CMakeLists.txt`::
 
-You can then access the USB functions in your source code via the xud_device.h header file::
+    set (APP_DEPENDENT_MODULES "lib_xud")
+
+You can then access the USB functions in your source code via the ``xud_device.h`` header file::
 
 	#include "xud_device.h"
 
 Declaring resource and setting up the USB components
 ....................................................
- 
+
 ``main.xc`` contains the application implementation for a device based on the USB printer device class. There are some defines in it that are used to configure the XMOS USB device library. These are displayed below.
 
 .. literalinclude:: main.xc
-   :start-on: USB Endpoint Defines 
+   :start-on: USB Endpoint Defines
    :end-before: xSCOPE
 
 These defines describe the endpoint configuration for this device. This example has bi-directional communication with the host machine via the standard endpoint0 and an endpoint for receiving the printer data from the host into our device.
@@ -129,7 +127,8 @@ The USB ID values used for vendor id, product id and device version number are d
 USB Printer Class specific defines
 ..................................
 
-The USB Printer Class is configured in the file ``endpoint0.xc``. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB printer device running on an xCORE-USB microcontroller.
+The USB Printer Class is configured in the file ``endpoint0.xc``. Below there are a set of standard defines which are used to configure the USB device descriptors to setup a USB printer device running on an `xcore`
+device.
 
 .. literalinclude:: endpoint0.xc
    :start-on: USB Printer Subclass
@@ -143,7 +142,7 @@ USB Device Descriptor
 ``endpoint0.xc`` is where the standard USB device descriptor is declared for the printer device. Below is the structure which contains this descriptor. This will be requested by the host when the device is enumerated on the USB bus.
 
 .. literalinclude:: endpoint0.xc
-   :start-on: devDesc 
+   :start-on: devDesc
    :end-on: }
 
 From this descriptor you can see that product, vendor and device firmware revision are all coded into this structure. This will allow the host machine to recognise the printer device when it is connected to the USB bus.
@@ -165,8 +164,8 @@ USB string descriptors
 ......................
 
 There are two further descriptors within this file relating to the
-configuration of the USB Printer Class. These sections should also be
-modified to match the capabilities of the printer. 
+configuration of the USB Video Class. These sections should also be
+modified to match the capabilities of the device.
 
 .. literalinclude:: endpoint0.xc
    :start-on: String table
@@ -183,7 +182,7 @@ Inside ``endpoint0.xc`` there is some code for handling the USB printer device c
 
 .. literalinclude:: endpoint0.xc
    :start-on: Printer Class
-   :end-before: Endpoint 0 
+   :end-before: Endpoint 0
 
 These printer specific request are implemented by the application as they do not form part of the standard requests which have to be accepted by all device classes via endpoint0.
 
@@ -223,38 +222,50 @@ From this you can see the following.
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect the xCORE-200 EXPLORER board and xTAG
-to your development PC via USB (A to micro-b) cables. 
+To run the demo, connect the `XK-EVK-XU316` board  to your development PC via USB (A to micro-b)
+cables.
 
-Note, the use of xSCOPE is required in this application so 
+Note, the use of xSCOPE is required in this application so
 that the print messages that are generated on the device as part of the demo
 do not interfere with the real-time behavior of the USB device.
 
-.. figure:: images/explorerkit-200.*
+.. figure:: images/xk-evk-xu316.png
 
-	XMOS xCORE-200 EXPLORER Board
+	XMOS XK-EVK-XU316 Board
 
-The hardware should be configured as displayed above for this demo:
+The hardware should be configured as follows:
 
-  - The XTAG debug adapter should be connected to the XSYS connector and
-    the XTAG USB cable should be connected to the host machine
+  - Connect the **USB** receptacle of the `XK-EVK-XU316` to the host machine using a USB cable
 
-  - The xCORE-USB core board should have a USB cable connecting the device
-    to the host machine
+  - Connect the **DEBUG** receptacle `XK-EVK-XU316` to the host machine using a USB cable
 
-  - The xCORE-200 EXPLORER board required an additonal USB cable to provide 5V power
+Building the application
+------------------------
 
-|newpage|
+The application uses the `xcommon-cmake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+build system as bundled with the XTC tools.
+
+To configure the build run the following from an XTC command prompt::
+
+    cd AN00126_printer_class
+    cmake -G "Unix Makefiles" -B build
+
+If any dependencies are missing it is at this configure step that they will be downloaded by the build system.
+
+Finally, the application binary can be built using ``xmake``::
+
+    xmake -C build
+
+This command will cause a binary (.xe file) to be generated in the `bin` directory,
 
 Launching the demo device
 -------------------------
 
-Once the demo example has been built either from the command line using
-xmake or via the build mechanism of xTIMEcomposer studio the application
-can be executed on the xCORE EXPLORER board. 
+Once the demo example has been built the application
+can be executed on the `XK-EVK-XU316`.
 
 Once built there will be a ``bin`` directory within the project which
-contains the binary for the xCORE device. The xCORE binary has a XMOS standard 
+contains the binary for the `xcore` device. The `xcore` binary has a `XMOS` standard
 .xe extension.
 
 Launching from the command line
@@ -262,45 +273,18 @@ Launching from the command line
 
 From the command line the ``xrun`` tool is used to download code to both the
 xCORE devices. Changing into the bin directory of the project
-we can execute the code on the xCORE microcontroller as follows::
+we can execute the code on the `xcore` device as follows::
 
-> xrun --xscope app_printer_demo.xe          <-- Download and execute the xCORE code
+    xrun --xscope app_printer_clas.xe
 
-Once this command has executed the printer USB device should have 
+Once this command has executed the printer USB device should have
 enumerated on your machine
-
-Launching from xTIMEcomposer Studio
-...................................
-
-From xTIMEcomposer Studio the run mechanism is used to download code to 
-xCORE device. Select the xCORE binary from the bin directory, right click 
-and then follow the instructions below.
-
-* Select **Run As**.
-
-* Select **Run Configurations**.
-
-* Double click on xCORE application**.
-
-* Enable xSCOPE in Target I/O options:
-
-  .. figure:: images/xtime-run-xscope.*
-
-     xTIMEcomposer xSCOPE configuration
-
-* Click **Apply** and then **Run**.
-
-Once this command has executed the printer USB device should have 
-enumerated on your machine
-
-|newpage|
 
 Running the printer demo
 ------------------------
 
 Windows Host
 ............
-
 
 * To add the printer to Windows Control Panel :
 
@@ -353,32 +337,32 @@ Note that on OSX the default printer output will be in PCL format, this mean tha
 
 References
 ----------
-  
+
 .. nopoints::
 
-  * XMOS Tools User Guide
+  * `XMOS` XTC Tools Installation Guide
 
-    http://www.xmos.com/published/xtimecomposer-user-guide
+    https://xmos.com/xtc-install-guide
 
-  * XMOS xCORE Programming Guide
+  * `XMOS` XTC Tools User Guide
 
-    http://www.xmos.com/published/xmos-programming-guide
-  
-  * XMOS xCORE-USB Device Library: 
+    https://www.xmos.com/view/Tools-15-Documentation
 
-    http://www.xmos.com/published/xuddg
+  * USB 2.0 Specification
 
-  * XMOS USB Device Design Guide: 
+    https://www.usb.org/sites/default/files/usb_20_20240604.zip
 
-    http://www.xmos.com/published/xmos-usb-device-design-guide
+  * `XMOS` application build and dependency management system; `xcommon-cmake`
 
-  * USB Printer Class Specification, USB.org: 
-
-    http://www.usb.org/developers/devclass_docs/usbprint11.pdf
+    https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest
 
   * USB 2.0 Specification
 
     http://www.usb.org/developers/docs/usb20_docs/usb_20_081114.zip
+
+  * USB Printer Class Specification, USB.org:
+
+    https://www.usb.org/sites/default/files/usbprint11a021811.pdf
 
 |newpage|
 

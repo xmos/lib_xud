@@ -29,6 +29,11 @@ pipeline {
       defaultValue: '15.3.0',
       description: 'The XTC tools version'
     )
+    string(
+      name: 'XMOSDOC_VERSION',
+      defaultValue: 'v6.1.0',
+      description: 'The xmosdoc version'
+    )
   }
 
   stages {
@@ -55,14 +60,19 @@ pipeline {
       }
     }
 
-    stage('Build documentation') {
+    stage('Documentation: Library') {
+      steps {
+        dir("${REPO}") {
+          buildDocs()
+        }
+      }
+    }
+
+    stage('Documentation: Examples') {
           steps {
             dir("${REPO}") {
               withXdoc("feature/update_xdoc_3_3_0") {
                 withTools(params.TOOLS_VERSION) {
-                  dir("${REPO}/doc") {
-                    sh "xdoc xmospdf"
-                  }
                   dir("examples/AN00124_CDC_VCOM_class/doc") {
                     sh "xdoc xmospdf"
                   }

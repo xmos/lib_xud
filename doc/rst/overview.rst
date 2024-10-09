@@ -1,17 +1,12 @@
 .. _xmos_usb_device_library:
 
+********
 Overview
-========
+********
 
-The XUD library allows the implementation of both full-speed and
-high-speed USB 2.0 devices on xCORE-200 and xCORE.AI series devices.
-
-Selected xCORE-200 and xCORE.AI devies include an integrated USB transceiver. 
-Two libraries, with an identical API, are provided - one each for each
-architecture.
-
-Please note, XS1-G, XS1-L and XS1-U series devices are not recommended for 
-new designs.
+`xcore.ai` devices and selected `xcore-200` devices include an integrated USB transceiver.
+The XUD library allows the implementation of both full-speed and high-speed USB 2.0 devices on
+these devices.  ``lib_xud`` provides an identical API for all devices.
 
 The library performs all of the low-level I/O operations required to meet
 the USB 2.0 specification. This processing goes up to and includes the
@@ -28,7 +23,7 @@ throughout this document the USB nomenclature is used: an OUT endpoint
 is used to transfer data from the host to the device, an IN endpoint is
 used when the host requests data from the device.
 
-An example task diagram is shown in :ref:`figure_xud_overview`.  Circles
+An example task diagram is shown in :numref:`figure_xud_overview`.  Circles
 represent cores running with arrows depicting communication
 channels between these cores. In this configuration there is one
 core that deals with endpoint 0, which has both the input and output

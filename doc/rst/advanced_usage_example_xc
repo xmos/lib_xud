@@ -19,7 +19,7 @@ void ExampleEndpoint(chanend c_ep_out, chanend c_ep_in)
         {
             case XUD_GetData_Select(c_ep_out, ep_out, length):
 
-                /* Packet from host recieved */
+                /* Packet from host received */
 
                 for(int i = 0; i< length; i++)
                 {
@@ -29,11 +29,11 @@ void ExampleEndpoint(chanend c_ep_out, chanend c_ep_in)
                 /* Mark EP as ready again */
                 XUD_SetReady_Out(ep_out, rxBuffer);
                 break;
-                
+
             case XUD_SetData_Select(c_ep_in, ep_in, returnVal):
 
                 /* Packet successfully sent to host */
-        
+
                 /* Create new buffer */
                 for(int i = 0; i < 5; i++)
                 {
@@ -47,4 +47,3 @@ void ExampleEndpoint(chanend c_ep_out, chanend c_ep_in)
         }
     }
 }
-//:

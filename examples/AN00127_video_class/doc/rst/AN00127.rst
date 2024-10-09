@@ -1,5 +1,3 @@
-.. include:: ../../../../lib_xud/doc/rst/version.rst
-
 .. include:: ../../README.rst
 
 |newpage|

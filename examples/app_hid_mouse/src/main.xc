@@ -1,7 +1,7 @@
 // Copyright 2015-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xud_device.h"
-#include "hid_defs.h"
+#include "hid_descs.h"
 
 /* Number of Endpoints used by this app */
 #define EP_COUNT_OUT   1
@@ -23,7 +23,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in);
  */
 void hid_mouse(chanend chan_ep_hid)
 {
-    unsigned int counter = 0;
+    int counter = 0;
     enum {RIGHT, DOWN, LEFT, UP} state = RIGHT;
 
     XUD_ep ep_hid = XUD_InitEp(chan_ep_hid);
@@ -36,48 +36,50 @@ void hid_mouse(chanend chan_ep_hid)
             int x;
             int y;
 
-            switch(state) {
-            case RIGHT:
-                x = 40;
-                y = 0;
-                state = DOWN;
-                break;
+            switch(state)
+            {
+                case RIGHT:
+                    x = 40;
+                    y = 0;
+                    state = DOWN;
+                    break;
 
-            case DOWN:
-                x = 0;
-                y = 40;
-                state = LEFT;
-                break;
+                case DOWN:
+                    x = 0;
+                    y = 40;
+                    state = LEFT;
+                    break;
 
-            case LEFT:
-                x = -40;
-                y = 0;
-                state = UP;
-                break;
+                case LEFT:
+                    x = -40;
+                    y = 0;
+                    state = UP;
+                    break;
 
-            case UP:
-            default:
-                x = 0;
-                y = -40;
-                state = RIGHT;
-                break;
+                case UP:
+                default:
+                    x = 0;
+                    y = -40;
+                    state = RIGHT;
+                    break;
             }
 
             /* Unsafe region so we can use shared memory. */
-            unsafe {
+            unsafe
+            {
                 /* global buffer 'g_reportBuffer' defined in hid_defs.h */
                 char * unsafe p_reportBuffer = g_reportBuffer;
 
                 p_reportBuffer[1] = x;
                 p_reportBuffer[2] = y;
 
-                /* Send the buffer off to the host.  Note this will return when complete */
+                /* Send the buffer to the host.  Note this will return when complete */
                 XUD_SetBuffer(ep_hid, (char *) p_reportBuffer, sizeof(g_reportBuffer));
                 counter = 0;
             }
         }
     }
-} /* hid_mouse() */
+} //
 
 
 /* The main function runs three cores: the XUD manager, Endpoint 0, and a HID endpoint. An array of
@@ -100,4 +102,4 @@ int main()
     }
 
     return 0;
-}
+} //

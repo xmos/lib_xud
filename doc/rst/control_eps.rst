@@ -52,7 +52,8 @@ the current bus-speed.
 .. note::
 
    ``USB_StandardRequests()`` takes two references for device and configuration descriptors - this
-   allows for different functionality based on bus-speed.
+   allows for different functionality based on bus-speed. ``USB_StandardRequests()`` forms valid
+   `Device Qualifier` and `Other Speed Configuration` descriptors from these arrays.
 
 ``USB_SetupPacket_t``
 ---------------------

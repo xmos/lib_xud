@@ -7,7 +7,7 @@
 #include <xcore/hwtimer.h>
 
 #include <xud_device.h>
-#include "hid_defs.h"
+#include "hid_descs.h"
 #include "hid.h"
 
 #include <stdio.h>

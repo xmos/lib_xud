@@ -85,9 +85,6 @@ pipeline {
                   dir("examples/AN00127_video_class/doc") {
                     sh "xdoc xmospdf"
                   }
-                  dir("examples/AN00129_hid_class/doc") {
-                    sh "xdoc xmospdf"
-                  }
                   dir("examples/AN00131_CDC_EDC_class/doc") {
                     sh "xdoc xmospdf"
                   }

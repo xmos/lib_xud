@@ -13,6 +13,7 @@ lib_xud: USB Device Library
   basic_usage.rst
   control_eps.rst
   programming.rst
+  example.rst
   advanced_usage.rst
   further_reading.rst
 

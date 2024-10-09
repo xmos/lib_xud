@@ -16,13 +16,8 @@ XUD IO Task
 ===========
 
 ``XUD_Main()`` is the main task that interfaces with the USB transceiver.
-<<<<<<< HEAD
-It performs handles connection and handshaking on the USB bus as well as other bus-states such
-as suspend and resume. It passes packets to/from the various endpoints.
-=======
 It performs connection and handshaking on the USB bus as well as other bus-states such
 as suspend and resume. It also handles passing packets to/from the various endpoints.
->>>>>>> develop
 
 This function should be called directly from the top-level ``par`` statement in ``main()`` to
 ensure that the XUD library is ready within the 100ms allowed by the USB specification (assuming a
@@ -36,13 +31,23 @@ Endpoint Type Tables
 The endpoint type tables are arrays of type ``XUD_EpType`` and are used to inform ``lib_xud``
 about the endpoints in use.  This information is used to indicate the transfer-type of each endpoint
 (bulk, control, isochronous or interrupt) as well as whether the endpoint wishes to be informed
-about bus-resets (see `Status Reporting`_).
+about bus-resets (see `Status Reporting`_). Two tables are requires, one for IN and one for OUT
+endpoints.
 
-.. note::
+Suitable values are provided in the ``XUD_EpTransferType`` `enum`:
 
-    Endpoints can also be marked as disabled.
+    * ``XUD_EPTYPE_ISO``: Isochronous endpoint
+    * ``XUD_EPTYPE_INT``: Interrupt endpoint
+    * ``XUD_EPTYPE_BUL``: Bulk endpoint
+    * ``XUD_EPTYPE_CTL``: Control endpoint
+    * ``XUD_EPTYPE_DIS``: Disabled endpoint
 
-Endpoints that are not used will ``NAK`` any traffic from the host.
+Endpoint 0 uses index 0 of both the endpoint type table. The address of other endpoints corresponds
+to their index in the endpoint type tables.
+
+..note::
+
+    Endpoints that are not used will ``NAK`` any traffic from the host.
 
 ``PwrConfig``
 -------------
@@ -56,11 +61,7 @@ responds appropriately. The USB Specification states that the devices pull-ups m
 when a valid `VBUS` is not present. This is important when submitting a device for compliance
 testing since this is explicitly tested.
 
-<<<<<<< HEAD
-If the device is bus-powered ``XUD_PWR_BUS`` can be used since is assumed that the device is not
-=======
 If the device is bus-powered ``XUD_PWR_BUS`` can be used since it is assumed that the device is not
->>>>>>> develop
 powered up when `VBUS` is not present and therefore no voltage monitoring is required.  In this
 configuration the `VBUS` input to the device/PHY need not be present.
 
@@ -90,10 +91,6 @@ task.
 These functions will automatically deal with any low-level complications required such as Packet ID
 (PID) toggling etc.
 
-<<<<<<< HEAD
-=======
-
->>>>>>> develop
 ``XUD_SetBuffer()``
 -------------------
 
@@ -173,6 +170,8 @@ function. This will return the current bus speed as a ``XUD_BusSpeed_t`` with th
 
 .. doxygenfunction:: XUD_ResetEndpoint
 
+.. _sec_status_reporting:
+
 Status Reporting Example
 ========================
 
@@ -224,60 +223,7 @@ cases it is easier to use the endpoint address.
 
 .. doxygenfunction:: XUD_ClearStallByAddr
 
-
-.. _sec_status_reporting:
-
-Status Reporting
-================
-
-An endpoint can register for "status reporting" such that bus state can be known. This is achieved
-by ORing ``XUD_STATUS_ENABLE`` into the relevant endpoint in the endpoint type table.
-
-This means that endpoints are notified of USB bus resets (and bus-speed changes). The ``lib_xud``
-access functions discussed previously (``XUD_GetBuffer``, ``XUD_SetBuffer``, etc) return
-``XUD_RES_RST`` if a USB bus reset is detected.
-
-This reset notification is important if an endpoint task is expecting alternating IN and OUT
-transactions. For example, consider the case where an endpoint is always expecting the sequence
-OUT, IN, OUT (such as a control transfer or a request response protocol).
-If an unplug/reset event was received after the first OUT, the host would return to sending the
-initial OUT after a re-plug, whilst the endpoint task would hang trying to send a response the IN.
-The endpoint needs to know of the bus reset in order to reset its state machine.
-
-.. note::
-   Endpoint 0 **requires** this functionality to be enabled  since it deals with bi-directional
-   control transfers
-
-This functionality is also important for high-speed devices, since it is not guaranteed that a host
-will enumerate the device as a high-speed device, say if it's plugged via full-speed hub.
-
-The device typically needs to know what bus-speed it is currently running at.
-
-After a reset notification has been received, the endpoint must call the ``XUD_ResetEndpoint()``
-function. This will return the current bus speed as a ``XUD_BusSpeed_t`` with the value
-``XUD_SPEED_FS`` ;or ``XUD_SPEED_HS``.
-
-``XUD_ResetEndpoint()``
------------------------
-
-.. doxygenfunction:: XUD_ResetEndpoint
-
-SOF Channel
-===========
-
-An application can pass an optional channel-end to the ``c_sof`` parameter of ``XUD_Main()``.
-This will cause a word of data to be output every time
-the device receives a SOF (`Start Of Frame`) packet from the host.  This can be used for timing
-information in audio devices etc.
-
-If this functionality is not required ``null`` should be passed as the parameter.
-
-.. note::
-   If an optional channel-end is passed into ``XUD_Main()`` there must be a responsive task ready
-   to receive SOF notifications otherwise the ``XUD_Main()`` task will be blocked attempting to
-   send these messages leading to it being unresponsive to the host.
-
-.. _xud_usb_test_modes:
+.. _sec_test_modes:
 
 USB Test Modes
 ==============

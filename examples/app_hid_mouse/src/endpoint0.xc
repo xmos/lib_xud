@@ -6,7 +6,7 @@
 #include <xs1.h>
 #include "xud_device.h"
 #include "hid.h"
-#include "hid_defs.h"
+#include "hid_descs.h"
 
 /* It is essential that HID_REPORT_BUFFER_SIZE, defined in hid_defs.h, matches the   */
 /* infered length of the report described in hidReportDescriptor above. In this case */

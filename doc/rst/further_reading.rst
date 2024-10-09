@@ -23,7 +23,14 @@ Further Reading
 
     https://www.usbmadesimple.co.uk/index.html
 
-  * USB 2.0 Specification
+  * USB Specification 2.0
 
     https://www.usb.org/sites/default/files/usb_20_20240604.zip
 
+  * Human Interface Device (HID) Class Specification 1.11
+
+    https://usb.org/document-library/device-class-definition-hid-111>
+
+  * HID Descriptor Tool
+
+    https://usb.org/document-library/hid-descriptor-tool

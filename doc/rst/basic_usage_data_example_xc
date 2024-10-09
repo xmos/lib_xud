@@ -1,0 +1,11 @@
+void ExampleEndpoint(chanend c_ep_in)
+{
+    char buffer[512];
+
+    XUD_ep ep_to_host = XUD_InitEp(chan_ep_in);
+
+    while(1)
+    {
+        XUD_SetBuffer(ep_to_host, buffer, 512);
+    }
+}

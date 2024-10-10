@@ -80,7 +80,7 @@ host. The ``XUD_SetBuffer()`` function will return when the packet transmission 
 Device Descriptors
 ==================
 
-The ``USB_StandardRequests()`` function expects descriptors be declared as arrays of characters.
+The ``USB_StandardRequests()`` function expects descriptors to be declared as arrays of characters.
 Descriptors are looked at in depth in this section.
 
 .. note::

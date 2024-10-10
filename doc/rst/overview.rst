@@ -24,8 +24,8 @@ An example task diagram is shown in :numref:`figure_xud_overview`.  Circles repr
 running with arrows depicting communication channels between these threads. In this configuration
 there is one thread that deals with endpoint 0, which has both the input and output channel for
 endpoint 0. IN endpoint 1 is dealt with by a second thread, and OUT endpoint 2 and IN endpoint 5
-are dealt with by a third thread. Threads must be ready to communicate with the XUD library whenever t
-he host demands it's attention. If not, the XUD library will `NAK`.
+are dealt with by a third thread. Threads must be ready to communicate with the XUD library whenever
+the host demands it's attention. If not, the XUD library will `NAK`.
 
 It is important to note that, for performance reasons, tasks communicate with the XUD library
 using both `XC` channels and shared memory communication. Therefore, *all tasks  using the XUD

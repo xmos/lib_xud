@@ -36,14 +36,16 @@ Serial Bus 2.0 specification for full details of Setup packet and request struct
 A ``USB_StandardRequests()`` function provides a bare-minimum implementation of the mandatory
 requests required to be implemented by a USB device.
 The function inspects this ``USB_SetupPacket_t`` structure and includes a minimum implementation
-of the Standard Device requests. The rest of this section documents the requests handled and a
-lists the basic  functionality associated with the request.
+of the Standard Device requests. The rest of this section documents the requests handled and lists
+the basic functionality associated with the request.
 
-It is not intended that this replace a good knowledge of the requests required, since the
-implementation does not guarantee a fully USB compliant device. Each request could well be required
-to be over-ridden for a device implementation. For example,a USB Audio device could well require a
-specialised version of `SET_INTERFACE` since this could mean that audio streaming will commence
-imminently.
+It is not intended that this replace a good knowledge of the requests required, since
+``USB_StandardRequests()`` has no knowledge about the specific class that is implemented, and hence
+does not guarantee a fully USB compliant device.
+
+Each request could well be required to be over-ridden for a device implementation. For example,a
+USB Audio device could well require a specialised version of `SET_INTERFACE` since this could mean
+that audio streaming will commence imminently.
 
 The ``USB_StandardRequests()`` function takes as parameters arrays representing the device
 descriptor, configuration descriptor, and a string table as well as a ``USB_SetupPacket_t`` and

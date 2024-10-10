@@ -1,5 +1,6 @@
-// Copyright 2015-2024 XMOS LIMITED.
+// Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
 /*
  * @brief Implements endpoint zero for an example HID mouse device.
  */

@@ -31,7 +31,7 @@ Endpoint Type Tables
 The endpoint type tables are arrays of type ``XUD_EpType`` and are used to inform ``lib_xud``
 about the endpoints in use.  This information is used to indicate the transfer-type of each endpoint
 (bulk, control, isochronous or interrupt) as well as whether the endpoint wishes to be informed
-about bus-resets (see `Status Reporting`_). Two tables are requires, one for IN and one for OUT
+about bus-resets (see `Status Reporting`_). Two tables are required, one for IN and one for OUT
 endpoints.
 
 Suitable values are provided in the ``XUD_EpTransferType`` `enum`:
@@ -42,8 +42,8 @@ Suitable values are provided in the ``XUD_EpTransferType`` `enum`:
     * ``XUD_EPTYPE_CTL``: Control endpoint
     * ``XUD_EPTYPE_DIS``: Disabled endpoint
 
-Endpoint 0 uses index 0 of both the endpoint type table. The address of other endpoints corresponds
-to their index in the endpoint type tables.
+OUT endpoint N will use index N of the output-endpoint-table, IN endpoint 0x8N will use index N
+of the inpout-endpoint-table. Endpoint 0 must exist in both tables.
 
 ..note::
 
@@ -150,7 +150,7 @@ transactions. For example, consider the case where an endpoint is always expecti
 OUT, IN, OUT (such as a control transfer or a request response protocol).
 If an unplug/reset event was received after the first OUT, the host would return to sending the
 initial OUT after a re-plug, whilst the endpoint task would hang trying to send a response the IN.
-The endpoint needs to know of the bus reset in order to reset it's state machine.
+The endpoint needs to know of the bus reset in order to reset its state machine.
 
 .. note::
    Endpoint 0 **requires** this functionality to be enabled  since it deals with bi-directional

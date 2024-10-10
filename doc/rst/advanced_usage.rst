@@ -10,7 +10,7 @@ Advanced Usage
 Advanced usage is termed to mean the implementation of multiple endpoints in a single task as well
 as the addition of real-time processing to an endpoint task.
 
-The functions documented in :ref:`sec_advanced_usage` such as ``XUD_SetBuffer()`` and
+The functions documented in :ref:`sec_basic_usage` such as ``XUD_SetBuffer()`` and
 ``XUD_GetBuffer()`` are synchronous in nature - they block until data has either been successfully
 sent or received to or from the host.
 For this reason it is not generally possible to handle multiple endpoints in a single thread

@@ -31,13 +31,23 @@ Endpoint Type Tables
 The endpoint type tables are arrays of type ``XUD_EpType`` and are used to inform ``lib_xud``
 about the endpoints in use.  This information is used to indicate the transfer-type of each endpoint
 (bulk, control, isochronous or interrupt) as well as whether the endpoint wishes to be informed
-about bus-resets (see `Status Reporting`_).
+about bus-resets (see `Status Reporting`_). Two tables are required, one for IN and one for OUT
+endpoints.
 
-.. note::
+Suitable values are provided in the ``XUD_EpTransferType`` `enum`:
 
-    Endpoints can also be marked as disabled.
+    * ``XUD_EPTYPE_ISO``: Isochronous endpoint
+    * ``XUD_EPTYPE_INT``: Interrupt endpoint
+    * ``XUD_EPTYPE_BUL``: Bulk endpoint
+    * ``XUD_EPTYPE_CTL``: Control endpoint
+    * ``XUD_EPTYPE_DIS``: Disabled endpoint
 
-Endpoints that are not used will ``NAK`` any traffic from the host.
+OUT endpoint N will use index N of the output-endpoint-table, IN endpoint 0x8N will use index N
+of the inpout-endpoint-table. Endpoint 0 must exist in both tables.
+
+..note::
+
+    Endpoints that are not used will ``NAK`` any traffic from the host.
 
 ``PwrConfig``
 -------------
@@ -81,7 +91,6 @@ task.
 These functions will automatically deal with any low-level complications required such as Packet ID
 (PID) toggling etc.
 
-
 ``XUD_SetBuffer()``
 -------------------
 
@@ -119,37 +128,12 @@ descriptors must be sent in typically 64 byte transactions.
 
 .. doxygenfunction:: XUD_DoSetRequestStatus
 
+Data Transfer Example
+=====================
 
-Halting
-========
+A simple endpoint task is shown below demonstrating basic data transfer to the host.
 
-The USB specification requires the ability for an endpoint to send a `STALL` response to the host if
-an endpoint is halted, or if control pipe request is not supported. ``lib_xud`` provides
-various functions to support this.  In some cases it is easier to use the ``XUD_ep`` whilst in other
-cases it is easier to use the endpoint address.
-
-``XUD_SetStall()``
-------------------
-
-.. doxygenfunction:: XUD_SetStall
-
-``XUD_SetStallByAddr()``
-------------------------
-
-.. doxygenfunction:: XUD_SetStallByAddr
-
-``XUD_ClearStall()``
---------------------
-
-.. doxygenfunction:: XUD_ClearStall
-
-``XUD_ClearStallByAddr()``
---------------------------
-
-.. doxygenfunction:: XUD_ClearStallByAddr
-
-
-.. _xud_status_reporting:
+.. literalinclude:: basic_usage_data_example_xc
 
 Status Reporting
 ================
@@ -186,6 +170,16 @@ function. This will return the current bus speed as a ``XUD_BusSpeed_t`` with th
 
 .. doxygenfunction:: XUD_ResetEndpoint
 
+.. _sec_status_reporting:
+
+Status Reporting Example
+========================
+
+A simple endpoint task is shown below demonstrating basic data transfer to the host and bus status
+inspection.
+
+.. literalinclude:: basic_usage_status_example_xc
+
 SOF Channel
 ===========
 
@@ -201,7 +195,35 @@ If this functionality is not required ``null`` should be passed as the parameter
    to receive SOF notifications otherwise the ``XUD_Main()`` task will be blocked attempting to
    send these messages leading to it being unresponsive to the host.
 
-.. _xud_usb_test_modes:
+Halting
+========
+
+The USB specification requires the ability for an endpoint to send a `STALL` response to the host if
+an endpoint is halted, or if control pipe request is not supported. ``lib_xud`` provides
+various functions to support this.  In some cases it is easier to use the ``XUD_ep`` whilst in other
+cases it is easier to use the endpoint address.
+
+``XUD_SetStall()``
+------------------
+
+.. doxygenfunction:: XUD_SetStall
+
+``XUD_SetStallByAddr()``
+------------------------
+
+.. doxygenfunction:: XUD_SetStallByAddr
+
+``XUD_ClearStall()``
+--------------------
+
+.. doxygenfunction:: XUD_ClearStall
+
+``XUD_ClearStallByAddr()``
+--------------------------
+
+.. doxygenfunction:: XUD_ClearStallByAddr
+
+.. _sec_test_modes:
 
 USB Test Modes
 ==============

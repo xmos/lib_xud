@@ -1,0 +1,16 @@
+void ExampleEndpoint(chanend c_ep_in)
+{
+    char buffer[512];
+    XUD_Result_t result;
+
+    XUD_ep ep_to_host = XUD_InitEp(chan_ep_to_host);
+
+    while(1)
+    {
+        if((result = XUD_SetBuffer(ep_to_host, buffer, 512)) == XUD_RES_RST)
+        {
+            XUD_ResetEndpoint(ep_from_host, ep_to_host);
+        }
+    }
+}
+

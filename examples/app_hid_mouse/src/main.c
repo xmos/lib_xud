@@ -1,4 +1,4 @@
-// Copyright 2015-2022 XMOS LIMITED.
+// Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xcore/parallel.h>
@@ -7,7 +7,7 @@
 #include <xcore/hwtimer.h>
 
 #include <xud_device.h>
-#include "hid_defs.h"
+#include "hid_descs.h"
 #include "hid.h"
 
 #include <stdio.h>

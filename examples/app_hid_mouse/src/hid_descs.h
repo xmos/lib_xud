@@ -1,4 +1,4 @@
-// Copyright 2021-2024 XMOS LIMITED.
+// Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /*
@@ -61,8 +61,7 @@ static unsigned char cfgDesc[] = {
     0x02,                 /* 7: bInterfaceProtocol*/
     0x00,                 /* 8  iInterface */
 
-    0x09,                 /* 0  bLength. Note this is currently
-                                replicated in hidDescriptor[] below */
+    0x09,                 /* 0  bLength. Note this is replicated in hidDescriptor[] */
     0x21,                 /* 1  bDescriptorType (HID) */
     0x11,                 /* 2  bcdHID */
     0x01,                 /* 3  bcdHID */

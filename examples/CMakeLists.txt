@@ -6,11 +6,3 @@ project(lib_xud_examples)
 # Main example
 add_subdirectory(app_hid_mouse)
 
-# Old App Note examples
-add_subdirectory(AN00124_CDC_VCOM_class)
-add_subdirectory(AN00125_mass_storage_class)
-add_subdirectory(AN00126_printer_class)
-add_subdirectory(AN00127_video_class)
-add_subdirectory(AN00131_CDC_EDC_class)
-add_subdirectory(AN00132_image_class)
-add_subdirectory(AN00135_test_and_measurement_class)

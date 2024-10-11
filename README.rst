@@ -30,6 +30,7 @@ Features
   * USB 2.0 Full-speed (12Mbps) and High-speed (480Mbps)
   * Device mode
   * Bulk, control, interrupt and isochronous endpoint types supported
+  * A complete worked example of a HID mouse
 
 ************
 Known Issues

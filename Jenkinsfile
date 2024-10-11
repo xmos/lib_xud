@@ -31,7 +31,7 @@ pipeline {
     )
     string(
       name: 'XMOSDOC_VERSION',
-      defaultValue: 'v6.1.0',
+      defaultValue: 'v6.1.2',
       description: 'The xmosdoc version'
     )
   }
@@ -67,40 +67,6 @@ pipeline {
         }
       }
     }
-
-    stage('Documentation: Examples') {
-          steps {
-            dir("${REPO}") {
-              withXdoc("feature/update_xdoc_3_3_0") {
-                withTools(params.TOOLS_VERSION) {
-                  dir("examples/AN00124_CDC_VCOM_class/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00125_mass_storage_class/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00126_printer_class/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00127_video_class/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00131_CDC_EDC_class/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00132_image_class/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00135_test_and_measurement_class/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                }
-              }
-            }
-            // Archive all the generated .pdf docs
-            archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf"
-          }
-        }  // Build documentation
 
     stage('Tests')
     {

@@ -163,7 +163,7 @@ For example, the other tile on an dual-tile device is unaffected by this restric
 
 .. note::
 
-    At points or execution ``XUD_Main()`` will run in "fast mode", this is a requirement to meet
+    At points of execution ``XUD_Main()`` will run in "fast mode", this is a requirement to meet
     timing.
 
 Clock blocks

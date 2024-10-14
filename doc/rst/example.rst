@@ -1,10 +1,13 @@
+
+|newpage|
+
 .. _sec_example:
 
 *******************
-Example Application
+Example application
 *******************
 
-This section contains a full worked example of implementing a USB mouse device compliant to the
+This section contains a fully worked example of implementing a USB mouse device compliant to the
 `Human Interface Device (HID) Class <https://usb.org/document-library/device-class-definition-hid-111>`_
 mouse device.
 
@@ -25,7 +28,7 @@ The full source for this application is provided along side the ``lib_xud`` soft
     The example code provides implementations in C and XC. This section concentrates on the XC
     version.
 
-Required Hardware
+Required hardware
 =================
 
 This application note is designed to run on `XMOS xcore-200` or `xcore.ai` series devices.
@@ -57,7 +60,7 @@ Since this example does not require `SOF` notifications ``null`` is passed into 
 parameter. ``XUD_SPEED_HS`` is passed for the ``desiredSpeed`` parameter such that the device
 attempts to run as a high-speed device.
 
-HID Endpoint Task
+HID endpoint task
 =================
 
 This function responds to the HID requests - it moves the mouse cursor in square by moving 40
@@ -77,7 +80,7 @@ in the ``hid_mouse()`` function.
 Should processing take longer that the host IN polls, the ``XUD_Main()`` task will simply `NAK` the
 host. The ``XUD_SetBuffer()`` function will return when the packet transmission is complete.
 
-Device Descriptors
+Device descriptors
 ==================
 
 The ``USB_StandardRequests()`` function expects descriptors to be declared as arrays of characters.

@@ -109,6 +109,28 @@ from an external IO expander, for example.
 
    `VBUS` need not be connected if the device is wholly powered by USB i.e. a bus powered device.
 
+USB_TILE define
+===============
+
+In order that ``lib_xua`` may instantiate resources on the correct tile (typically ports) it
+requires a ``USB_TILE`` define to be set. The default value for the define is ``tile[0]`` so a
+developer only needs to set this if ``XUD_Main()`` is executing on a tile other than 0.
+
+There are two ways of setting this define, either in the application `CMakeLists.txt` for example::
+
+    set(APP_COMPILER_FLAGS -DXUD_TILE=tile[0])
+
+Or, following `XMOS` software library convention, providing a `xud_conf.h` file in the application
+codebase. This header file will be automatically detected by the build system and used by
+``lib_xud``. Example content for this header file is as follows::
+
+    #indef _XUD_CONF_H_
+    #define _XUD_CONF_H_
+
+    #define XUD_TILE tile[0]
+
+    #endif
+
 Data transfer
 =============
 

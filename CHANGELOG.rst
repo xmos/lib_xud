@@ -6,7 +6,8 @@ lib_xud change log
 
   * CHANGE:   Documentation updates
   * CHANGE:   Examples now build using xcommon-cmake build system (was xcommon)
-  * CHANGE:   AN00129 is now the main library usage example - renamed app_hid_mouse
+  * CHANGE:   AN00129 is now the main library usage example - renamed
+    app_hid_mouse
   * REMOVED:  AN00124 - now maintained as a separate application note
   * REMOVED:  AN00125 - now maintained as a separate application note
   * REMOVED:  AN00126 - now maintained as a separate application note

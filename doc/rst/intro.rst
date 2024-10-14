@@ -14,3 +14,6 @@ This library is for use with `xcore-200` series (XS2 architecture) or `xcore.ai`
 architecture) devices only, previous generations of `xcore` devices (i.e. XS1 architecture) are not
 supported.
 
+``lib_xud`` is intended to be used with the `XCommon CMake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+, the `XMOS` application build and dependency management system.
+

@@ -42,7 +42,6 @@ pipeline {
   }
 
   stages {
-
     stage('Build examples') {
       steps {
         println "Stage running on ${env.NODE_NAME}"
@@ -61,11 +60,11 @@ pipeline {
 
     stage('Library checks') {
       steps {
-        runLibraryChecks("${WORKSPACE}/${REPO}", params.INFR_APPS_VERSION)
+        runLibraryChecks("${WORKSPACE}/${REPO}", "${params.INFR_APPS_VERSION}")
       }
     }
 
-    stage('Documentation: Library') {
+    stage('Documentation') {
       steps {
         dir("${REPO}") {
           buildDocs()

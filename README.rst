@@ -5,7 +5,7 @@ lib_xud: USB Device Library
 ###########################
 
 :vendor: XMOS
-:version: 2.3.2
+:version: 2.4.0
 :scope: General Use
 :description: USB device library
 :category: General Purpose
@@ -20,8 +20,6 @@ The XMOS USB Device (XUD) library provides a low-level interface to USB.  lib_xu
 defined, industry-standard, USB library that allows you to control an USB bus via `xcore` ports.
 
 The library provides functionality to act as a USB *device* only.
-
-Note, at points lib_xud will run in "fast mode" this is a requirement to meet timing.
 
 ********
 Features

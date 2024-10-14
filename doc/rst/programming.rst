@@ -1,11 +1,12 @@
 
+|newpage|
 .. _sec_programming:
 
 *****************
-Programming Guide
+Programming guide
 *****************
 
-This section provides information on how to create an basic application using the ``lib_xud``.
+This section provides information on how to create an basic application using ``lib_xud``.
 
 Includes
 ========
@@ -63,19 +64,19 @@ application specific endpoint tasks, for example::
 (either endpoint 0 or an application specific endpoint). Application specific endpoints are
 connected using channel ends so the IN and OUT channel arrays need to be extended for each endpoint.
 
-Endpoint Addresses
+Endpoint addresses
 ==================
 
 Endpoint 0 uses index 0 of both the endpoint type table and the channel array. The address of other
 endpoints must also correspond to their index in the endpoint table and the channel array.
 
-Sending and Receiving Data
+Sending and receiving data
 ==========================
 
 An application specific endpoint can send data using ``XUD_SetBuffer()`` and receive data using
 ``XUD_GetBuffer()`` etc as described in :ref:`sec_basic_usage`.
 
-Endpoint 0 Implementation
+Endpoint 0 implementation
 =========================
 
 It is necessary to create an implementation for endpoint 0 which takes two channels, one for IN and
@@ -144,7 +145,7 @@ in full-speed mode and vice versa.
     On bus reset the ``XUD_ResetEndpoint()`` function returns the negotiated USB speed (i.e. full
     or high speed).
 
-Device Descriptors
+Device descriptors
 ==================
 
 Every USB device must provide a set of descriptors. They are used to identify the USB device’s

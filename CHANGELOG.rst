@@ -1,8 +1,8 @@
 lib_xud change log
 ==================
 
-UNRELEASED
-----------
+2.4.0
+-----
 
   * CHANGE:   Documentation updates
   * CHANGE:   Examples now build using xcommon-cmake build system (was xcommon)

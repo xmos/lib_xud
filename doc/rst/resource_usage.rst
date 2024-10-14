@@ -5,7 +5,7 @@ Resource Usage
 
 This section describes the resources required by ``lib_xud``.
 
-Ports/Pins
+Ports/pins
 ==========
 
 `xcore.ai` series
@@ -78,7 +78,7 @@ The ports/pins are shown in :numref:`table_xud_xai_required_pin_port`.
 `xcore-200` series
 ------------------
 
-The `xcore-200` series of devices have an integrated USB transceiver. Some ports are used to
+Selected `xcore-200` series devices have an integrated USB transceiver. Some ports are used to
 communicate with the USB transceiver inside the `xcore-200` series packages.
 
 These ports/pins should not be used when USB functionality is enabled.
@@ -144,7 +144,7 @@ The ports/pins are shown in :numref:`table_xud_x200_required_pin_port`.
 
 |newpage|
 
-Thread Frequency
+Thread frequency
 ================
 
 Due to I/O requirements, the ``lib_xud`` requires a guaranteed MIPS rate to ensure correct
@@ -161,12 +161,17 @@ the remaining seven getting (600 * 0.8) / 7 = 68.6MIPS each.
 This restriction is only a requirement on the tile on which the ``XUD_Main()`` is running.
 For example, the other tile on an dual-tile device is unaffected by this restriction.
 
-Clock Blocks
+.. note::
+
+    At points or execution ``XUD_Main()`` will run in "fast mode", this is a requirement to meet
+    timing.
+
+Clock blocks
 ============
 
 ``lib_xud`` uses two clock blocks, one for receive and one for transmit.
 Clocks blocks 4 and 5 are used for transmit and receive respectively.  These clock blocks are
-configured such that they are clocked by the 60MHz clock from the USB transceiver.
+configured such that they are clocked by the 60 MHz clock from the USB transceiver.
 The ports used by ``lib_xud`` are in turn clocked from these clock blocks.
 
 Timers
@@ -177,6 +182,6 @@ Timers
 Memory
 ======
 
-``lib_xud`` requires about 16 Kbytes of memory, of which around 15 Kbytes is code or initialised
-variables that must be stored in boot memory.
+``lib_xud`` requires approximately 16 Kbytes of memory, of which around 15 Kbytes is code or
+initialised variables that must be stored in boot memory.
 

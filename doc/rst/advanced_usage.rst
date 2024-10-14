@@ -4,7 +4,7 @@
 .. _sec_advanced_usage:
 
 **************
-Advanced Usage
+Advanced usage
 **************
 
 Advanced usage is termed to mean the implementation of multiple endpoints in a single task as well
@@ -27,7 +27,7 @@ General operation is as follows:
     * A``select`` statement is used, along with a ``select handler`` to wait for, and capture,
       send/receive notifications from the ``XUD_Main`` task
 
-Function Details
+Function details
 ================
 
 The available ``XUD_SetReady_`` functions for the asynchronous API are listed below.

@@ -5,8 +5,8 @@ Overview
 ********
 
 `xcore.ai` devices and selected `xcore-200` devices include an integrated USB transceiver.
-The XUD library allows the implementation of both full-speed and high-speed USB 2.0 devices on
-these devices.  ``lib_xud`` provides an identical API for all devices.
+``lib_xud`` allows the implementation of both full-speed and high-speed USB 2.0 devices on
+these devices.  The library provides an identical API for all devices.
 
 The library performs all of the low-level I/O operations required to meet the USB 2.0 specification.
 This processing goes up to and includes the transaction level. It removes all low-level timing

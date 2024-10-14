@@ -21,8 +21,6 @@ defined, industry-standard, USB library that allows you to control an USB bus vi
 
 The library provides functionality to act as a USB *device* only.
 
-Note, at points lib_xud will run in "fast mode" this is a requirement to meet timing.
-
 ********
 Features
 ********

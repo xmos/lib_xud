@@ -3,16 +3,16 @@
 .. _sec_basic_usage:
 
 ***********
-Basic Usage
+Basic usage
 ***********
 
-Basic use is termed to mean each endpoint runs in its own dedicated core.
-Multiple endpoints in a single core are possible, please see :ref:`sec_advanced_usage`.
+Basic use is termed to mean each endpoint runs in its own dedicated thread.
+Multiple endpoints in a single thread are possible, please see :ref:`sec_advanced_usage`.
 
-Operation is synchronous in nature: The endpoint tasks make calls to blocking functions and wait
+Operation is synchronous in nature: The endpoint tasks make calls to blocking functions and waits
 for the transfer to complete before proceeding.
 
-XUD IO Task
+XUD IO task
 ===========
 
 ``XUD_Main()`` is the main task that interfaces with the USB transceiver.
@@ -25,7 +25,7 @@ bus-powered device).
 
 .. doxygenfunction:: XUD_Main
 
-Endpoint Type Tables
+Endpoint type tables
 --------------------
 
 The endpoint type tables are arrays of type ``XUD_EpType`` and are used to inform ``lib_xud``
@@ -68,7 +68,48 @@ configuration the `VBUS` input to the device/PHY need not be present.
 ``XUD_PWR_BUS`` can be used in order to run on a self-powered board without provision for `VBUS`
 wiring to the PHY/device, but this is not advised and is not USB specification compliant.
 
-Data Transfer
+VBUS monitoring
+===============
+
+For self-powered devices it is important that ``lib_xud`` is aware of the `VBUS` state.
+This allows the device to disconnect its pull-up resistors from D+/D- and ensure the device does not
+have any voltage on the D+/D- pins when `VBUS` is not present. Compliance testing specifically
+checks for this in the `USB Back Voltage` test.
+
+.. warning::
+
+    Failure to conform to this requirement will lead to an uncompliant device and likely lead to
+    interoperability issues.
+
+USB-enabled `xcore-200` series devices have a dedicated `VBUS` pin which should be wired up as
+per the data-sheet recommendations including over-voltage protection.
+
+For increasing flexibility, `xcore.ai` series devices do not have a dedicated `VBUS` pin.
+A generic IO port/pin should be used for this purpose (with appropriate external circuitry - see
+data-sheet recommendations).
+
+``lib_xud`` makes a call to a function ``XUD_HAL_GetVBusState()`` that which should be implemented
+to match the target hardware. For example::
+
+    on tile[XUD_TILE]: in port p_vbus = XS1_PORT_1P;
+
+    unsigned int XUD_HAL_GetVBusState(void)
+    {
+        unsigned vBus;
+        p_vbus :> vBus;
+        return vBus;
+    }
+
+The function should return 1 if `VBUS` is present, otherwise 0. In the case of the example
+above, the validity of `VBUS` is directly represented by the value on port 1P, however, this
+may not be the case for all hardware implementations, it could be inverted or even require a read
+from an external IO expander, for example.
+
+.. note::
+
+   `VBUS` need not be connected if the device is wholly powered by USB i.e. a bus powered device.
+
+Data transfer
 =============
 
 Communication state between an endpoint client task and the XUD IO task is encapsulated in an
@@ -128,21 +169,22 @@ descriptors must be sent in typically 64 byte transactions.
 
 .. doxygenfunction:: XUD_DoSetRequestStatus
 
-Data Transfer Example
+Data transfer example
 =====================
 
 A simple endpoint task is shown below demonstrating basic data transfer to the host.
 
 .. literalinclude:: basic_usage_data_example_xc
 
-Status Reporting
+
+Status reporting
 ================
 
 An endpoint can register for "status reporting" such that bus state can be known. This is achieved
 by ORing ``XUD_STATUS_ENABLE`` into the relevant endpoint in the endpoint type table.
 
-This means that endpoints are notified of USB bus resets (and bus-speed changes). The ``lib_xud``
-access functions discussed previously (``XUD_GetBuffer``, ``XUD_SetBuffer``, etc) return
+This means that endpoints are notified of USB bus resets (and therefore bus-speed changes). The
+``lib_xud`` access functions discussed previously (``XUD_GetBuffer``, ``XUD_SetBuffer``, etc) return
 ``XUD_RES_RST`` if a USB bus reset is detected.
 
 This reset notification is important if an endpoint task is expecting alternating IN and OUT
@@ -153,7 +195,7 @@ initial OUT after a re-plug, whilst the endpoint task would hang trying to send 
 The endpoint needs to know of the bus reset in order to reset its state machine.
 
 .. note::
-   Endpoint 0 **requires** this functionality to be enabled  since it deals with bi-directional
+   Endpoint 0 *requires* this functionality to be enabled  since it deals with bi-directional
    control transfers
 
 This functionality is also important for high-speed devices, since it is not guaranteed that a host
@@ -172,7 +214,7 @@ function. This will return the current bus speed as a ``XUD_BusSpeed_t`` with th
 
 .. _sec_status_reporting:
 
-Status Reporting Example
+Status reporting example
 ========================
 
 A simple endpoint task is shown below demonstrating basic data transfer to the host and bus status
@@ -180,7 +222,7 @@ inspection.
 
 .. literalinclude:: basic_usage_status_example_xc
 
-SOF Channel
+SOF channel
 ===========
 
 An application can pass an optional channel-end to the ``c_sof`` parameter of ``XUD_Main()``.
@@ -200,8 +242,8 @@ Halting
 
 The USB specification requires the ability for an endpoint to send a `STALL` response to the host if
 an endpoint is halted, or if control pipe request is not supported. ``lib_xud`` provides
-various functions to support this.  In some cases it is easier to use the ``XUD_ep`` whilst in other
-cases it is easier to use the endpoint address.
+various functions to support this.  In some cases it is convenient to use the ``XUD_ep`` whilst in
+other cases it is easier to use the endpoint address. Functions to use either are provided.
 
 ``XUD_SetStall()``
 ------------------
@@ -225,7 +267,7 @@ cases it is easier to use the endpoint address.
 
 .. _sec_test_modes:
 
-USB Test Modes
+USB test modes
 ==============
 
 ``lib_xud`` supports the required test modes for USB Compliance testing.

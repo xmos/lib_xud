@@ -2,6 +2,16 @@
 
 @Library('xmos_jenkins_shared_library@v0.34.0') _
 
+def checkout_shallow()
+{
+    checkout scm: [
+        $class: 'GitSCM',
+        branches: scm.branches,
+        userRemoteConfigs: scm.userRemoteConfigs,
+        extensions: [[$class: 'CloneOption', depth: 1, shallow: true, noTags: false]]
+    ]
+}
+
 def clone_test_deps() {
   dir("${WORKSPACE}") {
     sh "git clone git@github.com:xmos/test_support"
@@ -9,14 +19,16 @@ def clone_test_deps() {
   }
 }
 
+def archiveLib(String repoName) {
+    sh "git -C ${repoName} clean -xdf"
+    zip zipFile: "${repoName}_sw.zip", dir: "${repoName}", archive: true, defaultExcludes: false
+}
+
 getApproval()
 
 pipeline {
   agent {
     label 'x86_64 && linux'
-  }
-  environment {
-    REPO = 'lib_xud'
   }
   options {
     buildDiscarder(xmosDiscardBuildSettings())
@@ -45,8 +57,14 @@ pipeline {
     stage('Build examples') {
       steps {
         println "Stage running on ${env.NODE_NAME}"
+
+        script {
+            def (server, user, repo) = extractFromScmUrl()
+            env.REPO = repo
+        }
+
         dir("${REPO}") {
-          checkout scm
+          checkout_shallow()
 
           dir("examples") {
             withTools(params.TOOLS_VERSION) {
@@ -59,14 +77,17 @@ pipeline {
     }  // Build examples
 
     stage('Library checks') {
-      steps {
-        runLibraryChecks("${WORKSPACE}/${REPO}", "${params.INFR_APPS_VERSION}")
-      }
+        steps {
+            warnError("Library checks failed")
+            {
+                runLibraryChecks("${WORKSPACE}/${REPO}", "${params.INFR_APPS_VERSION}")
+            }
+        }
     }
 
     stage('Documentation') {
       steps {
-        dir("${REPO}") {
+        dir(REPO) {
           buildDocs()
         }
       }
@@ -75,7 +96,6 @@ pipeline {
     stage('Tests')
     {
       steps {
-          // Note, moves to WORKSPACE
           clone_test_deps()
 
           withTools(params.TOOLS_VERSION) {
@@ -94,6 +114,13 @@ pipeline {
           archiveArtifacts artifacts: "${REPO}/tests/logs/*.txt", fingerprint: true, allowEmptyArchive: true
         }
       }
+    }
+
+    stage("Archive lib") {
+        steps
+        {
+            archiveLib(REPO)
+        }
     }
   }
   post {

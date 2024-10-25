@@ -1,7 +1,7 @@
 # This file provides overrides to the Doxyfile configuration
 
 PROJECT_NAME           = lib_xud
-PROJECT_BRIEF          = "XMOS USB Device (XUD) Library"
+PROJECT_BRIEF          = "USB device library"
 
 INPUT                  = ../lib_xud/api
 

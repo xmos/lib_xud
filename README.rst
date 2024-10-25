@@ -25,36 +25,42 @@ The library provides functionality to act as a USB *device* only.
 Features
 ********
 
-  * USB 2.0 Full-speed (12Mbps) and High-speed (480Mbps)
-  * Device mode
-  * Bulk, control, interrupt and isochronous endpoint types supported
-  * A complete worked example of a HID mouse
+ * USB 2.0 Full-speed (12Mbps) and High-speed (480Mbps)
+ * Device mode
+ * Bulk, control, interrupt and isochronous endpoint types supported
+ * A complete worked example of a HID mouse
 
 ************
-Known Issues
+Known issues
 ************
 
-  * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc) (#99)
+ * SOF tokens are not CRC checked on XS3 based devices (see tests/test_sof_badcrc) (#99)
+
+****************
+Development repo
+****************
+
+ * `lib_xud <https://www.github.com/xmos/lib_xud>`_
 
 **************
-Required Tools
+Required tools
 **************
 
-  * XMOS XTC Tools: 15.3.0
+ * XMOS XTC Tools: 15.3.0
 
 *********************************
-Required Libraries (dependencies)
+Required libraries (dependencies)
 *********************************
 
-  * None
+ * None
 
 *************************
-Related Application Notes
+Related application notes
 *************************
 
 The following application notes use this library:
 
-   * `AN00136 - Example USB Vendor Specific Device <https://www.xmos.com/file/an00136>`_
+ * `AN00136 - Example USB Vendor Specific Device <https://www.xmos.com/file/an00136>`_
 
 *******
 Support

@@ -2,7 +2,7 @@
 
 lib_name: lib_xud
 project: '{{lib_name}}'
-title: '{{lib_name}}: USB Device Library'
+title: '{{lib_name}}: USB device library'
 version: 2.4.0
 
 documentation:

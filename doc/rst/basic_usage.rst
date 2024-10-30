@@ -124,7 +124,7 @@ Or, following `XMOS` software library convention, providing a `xud_conf.h` file 
 codebase. This header file will be automatically detected by the build system and used by
 ``lib_xud``. Example content for this header file is as follows::
 
-    #indef _XUD_CONF_H_
+    #ifndef _XUD_CONF_H_
     #define _XUD_CONF_H_
 
     #define XUD_TILE tile[0]

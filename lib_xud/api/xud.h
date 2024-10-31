@@ -71,6 +71,10 @@
     #endif
 #endif // PORT_USB_CLK
 
+#ifndef XUD_EXTERNAL_RESOURCES
+#define XUD_EXTERNAL_RESOURCES 0
+#endif
+
 /**
  * \var        typedef     XUD_EpTransferType
  * \brief      Typedef for endpoint data transfer types.  Note: it is important that ISO is 0
@@ -119,6 +123,22 @@ typedef enum XUD_Result
     //XUD_RES_CTL =  1,       /* Received a control trans */
     XUD_RES_ERR =  2,
 } XUD_Result_t;
+
+/* All of the resources accessed by XUD */
+typedef struct XUD_resources_t
+{
+    port flag0_port;
+    port flag1_port;
+    NULLABLE_RESOURCE(port, flag2_port);
+    in_buffered_port_32_t p_usb_clk;
+    out_buffered_port_32_t p_usb_txd;
+    in_buffered_port_32_t p_usb_rxd ;
+    port tx_readyout;
+    port tx_readyin;
+    port rx_rdy;
+    xcore_clock_t tx_usb_clk;
+    xcore_clock_t rx_usb_clk;
+} XUD_resources_t;
 
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
@@ -516,5 +536,15 @@ typedef struct XUD_ep_info
     unsigned int array_ptr_setup;      // 12
 } XUD_ep_info;
 
-#endif
+/**
+ * \brief   Resource initialisation for cases where we have multiple instances of XUD in a project.
+ *          This is only relevant when the XUD_EXTERNAL_RESOURCES define is set to non-zero.
+ *          This MUST be called prior to running XUD_Main otherwise XUD will assert 0.
+ * \param   resources   A struct of type XUD_resources_t declared in XC by the user application
+ *          containing the XUD resources (see XUD_resources_t). These must be placed on a specific tile.
+ */
+void init_xud_resources(REFERENCE_PARAM(XUD_resources_t, resources));
+
+#endif // __ASSEMBLER__
+
 #endif // _XUD_H_

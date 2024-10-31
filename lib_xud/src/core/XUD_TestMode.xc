@@ -5,7 +5,7 @@
 #include "xud.h"
 #include "XUD_TestMode.h"
 
-extern out buffered port:32 p_usb_txd;
+extern XUD_resources_t XUD_resources;
 
 #define T_INTER_TEST_PACKET_us 2
 #define  T_INTER_TEST_PACKET (T_INTER_TEST_PACKET_us * PLATFORM_REFERENCE_MHZ)
@@ -40,7 +40,7 @@ int XUD_UsbTestModeHandler(unsigned cmd)
 
             while(1)
             {
-                p_usb_txd <: 0xffffffff;
+                XUD_resources.p_usb_txd <: 0xffffffff;
             }
             break;
 
@@ -50,7 +50,7 @@ int XUD_UsbTestModeHandler(unsigned cmd)
 
             while(1)
             {
-                p_usb_txd <: 0;
+                XUD_resources.p_usb_txd <: 0;
             }
             break;
 
@@ -78,9 +78,9 @@ int XUD_UsbTestModeHandler(unsigned cmd)
 #pragma loop unroll
                     for (i=0; i < sizeof(test_packet)/sizeof(test_packet[0]); i++)
                     {
-                        p_usb_txd <: test_packet[i];
+                        XUD_resources.p_usb_txd <: test_packet[i];
                     };
-                    sync(p_usb_txd);
+                    sync(XUD_resources.p_usb_txd);
                     test_packet_timer :> i;
                     test_packet_timer when timerafter (i + T_INTER_TEST_PACKET) :> int _;
                 }

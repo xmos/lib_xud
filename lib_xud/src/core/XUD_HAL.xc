@@ -10,14 +10,9 @@
 #include "xs1_to_glx.h"
 #include "xs2_su_registers.h"
 #include "XUD_USBTile_Support.h"
-extern in port flag0_port;
-extern in port flag1_port;
-extern in port flag2_port;
-extern buffered in port:32 p_usb_clk;
+
 #else
-extern in port flag0_port; /* For XS3: RXA  or DP */
-extern in port flag1_port; /* For XS3: RXE  or DM */
-extern buffered in port:32 p_usb_clk;
+
 void XUD_SetCrcTableAddr(unsigned addr);
 unsigned XtlSelFromMhz(unsigned m)
 {   // NOCOVER
@@ -48,7 +43,8 @@ unsigned XtlSelFromMhz(unsigned m)
     return 0b000;
 }
 #endif
-extern clock rx_usb_clk;
+
+extern XUD_resources_t XUD_resources;
 
 unsigned int XUD_EnableUsbPortMux();
 
@@ -88,10 +84,10 @@ void XUD_HAL_EnableUsb(unsigned pwrConfig)
 #endif
 
     /* Wait for USB clock (typically 1ms after reset) */
-    p_usb_clk when pinseq(1) :> int _;
-    p_usb_clk when pinseq(0) :> int _;
-    p_usb_clk when pinseq(1) :> int _;
-    p_usb_clk when pinseq(0) :> int _;
+    XUD_resources.p_usb_clk when pinseq(1) :> int _;
+    XUD_resources.p_usb_clk when pinseq(0) :> int _;
+    XUD_resources.p_usb_clk when pinseq(1) :> int _;
+    XUD_resources.p_usb_clk when pinseq(0) :> int _;
 
 #ifdef __XS2A__
     /* Some extra settings are required for proper operation on XS2A */
@@ -210,6 +206,7 @@ void XUD_HAL_EnterMode_PeripheralHighSpeed_Start()
         write_periph_word_two_part_start((chanend)c, USB_TILE_REF, XS1_SU_PER_UIFM_CHANEND_NUM,  XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 0);
     }
 }
+
 void XUD_HAL_EnterMode_PeripheralHighSpeed_Complete()
 {
     unsafe
@@ -288,11 +285,11 @@ void XUD_HAL_EnterMode_TristateDrivers()
 void XUD_HAL_Mode_Signalling()
 {
     /* Reset port to use XS1_CLKBLK_REF (from rx_usb_clk) */
-    set_port_use_on(flag1_port);
+    set_port_use_on(XUD_resources.flag1_port);
 
 #ifdef __XS2A__
     /* For XS2 we invert VALID_TOKEN port for data-transfer mode, so undo this for signalling */
-  	set_port_no_inv(flag2_port);
+  	set_port_no_inv(XUD_resources.flag2_port);
 
     write_periph_word(USB_TILE_REF, XS1_GLX_PER_UIFM_CHANEND_NUM, XS1_GLX_PER_UIFM_MASK_NUM,
         ((1<<XS1_UIFM_IFM_FLAGS_SE0_SHIFT)<<16)
@@ -307,8 +304,8 @@ void XUD_HAL_Mode_Signalling()
 
 void XUD_HAL_Mode_DataTransfer()
 {
-    configure_in_port(flag1_port, rx_usb_clk);
-    set_pad_delay(flag1_port, 2);
+    configure_in_port(XUD_resources.flag1_port, XUD_resources.rx_usb_clk);
+    set_pad_delay(XUD_resources.flag1_port, 2);
 
 #ifdef __XS2A__
     /* Set UIFM to CHECK TOKENS mode and enable LINESTATE_DECODE
@@ -325,7 +322,7 @@ void XUD_HAL_Mode_DataTransfer()
              | ((1<<XS1_SU_UIFM_IFM_FLAGS_NEWTOKEN_SHIFT)<<16)));
 
     /* Flag 2 (VALID_TOKEN) port is inverted as an optimisation (having a zero is useful) */
-  	set_port_inv(flag2_port);
+  	set_port_inv(XUD_resources.flag2_port);
 #else
     unsigned d = 0;
     d = XS1_USB_SHIM_CFG_FLAG_MODE_SET(d, 0);
@@ -335,8 +332,8 @@ void XUD_HAL_Mode_DataTransfer()
 
 /* In full-speed and low-speed mode, LineState(0) always reflects DP and LineState(1) reflects DM */
 /* Note, this port ordering is the opposite of what might be expected - but linestate is swapped in the USB shim */
-#define dp_port flag0_port      // DP: LINESTATE[0]
-#define dm_port flag1_port      // DM: LINESTATE[1]
+#define dp_port XUD_resources.flag0_port      // DP: LINESTATE[0]
+#define dm_port XUD_resources.flag1_port      // DM: LINESTATE[1]
 
 {unsigned, unsigned} LineStateToLines(XUD_LineState_t ls)
 {
@@ -353,9 +350,9 @@ XUD_LineState_t XUD_HAL_GetLineState(/*XUD_HAL_t &xudHal*/)
 {
 #ifdef __XS2A__
     unsigned j, k, se0;
-    flag0_port :> j;
-    flag1_port :> k;
-    flag2_port :> se0;
+    XUD_resources.flag0_port :> j;
+    XUD_resources.flag1_port :> k;
+    XUD_resources.flag2_port :> se0;
 
     if(j)
         return XUD_LINESTATE_HS_J_FS_K;
@@ -390,11 +387,11 @@ unsigned XUD_HAL_WaitForLineStateChange(XUD_LineState_t &currentLs, unsigned tim
     /* Wait for a change on any flag port */
     select
     {
-        case flag0_port when pinsneq(j) :> void:
+        case XUD_resources.flag0_port when pinsneq(j) :> void:
             break;
-        case flag1_port when pinsneq(k) :> void:
+        case XUD_resources.flag1_port when pinsneq(k) :> void:
             break;
-        case flag2_port when pinsneq(se0) :> void:
+        case XUD_resources.flag2_port when pinsneq(se0) :> void:
             break;
         case timeout != null => t when timerafter(time + timeout) :> int _:
             return 1;

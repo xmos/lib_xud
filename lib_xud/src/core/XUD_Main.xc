@@ -563,6 +563,8 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
                 XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[],
                 XUD_BusSpeed_t speed, XUD_PwrConfig pwrConfig)
 {
+    set_core_high_priority_on();
+
     g_desSpeed = speed;
 
     SetupEndpoints(c_ep_out, noEpOut, c_ep_in, noEpIn, epTypeTableOut, epTypeTableIn);

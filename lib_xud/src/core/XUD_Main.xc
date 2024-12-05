@@ -394,15 +394,11 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 
             XUD_HAL_Mode_DataTransfer();
 
-            set_thread_fast_mode_on();
-
             /* Run main IO loop */
             /* flag0: Rx Error
                flag1: Rx Active
                flag2: Null / Valid Token  */
             noExit = XUD_LLD_IoLoop(p_usb_rxd, flag1_port, p_usb_txd, flag0_port, flag2_port, epTypeTableOut, epTypeTableIn, epAddr_Ready, noEpOut, c_sof);
-
-            set_thread_fast_mode_off();
 
             if(!noExit)
                 break;

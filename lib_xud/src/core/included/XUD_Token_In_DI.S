@@ -89,8 +89,7 @@ XUD_IN_TxCrc:
 DoneTail:
     ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
-    bt          r11, SetupReceiveHandShake
-    bu          XUD_IN_DoneTx
+    bf          r11, XUD_IN_DoneTx
 
 SetupReceiveHandShake:
     ldc        r11, 8

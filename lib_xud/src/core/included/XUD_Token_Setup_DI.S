@@ -8,6 +8,7 @@
 // - Payload will always be 8 bytes
 .align FUNCTION_ALIGNMENT
 Pid_Setup:
+    #define  XTA_CRCADDRCHECK       xta_ep_Pid_Setup_header
     #include "XUD_CrcAddrCheck.S"
     ldaw       r7, r10[8]                       // R3 = R10 + 32. Read Past end of epAddr to epAddr_Setup
     ldw        r3, r5[r7]                       // Load relevant EP pointer
@@ -16,6 +17,7 @@ Pid_Setup:
 
 XUD_Setup_LoadBuffer:
     bl         doRXData                         // RXData writes available data to buffer and does crc check.
+RxRet1:
                                                 // r8: Data tail size (bytes)
     xor        r1, r6, r11                      // Check for good CRC16
     {clre;
@@ -36,13 +38,15 @@ XUD_Setup_ClearStall:                           // CRC OK
 
 XUD_Setup_SendSetupAck:
     ldc        r11, USB_PIDn_ACK
+xta_ep_doRXData_Ack:
     outpw      res[TXD], r11, 8
 
 XUD_Setup_StoreTailData:                        // TODO: don't assume setups are 8 bytes + crc
     stw        r1, r5[r7]                       // Clear ready
     ldw        r11, r3[1]                       // Load chanend
-
+xta_no_pauseE:
     out        res[r11], r4
+xta_no_pauseF:
     outct      res[r11], 0                      // Send zero control token for Setup. Tail ignored since always expect 8 bytes
     bu         NextTokenAfterOut                // Go to next wait for next token
 

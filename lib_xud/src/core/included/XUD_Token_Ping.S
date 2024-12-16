@@ -4,6 +4,7 @@
 
 .align FUNCTION_ALIGNMENT
 Pid_Ping:
+    #define  XTA_CRCADDRCHECK       xta_ep_Pid_Ping_header
     #include "XUD_CrcAddrCheck.S"
 
 LoadStatTablePing:
@@ -22,6 +23,7 @@ PrimaryBufferEmpty_PING:                            // Send ACK
     nop
     nop
     ldc          r11, USB_PIDn_ACK
+xta_ep_Ping_Ack:
     outpw        res[TXD], r11, 8
     bu           NextTokenAfterPing
 
@@ -36,6 +38,7 @@ PrimaryBufferFull_PING:                             // Send NAK (or STALL)
     ldw          r11, r11[r10]
     ldw          r11, r11[10]
 
+xta_ep_PingNotAck:
     outpw        res[TXD], r11, 8
     bu           NextTokenAfterPing
 .scheduling default

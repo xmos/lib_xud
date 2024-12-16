@@ -10,6 +10,8 @@
 // r10: Extracted EP number
 
 #if !defined(__XS2A__)
+XTA_CRCADDRCHECK:
+#undef XTA_CRCADDRCHECK
     {in        r10, res[RXD];     sub       r1, r8, 5}      // ldc r1 11
     {shr       r10, r10, 16;      mkmsk     r11, r1}
     {and       r11, r10, r11;     ldw       r8, sp[STACK_CRC5TABLE_ADDR]}

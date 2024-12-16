@@ -14,6 +14,7 @@ Pid_Sof:
 
 #else
     // NOTE: we are not CRC checking SOF's
+xta_ep_Pid_Sof_header:
     in          r10, res[RXD]                   // Input Frame number
     shr         r10 , r10, 16                   // Shift off port junk
     ldc         r11, 0x7ff                      // Remove CRC5
@@ -22,13 +23,14 @@ Pid_Sof:
 #endif
     clrsr       0x3
     ldw         r11, sp[STACK_SOFCHAN]
-
+xta_no_pauseP:
     out         res[r11], r10
 
     ldw         r10, sp[STACK_SUSPEND_TIMER]                     // Load timer from stack
     setc        res[r10], XS1_SETC_COND_NONE    // Read current time
 
     ldw         r8, sp[STACK_SUSPEND_TIMEOUT]   // Add suspend timeout to current time
+xta_no_pauseN:
     in          r11, res[r10]
     add         r11, r11, r8
     setd        res[r10], r11
@@ -49,12 +51,14 @@ Pid_Sof_NoChan:
     bt         r11, XUD_InvalidToken;                       /* If VALID_TOKEN not high, ignore token */
 
 #else
+xta_ep_Pid_SofNC_header:
     in          r10, res[RXD]                   // Input Frame number
 #endif
     clrsr       0x3
     ldw         r10, sp[STACK_SUSPEND_TIMER]    // Load timer from stack
     setc        res[r10], XS1_SETC_COND_NONE    // Read current time
     ldw         r8, sp[STACK_SUSPEND_TIMEOUT]
+xta_no_pauseM:
     in          r11, res[r10]
     add         r11, r11, r8
     setd        res[r10], r11

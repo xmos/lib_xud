@@ -142,6 +142,7 @@ ResetIntHandler:
 .cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
 
 .issue_mode dual
+xta_start:
 // Note, included here so in same elimination blocks to avoid long jumps
 #include "./included/XUD_Token_In_DI.S"
 #include "./included/XUD_Token_Setup_DI.S"
@@ -288,6 +289,7 @@ SetupSuspendResetTimer:
     setv       res[r10], r11
 
     setc       res[r10], XS1_SETC_COND_NONE
+xta_no_pauseO:
     in         r11, res[r10]                    // Get current time
     ldw        r9, cp[suspendTimeout]
     add        r11, r11, r9
@@ -319,7 +321,8 @@ NextTokenAfterOut:
 Loop_BadPid:
 NextTokenAfterPing:
     setsr       1                               // Enable thread events
-
+    #define XTA_TOKENJMP xta_ep_XUD_TokenRx_Pid
+    #define XTA_TOKENJMP_ID G
     #include "XUD_TokenJmp.S"
 
 // Un-implemented PID list
@@ -345,6 +348,8 @@ XUD_InvalidTok_waitforRXALow:
     bt         r11, XUD_InvalidTok_waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     bu         Loop_BadPid                          // Invalid token received Ignore unknown toks
+
+xta_end:
 
 .align FUNCTION_ALIGNMENT
 Return:

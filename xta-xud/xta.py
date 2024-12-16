@@ -1,12 +1,15 @@
 from instr_db import uses_memory, is_io, may_go_on
 import subprocess
 import sys
+import html
 
-def create_instruction(fields, alignment, label_sub):
+def create_instruction(fields, address, label_sub):
     global uses_memory, is_io, may_go_on
+    alignment = int(address[9], 16)
     mnemonic = fields[0]
     targets = []
     xta_endpoints = []
+    args = ''
     for i in fields:
         if i.startswith('<'):
             if i.startswith('<xta_'):
@@ -17,8 +20,19 @@ def create_instruction(fields, alignment, label_sub):
                 t = i
             if not t in targets:
                 targets += [t]
+            args += ' ' + i
+            continue
         if i.startswith('{'):
             xta_endpoints += [i]
+            continue
+        if args == '':
+            args += '%-8s' % (i)
+        elif i.startswith('('):
+            pass
+        elif i.startswith('NOPAUSE'):
+            pass
+        else:
+            args += ' ' + i
     instr = {
              'cycles': 0,
              'buf_before': 0,
@@ -26,6 +40,8 @@ def create_instruction(fields, alignment, label_sub):
              'io' : is_io[mnemonic] and not 'NOPAUSE' in fields,
              'may_go_on': may_go_on[mnemonic],
              'mnemonic' : mnemonic,
+             'address' : address,
+             'args' : args,
              'alignment' : alignment,
              'xta_endpoints' : xta_endpoints,
              'targets': targets}
@@ -45,6 +61,8 @@ def combine_halfs(a, b):
              'io' : a['io'] or b['io'],
              'may_go_on' : a['may_go_on'] and b['may_go_on'],
              'mnemonic': m,
+             'address' : a['address'],
+             'args' : '%-30s; %-30s'  % (a['args'],b['args']),
              'alignment' : a['alignment'],
              'xta_endpoints': a['xta_endpoints'] + b['xta_endpoints'],
              'targets': a['targets'] + b['targets']}
@@ -76,7 +94,7 @@ def calc_bb_timings(ilist):
             ibuffer_fullness -= 1
             cnt += 1
         for j in insert_fnop:
-            instrs = instrs[0:j] + [create_instruction(['fnop'],0,{})] + instrs[j:]
+            instrs = instrs[0:j] + [create_instruction(['fnop'],'0x00000000',{})] + instrs[j:]
         ilist[n] = instrs
 
     for n in ilist:
@@ -106,6 +124,9 @@ def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, pat
     instrs = ilist[label]
     while inum < len(instrs):
         cycle_count += 1
+        path = path + [(label, inum)]
+        if instrs[inum]['mnemonic'].startswith('wait'):
+            cycle_count += 1
         if instrs[inum]['io'] and not start:
             endpoint = None
             if instrs[inum]['xta_endpoints'] != []:
@@ -113,7 +134,7 @@ def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, pat
             register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrs[inum]['mnemonic'], path)
             return
         for i in instrs[inum]['targets']:
-                explore_depth_first(ilist, i, 0, cycle_count, depth+1, path + [{label : inum}], False, paths)
+            explore_depth_first(ilist, i, 0, cycle_count, depth+1, path , False, paths)
         if not instrs[inum]['may_go_on']:
             for k in range(inum+1, len(instrs)):
                 if (instrs[k]['mnemonic'] == 'nop' or
@@ -135,28 +156,33 @@ def pretty_print_ilist(ilist):
         for j in ilist[n]:
             print('    ', j)
         
-def pretty_print_paths(n, paths, constraints, constrained_paths, cnt):
+def pretty_print_paths(n, paths, constraints, constrained_paths, c_out):
     for p in paths:
         cycles = 0
         for pp in paths[p]:
             cycles = max(cycles, pp['cycles'])
-        name = n
         if n[2] is not None:
             name = n[2]
-        pame = p
+        else:
+            name = '[' + n[0] + ':' + str(n[1]) + ']'
         if p[2] is not None:
             pame = p[2]
+        else:
+            pame = '[' + p[0] + ':' + str(p[1]) + ']'
         index = (name, pame)
         if index in constraints:
             ns = constraints.pop(index)
             constrained_paths += [((1000.0 / (ns/(8*cycles))),
                                   '%-30s => %-30s (%d cycles)' % (name,pame,cycles), paths[p])]
             continue
-        print('   ', name, '=>', cycles, 'cycles to =>', pame)
-        cnt += 1
+        c_out += '<li><tt>' + str(name).replace('<', '').replace('>','') + '&nbsp</tt>&#8658;<tt>&nbsp;'+ str(pame).replace('<', '').replace('>','') + '&nbsp;</tt>\n<br/>'
         for pp in paths[p]:
-            print('            ', pp['cycles'], pp['path'])
-    return (constrained_paths, cnt)
+            ppp = pp['path']
+            c_out += '\n' + str(pp['cycles']) + ' cycles:'
+            for pppp in ppp:
+                c_out += '<tt>[' + pppp[0].replace('<', '').replace('>','') +':' + str(pppp[1]) + ']</tt>, '
+        c_out += '</li>'
+    return (constrained_paths, c_out)
 
 def may_carry_on(instrs):
     return instrs[len(instrs)-1]['may_go_on']
@@ -226,18 +252,19 @@ def read_binary(filename):
         if clean.endswith('>:'):
             newlabel = clean[0:len(clean)-1]
             if label is not None and may_carry_on(ilist[label]):
-                instruction = create_instruction(['buwc',newlabel], (alignment + 4) % 16, label_sub)
+                old_address = ilist[label][len(ilist[label])-1]['address']
+                new_address = '0x%08x:' % (int(old_address[2:10], 16) + 4)
+                instruction = create_instruction(['buwc',newlabel], new_address, label_sub)
                 ilist = add_instruction(ilist, label, instruction)
             label = newlabel 
             continue
         fields = clean.split()
         print(fields)
         if fields[0][9] in '048c' and fields[2].endswith(':'):
-            alignment = int(fields[0][9], 16)
-            half_instruction = create_instruction(fields[3:], alignment, label_sub)
+            half_instruction = create_instruction(fields[3:], fields[0], label_sub)
             continue
         if fields[0][9] in '26ae' and fields[2].endswith(':') and half_instruction is not None:
-            other_half_instruction = create_instruction(fields[3:], 1, label_sub)
+            other_half_instruction = create_instruction(fields[3:], '0x00000000', label_sub)
             instruction = combine_halfs(half_instruction, other_half_instruction)
             half_instruction = None
             ilist = add_instruction(ilist, label, instruction)
@@ -245,8 +272,7 @@ def read_binary(filename):
         if not fields[4].endswith(':'):
             print('bad line ', clean, fields[2], fields[4])
             continue
-        alignment = int(fields[0][9], 16)
-        instruction = create_instruction(fields[5:], alignment, label_sub)
+        instruction = create_instruction(fields[5:], fields[0], label_sub)
         ilist = add_instruction(ilist, label, instruction)
     return ilist
 
@@ -303,34 +329,83 @@ while starting_points != []:
             inum = k[1]
             new_starting_points += [k]
     starting_points = new_starting_points
-    
-print('\nLabelled timing endpoints:')
 
-for i in sorted(all_paths):
-    if i[2] is not None:
-        print('    ', i[2])
-        
-print('\nUnlabelled timing endpoints')
+html_out = html.header()
+    
+html_out += '''
+<p>
+Below is the output of the analyser. Text between curly braces
+<tt>{BLAH}</tt> indicates a labelled timing endpoint. It is labelled in the source
+code with a label <tt>xta_ep_BLAH</tt>.
+</p><p>
+Text between angular braces <tt>&lt;BLAR&gt;</tt> indicates a label in the source
+code. All duplicate labels have been removed so each block of code is
+uniquely identified by one label only. All labels that were not referenced
+have also been removed. 
+</p><p>
+If a timing endpoint is spotted that has not been labelled as such (using
+<tt>xta_ep_BLAH</tt>) it is labelled as <tt>[label:linenumber]</tt>. These
+endpoints must be fixed in the source code by labelling them as a timing
+endpoint.
+</p><p>
+After all paths have been analysed, all paths are first printed for which
+there is no constraint in the
+<a href='constraints.txt'>constraints.txt</a> file. This may be because
+the endpoint was not labelled, or because no constraint has been given.
+There should not be any of those paths. After that, all contraints are listed
+that were not found in the analysis; these are also errors. Finally,
+all constraint paths are listed with the most constrained path first.
+Clickng on the arrow opens up details.
+</p>
+'''
+
+unconstrained_endpoints = 0
 combos = 0
 for i in sorted(all_paths):
     if i[2] is None:
-        print('    ', i)
+        unconstrained_endpoints += 1
     combos += len(all_paths[i])
+        
+if unconstrained_endpoints > 0:
+    html_out += '<p>ERROR: there are ' + str(unconstrained_endpoints) + ' unlabelled timing endpoints:</p>\n<ol>\n'
+    for i in sorted(all_paths):
+        if i[2] is None:
+            html_out += '<li><tt>[' + i[0].replace('<','').replace('>','') + ':' + str(i[1]) + ']</tt></li>\n'
+    html_out += '</ol>\n'
 
-print('\nFound', combos ,'paths between timing endpoints.\nUnconstrained:')
+html_out += '<p>Found ' + str(combos) + ' paths between timing endpoints.</p>'
 constrained_paths = []
-cnt = 0
+c_out = ''
 for i in sorted(all_paths):
-    (constrained_paths,cnt) = pretty_print_paths(i, all_paths[i], constraints, constrained_paths, cnt)
-print('%d unconstrained paths found\n' % (cnt))
+    (constrained_paths,c_out) = pretty_print_paths(i, all_paths[i], constraints, constrained_paths, c_out)
+
+if c_out != '':
+    html_out += '<p>ERROR: there are unconstrained paths (they may be caused by unlabelled timing endpoints):</p><ol>\n' + c_out + '</ol>\n'
 
 if constraints != {}:
-    print('ERROR: unused constraints')
+    html_out += '<p>ERROR: unused constraints</p><ol>\n'
     for i in constraints:
-        print('   ', i, constraints[i], 'ns')
+        html_out += '<li>' + i[0] + ' &#8658; ' + i[1] + ':' + str(constraints[i]) + 'ns</li>'
+    html_out += '</ol>\n'
     
-print('\nConstrained assuming 8 threads running:')
+html_out += '\n<p>Constrained assuming 8 threads running:</p>'
 for i in sorted(constrained_paths, reverse=True):
-    print('    %6.0f MHz: required for %s' % (i[0], i[1]))
-
-    
+    p = ''
+    for l in i[2]:
+        pre_text = ''
+        separator = ''
+        summary = '&nbsp;%d&nbsp;cycles:&nbsp;' % l['cycles']
+        old_lab = ''
+        for (lab,inum) in l['path']:
+            if lab != old_lab:
+                summary += separator + '<tt>&nbsp;' + lab.replace('<', '').replace('>','') + '&nbsp;</tt>'
+                separator = " &#8658; "
+                old_lab = lab
+                pre_text += lab + ':\n'
+            pre_text += '    ' + ilist[lab][inum]['args'] + '\n'
+        pre_text = html.pre(pre_text)
+        p +=  html.openable_element(summary, pre_text)
+    html_out += html.openable_element('    %6.0f MHz: required for %s' % (i[0], i[1]), p)
+html_out += html.trailer()
+with open('xud_xta.html','w') as fd:
+    fd.write(html_out)

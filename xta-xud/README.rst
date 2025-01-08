@@ -12,15 +12,15 @@ lib_xud.
 
 * Each endpoint (in or out instruction) must either have
 
-  * a label ``xte_endpoint_LABEL`` where LABEL will be used as the name of
+  * a label ``xta_ep_LABEL`` where LABEL will be used as the name of
     the endpoint for constraints; or
 
-  * a label ``xte_no_pauseX`` where X is a value to make the label unique
+  * a label ``xta_no_pauseX`` where X is a value to make the label unique
 
 * Every instruction that changes control to a non-obvious destination (eg,
-  bru, bau, retsp) must have a label ``xte_targetX_DESTINATION_LABEL``
+  bru, bau, retsp) must have a label ``xta_targetX_DESTINATION_LABEL``
   where ``DESTINATION_LABEL`` is a possible target address and ``X`` is a
-  character to make the whole label unique. Multple ``xte_target`` labels
+  character to make the whole label unique. Multple ``xta_target`` labels
   must be supplied if there are multiple destinations, for example for ``bau``
   and ``bru``
 

@@ -117,14 +117,25 @@ def register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrnam
                 'endinstr' : instrname,
                 'path': path}]
 
-def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, paths):
+def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, paths, ibuffer_fullness):
     if depth > 10:
         register_new_path(paths, cycle_count, depth, label, inum, None, 'Fail', path)
         return
     instrs = ilist[label]
+    if ibuffer_fullness < 0:
+        ibuffer_fullness = (16 - instrs[0]['alignment'])//4
     while inum < len(instrs):
-        cycle_count += 1
-        path = path + [(label, inum)]
+        pre_fullness = ibuffer_fullness
+        if ibuffer_fullness == 0:
+            ibuffer_fullness += 4
+            cycle_count += 1
+        if instrs[inum]['mnemonic'] != 'buwc':
+            cycle_count += 1
+            if not instrs[inum]['memory']:
+                if ibuffer_fullness <= 4:
+                    ibuffer_fullness += 4
+            ibuffer_fullness -= 1
+        path = path + [(label, inum, cycle_count, pre_fullness, instrs[0]['alignment'])]
         if instrs[inum]['mnemonic'].startswith('wait'):
             cycle_count += 1
         if instrs[inum]['io'] and not start:
@@ -134,7 +145,11 @@ def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, pat
             register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrs[inum]['mnemonic'], path)
             return
         for i in instrs[inum]['targets']:
-            explore_depth_first(ilist, i, 0, cycle_count, depth+1, path , False, paths)
+            new_ibuffer_fullness = -1
+            if instrs[inum]['mnemonic'] == 'buwc':
+                new_ibuffer_fullness = ibuffer_fullness
+            explore_depth_first(ilist, i, 0, cycle_count, depth+1, path , False, paths,
+                                    new_ibuffer_fullness )
         if not instrs[inum]['may_go_on']:
             for k in range(inum+1, len(instrs)):
                 if (instrs[k]['mnemonic'] == 'nop' or
@@ -307,7 +322,7 @@ def remove_unneeded_labels(ilist):
 constraints = read_constraints()
 ilist = read_binary(sys.argv[1])
 remove_unneeded_labels(ilist)
-calc_bb_timings(ilist)
+#calc_bb_timings(ilist)
 pretty_print_ilist(ilist)
 
 starting_points = [('<Loop_BadPid>', 2, '{XUD_TokenRx_Pid}')]
@@ -320,7 +335,7 @@ while starting_points != []:
             continue
         explored_starting_points += [i]
         paths = {}
-        explore_depth_first(ilist, i[0], i[1], 0, 0, [], True, paths)
+        explore_depth_first(ilist, i[0], i[1], 0, 0, [], True, paths, 1)
         if i in all_paths:
             print('ERROR, overwriting ', i)
         all_paths[i] = paths
@@ -367,7 +382,7 @@ for i in sorted(all_paths):
     combos += len(all_paths[i])
         
 if unconstrained_endpoints > 0:
-    html_out += '<p>ERROR: there are ' + str(unconstrained_endpoints) + ' unlabelled timing endpoints:</p>\n<ol>\n'
+    html_out += '<p><b>ERROR</b>: there are ' + str(unconstrained_endpoints) + ' unlabelled timing endpoints:</p>\n<ol>\n'
     for i in sorted(all_paths):
         if i[2] is None:
             html_out += '<li><tt>[' + i[0].replace('<','').replace('>','') + ':' + str(i[1]) + ']</tt></li>\n'
@@ -380,29 +395,29 @@ for i in sorted(all_paths):
     (constrained_paths,c_out) = pretty_print_paths(i, all_paths[i], constraints, constrained_paths, c_out)
 
 if c_out != '':
-    html_out += '<p>ERROR: there are unconstrained paths (they may be caused by unlabelled timing endpoints):</p><ol>\n' + c_out + '</ol>\n'
+    html_out += '<p><b>ERROR</b>: there are unconstrained paths (they may be caused by unlabelled timing endpoints):</p><ol>\n' + c_out + '</ol>\n'
 
 if constraints != {}:
-    html_out += '<p>ERROR: unused constraints</p><ol>\n'
+    html_out += '<p><b>ERROR</b>: unused constraints. These may be because there is a IN/OUT on the way that should be marked ``xta_no_pauseN:``</p><ol>\n'
     for i in constraints:
         html_out += '<li>' + i[0] + ' &#8658; ' + i[1] + ':' + str(constraints[i]) + 'ns</li>'
     html_out += '</ol>\n'
     
-html_out += '\n<p>Constrained assuming 8 threads running:</p>'
+html_out += '\n<p><b>Constrained paths in order of severity.</b> Minimum device clock frequency is computed assuming 8 threads are running. If set to PRIORITY, these numbers can be mulitplied by 0.625 (5/8).</p>'
 for i in sorted(constrained_paths, reverse=True):
     p = ''
     for l in i[2]:
-        pre_text = ''
+        pre_text = 'ibuffer-fullness <LABEL>: alignment   instructions               cycle-count \n'
         separator = ''
         summary = '&nbsp;%d&nbsp;cycles:&nbsp;' % l['cycles']
         old_lab = ''
-        for (lab,inum) in l['path']:
-            if lab != old_lab:
+        for (lab,inum,cycle,ibuffer_fullness,alignment) in l['path']:
+            if inum == 0:
                 summary += separator + '<tt>&nbsp;' + lab.replace('<', '').replace('>','') + '&nbsp;</tt>'
                 separator = " &#8658; "
                 old_lab = lab
-                pre_text += lab + ':\n'
-            pre_text += '    ' + ilist[lab][inum]['args'] + '\n'
+                pre_text += '  %s: 0xXXX%x\n' % (lab, alignment)
+            pre_text += '%d     %-60s %2d\n' % (ibuffer_fullness, ilist[lab][inum]['args'].strip(), cycle)
         pre_text = html.pre(pre_text)
         p +=  html.openable_element(summary, pre_text)
     html_out += html.openable_element('    %6.0f MHz: required for %s' % (i[0], i[1]), p)

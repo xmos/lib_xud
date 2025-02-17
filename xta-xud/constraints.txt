@@ -1,153 +1,140 @@
-133.33 ns                                 # 8 bit times
-{XUD_IN_TxLoop_dataLast} {XUD_IN_TxLoop_CRC}
-{XUD_IN_TxLoop_PID}    {XUD_IN_TxLoop_data0}
+MACRO {ANY_HEADER}  {Pid_Out_header} {Pid_Ping_header} {Pid_Sof_header} {Pid_In_header} {Pid_Setup_header}
 
-{XUD_IN_TxPid_TailS0} {XUD_IN_TxCrc_TailS0}
-{XUD_IN_TxPid_TailS1} {XUD_IN_TxDat_TailS1}
-{XUD_IN_TxPid_TailS2} {XUD_IN_TxDat_TailS2}
-{XUD_IN_TxPid_TailS3} {XUD_IN_TxDat_TailS3}
-{XUD_IN_TxPid_TailS4} {XUD_IN_TxDat_TailS4}
+TIME 16.667 ns                                 # 8 bit times
 
-{XUD_IN_TxDat_TailS1} {XUD_IN_TxCrc_TailS1}
-{XUD_IN_TxHandshake}  {Token_PID_IN_TxHandshake}
-{XUD_IN_NotReady}     {Token_PID_IN_NotReady}
+PATH {XUD_IN_TxLoop_dataLast} {XUD_IN_TxLoop_CRC}
+PATH {XUD_IN_TxLoop_PID}    {XUD_IN_TxLoop_data0}
 
-266.66 ns                                 # 16 bit times
-{XUD_IN_TxDat_TailS2} {XUD_IN_TxCrc_TailS2}
+PATH {XUD_IN_TxPid_TailS0} {XUD_IN_TxCrc_TailS0}
+PATH {XUD_IN_TxPid_TailS1} {XUD_IN_TxDat_TailS1}
+PATH {XUD_IN_TxPid_TailS2} {XUD_IN_TxDat_TailS2}
+PATH {XUD_IN_TxPid_TailS3} {XUD_IN_TxDat_TailS3}
+PATH {XUD_IN_TxPid_TailS4} {XUD_IN_TxDat_TailS4}
 
-400.00 ns                                 # 24 bit times
-{XUD_IN_TxDat_TailS3} {XUD_IN_TxCrc_TailS3}
-
-533.33 ns                                 # 32 bit times
-{XUD_IN_TxDat_TailS4} {XUD_IN_TxCrc_TailS4}
-{XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataN}
-{XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataLast}
-{doRXData_dataN}      {doRXData_dataN}
-
-266.66 ns                                 # 16 bit times
-{Token_PID_IN_NotReady} {Pid_Out_header}
-{Token_PID_IN_NotReady} {Pid_Ping_header}
-{Token_PID_IN_NotReady} {Pid_Sof_header}
-{Token_PID_IN_NotReady} {Pid_In_header}
-{Token_PID_IN_NotReady} {Pid_Setup_header}
-{Token_PID_IN_TxHandshake} {Pid_Out_header}
-{Token_PID_IN_TxHandshake} {Pid_Ping_header}
-{Token_PID_IN_TxHandshake} {Pid_Sof_header}
-{Token_PID_IN_TxHandshake} {Pid_In_header}
-{Token_PID_IN_TxHandshake} {Pid_Setup_header}
-{Token_PID_TxNak}    {Pid_Out_header}
-{Token_PID_TxNak}    {Pid_Ping_header}
-{Token_PID_TxNak}    {Pid_Sof_header}
-{Token_PID_TxNak}    {Pid_In_header}
-{Token_PID_TxNak}    {Pid_Setup_header}
-{Token_PID_doRXData} {Pid_Out_header}
-{Token_PID_doRXData} {Pid_Ping_header}
-{Token_PID_doRXData} {Pid_Sof_header}
-{Token_PID_doRXData} {Pid_In_header}
-{Token_PID_doRXData} {Pid_Setup_header}
-{Token_PID_RxRet2}   {Pid_Out_header}
-{Token_PID_RxRet2}   {Pid_Ping_header}
-{Token_PID_RxRet2}   {Pid_Sof_header}
-{Token_PID_RxRet2}   {Pid_In_header}
-{Token_PID_RxRet2}   {Pid_Setup_header}
-{XUD_TokenRx_Pid}    {Pid_Out_header}
-{XUD_TokenRx_Pid}    {Pid_Ping_header}
-{XUD_TokenRx_Pid}    {Pid_Sof_header}
-{XUD_TokenRx_Pid}    {Pid_In_header}
-{XUD_TokenRx_Pid}    {Pid_Setup_header}
+PATH {XUD_IN_TxDat_TailS1} {XUD_IN_TxCrc_TailS1}
 
 
-533.33 ns                                 # 32 bit times
+TIME 266 ns                                  # TODO: turnaround
 
-{Token_PID_doRXData}   {doRXData_data0}
-{doRXData_data0}       {doRXData_dataN}
-{doRXData_dataN}       {doRXData_dataLast}
-{XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataLast}
-{XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataN}
+PATH {XUD_IN_TxHandshake}  {Token_PID_IN_TxHandshake}
+PATH {XUD_IN_NotReady}     {Token_PID_IN_NotReady}
 
-533 ns           TODO
+PATH {RXALowPolling}       {RXALowPolling}
+
+TIME 33.333 ns                                 # 16 bit times
+
+PATH {XUD_IN_TxDat_TailS2} {XUD_IN_TxCrc_TailS2}
+
+TIME 50.000 ns                                 # 24 bit times
+PATH {XUD_IN_TxDat_TailS3} {XUD_IN_TxCrc_TailS3}
+
+TIME 66.666 ns                                 # 32 bit times
+PATH {XUD_IN_TxDat_TailS4} {XUD_IN_TxCrc_TailS4}
+PATH {XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataN}
+PATH {XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataLast}
+PATH {doRXData_dataN}      {doRXData_dataN}
+
+TIME 266.66 ns                                 # 16 bit times
+PATH {Token_PID_IN_NotReady} {ANY_HEADER}
+PATH {Token_PID_IN_TxHandshake} {ANY_HEADER}
+PATH {Token_PID_TxNak}    {ANY_HEADER}
+PATH {Token_PID_doRXData} {ANY_HEADER}
+PATH {Token_PID_RxRet2}   {ANY_HEADER}
+PATH {XUD_TokenRx_Pid}    {ANY_HEADER}
+
+
+TIME 533.33 ns                                 # 32 bit times
+
+PATH {Token_PID_doRXData}   {doRXData_data0}
+PATH {doRXData_data0}       {doRXData_dataN}
+PATH {doRXData_dataN}       {doRXData_dataLast}
+PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataLast}
+PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataN}
+
+TIME 533 ns           TODO
 
 # Turn around times
 
-{XUD_IN_TxNak}                {Token_PID_TxNak}
-{doRXData_Ack}                {XUD_TokenRx_Pid}
-{DoOutNonIso_Ack}             {XUD_TokenRx_Pid}
-{Ping_Ack}                    {XUD_TokenRx_Pid}
-{PingNotAck}                  {XUD_TokenRx_Pid}
-{Pid_SofNC_header}            {XUD_TokenRx_Pid}
-{Pid_Sof_header}              {XUD_TokenRx_Pid}
-{XUD_TokenOut_BufferFull}     {XUD_TokenRx_Pid}
-{XUD_TokenOut_BufferFull_Nak} {XUD_TokenRx_Pid}
-{TxHandShakeReceived}         {XUD_TokenRx_Pid}
+PATH {XUD_IN_TxNak}                {Token_PID_TxNak}
+PATH {doRXData_Ack}                {XUD_TokenRx_Pid}
+PATH {DoOutNonIso_Ack}             {XUD_TokenRx_Pid}
+PATH {Ping_Ack}                    {XUD_TokenRx_Pid}
+PATH {PingNotAck}                  {XUD_TokenRx_Pid}
+PATH {Pid_SofNC_header}            {XUD_TokenRx_Pid}
+PATH {Pid_Sof_header}              {XUD_TokenRx_Pid}
+PATH {XUD_TokenOut_BufferFull}     {XUD_TokenRx_Pid}
+PATH {XUD_TokenOut_BufferFull_Nak} {XUD_TokenRx_Pid}
+PATH {TxHandShakeReceived}         {XUD_TokenRx_Pid}
+PATH {RXALowPolling}               {XUD_TokenRx_Pid}
 
-533 ns             TODO
+TIME 533 ns             TODO
 
 # Response times
 
-{Pid_Setup_header}     {Token_PID_doRXData}
-{Pid_Out_header}       {Token_PID_doRXData}
-{Pid_Out_header}       {XUD_TokenOut_BufferFull}
+PATH {Pid_Setup_header}     {Token_PID_doRXData}
+PATH {Pid_Out_header}       {Token_PID_doRXData}
+PATH {Pid_Out_header}       {XUD_TokenOut_BufferFull}
 
 
-533 ns            TODO
-
-# Follow up times
-
-{Pid_In_header}  {XUD_IN_NotReady}
-{Pid_In_header}  {XUD_IN_TxPid_TailS0}
-{Pid_In_header}  {XUD_IN_TxPid_TailS1}
-{Pid_In_header}  {XUD_IN_TxPid_TailS2}
-{Pid_In_header}  {XUD_IN_TxPid_TailS3}
-{Pid_In_header}  {XUD_IN_TxPid_TailS4}
-{Pid_In_header}  {XUD_IN_TxLoop_PID}
-{Pid_In_header}  {XUD_IN_TxNak}
-{Pid_In_header}  {XUD_IN_TxHandshake}
-
-533 ns         TODO
+TIME 533 ns            TODO
 
 # Follow up times
 
-{Pid_Ping_header}  {PingNotAck}
-{Pid_Ping_header}  {Ping_Ack}
+PATH {Pid_In_header}  {XUD_IN_NotReady}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS0}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS1}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS2}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS3}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS4}
+PATH {Pid_In_header}  {XUD_IN_TxLoop_PID}
+PATH {Pid_In_header}  {XUD_IN_TxNak}
+PATH {Pid_In_header}  {XUD_IN_TxHandshake}
+
+TIME 533 ns         TODO
+
+# Follow up times
+
+PATH {Pid_Ping_header}  {PingNotAck}
+PATH {Pid_Ping_header}  {Ping_Ack}
 
 
-533 ns         TODO
+TIME 533 ns         TODO
 
 # Handshake on input
 
-{XUD_IN_TxCrc_TailS0} {TxHandShakeReceived}
-{XUD_IN_TxCrc_TailS1} {TxHandShakeReceived}
-{XUD_IN_TxCrc_TailS2} {TxHandShakeReceived}
-{XUD_IN_TxCrc_TailS3} {TxHandShakeReceived}
-{XUD_IN_TxCrc_TailS4} {TxHandShakeReceived}
-{XUD_IN_TxLoop_CRC}   {TxHandShakeReceived}
+PATH {XUD_IN_TxCrc_TailS0} {TxHandShakeReceived}
+PATH {XUD_IN_TxCrc_TailS1} {TxHandShakeReceived}
+PATH {XUD_IN_TxCrc_TailS2} {TxHandShakeReceived}
+PATH {XUD_IN_TxCrc_TailS3} {TxHandShakeReceived}
+PATH {XUD_IN_TxCrc_TailS4} {TxHandShakeReceived}
+PATH {XUD_IN_TxLoop_CRC}   {TxHandShakeReceived}
 
 
-533 ns          TODO
+TIME 533 ns          TODO
 
 # No handshake on input
 
-{XUD_IN_TxCrc_TailS0} {XUD_TokenRx_Pid}
-{XUD_IN_TxCrc_TailS1} {XUD_TokenRx_Pid}
-{XUD_IN_TxCrc_TailS2} {XUD_TokenRx_Pid}
-{XUD_IN_TxCrc_TailS3} {XUD_TokenRx_Pid}
-{XUD_IN_TxCrc_TailS4} {XUD_TokenRx_Pid}
-{XUD_IN_TxLoop_CRC}   {XUD_TokenRx_Pid}
+PATH {XUD_IN_TxCrc_TailS0} {XUD_TokenRx_Pid}
+PATH {XUD_IN_TxCrc_TailS1} {XUD_TokenRx_Pid}
+PATH {XUD_IN_TxCrc_TailS2} {XUD_TokenRx_Pid}
+PATH {XUD_IN_TxCrc_TailS3} {XUD_TokenRx_Pid}
+PATH {XUD_IN_TxCrc_TailS4} {XUD_TokenRx_Pid}
+PATH {XUD_IN_TxLoop_CRC}   {XUD_TokenRx_Pid}
 
 
-533 ns         TODO
+TIME 533 ns         TODO
 
 # Iso to next packet?
 
-{doRXData_dataLast} {XUD_TokenRx_Pid}
-{doRXData_dataLast} {Token_PID_RxRet2}
+PATH {doRXData_dataLast} {XUD_TokenRx_Pid}
+PATH {doRXData_dataLast} {Token_PID_RxRet2}
 
 
-533 ns         TODO
+TIME 533 ns         TODO
 
 # Ack IN packet
 
-{doRXData_dataLast} {doRXData_Ack}
-{doRXData_dataLast} {DoOutNonIso_Ack}
+PATH {doRXData_dataLast} {doRXData_Ack}
+PATH {doRXData_dataLast} {DoOutNonIso_Ack}
 
 

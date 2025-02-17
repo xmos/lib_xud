@@ -2,6 +2,7 @@ from instr_db import uses_memory, is_io, may_go_on
 import subprocess
 import sys
 import html
+import re
 
 def create_instruction(fields, address, label_sub):
     global uses_memory, is_io, may_go_on
@@ -76,36 +77,6 @@ def add_instruction(ilist, label, instruction):
     ilist[label] = l + [instruction]
     return ilist
 
-def calc_bb_timings(ilist):
-    for n in ilist:
-        instrs = ilist[n]
-        ibuffer_fullness = (16 - instrs[0]['alignment'])//4
-        cnt = 0
-        insert_fnop = []
-        for j in instrs:
-            if ibuffer_fullness == 0:
-                ibuffer_fullness += 4
-                insert_fnop = [cnt] + insert_fnop
-                pass
-            j['buf_before'] = ibuffer_fullness
-            if not j['memory']:
-                if ibuffer_fullness <= 4:
-                    ibuffer_fullness += 4
-            ibuffer_fullness -= 1
-            cnt += 1
-        for j in insert_fnop:
-            instrs = instrs[0:j] + [create_instruction(['fnop'],'0x00000000',{})] + instrs[j:]
-        ilist[n] = instrs
-
-    for n in ilist:
-        instrs = ilist[n]
-        cycles = 0
-        for j in instrs:
-            if j['mnemonic'].startswith('wait'):
-                cycles += 2
-            else:
-                cycles += 1
-            j['cycles'] = cycles
 
 def register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrname, path):
     endpoint = (label, inum, endpoint)
@@ -153,7 +124,6 @@ def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, pat
         if not instrs[inum]['may_go_on']:
             for k in range(inum+1, len(instrs)):
                 if (instrs[k]['mnemonic'] == 'nop' or
-                    instrs[k]['mnemonic'] == 'fnop' or
                     instrs[k]['mnemonic'] == 'buwc' or
                     instrs[k]['mnemonic'] == 'stw; stw'):
                     continue
@@ -164,12 +134,6 @@ def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, pat
         start = False
     if inum != len(instrs)-1:
         print('ERROR: Walked out in ', label)
-        
-def pretty_print_ilist(ilist):
-    for n in ilist:
-        print(n)
-        for j in ilist[n]:
-            print('    ', j)
         
 def pretty_print_paths(n, paths, constraints, constrained_paths, c_out):
     for p in paths:
@@ -187,8 +151,8 @@ def pretty_print_paths(n, paths, constraints, constrained_paths, c_out):
         index = (name, pame)
         if index in constraints:
             ns = constraints.pop(index)
-            constrained_paths += [((1000.0 / (ns/(8*cycles))),
-                                  '%-30s => %-30s (%d cycles)' % (name,pame,cycles), paths[p])]
+            constrained_paths += [((1000.0 / (ns/(8*(cycles-1)))),
+                                  '%-30s => %-30s (%d cycles for %4.0f ns)' % (name,pame,cycles-1, ns), paths[p])]
             continue
         c_out += '<li><tt>' + str(name).replace('<', '').replace('>','') + '&nbsp</tt>&#8658;<tt>&nbsp;'+ str(pame).replace('<', '').replace('>','') + '&nbsp;</tt>\n<br/>'
         for pp in paths[p]:
@@ -204,18 +168,40 @@ def may_carry_on(instrs):
 
 def read_constraints():
     constraints = {}
+    macros = {}
     with open('constraints.txt', 'r') as fd:
         lines = fd.readlines()
     for i in lines:
-        fields = i.split()
-        if 'ns' in fields:
-            ns = float(fields[0])
+        fields = re.sub('#.*','', i).strip().split()
+        if len(fields) == 0:
             continue
-        if len(fields) == 2:
-            index = (fields[0], fields[1])
-            if index in constraints:
-                print('ERROR: duplicate constraint ' , index)
-            constraints[index] = ns
+        if fields[0] == 'MACRO':
+            macros[fields[1]] = fields[2:]
+            continue
+        if fields[0] == 'TIME':
+            ns = float(fields[1])
+            if fields[2] == 'ns':
+                ns *= 1
+            else:
+                print('ERROR, unknown unit', fields[2])
+            continue
+        if fields[0] == 'PATH':
+            if fields[1] in macros:
+                start = macros[fields[1]]
+            else:
+                start = [fields[1]]
+            if fields[2] in macros:
+                end = macros[fields[2]]
+            else:
+                end = [fields[2]]
+            for k in start:
+                for l in end:
+                    index = (k,l)
+                    if index in constraints:
+                        print('ERROR: duplicate constraint ' , index)
+                    constraints[index] = ns
+            continue
+        print('ERROR: unknown constraint line ', i)
     return constraints
 
 
@@ -274,7 +260,6 @@ def read_binary(filename):
             label = newlabel 
             continue
         fields = clean.split()
-        print(fields)
         if fields[0][9] in '048c' and fields[2].endswith(':'):
             half_instruction = create_instruction(fields[3:], fields[0], label_sub)
             continue
@@ -307,8 +292,6 @@ def remove_unneeded_labels(ilist):
                     target_count[j] += 1
                 else:
                     target_count[j] = 1
-    print(target_count)
-    print(target_src)
     for j in target_count:
         if target_count[j] == 0:
             src_block = target_src[j]
@@ -322,8 +305,6 @@ def remove_unneeded_labels(ilist):
 constraints = read_constraints()
 ilist = read_binary(sys.argv[1])
 remove_unneeded_labels(ilist)
-#calc_bb_timings(ilist)
-pretty_print_ilist(ilist)
 
 starting_points = [('<Loop_BadPid>', 2, '{XUD_TokenRx_Pid}')]
 explored_starting_points = []

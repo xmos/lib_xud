@@ -390,7 +390,7 @@ for i in sorted(constrained_paths, reverse=True):
     for l in i[2]:
         pre_text = 'ibuffer-fullness <LABEL>: alignment   instructions               cycle-count \n'
         separator = ''
-        summary = '&nbsp;%d&nbsp;cycles:&nbsp;' % l['cycles']
+        summary = '&nbsp;%d&nbsp;cycles:&nbsp;' % (l['cycles']-1)
         old_lab = ''
         for (lab,inum,cycle,ibuffer_fullness,alignment) in l['path']:
             if inum == 0:

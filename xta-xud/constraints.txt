@@ -33,6 +33,7 @@ PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataN}
 PATH {doRXData_dataN}      {doRXData_dataN}
 PATH {doRXData_data0}       {doRXData_dataN}
 PATH {doRXData_dataN}       {doRXData_dataLast}
+PATH {Token_PID_doRXData}   {doRXData_data0}
 
 # TODO: 
 
@@ -53,11 +54,7 @@ PATH {XUD_TokenRx_Pid}    {ANY_HEADER}
 
 # TODO:
 
-TIME 533.33 ns                                 # 32 bit times
-PATH {Token_PID_doRXData}   {doRXData_data0}
-
-
-TIME 533 ns           TODO
+TIME 533 ns
 
 # Turn around times
 
@@ -73,19 +70,16 @@ PATH {XUD_TokenOut_BufferFull_Nak} {XUD_TokenRx_Pid}
 PATH {TxHandShakeReceived}         {XUD_TokenRx_Pid}
 PATH {RXALowPolling}               {XUD_TokenRx_Pid}
 
-TIME 533 ns             TODO
+# TODO: Follow up times, RX data after RX header
 
-# Response times
-
+TIME 533 ns
 PATH {Pid_Setup_header}     {Token_PID_doRXData}
 PATH {Pid_Out_header}       {Token_PID_doRXData}
 PATH {Pid_Out_header}       {XUD_TokenOut_BufferFull}
 
+# TODO: Follow up times, TX data after RX header
 
-TIME 533 ns            TODO
-
-# Follow up times
-
+TIME 533 ns
 PATH {Pid_In_header}  {XUD_IN_NotReady}
 PATH {Pid_In_header}  {XUD_IN_TxPid_TailS0}
 PATH {Pid_In_header}  {XUD_IN_TxPid_TailS1}
@@ -95,19 +89,13 @@ PATH {Pid_In_header}  {XUD_IN_TxPid_TailS4}
 PATH {Pid_In_header}  {XUD_IN_TxLoop_PID}
 PATH {Pid_In_header}  {XUD_IN_TxNak}
 PATH {Pid_In_header}  {XUD_IN_TxHandshake}
-
-TIME 533 ns         TODO
-
-# Follow up times
-
 PATH {Pid_Ping_header}  {PingNotAck}
 PATH {Pid_Ping_header}  {Ping_Ack}
 
 
-TIME 533 ns         TODO
+# TODO: Wait for Ack after Tx (earliest possible Tx)
 
-# Handshake on input
-
+TIME 533 ns
 PATH {XUD_IN_TxCrc_TailS0} {TxHandShakeReceived}
 PATH {XUD_IN_TxCrc_TailS1} {TxHandShakeReceived}
 PATH {XUD_IN_TxCrc_TailS2} {TxHandShakeReceived}
@@ -115,11 +103,9 @@ PATH {XUD_IN_TxCrc_TailS3} {TxHandShakeReceived}
 PATH {XUD_IN_TxCrc_TailS4} {TxHandShakeReceived}
 PATH {XUD_IN_TxLoop_CRC}   {TxHandShakeReceived}
 
+# TODO: ISO Tx without handshake, earliest possible next packet
 
-TIME 533 ns          TODO
-
-# No handshake on input
-
+TIME 533 ns
 PATH {XUD_IN_TxCrc_TailS0} {XUD_TokenRx_Pid}
 PATH {XUD_IN_TxCrc_TailS1} {XUD_TokenRx_Pid}
 PATH {XUD_IN_TxCrc_TailS2} {XUD_TokenRx_Pid}
@@ -128,10 +114,9 @@ PATH {XUD_IN_TxCrc_TailS4} {XUD_TokenRx_Pid}
 PATH {XUD_IN_TxLoop_CRC}   {XUD_TokenRx_Pid}
 
 
-TIME 533 ns         TODO
+# TODO: Iso to next packet?
 
-# Iso to next packet?
-
+TIME 533 ns
 PATH {doRXData_dataLast} {XUD_TokenRx_Pid}
 PATH {doRXData_dataLast} {Token_PID_RxRet2}
 

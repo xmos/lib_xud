@@ -11,7 +11,6 @@
 
 #if !defined(__XS2A__)
 XTA_CRCADDRCHECK:
-#undef XTA_CRCADDRCHECK
     {in        r10, res[RXD];     sub       r1, r8, 5}      // ldc r1 11
     {shr       r10, r10, 16;      mkmsk     r11, r1}
     {and       r11, r10, r11;     ldw       r8, sp[STACK_CRC5TABLE_ADDR]}
@@ -24,10 +23,13 @@ XTA_CRCADDRCHECK:
     BRFT_ru6    r4,  5
 
     ldw         r11, sp[STACK_RXA_PORT]                     // Wait for RXA to gow low (i.e. end of packet)
+XTA_CRCADDRCHECKNP:
     in          r10, res[r11]
     bt          r10, waitforRXALow0
     setc        res[RXD], XS1_SETC_RUN_CLRBUF
     bu          Loop_BadPid
+#undef XTA_CRCADDRCHECK
+#undef XTA_CRCADDRCHECKNP
 #else
     // __XS2A__
     inpw      r10, res[RXD], 8;                             // Read EP Number

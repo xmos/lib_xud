@@ -160,6 +160,7 @@ BadCrcAddr:
     ldw         r11, sp[STACK_RXA_PORT]
 
 waitforRXALow0:
+xta_ep_RXALowPolling:    
     in          r10, res[r11]
     bt          r10, waitforRXALow0
     setc        res[RXD], XS1_SETC_RUN_CLRBUF

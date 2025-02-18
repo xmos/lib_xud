@@ -57,6 +57,7 @@ xta_ep_XUD_IN_TxNak:
 .align FUNCTION_ALIGNMENT
 Pid_In:
     #define  XTA_CRCADDRCHECK xta_ep_Pid_In_header
+    #define  XTA_CRCADDRCHECKNP     xta_no_pauseIn
     #include "XUD_CrcAddrCheck.S"
     ldaw       r3, r10[4]                          // R3 = R10 + 16
     ldw        r4, r5[r3]                          // Load EP structure address
@@ -85,7 +86,7 @@ XUD_IN_TxLoop:
 xta_ep_XUD_IN_TxLoop_dataN:
     {out         res[TXD], r11;     bt       r4, XUD_IN_TxLoop}
 
-XUD_IN_TxLoopEnd:
+XUD_IN_TxLoopEnd:                // TODO: mkmsk r4, 0; avoids not later on
     ldw         r11, r8[r4]                         // Load tail
     crcn        r7, r11, r9, r6
 
@@ -180,7 +181,7 @@ xta_target_TxTail2s:
 xta_target_TxTail3s:
 xta_target_TxTail4s:
     bru         r6                                 // Branch on tail-length
-
+                                // TODO: mkmsk r4, 0, avoids all not instructions?
 //--------------------------------------------------------------------------
 .align 32
 .skip 0
@@ -189,7 +190,7 @@ TxTail0s:                                          // We know this is a < 4 byte
                                                    // Not a special CRC case, but helps with timing.
 XUD_IN_TxPid_TailS0:
 xta_ep_XUD_IN_TxPid_TailS0:
-    outpw      res[TXD], r1, 8                      // PID
+    outpw      res[TXD], r1, 8                      // PID    TODO: 24?
 XUD_IN_TxCrc_TailS0:
 xta_ep_XUD_IN_TxCrc_TailS0:
     outpw      res[TXD], r4, 16                     // Output CRC

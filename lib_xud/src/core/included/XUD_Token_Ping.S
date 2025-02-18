@@ -5,6 +5,7 @@
 .align FUNCTION_ALIGNMENT
 Pid_Ping:
     #define  XTA_CRCADDRCHECK       xta_ep_Pid_Ping_header
+    #define  XTA_CRCADDRCHECKNP     xta_no_pausePing
     #include "XUD_CrcAddrCheck.S"
 
 LoadStatTablePing:

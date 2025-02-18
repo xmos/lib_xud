@@ -9,6 +9,7 @@
 .align FUNCTION_ALIGNMENT
 Pid_Setup:
     #define  XTA_CRCADDRCHECK       xta_ep_Pid_Setup_header
+    #define  XTA_CRCADDRCHECKNP     xta_no_pauseSetup
     #include "XUD_CrcAddrCheck.S"
     ldaw       r7, r10[8]                       // R3 = R10 + 32. Read Past end of epAddr to epAddr_Setup
     ldw        r3, r5[r7]                       // Load relevant EP pointer
@@ -52,8 +53,10 @@ xta_no_pauseF:
 
 XUD_Setup_BuffFull:
     ldw        r10, sp[STACK_RXA_PORT]          // Load RxA Port ID (r1)
+xta_no_pauseY:
     in         r11, res[r10]                    // RXA event cond = 0 TODO: Wait for RXA high first?
     endin      r11, res[RXD]
+xta_no_pauseZ:
     in         r11, res[RXD]
     bu         NextTokenAfterOut
 

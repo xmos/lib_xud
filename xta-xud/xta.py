@@ -157,7 +157,7 @@ def pretty_print_paths(n, paths, constraints, constrained_paths, c_out):
         c_out += '<li><tt>' + str(name).replace('<', '').replace('>','') + '&nbsp</tt>&#8658;<tt>&nbsp;'+ str(pame).replace('<', '').replace('>','') + '&nbsp;</tt>\n<br/>'
         for pp in paths[p]:
             ppp = pp['path']
-            c_out += '\n' + str(pp['cycles']) + ' cycles:'
+            c_out += '\n' + str(pp['cycles']-1) + ' cycles:'
             for pppp in ppp:
                 c_out += '<tt>[' + pppp[0].replace('<', '').replace('>','') +':' + str(pppp[1]) + ']</tt>, '
         c_out += '</li>'

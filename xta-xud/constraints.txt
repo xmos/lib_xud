@@ -1,40 +1,49 @@
 MACRO {ANY_HEADER}  {Pid_Out_header} {Pid_Ping_header} {Pid_Sof_header} {Pid_In_header} {Pid_Setup_header}
 
-TIME 16.667 ns                                 # 8 bit times
+# Timing paths where we just have a single byte in the output buffer
 
+TIME 16.667 ns                                 # 8 bit times
 PATH {XUD_IN_TxLoop_dataLast} {XUD_IN_TxLoop_CRC}
 PATH {XUD_IN_TxLoop_PID}    {XUD_IN_TxLoop_data0}
-
 PATH {XUD_IN_TxPid_TailS0} {XUD_IN_TxCrc_TailS0}
 PATH {XUD_IN_TxPid_TailS1} {XUD_IN_TxDat_TailS1}
 PATH {XUD_IN_TxPid_TailS2} {XUD_IN_TxDat_TailS2}
 PATH {XUD_IN_TxPid_TailS3} {XUD_IN_TxDat_TailS3}
 PATH {XUD_IN_TxPid_TailS4} {XUD_IN_TxDat_TailS4}
-
 PATH {XUD_IN_TxDat_TailS1} {XUD_IN_TxCrc_TailS1}
 
-
-TIME 266 ns                                  # TODO: turnaround
-
-PATH {XUD_IN_TxHandshake}  {Token_PID_IN_TxHandshake}
-PATH {XUD_IN_NotReady}     {Token_PID_IN_NotReady}
-
-PATH {RXALowPolling}       {RXALowPolling}
+# Timing paths where we just have two bytes in the output buffer
 
 TIME 33.333 ns                                 # 16 bit times
-
 PATH {XUD_IN_TxDat_TailS2} {XUD_IN_TxCrc_TailS2}
+
+# Timing paths where we just have three bytes in the output buffer
 
 TIME 50.000 ns                                 # 24 bit times
 PATH {XUD_IN_TxDat_TailS3} {XUD_IN_TxCrc_TailS3}
+
+# Timing paths where we have four bytes in the output buffer
 
 TIME 66.666 ns                                 # 32 bit times
 PATH {XUD_IN_TxDat_TailS4} {XUD_IN_TxCrc_TailS4}
 PATH {XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataN}
 PATH {XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataLast}
+PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataLast}
+PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataN}
 PATH {doRXData_dataN}      {doRXData_dataN}
+PATH {doRXData_data0}       {doRXData_dataN}
+PATH {doRXData_dataN}       {doRXData_dataLast}
 
-TIME 266.66 ns                                 # 16 bit times
+# TODO: 
+
+TIME 266.66 ns
+PATH {XUD_IN_TxHandshake}  {Token_PID_IN_TxHandshake}
+PATH {XUD_IN_NotReady}     {Token_PID_IN_NotReady}
+PATH {RXALowPolling}       {RXALowPolling}
+
+# TODO:
+
+TIME 266.66 ns
 PATH {Token_PID_IN_NotReady} {ANY_HEADER}
 PATH {Token_PID_IN_TxHandshake} {ANY_HEADER}
 PATH {Token_PID_TxNak}    {ANY_HEADER}
@@ -42,14 +51,11 @@ PATH {Token_PID_doRXData} {ANY_HEADER}
 PATH {Token_PID_RxRet2}   {ANY_HEADER}
 PATH {XUD_TokenRx_Pid}    {ANY_HEADER}
 
+# TODO:
 
 TIME 533.33 ns                                 # 32 bit times
-
 PATH {Token_PID_doRXData}   {doRXData_data0}
-PATH {doRXData_data0}       {doRXData_dataN}
-PATH {doRXData_dataN}       {doRXData_dataLast}
-PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataLast}
-PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataN}
+
 
 TIME 533 ns           TODO
 

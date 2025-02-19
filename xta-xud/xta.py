@@ -4,6 +4,55 @@ import sys
 import html
 import re
 
+def three_state(i):
+    return '%d%d' % (i>>1, i&1)
+
+def three_state_is_included_in(a, inb):
+    return three_state_combine(a, inb) == inb
+
+def three_state_combine(a, b):
+    o = ''
+    for i in range(len(a)):
+        if a[i] == b[i]:
+            o += a[i]
+        elif a[i] == 'z':
+            o += b[i]
+        elif b[i] == 'z':
+            o += a[i]
+        else:
+            o += 'x'
+    return o
+
+def three_state_or(a, b):
+    o=''
+    for i in range(len(a)):
+        if a[i] == '1' or b[i] == '1':
+            o += '1'
+        elif a[i] == '0':
+            o += b[i]
+        elif b[i] == '0':
+            o += a[i]
+        elif a[i] == 'z':
+            o += b[i]
+        elif b[i] == 'z':
+            o += a[i]
+        else:
+            o += 'x'
+    return o
+
+def three_state_and_not(a, b):
+    o = ''
+    for i in range(len(a)):
+        if a[i] == '0':
+            o += '0'
+        elif b[i] == '1':
+            o += '0'
+        elif b[i] == '0':
+            o += a[i]
+        else:
+            o += 'x'
+    return o
+
 def create_instruction(fields, address, label_sub):
     global uses_memory, is_io, may_go_on
     alignment = int(address[9], 16)
@@ -34,12 +83,22 @@ def create_instruction(fields, address, label_sub):
             pass
         else:
             args += ' ' + i
+    setsr = '00'
+    clrsr = '00'
+    if mnemonic == 'setsr':
+        setsr = three_state(int(fields[2], 16))
+    elif mnemonic == 'clrsr':
+        clrsr = three_state(int(fields[2], 16))
+    elif mnemonic == 'clre':
+        clrsr = three_state(1)
     instr = {
              'cycles': 0,
              'buf_before': 0,
              'memory' : uses_memory[mnemonic],
              'io' : is_io[mnemonic] and not 'NOPAUSE' in fields,
              'may_go_on': may_go_on[mnemonic],
+             'clrsr': clrsr,
+             'setsr': setsr,
              'mnemonic' : mnemonic,
              'address' : address,
              'args' : args,
@@ -61,6 +120,8 @@ def combine_halfs(a, b):
              'memory' : a['memory'] or b['memory'],
              'io' : a['io'] or b['io'],
              'may_go_on' : a['may_go_on'] and b['may_go_on'],
+             'setsr' : three_state_or(a['setsr'], b['setsr']),
+             'clrsr' : three_state_or(a['clrsr'], b['clrsr']),
              'mnemonic': m,
              'address' : a['address'],
              'args' : '%-30s; %-30s'  % (a['args'],b['args']),
@@ -77,8 +138,7 @@ def add_instruction(ilist, label, instruction):
     ilist[label] = l + [instruction]
     return ilist
 
-
-def register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrname, path):
+def register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrname, path,ibuff, sr):
     endpoint = (label, inum, endpoint)
     if endpoint not in paths:
         paths[endpoint] = []
@@ -86,11 +146,13 @@ def register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrnam
     epdata += [{'cycles': cycle_count,
                 'depth' : depth,
                 'endinstr' : instrname,
+                'endibuff' : ibuff,
+                'endsr' : sr,
                 'path': path}]
 
-def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, paths, ibuffer_fullness):
+def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, paths, ibuffer_fullness, sr):
     if depth > 10:
-        register_new_path(paths, cycle_count, depth, label, inum, None, 'Fail', path)
+        register_new_path(paths, cycle_count, depth, label, inum, None, 'Fail', path, ibuffer_fullness, sr)
         return
     instrs = ilist[label]
     if ibuffer_fullness < 0:
@@ -106,21 +168,22 @@ def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, pat
                 if ibuffer_fullness <= 4:
                     ibuffer_fullness += 4
             ibuffer_fullness -= 1
-        path = path + [(label, inum, cycle_count, pre_fullness, instrs[0]['alignment'])]
+        path = path + [(label, inum, cycle_count, pre_fullness, instrs[0]['alignment'], sr)]
+        sr = three_state_and_not(three_state_or(sr, instrs[inum]['setsr']), instrs[inum]['clrsr'])
         if instrs[inum]['mnemonic'].startswith('wait'):
             cycle_count += 1
         if instrs[inum]['io'] and not start:
             endpoint = None
             if instrs[inum]['xta_endpoints'] != []:
                 endpoint = instrs[inum]['xta_endpoints'][0]
-            register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrs[inum]['mnemonic'], path)
+            register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrs[inum]['mnemonic'], path, ibuffer_fullness, sr)
             return
         for i in instrs[inum]['targets']:
             new_ibuffer_fullness = -1
             if instrs[inum]['mnemonic'] == 'buwc':
                 new_ibuffer_fullness = ibuffer_fullness
             explore_depth_first(ilist, i, 0, cycle_count, depth+1, path , False, paths,
-                                    new_ibuffer_fullness )
+                                    new_ibuffer_fullness, sr )
         if not instrs[inum]['may_go_on']:
             for k in range(inum+1, len(instrs)):
                 if (instrs[k]['mnemonic'] == 'nop' or
@@ -306,24 +369,31 @@ constraints = read_constraints()
 ilist = read_binary(sys.argv[1])
 remove_unneeded_labels(ilist)
 
-starting_points = [('<Loop_BadPid>', 2, '{XUD_TokenRx_Pid}')]
-explored_starting_points = []
+starting_points = [(('<Loop_BadPid>', 2, '{XUD_TokenRx_Pid}'),7,'zz','_start_')]
+explored_starting_points = {}
 all_paths = {}
+fix_point_log = 'Overwriting                    <Input label> input line {Endpoint}      ibuff SR   ibuff  SR              <Label> input line {Endpoint}\n'
 while starting_points != []:
     new_starting_points = []
-    for i in starting_points:
+    for (i,ibuff,sr,orig) in starting_points:
         if i in explored_starting_points:
-            continue
-        explored_starting_points += [i]
+            (o_ibuff,o_sr) = explored_starting_points[i]
+            if o_ibuff <= ibuff and three_state_is_included_in(sr, o_sr):
+                continue
+            ibuff = min(ibuff, o_ibuff)
+            sr = three_state_combine(sr, o_sr)
+            fix_point_log += 'Overwriting %60s %6s with %d %s because of %s\n' %( i, explored_starting_points[i],  ibuff, sr, orig)
+        explored_starting_points[i] = (ibuff, sr)
         paths = {}
-        explore_depth_first(ilist, i[0], i[1], 0, 0, [], True, paths, 1)
-        if i in all_paths:
-            print('ERROR, overwriting ', i)
+        explore_depth_first(ilist, i[0], i[1], 0, 0, [], True, paths, ibuff, sr)
         all_paths[i] = paths
         for k in paths:
-            label = k[0]
-            inum = k[1]
-            new_starting_points += [k]
+            sr='zz'
+            ibuff = 8
+            for ps in paths[k]:
+                ibuff = min(ps['endibuff'], ibuff)
+                sr    = three_state_combine(sr, ps['endsr'])
+            new_starting_points += [(k, ibuff, sr, i)]
     starting_points = new_starting_points
 
 html_out = html.header()
@@ -388,20 +458,21 @@ html_out += '\n<p><b>Constrained paths in order of severity.</b> Minimum device 
 for i in sorted(constrained_paths, reverse=True):
     p = ''
     for l in i[2]:
-        pre_text = 'ibuffer-fullness <LABEL>: alignment   instructions               cycle-count \n'
+        pre_text = 'ibuffer-fullness <LABEL>: alignment   instructions               cycle-count sr\n'
         separator = ''
         summary = '&nbsp;%d&nbsp;cycles:&nbsp;' % (l['cycles']-1)
         old_lab = ''
-        for (lab,inum,cycle,ibuffer_fullness,alignment) in l['path']:
+        for (lab,inum,cycle,ibuffer_fullness,alignment,sr) in l['path']:
             if inum == 0:
                 summary += separator + '<tt>&nbsp;' + lab.replace('<', '').replace('>','') + '&nbsp;</tt>'
                 separator = " &#8658; "
                 old_lab = lab
                 pre_text += '  %s: 0xXXX%x\n' % (lab, alignment)
-            pre_text += '%d     %-60s %2d\n' % (ibuffer_fullness, ilist[lab][inum]['args'].strip(), cycle)
+            pre_text += '%d     %-60s %2d %s\n' % (ibuffer_fullness, ilist[lab][inum]['args'].strip(), cycle, sr)
         pre_text = html.pre(pre_text)
         p +=  html.openable_element(summary, pre_text)
     html_out += html.openable_element('    %6.0f MHz: required for %s' % (i[0], i[1]), p)
+html_out += '<p>The log of the fix-point iterations is:</p>' + html.pre(fix_point_log)
 html_out += html.trailer()
 with open('xud_xta.html','w') as fd:
     fd.write(html_out)

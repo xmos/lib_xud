@@ -105,7 +105,7 @@ xta_ep_XUD_IN_TxLoop_CRC:
 DoneTail:
     ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
-    bt          r11, SetupReceiveHandShake
+    bt          r11, SetupReceiveHandShake     // TODO: MAKE THIS A BF
     bu          XUD_IN_DoneTx
 
 SetupReceiveHandShake:

@@ -284,10 +284,10 @@ void XUD_HAL_EnterMode_TristateDrivers()
 #endif
 }
 
-
 void XUD_HAL_Mode_Signalling()
 {
     /* Reset port to use XS1_CLKBLK_REF (from rx_usb_clk) */
+    set_port_use_on(flag0_port);
     set_port_use_on(flag1_port);
 
 #ifdef __XS2A__
@@ -307,6 +307,7 @@ void XUD_HAL_Mode_Signalling()
 
 void XUD_HAL_Mode_DataTransfer()
 {
+    configure_in_port(flag0_port, rx_usb_clk);
     configure_in_port(flag1_port, rx_usb_clk);
     set_pad_delay(flag1_port, 2);
 
@@ -446,6 +447,58 @@ unsigned int XUD_HAL_GetVBusState_(void)
     return x & (1 << XS1_UIFM_OTG_FLAGS_SESSVLDB_SHIFT);
 #else
     return 1u;
+#endif
+}
+
+void XUD_HAL_SuspendPhy(void)
+{
+#ifdef __XS2A__
+    // TODO Currently we do not suspend the phy for XS2A based devices
+#else
+    /* Note, we assume (correctly really) that we only suspend the phy in FS mode */
+    unsigned d = 0;
+    d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_UTMI_TERMSELECT_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_UTMI_OPMODE_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_DMPULLDOWN_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_DPPULLDOWN_SET(d, 0);
+
+    d = XS1_USB_PHY_CFG0_UTMI_SUSPENDM_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_TXBITSTUFF_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_PLL_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_LPM_ALIVE_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_IDPAD_EN_SET(d, 0);
+
+    unsigned xtlSelVal = XtlSelFromMhz(XUD_OSC_MHZ);
+    d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlSelVal);
+
+    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d);
+#endif
+}
+
+void XUD_HAL_UnSuspendPhy(void)
+{
+#ifdef __XS2A__
+    // TODO Currently we do not suspend the phy for XS2A based devices
+#else
+    /* Note, we assume (correctly really) that we only suspend the phy in FS mode */
+    unsigned d = 0;
+    d = XS1_USB_PHY_CFG0_UTMI_XCVRSELECT_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_UTMI_TERMSELECT_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_UTMI_OPMODE_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_DMPULLDOWN_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_DPPULLDOWN_SET(d, 0);
+
+    d = XS1_USB_PHY_CFG0_UTMI_SUSPENDM_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_TXBITSTUFF_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_PLL_EN_SET(d, 1);
+    d = XS1_USB_PHY_CFG0_LPM_ALIVE_SET(d, 0);
+    d = XS1_USB_PHY_CFG0_IDPAD_EN_SET(d, 0);
+
+    unsigned xtlSelVal = XtlSelFromMhz(XUD_OSC_MHZ);
+    d = XS1_USB_PHY_CFG0_XTLSEL_SET(d, xtlSelVal);
+
+    write_sswitch_reg(get_local_tile_id(), XS1_SSWITCH_USB_PHY_CFG0_NUM, d);
 #endif
 }
 

@@ -496,6 +496,11 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 #define XUD_OSC_MHZ (24)
 #endif
 
+/* Option to put the phy in low power mode during USB suspend */
+#ifndef XUD_SUSPEND_PHY
+#define XUD_SUSPEND_PHY (1)
+#endif
+
 /* TODO pack this to save mem
  * TODO size of this hardcoded in ResetEpStateByAddr_
  */

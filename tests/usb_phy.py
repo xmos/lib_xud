@@ -88,6 +88,7 @@ class UsbPhy(Pyxsim.SimThread):
         ls,
         xcvrsel,
         termsel,
+        suspendm,
         clock,
         initial_delay,
         verbose,
@@ -106,6 +107,7 @@ class UsbPhy(Pyxsim.SimThread):
         self._ls = ls
         self._xcvrsel = xcvrsel
         self._termsel = termsel
+        self._suspendm = suspendm
         self._session = []
         self._clock = clock
         self._initial_delay = initial_delay

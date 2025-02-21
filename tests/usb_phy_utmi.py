@@ -16,6 +16,7 @@ class UsbPhyUtmi(UsbPhy):
         ls,
         xcvrsel,
         termsel,
+        suspendm,
         clock,
         initial_delay=140000000000,  # in fs
         verbose=False,
@@ -38,6 +39,7 @@ class UsbPhyUtmi(UsbPhy):
             ls,
             xcvrsel,
             termsel,
+            suspendm,
             clock,
             initial_delay,
             verbose,

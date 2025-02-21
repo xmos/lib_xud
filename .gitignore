@@ -40,3 +40,8 @@
 # Built documentation
 doc/_build/pdf/*.pdf
 **/doc/pdf/*.pdf
+
+*.expect
+*xsim_trace*
+xcoverage_result.txt
+tests/test*/src/test*.xn

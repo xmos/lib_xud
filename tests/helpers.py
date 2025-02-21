@@ -61,6 +61,7 @@ def get_usb_clk_phy(
             "XS1_USB_LS",
             "XS1_USB_XCVRSEL",
             "XS1_USB_TERMSEL",
+            "XS1_USB_SUSPENDM",
             clk,
             verbose=verbose,
             do_timeout=do_timeout,

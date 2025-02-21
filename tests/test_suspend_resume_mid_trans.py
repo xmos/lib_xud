@@ -46,8 +46,8 @@ def test_session(ep, address, bus_speed):
         )
     )
 
-    session.add_event(UsbSuspend(350000))
-    session.add_event(UsbResume())
+    session.add_event(UsbSuspend(350000, suspendedPhy=False))
+    session.add_event(UsbResume(suspendedPhy=False))
 
     frameNumber = frameNumber + 1
     session.add_event(CreateSofToken(frameNumber, interEventDelay=2000))
@@ -89,8 +89,8 @@ def test_session(ep, address, bus_speed):
         )
     )
 
-    session.add_event(UsbSuspend(350000))
-    session.add_event(UsbResume())
+    session.add_event(UsbSuspend(350000, suspendedPhy=False))
+    session.add_event(UsbResume(suspendedPhy=False))
 
     frameNumber = frameNumber + 1
     session.add_event(CreateSofToken(frameNumber, interEventDelay=2000))

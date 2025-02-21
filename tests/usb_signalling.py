@@ -214,10 +214,12 @@ class UsbResume(UsbEvent):
         duration=USB_TIMINGS["RESUME_FSK_MIN_US"],
         interEventDelay=0,
         glitches=[],
+        suspendedPhy=True,
     ):
         self._duration = duration
         self._glitches = glitches
         self.interEventDelay = interEventDelay
+        self._suspendedPhy = suspendedPhy
         super().__init__()
 
     def expected_output(self, bus_speed, offset=0):
@@ -245,6 +247,8 @@ class UsbResume(UsbEvent):
 
         xsi = usb_phy.xsi
         wait = usb_phy.wait
+
+        # Note, this delay still works. The phy model clock is still running just the output is disabled
         wait_for_clocks = usb_phy.wait_for_clocks
 
         # xCore should not be trying to send if we are trying to send..
@@ -267,6 +271,10 @@ class UsbResume(UsbEvent):
         while True:
 
             wait_for_clocks(1)
+
+            if self._suspendedPhy:
+                if xsi.sample_periph_pin(usb_phy._suspendm) == 1:
+                    usb_phy.clock.enabled = True
 
             currentTime_ns = get_time_ns()
 
@@ -299,6 +307,10 @@ class UsbResume(UsbEvent):
                 USB_TIMINGS["RESUME_FSK_MIN_US"] * 1000
             ):
                 break
+
+        if self._suspendedPhy:
+            if xsi.sample_periph_pin(usb_phy._suspendm) == 1:
+                usb_phy.clock.enabled = True
 
         endResumeStartTime_ns = get_time_ns()
 
@@ -335,14 +347,19 @@ class UsbSuspend(UsbEvent):
 
     # TODO create instance of Suspend with duracton in seconds and convert to
     # clks?
-    def __init__(self, duration_ns, interEventDelay=0):
+    def __init__(self, duration_ns, interEventDelay=0, suspendedPhy=True):
         self._duration_ns = duration_ns
         self.interEventDelay = interEventDelay
+        self._suspendedPhy = suspendedPhy
         super().__init__()
 
     def expected_output(self, bus_speed, offset=0):
         expected_output = "SUSPEND START. WAITING FOR DUT TO ENTER FS\n"
         expected_output += "DEVICE ENTERED FS MODE\n"
+
+        if self._suspendedPhy:
+            expected_output += "WAITING FOR SUSPENDM LOW\n"
+            expected_output += "XCORE DEASSERTED SUSPENDM\n"
         expected_output += "SUSPEND END\n"
         return expected_output
 
@@ -407,6 +424,18 @@ class UsbSuspend(UsbEvent):
             time_ns = get_time_ns() - suspendStartTime_ns
             if time_ns > (USB_TIMINGS["IDLE_TO_FS_MAX_US"] * 1000):
                 print("ERROR: DUT DID NOT ENTER FS MODE IN TIME")
+
+        if self._suspendedPhy:
+            # Wait for DUT to de-assert suspendM
+            print("WAITING FOR SUSPENDM LOW")
+
+            while xsi.sample_periph_pin(usb_phy._suspendm) != 0:
+                wait(lambda x: usb_phy._clock.is_high())
+                wait(lambda x: usb_phy._clock.is_low())
+
+            print("XCORE DEASSERTED SUSPENDM")
+
+            usb_phy.clock.enabled = False
 
         # Wait for end of suspend
         while True:

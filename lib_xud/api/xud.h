@@ -338,9 +338,8 @@ void XUD_Kill(XUD_ep ep);
 /***********************************************************************************************/
 
 /*
- * Advanced functions for supporting multple Endpoints in a single core
+ * Advanced functions for supporting multple Endpoints in a single task
  */
-
 
 /**
  * \brief      Marks an OUT endpoint as ready to receive data
@@ -379,7 +378,6 @@ static inline XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
  * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
 int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]) ATTRIB_WEAK;
-
 
 /**
  * \brief      Marks an IN endpoint as ready to transmit data
@@ -492,11 +490,28 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 /* Control token defines - used to inform EPs of bus-state types */
 #define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
 
+/**
+ * @def XUD_OSC_MHZ
+ * @brief Frequency of oscillator used to clock xcore (in MHz)
+ */
 #ifndef XUD_OSC_MHZ
-#define XUD_OSC_MHZ (24)
+#define XUD_OSC_MHZ     (24)
 #endif
 
-/* TODO pack this to save mem
+/**
+ * @def XUD_SUSPEND_PHY
+ * @brief Option to put the PHY in low power mode during USB suspend.
+ *
+ * When set to 1, the PHY will enter low power mode during USB suspend.
+ * When set to 0 (default), this feature is disabled.
+ *
+ * Only supported on XS3A/xcore.ai based devices.
+ */
+#ifndef XUD_SUSPEND_PHY
+#define XUD_SUSPEND_PHY (0)
+#endif
+
+/*
  * TODO size of this hardcoded in ResetEpStateByAddr_
  */
 typedef struct XUD_ep_info

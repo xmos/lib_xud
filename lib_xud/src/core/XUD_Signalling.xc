@@ -75,6 +75,11 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 
     XUD_LineState_t currentLs = XUD_LINESTATE_HS_K_FS_J;
 
+    if(XUD_SUSPEND_PHY)
+    {
+        XUD_HAL_SuspendPhy();
+    }
+
     while(1)
     {
         unsigned timeOutTime = 0;
@@ -104,6 +109,11 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             /* Reset signalliung */
             case XUD_LINESTATE_SE0:
 
+                if(XUD_SUSPEND_PHY)
+                {
+                    XUD_HAL_UnSuspendPhy();
+                }
+
                 timedOut = XUD_HAL_WaitForLineStateChange(currentLs, T_FILTSE0);
 
                 if(timedOut)
@@ -114,14 +124,23 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 
                     /* Return 1 for reset */
                     return 1;
-
                 }
 
-                /* If didnt timeout then keep looping...*/
+                /* If didn't timeout then put phy back in suspend and keep looping...*/
+                if(XUD_SUSPEND_PHY)
+                {
+                    XUD_HAL_SuspendPhy();
+                }
+
                 break;
 
             /* K, start of resume */
             case XUD_LINESTATE_HS_J_FS_K:
+
+                if(XUD_SUSPEND_PHY)
+                {
+                    XUD_HAL_UnSuspendPhy();
+                }
 #ifdef __XS2A__
                 if (g_curSpeed == XUD_SPEED_HS)
                 {
@@ -150,6 +169,11 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
 
                             XUD_HAL_EnterMode_PeripheralFullSpeed();
 #endif
+                            if(XUD_SUSPEND_PHY)
+                            {
+                                /* Re-suspend phy */
+                                XUD_HAL_SuspendPhy();
+                            }
                             return 0;
 
                          /* SE0, end of resume */
@@ -161,6 +185,7 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                                 XUD_HAL_EnterMode_PeripheralHighSpeed_Complete();
 #else
                                 /* Move back into high-speed mode - Notes, writes to XS3A registers orders of magnitude faster than XS2A */
+                                /* Note, this will un-suspend PHY */
                                 XUD_HAL_EnterMode_PeripheralHighSpeed();
 #endif
                             }

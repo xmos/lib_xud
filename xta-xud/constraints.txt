@@ -92,7 +92,6 @@ PATH {Pid_SofNC_header}     {XUD_TokenRx_Pid}
 
 # restore from errors
 # may need to make these stricter as rxa already went low
-PATH {waitforRXALow0}       {XUD_TokenRx_Pid}
 PATH {XUD_InvalidTok_waitforRXALow} {XUD_TokenRx_Pid}
 PATH {XUD_TokenOut_WaitForPacketEnd} {XUD_TokenRx_Pid}
 PATH {RxErr_RxALow} {XUD_TokenRx_Pid}
@@ -109,11 +108,6 @@ PATH {doRXData_dataLast} {Token_PID_RxRet2}
 TIME 100 ns
 PATH {doRXData_dataLast} {XUD_TokenRx_Pid}
 PATH {XUD_Setup_BuffFull} {XUD_TokenRx_Pid}
-
-# Need to poll RXA faster than 8 bit clocks
-TIME 16.667 ns
-PATH {waitforRXALow0}       {waitforRXALow0}
-PATH {XUD_InvalidTok_waitforRXALow} {XUD_InvalidTok_waitforRXALow}
 
 # TODO: review
 # time between inputting the data pid we don't use and waiting on rxa going low
@@ -156,15 +150,11 @@ PATH {XUD_TokenRx_Pid}    {ANY_HEADER}
 # 24 bits constrain
 # TODO; get rid of waitforRXALow0 and unite these 2 groups
 TIME 50 ns
-PATH {Pid_In_header} {waitforRXALow0}
-PATH {Pid_Out_header} {waitforRXALow0}
-PATH {Pid_Ping_header} {waitforRXALow0}
-PATH {Pid_Setup_header} {waitforRXALow0}
+PATH {Pid_In_header} {XUD_InvalidTok_waitforRXALow}
+PATH {Pid_Out_header} {XUD_InvalidTok_waitforRXALow}
+PATH {Pid_Ping_header} {XUD_InvalidTok_waitforRXALow}
+PATH {Pid_Setup_header} {XUD_InvalidTok_waitforRXALow}
 
-PATH {Pid_In_header} {XUD_TokenRx_Pid}
-PATH {Pid_Out_header} {XUD_TokenRx_Pid}
-PATH {Pid_Ping_header} {XUD_TokenRx_Pid}
-PATH {Pid_Setup_header} {XUD_TokenRx_Pid}
 
 
 ### TX to RX ###

@@ -57,7 +57,6 @@ xta_ep_XUD_IN_TxNak:
 .align FUNCTION_ALIGNMENT
 Pid_In:
     #define  XTA_CRCADDRCHECK xta_ep_Pid_In_header
-    #define  XTA_CRCADDRCHECKNP     xta_no_pauseIn
     #include "XUD_CrcAddrCheck.S"
     ldaw       r3, r10[4]                          // R3 = R10 + 16
     ldw        r4, r5[r3]                          // Load EP structure address

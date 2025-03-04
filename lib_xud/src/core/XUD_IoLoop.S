@@ -159,13 +159,6 @@ BadCrcAddr:
     //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
     ldw         r11, sp[STACK_RXA_PORT]
 
-waitforRXALow0:
-xta_ep_waitforRXALow0:
-    in          r10, res[r11]
-    bt          r10, waitforRXALow0
-    setc        res[RXD], XS1_SETC_RUN_CLRBUF
-    bu          Loop_BadPid
-
 .align FUNCTION_ALIGNMENT
 XUD_LLD_IoLoop:
     DUALENTSP_lu6  STACK_EXTEND
@@ -347,7 +340,6 @@ XUD_InvalidToken:
 XUD_InvalidTok_waitforRXALow:
 xta_ep_XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]
-    bt         r11, XUD_InvalidTok_waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     bu         Loop_BadPid                          // Invalid token received Ignore unknown toks
 

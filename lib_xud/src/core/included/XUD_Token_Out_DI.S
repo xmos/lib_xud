@@ -8,7 +8,6 @@
 .skip 0
 Pid_Out:
     #define  XTA_CRCADDRCHECK       xta_ep_Pid_Out_header
-    #define  XTA_CRCADDRCHECKNP     xta_no_pauseOut
     #include "XUD_CrcAddrCheck.S"
     ldw        r3, r5[r10]                      // Load relevant EP pointer
     bf         r3, XUD_TokenOut_BufferFull

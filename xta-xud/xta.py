@@ -4,6 +4,7 @@ import sys
 import html
 import re
 
+# get 2 bit binary from an int
 def three_state(i):
     return '%d%d' % (i>>1, i&1)
 
@@ -64,14 +65,14 @@ def create_instruction(fields, address, label_sub):
         if i.startswith('<'):
             if i.startswith('<xta_'):
                 continue
-            if i in label_sub:
-                t = label_sub[i]
-            else:
-                t = i
+            # substitute label if need to
+            t = label_sub[i] if i in label_sub else i
+
             if not t in targets:
                 targets += [t]
             args += ' ' + i
             continue
+
         if i.startswith('{'):
             xta_endpoints += [i]
             continue
@@ -83,6 +84,8 @@ def create_instruction(fields, address, label_sub):
             pass
         else:
             args += ' ' + i
+
+    # get binary setsr/clrsr
     setsr = '00'
     clrsr = '00'
     if mnemonic == 'setsr':
@@ -150,24 +153,29 @@ def register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrnam
                 'endsr' : sr,
                 'path': path}]
 
-def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, paths, ibuffer_fullness, sr):
+def explore_depth_first(ilist, label, inum, paths, ibuffer_fullness, sr, cycle_count = 0, depth = 0, path = [], start = True):
     if depth > 10:
         register_new_path(paths, cycle_count, depth, label, inum, None, 'Fail', path, ibuffer_fullness, sr)
         return
+
     instrs = ilist[label]
     if ibuffer_fullness < 0:
         ibuffer_fullness = (16 - instrs[0]['alignment'])//4
+
     while inum < len(instrs):
         pre_fullness = ibuffer_fullness
+        # put an fnop
         if ibuffer_fullness == 0:
             ibuffer_fullness += 4
             cycle_count += 1
         if instrs[inum]['mnemonic'] != 'buwc':
             cycle_count += 1
+            # if not a memory instruction, can fetch a new ibuf without spending a cycle
             if not instrs[inum]['memory']:
                 if ibuffer_fullness <= 4:
                     ibuffer_fullness += 4
             ibuffer_fullness -= 1
+
         path = path + [(label, inum, cycle_count, pre_fullness, instrs[0]['alignment'], sr)]
         sr = three_state_and_not(three_state_or(sr, instrs[inum]['setsr']), instrs[inum]['clrsr'])
         if instrs[inum]['mnemonic'].startswith('wait'):
@@ -178,26 +186,29 @@ def explore_depth_first(ilist, label, inum, cycle_count, depth, path, start, pat
                 endpoint = instrs[inum]['xta_endpoints'][0]
             register_new_path(paths, cycle_count, depth, label, inum, endpoint, instrs[inum]['mnemonic'], path, ibuffer_fullness, sr)
             return
+
         for i in instrs[inum]['targets']:
             new_ibuffer_fullness = -1
             if instrs[inum]['mnemonic'] == 'buwc':
                 new_ibuffer_fullness = ibuffer_fullness
-            explore_depth_first(ilist, i, 0, cycle_count, depth+1, path , False, paths,
-                                    new_ibuffer_fullness, sr )
+            explore_depth_first(ilist, i, 0, paths,
+                                new_ibuffer_fullness, sr, cycle_count, depth+1, path, False)
+
         if not instrs[inum]['may_go_on']:
             for k in range(inum+1, len(instrs)):
                 if (instrs[k]['mnemonic'] == 'nop' or
                     instrs[k]['mnemonic'] == 'buwc' or
                     instrs[k]['mnemonic'] == 'stw; stw'):
                     continue
-                print('ERROR: Dead code ', instrs[k]['mnemonic'], 'in', label)
+                assert 0, f"ERROR: Dead code {instrs[k]['mnemonic']} in {label}"
             inum = len(instrs)-1
             break
         inum += 1
         start = False
+
     if inum != len(instrs)-1:
-        print('ERROR: Walked out in ', label)
-        
+        assert 0, f"ERROR: Walked out in {label}"
+
 def pretty_print_paths(n, paths, constraints, constrained_paths, c_out):
     for p in paths:
         cycles = 0
@@ -235,20 +246,23 @@ def read_constraints():
     with open('constraints.txt', 'r') as fd:
         lines = fd.readlines()
     for i in lines:
+        # get rid of the comments and black lines
         fields = re.sub('#.*','', i).strip().split()
         if len(fields) == 0:
             continue
+        # parse rest
         if fields[0] == 'MACRO':
             macros[fields[1]] = fields[2:]
             continue
-        if fields[0] == 'TIME':
+        elif fields[0] == 'TIME':
             ns = float(fields[1])
             if fields[2] == 'ns':
                 ns *= 1
             else:
-                print('ERROR, unknown unit', fields[2])
+                assert 0, f'ERROR, unknown unit {fields[2]}'
             continue
-        if fields[0] == 'PATH':
+        elif fields[0] == 'PATH':
+            # next 2 ifs are only there to parse ANY_HEADER
             if fields[1] in macros:
                 start = macros[fields[1]]
             else:
@@ -261,18 +275,16 @@ def read_constraints():
                 for l in end:
                     index = (k,l)
                     if index in constraints:
-                        print('ERROR: duplicate constraint ' , index)
+                        assert 0, f'ERROR: duplicate constraint {index}'
                     constraints[index] = ns
             continue
-        print('ERROR: unknown constraint line ', i)
+        else:
+            assert 0, f'ERROR: unknown constraint line {i}'
     return constraints
-
 
 def read_binary(filename):
     lines = subprocess.check_output(['xobjdump', '-d', filename]).splitlines()
     parsing = False
-    ilist = {}
-    label = None
     added_to_next_statement = ''
     last_was_label = False
     label_sub = {}
@@ -281,57 +293,73 @@ def read_binary(filename):
         clean = l.decode('ascii').strip()
         if clean == '':
             continue
+        # start/finish
         if not parsing:
             if clean == '<xta_start>:':
                 parsing = True
             continue
         if clean == '<xta_end>:':
             break
+        # xta labels
         if clean.startswith('<xta_'):
             if clean.startswith('<xta_no_pause'):
                 added_to_next_statement = ' NOPAUSE'
                 continue
-            if clean.startswith('<xta_target'):
+            elif clean.startswith('<xta_target'):
                 index = clean.find('_', 5)
-                added_to_next_statement += ' <' + clean[index+1:len(clean)-2] + '>'
+                added_to_next_statement += ' <' + clean[index+1:-2] + '>'
                 continue
-            if clean.startswith('<xta_ep_'):
-                added_to_next_statement += ' {' + clean[8:len(clean)-2] + '}'
+            elif clean.startswith('<xta_ep_'):
+                added_to_next_statement += ' {' + clean[8:-2] + '}'
                 continue
+            else:
+                assert 0, f"Not a valid xta label: {clean}"
+    
+        # .label
         if clean.startswith('.'):
             newlines += ['<' + clean[:9] + '>:']
             clean = clean[10:]
+        # handles double labels
         if clean.startswith('<'):
             if last_was_label:
-                label_sub[clean[:len(clean)-1]] = last_label
+                label_sub[clean[:-1]] = last_label
             else:
                 newlines += [clean]
                 last_was_label = True
-                last_label = clean[:len(clean)-1]
+                last_label = clean[:-1]
         else:
             newlines += [clean + added_to_next_statement]
             added_to_next_statement = ''
             last_was_label = False
-    for clean in newlines:    
+
+    ilist = {}
+    label = None
+    for clean in newlines:
+
+        # if next line is a label, add a non-existing instruction to branch to it
         if clean.endswith('>:'):
-            newlabel = clean[0:len(clean)-1]
+            newlabel = clean[0:-1]
             if label is not None and may_carry_on(ilist[label]):
-                old_address = ilist[label][len(ilist[label])-1]['address']
+                old_address = ilist[label][-1]['address']
                 new_address = '0x%08x:' % (int(old_address[2:10], 16) + 4)
                 instruction = create_instruction(['buwc',newlabel], new_address, label_sub)
                 ilist = add_instruction(ilist, label, instruction)
-            label = newlabel 
+            label = newlabel
             continue
+
         fields = clean.split()
+        # first half of the double-issue packet
         if fields[0][9] in '048c' and fields[2].endswith(':'):
             half_instruction = create_instruction(fields[3:], fields[0], label_sub)
             continue
+        # second half of the double-issue packet
         if fields[0][9] in '26ae' and fields[2].endswith(':') and half_instruction is not None:
             other_half_instruction = create_instruction(fields[3:], '0x00000000', label_sub)
             instruction = combine_halfs(half_instruction, other_half_instruction)
             half_instruction = None
             ilist = add_instruction(ilist, label, instruction)
             continue
+        # if not a big instruction
         if not fields[4].endswith(':'):
             print('bad line ', clean, fields[2], fields[4])
             continue
@@ -360,7 +388,7 @@ def remove_unneeded_labels(ilist):
             src_block = target_src[j]
             concat_block = ilist.pop(j)
             src_list = ilist[src_block]
-            ilist[src_block] = src_list[:len(src_list)-1] + concat_block
+            ilist[src_block] = src_list[:-1] + concat_block
             for k in target_src:
                 if target_src[k] == j:
                     target_src[k] = src_block
@@ -373,11 +401,12 @@ starting_points = [(('<Loop_BadPid>', 2, '{XUD_TokenRx_Pid}'),7,'zz','_start_')]
 explored_starting_points = {}
 all_paths = {}
 fix_point_log = 'Overwriting                    <Input label> input line {Endpoint}      ibuff SR   ibuff  SR              <Label> input line {Endpoint}\n'
+
 while starting_points != []:
     new_starting_points = []
-    for (i,ibuff,sr,orig) in starting_points:
+    for (i, ibuff, sr, orig) in starting_points:
         if i in explored_starting_points:
-            (o_ibuff,o_sr) = explored_starting_points[i]
+            (o_ibuff, o_sr) = explored_starting_points[i]
             if o_ibuff <= ibuff and three_state_is_included_in(sr, o_sr):
                 continue
             ibuff = min(ibuff, o_ibuff)
@@ -385,7 +414,7 @@ while starting_points != []:
             fix_point_log += 'Overwriting %60s %6s with %d %s because of %s\n' %( i, explored_starting_points[i],  ibuff, sr, orig)
         explored_starting_points[i] = (ibuff, sr)
         paths = {}
-        explore_depth_first(ilist, i[0], i[1], 0, 0, [], True, paths, ibuff, sr)
+        explore_depth_first(ilist, i[0], i[1], paths, ibuff, sr)
         all_paths[i] = paths
         for k in paths:
             sr='zz'
@@ -397,7 +426,7 @@ while starting_points != []:
     starting_points = new_starting_points
 
 html_out = html.header()
-    
+
 html_out += '''
 <p>
 Below is the output of the analyser. Text between curly braces

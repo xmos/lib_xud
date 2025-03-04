@@ -70,9 +70,11 @@ Err_RxErr:                                      // RxError signal high during da
     clrsr     3
     clre
     ldw       r10, sp[STACK_RXE_PORT]           // Read out data from RxE port
+  xta_no_pauseAA:
     in        r11, res[r10]
     eeu       res[r10]
     ldw       r10, sp[STACK_RXA_PORT]
+  xta_ep_RxErr_RxALow:
     in        r11, res[r10]                     // Wait for rxa low and ignore packet (let transaction timout)
     setsr     3                                 // Re-enable thread interrupts
     bu        NextToken
@@ -85,6 +87,7 @@ xta_ep_XUD_TokenOut_BufferFull:
                                                 // TODO catch case where PID is not DATA
 
 XUD_TokenOut_WaitForPacketEnd:                  // Wait for end of data then send NAK
+xta_ep_XUD_TokenOut_WaitForPacketEnd:
   in        r11, res[r9]
 
 #ifndef XUD_NAK_ISO_OUT

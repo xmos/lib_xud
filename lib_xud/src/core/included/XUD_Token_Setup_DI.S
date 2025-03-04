@@ -53,7 +53,7 @@ xta_no_pauseF:
 
 XUD_Setup_BuffFull:
     ldw        r10, sp[STACK_RXA_PORT]          // Load RxA Port ID (r1)
-xta_no_pauseY:
+xta_ep_XUD_Setup_BuffFull:
     in         r11, res[r10]                    // RXA event cond = 0 TODO: Wait for RXA high first?
     endin      r11, res[RXD]
 xta_no_pauseZ:

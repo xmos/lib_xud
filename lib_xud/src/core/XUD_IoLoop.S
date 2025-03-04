@@ -160,7 +160,7 @@ BadCrcAddr:
     ldw         r11, sp[STACK_RXA_PORT]
 
 waitforRXALow0:
-xta_ep_RXALowPolling:    
+xta_ep_waitforRXALow0:
     in          r10, res[r11]
     bt          r10, waitforRXALow0
     setc        res[RXD], XS1_SETC_RUN_CLRBUF
@@ -345,6 +345,7 @@ Pid_Bad:                                            // Bad PID received, ignore
 XUD_InvalidToken:
     ldw        r10, sp[STACK_RXA_PORT]              // Load RxA Port ID (r1)
 XUD_InvalidTok_waitforRXALow:
+xta_ep_XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]
     bt         r11, XUD_InvalidTok_waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF

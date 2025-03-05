@@ -148,7 +148,6 @@ PATH {XUD_TokenRx_Pid}    {ANY_HEADER}
 # do crc, see that it's bad, be ready to see rxa going low to recieve a next packet
 # we don't do crc for the SOF for some reason
 # 24 bits constrain
-# TODO; get rid of waitforRXALow0 and unite these 2 groups
 TIME 50 ns
 PATH {Pid_In_header} {XUD_InvalidTok_waitforRXALow}
 PATH {Pid_Out_header} {XUD_InvalidTok_waitforRXALow}

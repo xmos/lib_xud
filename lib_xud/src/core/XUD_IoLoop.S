@@ -151,14 +151,6 @@ xta_start:
 #include "./included/XUD_Token_Ping.S"
 #include "./included/XUD_Token_SOF.S"
 
-BadCrcAddr:
-    // zext       r11, 8
-    // ldc        r10, PIDn_SOF
-    // eq         r11, r11, r10
-    //ecallt      r11
-    //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
-    ldw         r11, sp[STACK_RXA_PORT]
-
 .align FUNCTION_ALIGNMENT
 XUD_LLD_IoLoop:
     DUALENTSP_lu6  STACK_EXTEND
@@ -334,6 +326,7 @@ Pid_Datam:
 Pid_Data0:
 Pid_Data1:
 Pid_Bad:                                            // Bad PID received, ignore
+
 
 XUD_InvalidToken:
     ldw        r10, sp[STACK_RXA_PORT]              // Load RxA Port ID (r1)

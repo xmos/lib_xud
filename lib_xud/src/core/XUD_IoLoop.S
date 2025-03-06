@@ -54,6 +54,9 @@ suspend_t_wtwrsths:
 #define STACK_PIDJUMPTABLE      (22)
 #define STACK_PIDJUMPTABLE_RXDATA (23)
 #define STACK_CRC5TABLE_ADDR      (24)
+#ifndef __XS2A__
+#define STACK_RX_RDY            (25)
+#endif
 
 // Params
 #define STACK_VTOK_PORT     (STACK_EXTEND + 1)
@@ -191,7 +194,8 @@ ConfigValidToken:
 #ifdef __XS2A__
     ldw         r10, sp[STACK_VTOK_PORT]        // ValidToken is used for timing timeout period when expecting an ack after tx
 #else
-    ldw         r10, dp[rx_rdy]                 // TODO use from stack
+    ldw         r10, dp[rx_rdy]
+    stw         r10, sp[STACK_RX_RDY]
 #endif
     setc        res[r10], XS1_SETC_COND_NONE
     ldap        r11, TxHandshakeTimeOut
@@ -298,8 +302,7 @@ NextToken:
     ldw         r5, sp[(STACK_EXTEND+4)]        // EP structures array - pointers to EP tables or 0
 
 NextTokenAfterOut:
-    ldc         r7, 0xf335                      // TX Crc init
-    ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
+    ldd         r6, r7, sp[STACK_TXCRC_INIT>>1]    // CRC16 init - Needs reseting after an out
 #ifdef __XS2A__
     ldw         r1, sp[STACK_VTOK_PORT]
 #endif

@@ -104,23 +104,23 @@ xta_ep_XUD_IN_TxLoop_CRC:
 DoneTail:
     ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
-    bf          r11, XUD_IN_DoneTx
+    {ldc         r11, 8;            bf          r11, XUD_IN_DoneTx}
 
 SetupReceiveHandShake:
-    ldc        r11, 8
     setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
 
 SetupTimeout:                                      // Timeout done using another port we dont happen to already be using events on. Cunning.
 #ifdef __XS2A__
-    ldw        r1, sp[STACK_VTOK_PORT]             // Load saved ValidToken port. Event vector already set.
+    // Load saved ValidToken port. Event vector already set.
+    {eeu        res[RXD];           ldw        r1, sp[STACK_VTOK_PORT]}
 #else
-    ldw        r1, dp[rx_rdy]                      // TODO load from stack
+    {eeu        res[RXD];           ldw        r1, sp[STACK_RX_RDY]}
 #endif
-    eeu        res[RXD]                            // Events on RXD always enabled - Can't be any more due to using events on channels
+    // Events on RXD always enabled - Can't be any more due to using events on channels
 xta_no_pauseA:
     in         r11, res[r1]                        // Do input and get port time/timestamps
     getts      r11, res[r1]
-    ldw        r9, dp[g_txHandshakeTimeout]
+    ldw        r9, dp[g_txHandshakeTimeout]        // could put this on a stack as well to load as a short instruction
     add        r11, r11, r9
     setpt      res[r1], r11                        // Set port time and enable events
     eeu        res[r1]
@@ -137,7 +137,7 @@ TxHandshakeTimeOut:
     clre
 xta_no_pauseB:
     in         r11, res[r1]                        // This will clear port time
-    bu        BadHandshake
+    bu        NextToken
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align FUNCTION_ALIGNMENT
@@ -153,21 +153,18 @@ xta_ep_TxHandShakeReceived:
     ldc        r9, USB_PIDn_ACK
 #endif
     xor        r9, r11, r9
-    bt         r9, BadHandshake
+    bt         r9, NextToken
 
 XUD_IN_DoneTx:
 
 ClearInEpReady:                                    // TODO Tidy this up
-    ldc        r9, 0                               // TODO
-    ldw        r10, r5[r3]                         // Load the EP struct
+    {ldc        r9, 0
+    ldw        r10, r5[r3]}                         // Load the EP struct
     stw        r9, r5[r3]                          // Clear the ready
     ldw        r11, r10[1]                         // Load channel
 xta_no_pauseC:
     out        res[r11], r11                       // Output word to signal packet sent okay
     bu         NextToken
-
-BadHandshake:
-    bu          NextToken
 
 .align 64
 .skip 56

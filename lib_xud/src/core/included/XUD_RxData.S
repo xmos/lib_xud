@@ -32,6 +32,7 @@ xta_targetA_Pid_Ack:
 xta_targetA_Pid_Data0:
 xta_targetA_Pid_Ping:
 xta_targetA_Pid_Sof:
+xta_targetA_Pid_Sof_NoChan:
 xta_targetA_Pid_Nyet:
 xta_targetA_Pid_Data2:
 xta_targetA_Pid_Split:
@@ -43,6 +44,7 @@ xta_targetA_Pid_Setup:
 xta_targetA_Pid_Stall:
 xta_targetA_Pid_Datam:
 xta_targetA_Pid_Bad:
+xta_ep_Token_EPCRC_doRXData:
     {bau      r11;                  setpsc      res[RXD], r8}   // XUD_CrcAddrCheck.S requires 16 in r8
 
 doRXData:
@@ -61,23 +63,11 @@ xta_ep_Token_PID_doRXData:
 #else
     {shr        r4, r4, 24;         ldw     r11, sp[STACK_PIDJUMPTABLE_RXDATA]}
     ldw         r11, r11[r4]
-xta_targetB_Pid_Reserved:
-xta_targetB_Pid_Out:
-xta_targetB_Pid_Ack:
 xta_targetB_Pid_Data0_RxData:
-xta_targetB_Pid_Ping:
-xta_targetB_Pid_Sof:
-xta_targetB_Pid_Nyet:
-xta_targetB_Pid_Data2_RxData:
-xta_targetB_Pid_Split:
-xta_targetB_Pid_In:
-xta_targetB_Pid_Nak:
+xta_targetB_Pid_Data2:
 xta_targetB_Pid_Data1_RxData:
-xta_targetB_Pid_Pre:
-xta_targetB_Pid_Setup:
-xta_targetB_Pid_Stall:
-xta_targetB_Pid_Datam_RxData:
-xta_targetB_Pid_Bad:
+xta_targetB_Pid_MData:
+xta_targetB_Pid_Bad_RxData:
     bau         r11
 #endif
 

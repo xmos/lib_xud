@@ -397,10 +397,11 @@ constraints = read_constraints()
 ilist = read_binary(sys.argv[1])
 remove_unneeded_labels(ilist)
 
-starting_points = [(('<Loop_BadPid>', 2, '{XUD_TokenRx_Pid}'),7,'zz','_start_')]
+starting_points = [(('<Loop_BadPid>', 2, '{XUD_TokenRx_Pid}'),7,'zz','_start_'),
+                    (('<Err_RxErr>', 7,'{RxErr_RxALow}'), 7, 'zz', '_rxe_err_')]
 explored_starting_points = {}
 all_paths = {}
-fix_point_log = 'Overwriting                    <Input label> input line {Endpoint}      ibuff SR   ibuff  SR              <Label> input line {Endpoint}\n'
+fix_point_log = 'Overwriting                                <Input label> input line {Endpoint}     ibuff SR       ibuff SR               <Label> input line {Endpoint}\n'
 
 while starting_points != []:
     new_starting_points = []
@@ -411,7 +412,7 @@ while starting_points != []:
                 continue
             ibuff = min(ibuff, o_ibuff)
             sr = three_state_combine(sr, o_sr)
-            fix_point_log += 'Overwriting %60s %6s with %d %s because of %s\n' %( i, explored_starting_points[i],  ibuff, sr, orig)
+            fix_point_log += 'Overwriting %70s %6s with %s because of %s\n' %( i, explored_starting_points[i], (ibuff, sr), orig)
         explored_starting_points[i] = (ibuff, sr)
         paths = {}
         explore_depth_first(ilist, i[0], i[1], paths, ibuff, sr)

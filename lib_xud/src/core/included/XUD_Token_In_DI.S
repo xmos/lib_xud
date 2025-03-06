@@ -135,7 +135,7 @@ xta_target_TxHandShakeReceived:
 .align FUNCTION_ALIGNMENT
 TxHandshakeTimeOut:
     clre
-xta_no_pauseB:
+xta_ep_TxHandshakeTimeOut:
     in         r11, res[r1]                        // This will clear port time
     bu        NextToken
 

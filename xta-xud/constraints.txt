@@ -99,6 +99,9 @@ PATH {RxErr_RxALow} {XUD_TokenRx_Pid}
 # recieving ack to next token
 TIME 100 ns
 PATH {TxHandShakeReceived}         {XUD_TokenRx_Pid}
+# not really rx to rx as it starts from the timeout, maybe move it somewhere else
+# TODO: see if there's a specific timing reqirement for recovering from the timeout
+PATH {TxHandshakeTimeOut}         {XUD_TokenRx_Pid}
 
 # ISO data end to next token
 TIME 100 ns
@@ -175,8 +178,6 @@ PATH {XUD_TokenOut_BufferFull_Nak} {XUD_TokenRx_Pid}
 
 # ISO IN data to next token
 # between transactions
-# These will also cover Tx handshake timeout
-# TODO: make Tx_crc to Ack timeout separate somehow
 TIME 100 ns
 PATH {XUD_IN_TxCrc_TailS0} {XUD_TokenRx_Pid}
 PATH {XUD_IN_TxCrc_TailS1} {XUD_TokenRx_Pid}
@@ -195,6 +196,14 @@ PATH {XUD_IN_TxCrc_TailS2} {TxHandShakeReceived}
 PATH {XUD_IN_TxCrc_TailS3} {TxHandShakeReceived}
 PATH {XUD_IN_TxCrc_TailS4} {TxHandShakeReceived}
 PATH {XUD_IN_TxLoop_CRC}   {TxHandShakeReceived}
+# not really tx to rx as we're waiting on a timer here,
+# but it should be exactly the same time as the previous
+PATH {XUD_IN_TxCrc_TailS0} {TxHandshakeTimeOut}
+PATH {XUD_IN_TxCrc_TailS1} {TxHandshakeTimeOut}
+PATH {XUD_IN_TxCrc_TailS2} {TxHandshakeTimeOut}
+PATH {XUD_IN_TxCrc_TailS3} {TxHandshakeTimeOut}
+PATH {XUD_IN_TxCrc_TailS4} {TxHandshakeTimeOut}
+PATH {XUD_IN_TxLoop_CRC}   {TxHandshakeTimeOut}
 
 # output error after the IN token, go to the next PID
 # first 2 sent one byte, the third one sends 3, why?

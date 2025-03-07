@@ -29,7 +29,8 @@ XUD_IN_NotReady:
     ldc         r11, 0xc3                          // Create 0-length packet
 xta_ep_XUD_IN_NotReady:
     outpw       res[TXD], r11, 24
-    #define  XTA_TOKENJMP       xta_ep_Token_PID_IN_NotReady
+    #define  XTA_TOKENJMP_PID   xta_ep_Token_PID_IN_NotReady
+    #define  XTA_TOKENJMP_EPCRC xta_ep_Token_EPCRC_IN_NotReady
     #define  XTA_TOKENJMP_ID    D
     #include "XUD_TokenJmp.S"
 
@@ -42,7 +43,8 @@ XUD_IN_TxHandshake:                                // Non-Iso
 XUD_IN_TxStall:
 xta_ep_XUD_IN_TxHandshake:
     outpw       res[TXD], r11, 8                    // Output STALL
-    #define  XTA_TOKENJMP       xta_ep_Token_PID_IN_TxHandshake
+    #define  XTA_TOKENJMP_PID   xta_ep_Token_PID_IN_TxHandshake
+    #define  XTA_TOKENJMP_EPCRC xta_ep_Token_EPCRC_IN_TxHandshake
     #define  XTA_TOKENJMP_ID    E
     #include "XUD_TokenJmp.S"
 
@@ -50,7 +52,8 @@ XUD_IN_TxNak:
     ldc         r11, USB_PIDn_NAK
 xta_ep_XUD_IN_TxNak:    
     outpw       res[TXD], r11, 8
-    #define  XTA_TOKENJMP       xta_ep_Token_PID_TxNak
+    #define  XTA_TOKENJMP_PID   xta_ep_Token_PID_TxNak
+    #define  XTA_TOKENJMP_EPCRC xta_ep_Token_EPCRC_TxNak
     #define  XTA_TOKENJMP_ID    F
     #include "XUD_TokenJmp.S"
 
@@ -107,6 +110,7 @@ DoneTail:
     {ldc         r11, 8;            bf          r11, XUD_IN_DoneTx}
 
 SetupReceiveHandShake:
+xta_ep_SetupReceiveHandShake:
     setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
 
 SetupTimeout:                                      // Timeout done using another port we dont happen to already be using events on. Cunning.

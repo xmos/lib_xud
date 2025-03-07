@@ -32,7 +32,8 @@ xta_no_pauseH:
 #if defined(__XS2A__)
     ldw         r1, sp[STACK_VTOK_PORT]
 #endif
-    #define  XTA_TOKENJMP         xta_ep_Token_PID_RxRet2
+    #define  XTA_TOKENJMP_PID     xta_ep_Token_PID_RxRet2
+    #define  XTA_TOKENJMP_EPCRC   xta_ep_Token_EPCRC_RxRet2
     #define  XTA_TOKENJMP_ID      C
     #include "XUD_TokenJmp.S"
 

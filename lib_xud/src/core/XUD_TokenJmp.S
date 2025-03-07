@@ -12,9 +12,11 @@
 #else
     {ldw         r10, sp[STACK_PIDJUMPTABLE]
     ldc         r8, 16}
-XTA_TOKENJMP:
-#undef XTA_TOKENJMP
+XTA_TOKENJMP_PID:
+#undef XTA_TOKENJMP_PID
     inpw        r11, res[RXD], 8                       // Read 3 byte token from data port | CRC[5] | EP[4] | ADDR[7] | PID[8] | junk
+XTA_TOKENJMP_EPCRC:
+#undef XTA_TOKENJMP_EPCRC
     {setpsc      res[RXD], r8; shr      r11, r11, 24}
 
     ldw         r11, r10[r11]

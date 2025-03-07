@@ -1,5 +1,5 @@
 MACRO {ANY_HEADER}  {Pid_Out_header} {Pid_Ping_header} {Pid_Sof_header} {Pid_In_header} {Pid_Setup_header}
-
+MACRO {TX_CRC} {XUD_IN_TxLoop_CRC} {XUD_IN_TxCrc_TailS0} {XUD_IN_TxCrc_TailS1} {XUD_IN_TxCrc_TailS2} {XUD_IN_TxCrc_TailS3} {XUD_IN_TxCrc_TailS4}
 
 ### COMMON SENSE ###
 
@@ -126,30 +126,41 @@ PATH {Pid_Setup_header} {XUD_Setup_BuffFull}
 
 # See if the PID is bad
 # Have a whole Token packet, so have 32 bit times
+# really has to start from reading the PID, not ERCRC TODO
 TIME 66.667 ns
-PATH {Token_PID_IN_NotReady} {XUD_InvalidTok_waitforRXALow}
-PATH {Token_PID_IN_TxHandshake} {XUD_InvalidTok_waitforRXALow}
-PATH {Token_PID_TxNak}    {XUD_InvalidTok_waitforRXALow}
-PATH {Token_PID_doRXData} {XUD_InvalidTok_waitforRXALow}
-PATH {Token_PID_RxRet2}   {XUD_InvalidTok_waitforRXALow}
-PATH {XUD_TokenRx_Pid}    {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_IN_NotReady} {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_IN_TxHandshake} {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_TxNak}    {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_doRXData} {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_RxRet2}   {XUD_InvalidTok_waitforRXALow}
+PATH {Token_PID_doRXData}   {XUD_InvalidTok_waitforRXALow}
+PATH {XUD_TokenRx_EPCRC}    {XUD_InvalidTok_waitforRXALow}
 
 ## intra packet
 
 # rx pid to rx header
 # withing a token packet
-# 24 bits constrain
-TIME 50 ns
-PATH {Token_PID_IN_NotReady} {ANY_HEADER}
-PATH {Token_PID_IN_TxHandshake} {ANY_HEADER}
-PATH {Token_PID_TxNak}    {ANY_HEADER}
-PATH {Token_PID_doRXData} {ANY_HEADER}
-PATH {Token_PID_RxRet2}   {ANY_HEADER}
-PATH {XUD_TokenRx_Pid}    {ANY_HEADER}
+# 16 bits constrain
+TIME 33.333 ns
+PATH {Token_PID_IN_NotReady} {Token_EPCRC_IN_NotReady}
+PATH {Token_PID_IN_TxHandshake} {Token_EPCRC_IN_TxHandshake}
+PATH {Token_PID_TxNak}    {Token_EPCRC_TxNak}
+PATH {Token_PID_doRXData} {Token_EPCRC_doRXData}
+PATH {Token_PID_RxRet2}   {Token_EPCRC_RxRet2}
+PATH {XUD_TokenRx_Pid}    {XUD_TokenRx_EPCRC}
+
+# followup time after setpsc to in, has to be 32 + 16 bit times
+TIME 100 ns
+PATH {Token_EPCRC_IN_NotReady} {ANY_HEADER}
+PATH {Token_EPCRC_IN_TxHandshake} {ANY_HEADER}
+PATH {Token_EPCRC_TxNak} {ANY_HEADER}
+PATH {Token_EPCRC_doRXData} {ANY_HEADER}
+PATH {Token_EPCRC_RxRet2} {ANY_HEADER}
+PATH {XUD_TokenRx_EPCRC} {ANY_HEADER}
 
 # TODO review
 # do crc, see that it's bad, be ready to see rxa going low to recieve a next packet
-# we don't do crc for the SOF for some reason
+# we don't do crc for the SOF and DATA for some reason
 # 24 bits constrain
 TIME 50 ns
 PATH {Pid_In_header} {XUD_InvalidTok_waitforRXALow}
@@ -179,31 +190,18 @@ PATH {XUD_TokenOut_BufferFull_Nak} {XUD_TokenRx_Pid}
 # ISO IN data to next token
 # between transactions
 TIME 100 ns
-PATH {XUD_IN_TxCrc_TailS0} {XUD_TokenRx_Pid}
-PATH {XUD_IN_TxCrc_TailS1} {XUD_TokenRx_Pid}
-PATH {XUD_IN_TxCrc_TailS2} {XUD_TokenRx_Pid}
-PATH {XUD_IN_TxCrc_TailS3} {XUD_TokenRx_Pid}
-PATH {XUD_IN_TxCrc_TailS4} {XUD_TokenRx_Pid}
-PATH {XUD_IN_TxLoop_CRC}   {XUD_TokenRx_Pid}
+PATH {TX_CRC} {XUD_TokenRx_Pid}
 
 # Non-ISO IN data to recieving a handshake
 # between packets
-
 TIME 100 ns
-PATH {XUD_IN_TxCrc_TailS0} {TxHandShakeReceived}
-PATH {XUD_IN_TxCrc_TailS1} {TxHandShakeReceived}
-PATH {XUD_IN_TxCrc_TailS2} {TxHandShakeReceived}
-PATH {XUD_IN_TxCrc_TailS3} {TxHandShakeReceived}
-PATH {XUD_IN_TxCrc_TailS4} {TxHandShakeReceived}
-PATH {XUD_IN_TxLoop_CRC}   {TxHandShakeReceived}
-# not really tx to rx as we're waiting on a timer here,
-# but it should be exactly the same time as the previous
-PATH {XUD_IN_TxCrc_TailS0} {TxHandshakeTimeOut}
-PATH {XUD_IN_TxCrc_TailS1} {TxHandshakeTimeOut}
-PATH {XUD_IN_TxCrc_TailS2} {TxHandshakeTimeOut}
-PATH {XUD_IN_TxCrc_TailS3} {TxHandshakeTimeOut}
-PATH {XUD_IN_TxCrc_TailS4} {TxHandshakeTimeOut}
-PATH {XUD_IN_TxLoop_CRC}   {TxHandshakeTimeOut}
+PATH {TX_CRC} {SetupReceiveHandShake}
+
+# followup time after setpsc to in, has to be 32 + 8 bit times
+TIME 83.3334 ns
+PATH {SetupReceiveHandShake} {TxHandShakeReceived}
+# will keep the same for now TODO
+PATH {SetupReceiveHandShake} {TxHandshakeTimeOut}
 
 # output error after the IN token, go to the next PID
 # first 2 sent one byte, the third one sends 3, why?

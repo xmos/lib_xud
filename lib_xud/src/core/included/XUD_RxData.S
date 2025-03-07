@@ -24,8 +24,10 @@
 // r11: Expected CRC
 
 Pid_Bad_RxData:
-    ldaw      r10, dp[PidJumpTable]
-    {ldw      r11, r10[r4];         ldc r8, 16}
+    {ldc r8, 16                             // XUD_CrcAddrCheck.S requires 16 in r8
+    ldw      r10, sp[STACK_PIDJUMPTABLE]}
+xta_ep_Token_EPCRC_doRXData:
+    {ldw      r11, r10[r4];         setpsc      res[RXD], r8}
 xta_targetA_Pid_Reserved:
 xta_targetA_Pid_Out:
 xta_targetA_Pid_Ack:
@@ -43,8 +45,7 @@ xta_targetA_Pid_Setup:
 xta_targetA_Pid_Stall:
 xta_targetA_Pid_Datam:
 xta_targetA_Pid_Bad:
-xta_ep_Token_EPCRC_doRXData:
-    {bau      r11;                  setpsc      res[RXD], r8}   // XUD_CrcAddrCheck.S requires 16 in r8
+    bau r11
 
 doRXData:
 xta_ep_Token_PID_doRXData:

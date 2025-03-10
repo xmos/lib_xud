@@ -93,6 +93,7 @@ xta_target_RxALow:
 .skip 16
 RxALow:
     stw         r11, r1[r4]                                 // Extra stw, if not enough MIPS STW in loop above may not have chance to run
+    edu         res[r8]
 xta_no_pause:
     {in         r8, res[r8];        add r4, r4, 1}          // Clear event data on RXA
     endin       r8, res[r0]

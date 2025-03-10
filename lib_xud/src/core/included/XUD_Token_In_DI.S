@@ -141,7 +141,8 @@ TxHandshakeTimeOut:
     clre
 xta_ep_TxHandshakeTimeOut:
     in         r11, res[r1]                        // This will clear port time
-    bu        BadHandshake
+    {setsr 0x1
+    bu        BadHandshake}
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align FUNCTION_ALIGNMENT
@@ -157,7 +158,8 @@ xta_ep_TxHandShakeReceived:
     ldc        r9, USB_PIDn_ACK
 #endif
     xor        r9, r11, r9
-    bt         r9, BadHandshake
+    {setsr 0x1
+    bt         r9, BadHandshake}
 
 XUD_IN_DoneTx:
 

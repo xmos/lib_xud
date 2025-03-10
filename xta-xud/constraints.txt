@@ -1,4 +1,4 @@
-MACRO {ANY_HEADER}  {Pid_Out_header} {Pid_Ping_header} {Pid_Sof_header} {Pid_In_header} {Pid_Setup_header}
+MACRO {ANY_HEADER}  {Pid_Out_header} {Pid_Ping_header} {Pid_Sof_header} {Pid_SofNC_header} {Pid_In_header} {Pid_Setup_header}
 MACRO {TX_CRC} {XUD_IN_TxLoop_CRC} {XUD_IN_TxCrc_TailS0} {XUD_IN_TxCrc_TailS1} {XUD_IN_TxCrc_TailS2} {XUD_IN_TxCrc_TailS3} {XUD_IN_TxCrc_TailS4}
 
 ### COMMON SENSE ###

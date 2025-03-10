@@ -29,6 +29,7 @@ UNIQIFY(Pid_Ack):
 UNIQIFY(Pid_Data0):
 UNIQIFY(Pid_Ping):
 UNIQIFY(Pid_Sof):
+UNIQIFY(Pid_Sof_NoChan):
 UNIQIFY(Pid_Nyet):
 UNIQIFY(Pid_Data2):
 UNIQIFY(Pid_Split):

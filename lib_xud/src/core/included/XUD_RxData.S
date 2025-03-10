@@ -32,6 +32,7 @@ xta_targetA_Pid_Ack:
 xta_targetA_Pid_Data0:
 xta_targetA_Pid_Ping:
 xta_targetA_Pid_Sof:
+xta_targetA_Pid_Sof_NoChan:
 xta_targetA_Pid_Nyet:
 xta_targetA_Pid_Data2:
 xta_targetA_Pid_Split:

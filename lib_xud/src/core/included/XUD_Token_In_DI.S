@@ -112,15 +112,17 @@ DoneTail:
 SetupReceiveHandShake:
     ldc        r11, 8
 xta_ep_SetupReceiveHandShake:
-    setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
+    {setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
+    ldw        r8, sp[STACK_RXRDY_PORT]}
 
 SetupTimeout:                                      // Timeout done using another port we dont happen to already be using events on. Cunning.
 #ifdef __XS2A__
-    ldw        r1, sp[STACK_VTOK_PORT]             // Load saved ValidToken port. Event vector already set.
+    {eeu        res[r8]
+    ldw        r1, sp[STACK_VTOK_PORT]}             // Load saved ValidToken port. Event vector already set.
 #else
-    ldw        r1, dp[rx_rdy]                      // TODO load from stack
+    {eeu        res[r8]
+    ldw        r1, sp[STACK_TXRDYIN_PORT]}          // TODO load from stack
 #endif
-    eeu        res[RXD]                            // Events on RXD always enabled - Can't be any more due to using events on channels
 xta_no_pauseA:
     in         r11, res[r1]                        // Do input and get port time/timestamps
     getts      r11, res[r1]
@@ -141,12 +143,14 @@ TxHandshakeTimeOut:
     clre
 xta_ep_TxHandshakeTimeOut:
     in         r11, res[r1]                        // This will clear port time
-    bu        BadHandshake
+    {setsr     0x1;     bu        BadHandshake}
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align FUNCTION_ALIGNMENT
 TxHandShakeReceived:
     clre
+xta_no_pauses:
+    in         r8, res[r8]                         // Clear the RxValid
 xta_ep_TxHandShakeReceived:
     in         r11, res[RXD]                       // Input data from RXD port
     {clrpt     res[r1];                            // Clear port time on valid token port
@@ -157,7 +161,7 @@ xta_ep_TxHandShakeReceived:
     ldc        r9, USB_PIDn_ACK
 #endif
     xor        r9, r11, r9
-    bt         r9, BadHandshake
+    {setsr     0x1;     bt         r9, BadHandshake}
 
 XUD_IN_DoneTx:
 

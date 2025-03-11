@@ -20,8 +20,7 @@ XUD_Setup_LoadBuffer:
 RxRet1:
                                                 // r8: Data tail size (bytes)
     xor        r1, r6, r11                      // Check for good CRC16
-    {clre;
-    bt         r1, XUD_Setup_NotReady}          // Branch based on CRC good/bad
+    bt         r1, XUD_Setup_NotReady           // Branch based on CRC good/bad
 
 XUD_Setup_ClearStall:                           // CRC OK
                                                 // Have received a Setup so clear any STALL condition on IN/OUT endpoint.

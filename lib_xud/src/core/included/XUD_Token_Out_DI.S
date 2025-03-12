@@ -20,8 +20,7 @@ CheckEpTypeOut:
 OutReady:
     BLRF_u10    doRXData                        // Leaves r1: 0
 RxRet2:
-    //{clre;
-    ldw         r11, r3[1]//}                     // Load EP chanend
+    ldw         r11, r3[1]                      // Load EP chanend
 
 InformEP_Iso:                                   // Iso EP - no handshake
 xta_no_pauseG:
@@ -42,8 +41,7 @@ xta_no_pauseH:
 DoOutNonIso:
     bl         doRXData
 RxRet3:
-    //{clre;     
-    eq         r11, r6, r11//}         // Check for good CRC16
+    eq         r11, r6, r11                     // Check for good CRC16
 
 doRXDataReturn_NonIso:
     bf         r11, NextTokenAfterOut           // Check for bad crc

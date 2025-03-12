@@ -287,7 +287,7 @@ xta_no_pauseO:
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
 
     clre
-    setsr      0x3                             // Enable thread interrupts
+    setsr      0x3                             // Enable thread events & interrupts
     bu         NextToken
 
 // Main IO Loop
@@ -306,7 +306,6 @@ NextTokenAfterOut:
 
 Loop_BadPid:
 NextTokenAfterPing:
-    //setsr       1                               // Enable thread events
     #define XTA_TOKENJMP_PID xta_ep_XUD_TokenRx_Pid
     #define XTA_TOKENJMP_EPCRC xta_ep_XUD_TokenRx_EPCRC
     #define XTA_TOKENJMP_ID G

@@ -287,7 +287,7 @@ xta_no_pauseO:
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
 
     clre
-    setsr      0x3                             // Enable thread events & interrupts
+    setsr      0x2                             // Enable thread interrupts
     bu         NextToken
 
 // Main IO Loop

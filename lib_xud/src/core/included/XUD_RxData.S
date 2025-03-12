@@ -75,10 +75,10 @@ Pid_Datam_RxData:
 Pid_Data0_RxData:
 Pid_Data1_RxData:
 Pid_Data2_RxData:
-    {stw         r4, r3[6];         setsr 1}                    // Store PID into EP structure
+    {stw        r4, r3[6];          setsr 1}                    // Store PID into EP structure
 
 GotRxPid:
-    {eeu        res[r8];            sub r4, r1, 4}               // Enable events on RxA
+    {eeu        res[r8];            sub r4, r1, 4}              // Enable events on RxA
                                                                 // Init buffer index to -1
 xta_ep_doRXData_data0:
     in          r11, res[r0]
@@ -93,7 +93,7 @@ xta_target_RxALow:
 .align 32
 .skip 16
 RxALow:
-    {stw         r11, r4[0];        edu res[r8]}            // Extra stw, if not enough MIPS STW in loop above may not have chance to run
+    {stw         r11, r4[0];        clre}            // Extra stw, if not enough MIPS STW in loop above may not have chance to run
 xta_no_pause:
     {in         r8, res[r8];        sub r4, r4, r1}         // Clear event data on RXA
     {endin      r8, res[r0];        shr r4, r4, 2}          // Convert r4 from pointer to number of words, will add 1 later

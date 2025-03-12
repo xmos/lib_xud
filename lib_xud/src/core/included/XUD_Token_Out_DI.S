@@ -75,7 +75,7 @@ Err_RxErr:                                      // RxError signal high during da
     ldw       r10, sp[STACK_RXA_PORT]
   xta_ep_RxErr_RxALow:
     in        r11, res[r10]                     // Wait for rxa low and ignore packet (let transaction timout)
-    setsr     3                                 // Re-enable thread interrupts
+    setsr     2                                 // Re-enable thread interrupts
     bu        NextToken
 
 XUD_TokenOut_BufferFull:
@@ -107,12 +107,3 @@ xta_ep_XUD_TokenOut_BufferFull_Nak:
 PrimaryBufferFull_NoNak:
   setc      res[RXD], XS1_SETC_RUN_CLRBUF
   bu        NextToken
-
-// Timedout waiting for data after OUT... go back to waiting for tokens
-//OutDataTimeOut:
-  //clre
-  //bl	ERR_OutDataTimeout
-  //bu        NextToken
-
-
-

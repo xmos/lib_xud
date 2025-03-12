@@ -185,6 +185,11 @@ ConfigRxReadyEventVector:                       // Configure event on RXREADY go
     ldap        r11, TxHandShakeReceived
     setv        res[r10], r11
 
+ConfigRxDEventVector:                           // Configure event on RXD port for receiveing data
+    setc        res[RXD], XS1_SETC_IE_MODE_EVENT
+    ldap        r11,  NextRxWord
+    setv        res[RXD], r11
+
 ConfigRxA:                                      // Configure a event on RXA going low, used during packet reception
     setc        res[RXA], XS1_SETC_COND_EQ
     setc        res[RXA], XS1_SETC_IE_MODE_EVENT
@@ -295,7 +300,7 @@ xta_no_pauseO:
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
 
     clre
-    setsr      0x3                             // Enable thread events & interrupts
+    setsr      0x2                             // Enable thread interrupts
     bu         NextToken
 
 // Main IO Loop
@@ -337,7 +342,8 @@ Pid_Bad:                                            // Bad PID received, ignore
 
 
 XUD_InvalidToken:
-    ldw        r10, sp[STACK_RXA_PORT]              // Load RxA Port ID (r1)
+    // doing clre here because we can get here from the DATA pid jumptable with events enabled (xs3)
+    {clre;                          ldw        r10, sp[STACK_RXA_PORT]}     // Load RxA Port ID (r1)
 XUD_InvalidTok_waitforRXALow:
 xta_ep_XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]

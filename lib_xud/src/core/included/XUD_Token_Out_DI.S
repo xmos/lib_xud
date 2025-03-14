@@ -20,8 +20,7 @@ CheckEpTypeOut:
 OutReady:
     BLRF_u10    doRXData                        // Leaves r1: 0
 RxRet2:
-    {clre;
-    ldw         r11, r3[1]}                     // Load EP chanend
+    ldw         r11, r3[1]                      // Load EP chanend
 
 InformEP_Iso:                                   // Iso EP - no handshake
 xta_no_pauseG:
@@ -42,7 +41,7 @@ xta_no_pauseH:
 DoOutNonIso:
     bl         doRXData
 RxRet3:
-    {clre;     eq         r11, r6, r11}         // Check for good CRC16
+    eq         r11, r6, r11                     // Check for good CRC16
 
 doRXDataReturn_NonIso:
     bf         r11, NextTokenAfterOut           // Check for bad crc
@@ -76,7 +75,7 @@ Err_RxErr:                                      // RxError signal high during da
     ldw       r10, sp[STACK_RXA_PORT]
   xta_ep_RxErr_RxALow:
     in        r11, res[r10]                     // Wait for rxa low and ignore packet (let transaction timout)
-    setsr     3                                 // Re-enable thread interrupts
+    setsr     2                                 // Re-enable thread interrupts
     bu        NextToken
 
 XUD_TokenOut_BufferFull:
@@ -108,12 +107,3 @@ xta_ep_XUD_TokenOut_BufferFull_Nak:
 PrimaryBufferFull_NoNak:
   setc      res[RXD], XS1_SETC_RUN_CLRBUF
   bu        NextToken
-
-// Timedout waiting for data after OUT... go back to waiting for tokens
-//OutDataTimeOut:
-  //clre
-  //bl	ERR_OutDataTimeout
-  //bu        NextToken
-
-
-

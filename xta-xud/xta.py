@@ -397,7 +397,7 @@ constraints = read_constraints()
 ilist = read_binary(sys.argv[1])
 remove_unneeded_labels(ilist)
 
-starting_points = [(('<Loop_BadPid>', 2, '{XUD_TokenRx_Pid}'),7,'zz','_start_'),
+starting_points = [(('<Loop_BadPid>', 1, '{XUD_TokenRx_Pid}'),7,'zz','_start_'),
                     (('<Err_RxErr>', 7,'{RxErr_RxALow}'), 7, 'zz', '_rxe_err_')]
 explored_starting_points = {}
 all_paths = {}

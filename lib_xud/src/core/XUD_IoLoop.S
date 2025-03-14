@@ -306,7 +306,6 @@ NextTokenAfterOut:
 
 Loop_BadPid:
 NextTokenAfterPing:
-    setsr       1                               // Enable thread events
     #define XTA_TOKENJMP_PID xta_ep_XUD_TokenRx_Pid
     #define XTA_TOKENJMP_EPCRC xta_ep_XUD_TokenRx_EPCRC
     #define XTA_TOKENJMP_ID G

@@ -75,16 +75,16 @@ Pid_Datam_RxData:
 Pid_Data0_RxData:
 Pid_Data1_RxData:
 Pid_Data2_RxData:
-    {stw         r4, r3[6];         setsr 1}                    // Store PID into EP structure
+    {stw        r4, r3[6];          setsr 1}                    // Store PID into EP structure
 
 GotRxPid:
-    {eeu        res[r8];            mkmsk r4, 32}               // Enable events on RxA
+    {eeu        res[r8];            sub r4, r1, 4}              // Enable events on RxA
                                                                 // Init buffer index to -1
 xta_ep_doRXData_data0:
     in          r11, res[r0]
 NextRxWord:
-    crc32_inc   r6, r11, r9, r4, 1
-    stw         r11, r1[r4]
+    crc32_inc   r6, r11, r9, r4, 4
+    stw         r11, r4[0]
 xta_ep_doRXData_dataN:
 xta_target_RxALow:
     { in 	        r11, res[r0] ;  bu          NextRxWord }
@@ -93,10 +93,10 @@ xta_target_RxALow:
 .align 32
 .skip 16
 RxALow:
-    stw         r11, r1[r4]                                 // Extra stw, if not enough MIPS STW in loop above may not have chance to run
+    {stw         r11, r4[0];        clre}            // Extra stw, if not enough MIPS STW in loop above may not have chance to run
 xta_no_pause:
-    {in         r8, res[r8];        add r4, r4, 1}          // Clear event data on RXA
-    endin       r8, res[r0]
+    {in         r8, res[r8];        sub r4, r4, r1}         // Clear event data on RXA
+    {endin      r8, res[r0];        shr r4, r4, 2}          // Convert r4 from pointer to number of words, will add 1 later
 LABEL(RxTail):
 xta_ep_doRXData_dataLast:
 xta_target_OutTail0:
@@ -109,7 +109,8 @@ xta_target_OutTail3:
 .align 32
 OutTail0:
     crc32       r6, r8, r9                      // CRC zero step
-    ldw         r11, sp[STACK_RXCRC_TAIL0]
+    {ldw        r11, sp[STACK_RXCRC_TAIL0]
+    add         r4, r4, 1}
 xta_targetA_RxRet1:
 xta_targetA_RxRet2:
 xta_targetA_RxRet3:
@@ -118,7 +119,8 @@ xta_targetA_RxRet3:
 // 1 Tail Byte
 .align 32
 OutTail1:
-    shr         r11, r11, 24                    // Shift off junk
+    {add        r4, r4, 1
+    shr         r11, r11, 24}                   // Shift off junk
     crc32       r6, r11, r9
     stw         r11, r1[r4]                     // Store last data
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL1]
@@ -130,9 +132,10 @@ xta_targetB_RxRet3:
 // Two Tail Bytes
 .align 32
 OutTail2:
-    shr         r11, r11, 16
+    {add        r4, r4, 1
+    shr         r11, r11, 16}
     crc32       r6, r11, r9
-    stw         r11, r1[r4]                      // Store last data
+    stw         r11, r1[r4]                     // Store last data
     ldw         r11, sp[STACK_RXCRC_TAIL2]
 xta_targetC_RxRet1:
 xta_targetC_RxRet2:
@@ -142,7 +145,8 @@ xta_targetC_RxRet3:
 // Three Tail Bytes
 .align 32
 OutTail3:
-    shr         r11, r11, 8
+    {add        r4, r4, 1
+    shr         r11, r11, 8}
     stw         r11, r1[r4]                     // Store last data
     crc32       r6, r11, r9
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL3]

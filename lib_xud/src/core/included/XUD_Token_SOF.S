@@ -36,7 +36,7 @@ xta_no_pauseN:
     setd        res[r10], r11
 
     setc        res[r10], XS1_SETC_COND_AFTER   // Re-enable thread interrupts
-    setsr       0x3
+    setsr       0x2
 
     bu          Loop_BadPid
 
@@ -64,7 +64,7 @@ xta_no_pauseM:
     setd        res[r10], r11
     ldw         r8, sp[STACK_SUSPEND_TIMEOUT]
     setc        res[r10], XS1_SETC_COND_AFTER    // Re-enable thread interrupts
-    setsr       0x3
+    setsr       0x2
     bu          Loop_BadPid
 
 

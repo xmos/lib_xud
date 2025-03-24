@@ -94,10 +94,9 @@ xta_targetB_NextRxWord:
 .align 32
 .skip 16
 RxALow:
-    {sub        r4, r4, r1;         clre}
 xta_no_pause:
-    {in         r8, res[r8];        shr r4, r4, 2}          // Clear event data on RXA
-    {endin      r8, res[r0];        add r4, r4, 1}          // Convert r4 from pointer to num words, add 1
+    {in         r8, res[r8];        sub r4, r4, r1}         // Clear event data on RXA
+    {endin      r8, res[r0];        shr r4, r4, 2}          // Convert r4 from pointer to num words
 LABEL(RxTail):
 xta_ep_doRXData_dataLast:
 xta_target_OutTail0:
@@ -109,8 +108,9 @@ xta_target_OutTail3:
 // Word aligned data (0 byte tail)
 .align 32
 OutTail0:
-    crc32       r6, r8, r9                      // CRC zero step
-    ldw         r11, sp[STACK_RXCRC_TAIL0]
+    crc32_inc   r6, r8, r9, r4, 1               // CRC zero step
+    {ldw        r11, sp[STACK_RXCRC_TAIL0]
+    clre}
 xta_targetA_RxRet1:
 xta_targetA_RxRet2:
 xta_targetA_RxRet3:
@@ -119,8 +119,9 @@ xta_targetA_RxRet3:
 // 1 Tail Byte
 .align 32
 OutTail1:
-    shr         r11, r11, 24                    // Shift off junk
-    crc32       r6, r11, r9
+    {clre
+    shr         r11, r11, 24}                   // Shift off junk
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]                     // Store last data
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL1]
 xta_targetB_RxRet1:
@@ -131,8 +132,9 @@ xta_targetB_RxRet3:
 // Two Tail Bytes
 .align 32
 OutTail2:
-    shr         r11, r11, 16
-    crc32       r6, r11, r9
+    {clre
+    shr         r11, r11, 16}
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]                     // Store last data
     ldw         r11, sp[STACK_RXCRC_TAIL2]
 xta_targetC_RxRet1:
@@ -143,9 +145,10 @@ xta_targetC_RxRet3:
 // Three Tail Bytes
 .align 32
 OutTail3:
-    shr         r11, r11, 8
+    {clre
+    shr         r11, r11, 8}
+    crc32_inc   r6, r11, r9, r4, 1
     stw         r11, r1[r4]                     // Store last data
-    crc32       r6, r11, r9
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL3]
     crc8        r6, r1, r2, r9                  // Use the fact the the bottom byte of port id is 0.. saves us an ldc
 xta_targetD_RxRet1:

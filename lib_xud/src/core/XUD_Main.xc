@@ -186,21 +186,37 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
             #error XUD_CORE_CLOCK must be >= 600
         #endif
     #else
-        #if (XUD_CORE_CLOCK >= 600)
+    /* See https://xmosjira.atlassian.net/wiki/spaces/~870418189/pages/4627398657/on-die+USB+PHY+timings */
+        #if (XUD_CORE_CLOCK >= 800)
             #define RX_RISE_DELAY 1
-            #define RX_FALL_DELAY 1
+            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path */
             #define TX_RISE_DELAY 1
-            #define TX_FALL_DELAY 1
+            #define TX_FALL_DELAY 6
+        #elif (XUD_CORE_CLOCK >= 700)
+            #define RX_RISE_DELAY 1
+            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path  */
+            #define TX_RISE_DELAY 1
+            #define TX_FALL_DELAY 5
+        #elif (XUD_CORE_CLOCK >= 600)
+            #define RX_RISE_DELAY 1
+            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path  */
+            #define TX_RISE_DELAY 1
+            #define TX_FALL_DELAY 4
         #elif (XUD_CORE_CLOCK >= 500)
             #define RX_RISE_DELAY 1
-            #define RX_FALL_DELAY 0
+            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path  */
             #define TX_RISE_DELAY 1
-            #define TX_FALL_DELAY 1
+            #define TX_FALL_DELAY 2
+        #elif (XUD_CORE_CLOCK >= 400)
+            #define RX_RISE_DELAY 1
+            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path  */
+            #define TX_RISE_DELAY 1
+            #define TX_FALL_DELAY 2
         #else
-            #error XUD_CORE_CLOCK must be >= 500
+            #error XUD_CORE_CLOCK must be >= 400
         #endif
     #endif
-#else
+#else /* Settings for XS2 */
     #define RX_RISE_DELAY 1
     #define RX_FALL_DELAY 5
     #define TX_RISE_DELAY 5

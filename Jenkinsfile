@@ -21,7 +21,8 @@ def clone_test_deps() {
 
 def archiveLib(String repoName) {
     sh "git -C ${repoName} clean -xdf"
-    zip zipFile: "${repoName}_sw.zip", dir: "${repoName}", archive: true, defaultExcludes: false
+    sh "zip ${repoName}_sw.zip -r ${repoName}"
+    archiveArtifacts artifacts: "${repoName}_sw.zip", allowEmptyArchive: false
 }
 
 getApproval()
@@ -43,7 +44,7 @@ pipeline {
     )
     string(
       name: 'XMOSDOC_VERSION',
-      defaultValue: 'v6.1.2',
+      defaultValue: 'v6.2.0',
       description: 'The xmosdoc version'
     )
     string(

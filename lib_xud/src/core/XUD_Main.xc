@@ -173,19 +173,21 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 
     #ifdef XUD_SIM_XSIM
         #if (XUD_CORE_CLOCK >= 700)
-            #define RX_RISE_DELAY 5
-            #define TX_RISE_DELAY 3
-            #define TX_FALL_DELAY 5
+            #define RX_RISE_DELAY 0
+            #define RX_FALL_DELAY 0
+            #define TX_RISE_DELAY 0
+            #define TX_FALL_DELAY 7
         #elif (XUD_CORE_CLOCK >= 600)
-            #define RX_RISE_DELAY 5
-            #define TX_RISE_DELAY 3
-            #define TX_FALL_DELAY 4
+            #define RX_RISE_DELAY 0
+            #define RX_FALL_DELAY 0
+            #define TX_RISE_DELAY 0
+            #define TX_FALL_DELAY 5
         #else
             #error XUD_CORE_CLOCK must be >= 600
         #endif
+        #define RX_ACTIVE_PAD_DELAY 2
     #else
     /* See https://xmosjira.atlassian.net/wiki/spaces/~870418189/pages/4627398657/on-die+USB+PHY+timings */
-    /* Note RX_FALL_DELAY 0 Has no meaning as we do not output signals from the Rx path  */
         #if (XUD_CORE_CLOCK >= 800)
             #define RX_RISE_DELAY 6
             #define TX_RISE_DELAY 3
@@ -222,7 +224,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     configure_clock_src(tx_usb_clk, p_usb_clk);
     configure_clock_src(rx_usb_clk, p_usb_clk);
 
-#ifdef __XS2A__
+#if defined(__XS2A__) || defined(XUD_SIM_XSIM)
     // This, along with the following delays,  forces the clock
     // to the ports to be effectively controlled by the
     // previous usb clock edges

@@ -331,7 +331,6 @@ Pid_Split:
 Pid_Nak:
 Pid_Pre:
 Pid_Stall:
-Pid_MData:
 Pid_Datam:
 Pid_Data0:
 Pid_Data1:
@@ -339,8 +338,7 @@ Pid_Bad:                                            // Bad PID received, ignore
 
 
 XUD_InvalidToken:
-    // doing clre here because we can get here from the DATA pid jumptable with events enabled (xs3)
-    {clre;                          ldw        r10, sp[STACK_RXA_PORT]}     // Load RxA Port ID (r1)
+    ldw        r10, sp[STACK_RXA_PORT]              // Load RxA Port ID (r1)
 XUD_InvalidTok_waitforRXALow:
 xta_ep_XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]

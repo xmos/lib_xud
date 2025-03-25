@@ -64,9 +64,9 @@ xta_ep_Token_PID_doRXData:
     {shr        r4, r4, 24;         ldw r11, sp[STACK_PIDJUMPTABLE_RXDATA]}
     ldw         r11, r11[r4]
 xta_targetB_Pid_Data0_RxData:
-xta_targetB_Pid_Data2:
+xta_targetB_Pid_Data2_RxData:
 xta_targetB_Pid_Data1_RxData:
-xta_targetB_Pid_MData:
+xta_targetB_Pid_Datam_RxData:
 xta_targetB_Pid_Bad_RxData:
     {eeu        res[r8];            bau         r11}
 #endif
@@ -92,7 +92,7 @@ xta_targetB_NextRxWord:
 
 /////////////////////////////////////////////////////////////////////////////
 .align 32
-.skip 16
+.skip 20
 RxALow:
 xta_no_pause:
     {in         r8, res[r8];        sub r4, r4, r1}         // Clear event data on RXA

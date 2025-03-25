@@ -185,32 +185,29 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
         #else
             #error XUD_CORE_CLOCK must be >= 600
         #endif
+        #define RX_ACTIVE_PAD_DELAY 2
     #else
     /* See https://xmosjira.atlassian.net/wiki/spaces/~870418189/pages/4627398657/on-die+USB+PHY+timings */
+    /* Note RX_FALL_DELAY 0 Has no meaning as we do not output signals from the Rx path  */
         #if (XUD_CORE_CLOCK >= 800)
-            #define RX_RISE_DELAY 1
-            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path */
-            #define TX_RISE_DELAY 1
+            #define RX_RISE_DELAY 6
+            #define TX_RISE_DELAY 3
             #define TX_FALL_DELAY 6
         #elif (XUD_CORE_CLOCK >= 700)
-            #define RX_RISE_DELAY 1
-            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path  */
-            #define TX_RISE_DELAY 1
+            #define RX_RISE_DELAY 5
+            #define TX_RISE_DELAY 3
             #define TX_FALL_DELAY 5
         #elif (XUD_CORE_CLOCK >= 600)
-            #define RX_RISE_DELAY 1
-            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path  */
-            #define TX_RISE_DELAY 1
+            #define RX_RISE_DELAY 5
+            #define TX_RISE_DELAY 3
             #define TX_FALL_DELAY 4
         #elif (XUD_CORE_CLOCK >= 500)
-            #define RX_RISE_DELAY 1
-            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path  */
-            #define TX_RISE_DELAY 1
+            #define RX_RISE_DELAY 4
+            #define TX_RISE_DELAY 2
             #define TX_FALL_DELAY 2
         #elif (XUD_CORE_CLOCK >= 400)
-            #define RX_RISE_DELAY 1
-            #define RX_FALL_DELAY 0 /* Has no meaning as we do not output signals from the Rx path  */
-            #define TX_RISE_DELAY 1
+            #define RX_RISE_DELAY 3
+            #define TX_RISE_DELAY 2
             #define TX_FALL_DELAY 2
         #else
             #error XUD_CORE_CLOCK must be >= 400
@@ -227,6 +224,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     configure_clock_src(tx_usb_clk, p_usb_clk);
     configure_clock_src(rx_usb_clk, p_usb_clk);
 
+#ifdef __XS2A__
     // This, along with the following delays,  forces the clock
     // to the ports to be effectively controlled by the
     // previous usb clock edges
@@ -243,7 +241,23 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
     set_clock_fall_delay(rx_usb_clk, RX_FALL_DELAY);
 
-    set_pad_delay(flag1_port, 2);
+    set_pad_delay(flag1_port, RX_ACTIVE_PAD_DELAY);
+
+#else
+    /* Settings for xcore.ai */
+    /* We are using non-inverted clock for xcore.ai with a significant TX_FALL_DELAY as per
+    http://cognidox.xmos.local/cgi-perl/part-details?partnum=XM-015222-PS */
+
+    // This delay controls the capture of rdy. We need to get this before the earliest rising edge.
+    set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);
+
+    // This delay controls the launch of data.
+    set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY);
+
+    // This delays the capture of the rdyIn and data. This is delayed to center the window.
+    set_clock_rise_delay(rx_usb_clk, RX_RISE_DELAY);
+
+#endif // __XS2A__
 
     start_clock(tx_usb_clk);
     start_clock(rx_usb_clk);

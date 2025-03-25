@@ -185,7 +185,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
         #else
             #error XUD_CORE_CLOCK must be >= 600
         #endif
-        #define RX_ACTIVE_PAD_DELAY 2
     #else
     /* See https://xmosjira.atlassian.net/wiki/spaces/~870418189/pages/4627398657/on-die+USB+PHY+timings */
     /* Note RX_FALL_DELAY 0 Has no meaning as we do not output signals from the Rx path  */
@@ -218,6 +217,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     #define RX_FALL_DELAY 5
     #define TX_RISE_DELAY 5
     #define TX_FALL_DELAY 1
+    #define RX_ACTIVE_PAD_DELAY 2
 #endif
 
     // Handshaken ports need USB clock

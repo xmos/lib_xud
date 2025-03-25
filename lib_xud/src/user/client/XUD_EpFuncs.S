@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /** XUD_EpFuncs.S
   * @brief     ASM functions for data transfer to/from XUD

@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include "XUD_AlignmentDefines.h"
@@ -89,8 +89,7 @@ XUD_IN_TxCrc:
 DoneTail:
     ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
-    bt          r11, SetupReceiveHandShake
-    bu          XUD_IN_DoneTx
+    bf          r11, XUD_IN_DoneTx
 
 SetupReceiveHandShake:
     ldc        r11, 8

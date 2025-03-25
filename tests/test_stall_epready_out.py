@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2016-2022 XMOS LIMITED.
+# Copyright 2016-2024 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 # Directed test for (github) issue #58

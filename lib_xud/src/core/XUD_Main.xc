@@ -229,7 +229,6 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     // to the ports to be effectively controlled by the
     // previous usb clock edges
     set_port_inv(p_usb_clk);
-    set_port_sample_delay(p_usb_clk);
 
     // This delay controls the capture of rdy
     set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);

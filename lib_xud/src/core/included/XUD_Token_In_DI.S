@@ -115,13 +115,8 @@ xta_ep_SetupReceiveHandShake:
     ldw        r8, sp[STACK_RXRDY_PORT]}
 
 SetupTimeout:                                      // Timeout done using another port we dont happen to already be using events on. Cunning.
-#ifdef __XS2A__
-    {eeu        res[r8]
-    ldw        r1, sp[STACK_VTOK_PORT]}             // Load saved ValidToken port. Event vector already set.
-#else
     {eeu        res[r8]
     ldw        r1, sp[STACK_TXRDYIN_PORT]}
-#endif
 xta_no_pauseA:
     in         r11, res[r1]                        // Do input and get port time/timestamps
     getts      r11, res[r1]

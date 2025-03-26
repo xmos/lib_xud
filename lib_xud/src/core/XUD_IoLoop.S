@@ -175,7 +175,7 @@ SaveStackPointer:
     ldw         r11, cp[suspendTimeout]
     stw         r11, sp[STACK_SUSPEND_TIMEOUT]
 
-ConfigRxReadyEventVector:                       // Configure event on RXREADY going high for receiveing a handshake after Tx
+ConfigRxReadyEventVector:                       // Configure event on RxReady going high for receiveing a handshake after Tx
     ldw         r10, dp[rx_rdy]
     stw         r10, sp[STACK_RXRDY_PORT]
     setc        res[r10], XS1_SETC_COND_EQ
@@ -185,7 +185,7 @@ ConfigRxReadyEventVector:                       // Configure event on RXREADY go
     ldap        r11, TxHandShakeReceived
     setv        res[r10], r11
 
-ConfigRxDEventVector:                           // Configure event on RXD port for receiveing data
+ConfigRxDEventVector:                           // Configure event on RxD port for receiveing data
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
     ldap        r11,  NextRxWord
     setv        res[RXD], r11
@@ -199,13 +199,15 @@ ConfigRxA:                                      // Configure a event on RXA goin
     setv        res[RXA], r11
     eeu         res[RXA]
 
-ConfigValidToken:
 #ifdef __XS2A__
-    ldw         r10, sp[STACK_VTOK_PORT]        // ValidToken is used for timing timeout period when expecting an ack after tx
-#else
+ConfigValidToken:                               // Configure event on VTok to wait till it goes low
+    ldw         r10, sp[STACK_VTOK_PORT]
+    setc        res[r10], XS1_SETC_COND_NONE
+#endif
+
+ConfigTxReadyInVector:                          // Configure event on TxReadyIn for timing timeout when waiting ack after tx, can use any usb clocked port here
     ldw         r10, dp[tx_readyin]
     stw         r10, sp[STACK_TXRDYIN_PORT]
-#endif
     setc        res[r10], XS1_SETC_COND_NONE
     ldap        r11, TxHandshakeTimeOut
     setv        res[r10], r11
@@ -331,7 +333,6 @@ Pid_Split:
 Pid_Nak:
 Pid_Pre:
 Pid_Stall:
-Pid_MData:
 Pid_Datam:
 Pid_Data0:
 Pid_Data1:
@@ -339,8 +340,7 @@ Pid_Bad:                                            // Bad PID received, ignore
 
 
 XUD_InvalidToken:
-    // doing clre here because we can get here from the DATA pid jumptable with events enabled (xs3)
-    {clre;                          ldw        r10, sp[STACK_RXA_PORT]}     // Load RxA Port ID (r1)
+    ldw        r10, sp[STACK_RXA_PORT]              // Load RxA Port ID (r1)
 XUD_InvalidTok_waitforRXALow:
 xta_ep_XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]

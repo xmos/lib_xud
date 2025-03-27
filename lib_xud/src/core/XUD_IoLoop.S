@@ -200,7 +200,7 @@ ConfigRxA:                                      // Configure a event on RXA goin
     eeu         res[RXA]
 
 #ifdef __XS2A__
-ConfigValidToken:                               // Configure event on VTok to wait till it goes low
+ClearValidToken:                               // Clear any VTok port condition
     ldw         r10, sp[STACK_VTOK_PORT]
     setc        res[r10], XS1_SETC_COND_NONE
 #endif

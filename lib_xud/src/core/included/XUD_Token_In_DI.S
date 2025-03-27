@@ -88,15 +88,14 @@ XUD_IN_TxLoop:
 xta_ep_XUD_IN_TxLoop_dataN:
     {out         res[TXD], r11;     bt       r4, XUD_IN_TxLoop}
 
-XUD_IN_TxLoopEnd:                // TODO: mkmsk r4, 0; avoids not later on
-    ldw         r11, r8[r4]                         // Load tail
+XUD_IN_TxLoopEnd:
+    {mkmsk      r4, 32;            ldw         r11, r8[r4]}   // Load tail
     crcn        r7, r11, r9, r6
 
 XUD_IN_TxLoopEnd_CrcCalc:
-    crc32       r7, r4, r9                          // r4: 0 (from bf)
+    crc32       r7, r4, r9                          // r4: 0xFFFFFFFF
 xta_ep_XUD_IN_TxLoop_dataLast:
     outpw       res[TXD], r11, r6
-    not         r7, r7
 XUD_IN_TxCrc:
 xta_ep_XUD_IN_TxLoop_CRC:
     outpw       res[TXD], r7, 16                    // Output 16-bit CRC
@@ -138,12 +137,11 @@ TxHandshakeTimeOut:
     clre
 xta_ep_TxHandshakeTimeOut:
     in         r11, res[r1]                        // This will clear port time
-    bu        BadHandshake
+    bu        NextToken
 
 // Transmitted data, and got something back within the timeout. Check for valid handshake...
 .align FUNCTION_ALIGNMENT
 TxHandShakeReceived:
-    clre
 xta_no_pauses:
     in         r8, res[r8]                         // Clear the RxValid
 xta_ep_TxHandShakeReceived:
@@ -155,22 +153,18 @@ xta_ep_TxHandShakeReceived:
 #else
     ldc        r9, USB_PIDn_ACK
 #endif
-    xor        r9, r11, r9
-    bt         r9, BadHandshake
+    {clre;              sub r9, r11, r9} 
+    bt         r9, NextToken
 
 XUD_IN_DoneTx:
-
 ClearInEpReady:                                    // TODO Tidy this up
-    ldc        r9, 0                               // TODO
-    ldw        r10, r5[r3]                         // Load the EP struct
+    {ldc        r9, 0                              // Coming from TxHandShakeReceived we already have 0 here, from DoneTail we don't
+    ldw        r10, r5[r3]}                        // Load the EP struct
     stw        r9, r5[r3]                          // Clear the ready
     ldw        r11, r10[1]                         // Load channel
 xta_no_pauseC:
     out        res[r11], r11                       // Output word to signal packet sent okay
     bu         NextToken
-
-BadHandshake:
-    bu          NextToken
 
 .align 64
 .skip 56
@@ -181,8 +175,8 @@ xta_target_TxTail1s:
 xta_target_TxTail2s:
 xta_target_TxTail3s:
 xta_target_TxTail4s:
-    bru         r6                                 // Branch on tail-length
-                                // TODO: mkmsk r4, 0, avoids all not instructions?
+    {mkmsk       r11, 32;       bru         r6}    // Branch on tail-length
+
 //--------------------------------------------------------------------------
 .align 32
 .skip 0
@@ -201,9 +195,8 @@ xta_ep_XUD_IN_TxCrc_TailS0:
 .skip 0
 TxTail1s:                                           // One tail byte
     crcn       r7, r8, r9, r6
-    crc32      r7, r4, r9                           // r4: 0
+    crc32      r7, r11, r9                          // r11: 0xFFFFFFFF
 XUD_IN_TxPid_TailS1:
-    not        r7, r7
 xta_ep_XUD_IN_TxPid_TailS1:
     outpw      res[TXD], r1, 8                      // Output PID
 xta_ep_XUD_IN_TxDat_TailS1:
@@ -217,13 +210,12 @@ xta_ep_XUD_IN_TxCrc_TailS1:
 .skip 0
 TxTail2s:                                           // Two tail byte
     crcn        r7, r8, r9, r6
-    crc32       r7, r4, r9                          // r4: 0
+    crc32       r7, r11, r9                         // r11: 0xFFFFFFFF
 XUD_IN_TxPid_TailS2:
 xta_ep_XUD_IN_TxPid_TailS2:
     outpw       res[TXD], r1, 8                     // Output PID
 xta_ep_XUD_IN_TxDat_TailS2:
     outpw       res[TXD], r8, 16                    // Output data[0:1]
-    not         r7, r7
 XUD_IN_TxCrc_TailS2:
 xta_ep_XUD_IN_TxCrc_TailS2:
     outpw       res[TXD], r7, 16                    // Output CRC16
@@ -238,8 +230,7 @@ xta_ep_XUD_IN_TxPid_TailS3:
 xta_ep_XUD_IN_TxDat_TailS3:
     outpw       res[TXD], r8, 24
     crcn        r7, r8, r9, r6
-    crc32       r7, r4, r9                          // r4: 0
-    not         r7, r7
+    crc32       r7, r11, r9                         // r11: 0xFFFFFFFF
 XUD_IN_TxCrc_TailS3:
 xta_ep_XUD_IN_TxCrc_TailS3:
     outpw       res[TXD], r7, 16
@@ -254,8 +245,7 @@ xta_ep_XUD_IN_TxPid_TailS4:
 xta_ep_XUD_IN_TxDat_TailS4:
     out         res[TXD], r8
     crc32       r7, r8, r9
-    crc32       r7, r4, r9                          // r4: 0
-    not         r7, r7
+    crc32       r7, r11, r9                         // r11: 0xFFFFFFFF
 XUD_IN_TxCrc_TailS4:
 xta_ep_XUD_IN_TxCrc_TailS4:
     outpw       res[TXD], r7, 16

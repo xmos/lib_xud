@@ -247,8 +247,7 @@ CrcRxResidualsOnStack:
     ldc        r11, 0x3334                      // CRC16 init (out)
     stw        r11, sp[STACK_RXCRC_INIT]
 
-    ldw        r11, sp[STACK_EPCHANS]
-    stw        r11, dp[chanArray]
+    ldw        r5, sp[STACK_EPCHANS]            // r5 is never reset
 
 ConfigSofJump:
     ldw        r11, sp[STACK_SOFCHAN]
@@ -309,12 +308,10 @@ xta_no_pauseO:
 .align FUNCTION_ALIGNMENT
 .skip 0
 NextToken:
-    ldc         r9, 0xa001                      // CRC16 poly, used in doRxData
-    ldw         r5, sp[(STACK_EXTEND+4)]        // EP structures array - pointers to EP tables or 0
+    ldc         r9, 0xa001                      // CRC16 poly, needs resetting after IN
 
 NextTokenAfterOut:
-    ldc         r7, 0xf335                      // TX Crc init
-    ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
+    ldd         r6, r7, sp[STACK_TXCRC_INIT>>1] // CRC16 init (RX/TX), needs reseting after IN, OUT, SETUP
 #ifdef __XS2A__
     ldw         r1, sp[STACK_VTOK_PORT]
 #endif

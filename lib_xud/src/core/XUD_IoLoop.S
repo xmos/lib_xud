@@ -54,6 +54,8 @@ suspend_t_wtwrsths:
 #define STACK_PIDJUMPTABLE      (22)
 #define STACK_PIDJUMPTABLE_RXDATA (23)
 #define STACK_CRC5TABLE_ADDR      (24)
+#define STACK_RXRDY_PORT        (25)
+#define STACK_TXRDYIN_PORT      (26)
 
 // Params
 #define STACK_VTOK_PORT     (STACK_EXTEND + 1)
@@ -173,9 +175,19 @@ SaveStackPointer:
     ldw         r11, cp[suspendTimeout]
     stw         r11, sp[STACK_SUSPEND_TIMEOUT]
 
-ConfigRxDEventVector:                           // Configure event on RXD port for receiveing a handshake after Tx
+ConfigRxReadyEventVector:                       // Configure event on RxReady going high for receiveing a handshake after Tx
+    ldw         r10, dp[rx_rdy]
+    stw         r10, sp[STACK_RXRDY_PORT]
+    setc        res[r10], XS1_SETC_COND_EQ
+    setc        res[r10], XS1_SETC_IE_MODE_EVENT
+    ldc         r11, 1
+    setd        res[r10], r11
+    ldap        r11, TxHandShakeReceived
+    setv        res[r10], r11
+
+ConfigRxDEventVector:                           // Configure event on RxD port for receiveing data
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
-    ldap        r11,  TxHandShakeReceived
+    ldap        r11,  NextRxWord
     setv        res[RXD], r11
 
 ConfigRxA:                                      // Configure a event on RXA going low, used during packet reception
@@ -187,12 +199,15 @@ ConfigRxA:                                      // Configure a event on RXA goin
     setv        res[RXA], r11
     eeu         res[RXA]
 
-ConfigValidToken:
 #ifdef __XS2A__
-    ldw         r10, sp[STACK_VTOK_PORT]        // ValidToken is used for timing timeout period when expecting an ack after tx
-#else
-    ldw         r10, dp[rx_rdy]                 // TODO use from stack
+ClearValidToken:                               // Clear any VTok port condition
+    ldw         r10, sp[STACK_VTOK_PORT]
+    setc        res[r10], XS1_SETC_COND_NONE
 #endif
+
+ConfigTxReadyInVector:                          // Configure event on TxReadyIn for timing timeout when waiting ack after tx, can use any usb clocked port here
+    ldw         r10, dp[tx_readyin]
+    stw         r10, sp[STACK_TXRDYIN_PORT]
     setc        res[r10], XS1_SETC_COND_NONE
     ldap        r11, TxHandshakeTimeOut
     setv        res[r10], r11
@@ -321,7 +336,6 @@ Pid_Split:
 Pid_Nak:
 Pid_Pre:
 Pid_Stall:
-Pid_MData:
 Pid_Datam:
 Pid_Data0:
 Pid_Data1:

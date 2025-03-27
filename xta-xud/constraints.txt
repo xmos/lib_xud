@@ -35,9 +35,9 @@ PATH {XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataLast}
 PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataLast}
 PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataN}
 PATH {doRXData_dataN}      {doRXData_dataN}
-PATH {doRXData_data0}       {doRXData_dataN}
 PATH {doRXData_dataN}       {doRXData_dataLast}
-PATH {Token_PID_doRXData}   {doRXData_data0}
+PATH {Token_PID_doRXData}   {doRXData_dataN}
+PATH {Token_PID_doRXData}   {doRXData_dataLast}
 
 
 
@@ -133,7 +133,6 @@ PATH {Token_EPCRC_IN_TxHandshake} {XUD_InvalidTok_waitforRXALow}
 PATH {Token_EPCRC_TxNak}    {XUD_InvalidTok_waitforRXALow}
 PATH {Token_EPCRC_doRXData} {XUD_InvalidTok_waitforRXALow}
 PATH {Token_EPCRC_RxRet2}   {XUD_InvalidTok_waitforRXALow}
-PATH {Token_PID_doRXData}   {XUD_InvalidTok_waitforRXALow}
 PATH {XUD_TokenRx_EPCRC}    {XUD_InvalidTok_waitforRXALow}
 
 ## intra packet

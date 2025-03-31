@@ -250,7 +250,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     // This delay controls the capture of rdy. We need to get this before the earliest rising edge.
     set_clock_rise_delay(tx_usb_clk, TX_RISE_DELAY);
 
-    // This delay controls the launch of data.
+    // This delay controls the launch of data and strobe.
     set_clock_fall_delay(tx_usb_clk, TX_FALL_DELAY);
 
     // This delays the capture of the rdyIn and data. This is delayed to center the window.

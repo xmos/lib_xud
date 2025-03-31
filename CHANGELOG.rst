@@ -5,6 +5,7 @@ lib_xud change log
 -----
 
   * CHANGE: Extended XMOS Public Licence copyright to 2024
+  * FIXED:  References to XUD_TILE replaced by USB_TILE in docs
 
 2.4.0
 -----

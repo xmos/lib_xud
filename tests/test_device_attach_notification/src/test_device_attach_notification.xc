@@ -61,11 +61,19 @@ testResult_t TestEpBusUpdate_Tx(chanend c_in, int epNum, unsigned start, unsigne
     do
     {
         result = XUD_SetBuffer(ep_in, buffer[i], length);
-        if(result == XUD_RES_RST)
+
+        if(result == XUD_RES_UPDATE)
         {
+            XUD_BusState_t busState = XUD_GetBusState(ep_in, null);
+
+            if(busState != XUD_BUS_RESET)
+                return FAIL_UNEXPECTED_STATUS;
+
             busSpeed = XUD_ResetEndpoint(ep_in, null);
+
             if(busSpeed != XUD_TEST_SPEED)
                 return FAIL_BAD_BUS_SPEED;
+
             if(i != 0) // Only expect reset on attach/first packet
                 return FAIL_UNEXPECTED_RESET;
         }
@@ -99,7 +107,7 @@ testResult_t TestEpBusUpdate_Rx(chanend c_out, int epNum, int start, int end)
     XUD_BusSpeed_t busSpeed = XUD_TEST_SPEED;
     int i = 0;
 
-    XUD_ep ep_out1 = XUD_InitEp(c_out);
+    XUD_ep ep_out = XUD_InitEp(c_out);
 
     /* Buffer for Setup data */
     unsigned char buffer[MAX_PKT_COUNT][1024];
@@ -110,13 +118,20 @@ testResult_t TestEpBusUpdate_Rx(chanend c_out, int epNum, int start, int end)
 #pragma loop unroll
     do
     {
-        result = XUD_GetBuffer(ep_out1, buffer[i], length[i]);
+        result = XUD_GetBuffer(ep_out, buffer[i], length[i]);
 
-        if(result == XUD_RES_RST)
+        if(result == XUD_RES_UPDATE)
         {
-            busSpeed = XUD_ResetEndpoint(ep_out1, null);
+            XUD_BusState_t busState = XUD_GetBusState(ep_out, null);
+
+            if(busState != XUD_BUS_RESET)
+                return FAIL_UNEXPECTED_STATUS;
+
+            busSpeed = XUD_ResetEndpoint(ep_out, null);
+
             if(busSpeed != XUD_TEST_SPEED)
                 return FAIL_BAD_BUS_SPEED;
+
             if(i != 0) // Only expect reset on attach/first packet
                return FAIL_UNEXPECTED_RESET;
         }

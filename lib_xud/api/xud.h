@@ -103,7 +103,6 @@ typedef enum XUD_BusSpeed
 {
     XUD_SPEED_FS = 1,
     XUD_SPEED_HS = 2,
-    XUD_SPEED_KILL = 3
 } XUD_BusSpeed_t;
 
 typedef enum XUD_PwrConfig
@@ -114,11 +113,28 @@ typedef enum XUD_PwrConfig
 
 typedef enum XUD_Result
 {
-    XUD_RES_RST = -1,
+    XUD_RES_UPDATE = -1,
     XUD_RES_OKAY = 0,
-    //XUD_RES_CTL =  1,       /* Received a control trans */
     XUD_RES_ERR =  2,
 } XUD_Result_t;
+
+/* Note, also used at CT to inform EPs of bus-state change type */
+typedef enum XUD_BusState_t
+{
+    XUD_BUS_SUSPEND = 8,
+    XUD_BUS_RESUME,
+    XUD_BUS_RESET,
+    XUD_BUS_KILL
+} XUD_BusState_t;
+
+#ifndef XUD_OSC_MHZ
+#define XUD_OSC_MHZ                 (24)
+#endif
+
+/* Option to put the phy in low power mode during USB suspend */
+#ifndef XUD_SUSPEND_PHY
+#define XUD_SUSPEND_PHY             (1)
+#endif
 
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
@@ -247,6 +263,28 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in,  unsigned char buffer
 XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in) ATTRIB_WEAK;
 
 /**
+ * \brief   If an API function returns XUD_RES_UPDATE a bus update notification is available.
+ *          The endpoint must now call this function to receive the bus update - these
+ *          updates represent suspend, resume, reset and kill.
+ * \param   one      IN or OUT endpoint identifier to receive update on.
+ * \param   two      Optional second IN or OUT endpoint structure to receive update on.
+ * \return  Either:
+ *          XUD_BUS_SUSPEND - the host has suspended the device. The Endpoint should perform any
+ *          desired suspend related functionality and then must call XUD_AckBusState() to inform
+ *          XUD that it has been accepted.
+ *          XUD_BUS_RESUME - the host has resumed the device. The Endpoint should perform any
+ *          desired resume related functionality and then must call XUD_AckBusState() to inform
+ *          XUD that it has been accepted.
+ *          XUD_BUS_RESET - the host has issued a bus reset. The endpoint must now call
+ *          XUD_ResetEndpoint().
+ *          XUD_BUS_KILL - indicate that the USB stack has been shut down
+ *          by another part of the user code (using XUD_Kill). If this  value is returned, the
+ *          endpoint code should call XUD_CloseEndpoint() and then
+ *          terminate.
+ */
+XUD_BusState_t XUD_GetBusState(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
+
+/**
  * \brief   This function will complete a reset on an endpoint. Can take
  *          one or two ``XUD_ep`` as parameters (the second parameter can be set to ``null``).
  *          The return value should be inspected to find the new bus-speed.
@@ -254,14 +292,21 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in) ATTRIB_WEAK;
  *          In other endpoints ``null`` can be passed as the second parameter.
  * \param   one      IN or OUT endpoint identifier to perform the reset on.
  * \param   two      Optional second IN or OUT endpoint structure to perform a reset on.
- * \return  Either ``XUD_SPEED_HS`` - the host has accepted that this device can execute
- *          at high speed, ``XUD_SPEED_FS`` - the device is running at full speed,
- *          or ``XUD_SPEED_KILL`` to indicate that the USB stack has been shut down
- *          by another part of the user code (using XUD_Kill). If the last value is
- *          returned, the endpoint code should call XUD_CloseEndpoint and then
- *          terminate.
+ * \return  Either ``XUD_SPEED_HS`` - the device is now running as a high-speed device or
+ *          ``XUD_SPEED_FS`` - the device is now running as full speed device.
+ *
  */
 XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
+
+/**
+ * \brief   Must be called if an endpoint has received XUD_BUS_RESUME or XUD_BUS_SUSPEND
+ *          in order to acknowledge the bus state update. Any related actions should be performed
+ *          (i.e. clocking down the core) before calling this function.
+ * \param   one      IN or OUT endpoint identifier to send the ack on.
+ * \param   two      Optional second IN or OUT endpoint structure send the ack on.
+ * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`_.
+ */
+XUD_Result_t XUD_AckBusState(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
 
 /**
  * \brief   This function closes an endpoint. It should be called when the USB stack
@@ -360,7 +405,7 @@ static inline XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
-        return XUD_RES_RST;
+        return XUD_RES_UPDATE;
     }
     asm volatile("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
     asm volatile("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
@@ -403,7 +448,7 @@ static inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
-        return XUD_RES_RST;
+        return XUD_RES_UPDATE;
     }
 
     /* Tail length bytes to bits */
@@ -525,7 +570,7 @@ typedef struct XUD_ep_info
     unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.
     unsigned int tailLength;           // 7 "tail" length for IN (bytes)
     unsigned int epAddress;            // 8 EP address assigned by XUD (Used for marking stall etc)
-    unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
+    unsigned int busUpdate;            // 9 Flag to indicate to EP a bus-reset occured.
     unsigned int halted;               // 10 NAK or STALL
     unsigned int saved_array_ptr;      // 11
     unsigned int array_ptr_setup;      // 12

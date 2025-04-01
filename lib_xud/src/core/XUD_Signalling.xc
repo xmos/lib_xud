@@ -65,25 +65,39 @@ int XUD_Init()
     return -1;
 }
 
+void SendBusStateToEps(XUD_chan c[], XUD_chan epAddr_Ready[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, unsigned token);
+void GetCTFromEps(XUD_chan c[], XUD_chan epAddr_Ready[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn);
+
 /** XUD_Suspend
   * @brief  Function called when device is suspended. This should include any clock down code etc.
   * @return non-zero if reset detected during resume */
-int XUD_Suspend(XUD_PwrConfig pwrConfig)
+int XUD_Suspend(XUD_PwrConfig pwrConfig, XUD_chan epChans0[], XUD_chan epAddr_Ready[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int noEpOut, int noEpIn)
 {
     timer t;
     unsigned time;
 
     XUD_LineState_t currentLs = XUD_LINESTATE_HS_K_FS_J;
 
+    /* Suspend the USB phy */
     if(XUD_SUSPEND_PHY)
     {
         XUD_HAL_SuspendPhy();
     }
 
+    /* Inform app it is safe to power down */
+    SendBusStateToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, XUD_SUSPEND_TOKEN);
+
+    /* Wait for ACK from app informing power down is complete */
+    /* TODO is this really a requirement? */
+    GetCTFromEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn);
+
+    //printstr("XUD: GOT ACKS\n");
+
     while(1)
     {
         unsigned timeOutTime = 0;
 
+        /* Poll VBUS state */
         if(pwrConfig == XUD_PWR_SELF)
             timeOutTime = SUSPEND_VBUS_POLL_TIMER_TICKS;
 
@@ -109,6 +123,12 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
             /* Reset signalliung */
             case XUD_LINESTATE_SE0:
 
+                /* TODO tell app to spin up */
+                SendBusStateToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, XUD_RESUME_TOKEN);
+
+                /* TODO wait for app to confirm it has spun up */
+                GetCTFromEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn);
+
                 if(XUD_SUSPEND_PHY)
                 {
                     XUD_HAL_UnSuspendPhy();
@@ -127,15 +147,26 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                 }
 
                 /* If didn't timeout then put phy bask in suspend and keep looping...*/
+
                 if(XUD_SUSPEND_PHY)
                 {
                     XUD_HAL_SuspendPhy();
                 }
 
+                /* TODO tell app to power down */
+                /* TODO wait for app to power down */
+                SendBusStateToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, XUD_SUSPEND_TOKEN);
+                GetCTFromEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn);
+
                 break;
 
             /* K, start of resume */
             case XUD_LINESTATE_HS_J_FS_K:
+
+                /* TODO tell app to spin up */
+                /* TODO wait for app to confirm it has spun up */
+                SendBusStateToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, XUD_RESUME_TOKEN);
+                GetCTFromEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn);
 
                 if(XUD_SUSPEND_PHY)
                 {
@@ -173,6 +204,11 @@ int XUD_Suspend(XUD_PwrConfig pwrConfig)
                             {
                                 /* Re-suspend phy */
                                 XUD_HAL_SuspendPhy();
+
+                                /* TODO tell app to power down */
+                                /* TODO wait for app to power down */
+                                SendBusStateToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, XUD_SUSPEND_TOKEN);
+                                GetCTFromEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn);
                             }
                             return 0;
 

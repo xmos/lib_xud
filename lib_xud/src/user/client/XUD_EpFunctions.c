@@ -98,9 +98,9 @@ static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigne
     do
     {
         /* Check if we missed a reset */
-        if(ep->resetting)
+        if(ep->busUpdate)
         {
-            return XUD_RES_RST;
+            return XUD_RES_UPDATE;
         }
     }
     while(ep->halted == USB_PIDn_STALL);
@@ -121,14 +121,14 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
 
     unsigned length;
     unsigned lengthTail;
-    unsigned isReset;
+    unsigned busUpdate;
 
     /* Wait for XUD response */
-    asm volatile("testct %0, res[%1]" : "=r"(isReset) : "r"(c));
+    asm volatile("testct %0, res[%1]" : "=r"(busUpdate) : "r"(c));
 
-    if(isReset)
+    if(busUpdate)
     {
-        return XUD_RES_RST;
+        return XUD_RES_UPDATE;
     }
 
     /* Input packet length (words) */
@@ -185,9 +185,9 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
     {
         XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer);
 
-        if(result == XUD_RES_RST)
+        if(result == XUD_RES_UPDATE)
         {
-            return XUD_RES_RST;
+            return XUD_RES_UPDATE;
         }
 
         result = XUD_GetBuffer_Finish(ep->client_chanend, e, datalength);
@@ -217,14 +217,14 @@ void XUD_GetData_Select(chanend c, XUD_ep e, unsigned *datalength, XUD_Result_t 
 XUD_Result_t XUD_GetSetupBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
 {
     volatile XUD_ep_info *ep = (XUD_ep_info*) e;
-    unsigned isReset;
+    unsigned busUpdate;
     unsigned length;
     unsigned lengthTail;
 
-    /* Check if we missed a reset */
-    if(ep->resetting)
+    /* Check if we missed a bus state update */
+    if(ep->busUpdate) // TODO this should be busUpdate
     {
-        return XUD_RES_RST;
+        return XUD_RES_UPDATE;
     }
 
     /* Store buffer address in EP structure */
@@ -235,11 +235,11 @@ XUD_Result_t XUD_GetSetupBuffer(XUD_ep e, unsigned char buffer[], unsigned *data
     *array_ptr_setup = (unsigned) ep;
 
     /* Wait for XUD response */
-    asm volatile("testct %0, res[%1]" : "=r"(isReset) : "r"(ep->client_chanend));
+    asm volatile("testct %0, res[%1]" : "=r"(busUpdate) : "r"(ep->client_chanend));
 
-    if(isReset)
+    if(busUpdate)
     {
-        return XUD_RES_RST;
+        return XUD_RES_UPDATE;
     }
 
     /* Input packet length (words) */
@@ -273,9 +273,10 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
     while(1)
     {
         /* Check if we missed a reset */
-        if(ep->resetting)
+        // TODO
+        if(ep->busUpdate)
         {
-            return XUD_RES_RST;
+            return XUD_RES_UPDATE;
         }
 
         /* If EP is marked as halted do not mark as ready.. */
@@ -319,7 +320,7 @@ XUD_Result_t XUD_SetBuffer_Finish(chanend c, XUD_ep e)
 
     if(isReset)
     {
-        return XUD_RES_RST;
+        return XUD_RES_UPDATE;
     }
 
     /* Data sent okay */
@@ -340,7 +341,7 @@ XUD_Result_t XUD_SetBuffer(XUD_ep e, unsigned char buffer[], unsigned datalength
 
     XUD_Result_t result = XUD_SetBuffer_Start(e, buffer, datalength);
 
-    if(result == XUD_RES_RST)
+    if(result == XUD_RES_UPDATE)
     {
         return result;
     }

@@ -114,12 +114,31 @@ typedef enum XUD_PwrConfig
 
 typedef enum XUD_Result
 {
-    XUD_RES_RST = -1,
+    XUD_RES_UPDATE = -1,
     XUD_RES_OKAY = 0,
-    //XUD_RES_CTL =  1,       /* Received a control trans */
     XUD_RES_ERR =  2,
 } XUD_Result_t;
 
+typedef enum XUD_BusState_t
+{
+    XUD_BUS_SUSPEND = 0,
+    XUD_BUS_RESUME = 1,
+    XUD_BUS_RESET = 2,
+} XUD_BusState_t;
+
+/* Control token defines - used to inform EPs of bus-state types */
+#define XUD_RESET_TOKEN             (8)        /* Control token value that signals RESET */
+#define XUD_SUSPEND_TOKEN           (9)        /* Control token value that signals SUSPEND */
+#define XUD_RESUME_TOKEN            (10)       /* Control token value that signals RESUME */
+
+#ifndef XUD_OSC_MHZ
+#define XUD_OSC_MHZ                 (24)
+#endif
+
+/* Option to put the phy in low power mode during USB suspend */
+#ifndef XUD_SUSPEND_PHY
+#define XUD_SUSPEND_PHY             (1)
+#endif
 /** This performs the low-level USB I/O operations. Note that this
  *  needs to run in a thread with at least 80 MIPS worst case execution
  *  speed.
@@ -263,6 +282,12 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in) ATTRIB_WEAK;
  */
 XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
 
+XUD_Result_t XUD_Ack(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
+
+XUD_BusState_t XUD_GetBusState(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
+
+XUD_Result_t XUD_WaitForSuspendEnd(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two));
+
 /**
  * \brief   This function closes an endpoint. It should be called when the USB stack
  *          is shutting down. It should be called on all endpoints, either in parallel
@@ -361,7 +386,7 @@ static inline XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
-        return XUD_RES_RST;
+        return XUD_RES_UPDATE;
     }
     asm volatile("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
     asm volatile("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
@@ -405,7 +430,7 @@ static inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
     asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
     if(reset)
     {
-        return XUD_RES_RST;
+        return XUD_RES_UPDATE;
     }
 
     /* Tail length bytes to bits */
@@ -489,17 +514,6 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
 #endif
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
 
-/* Control token defines - used to inform EPs of bus-state types */
-#define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
-
-#ifndef XUD_OSC_MHZ
-#define XUD_OSC_MHZ (24)
-#endif
-
-/* Option to put the phy in low power mode during USB suspend */
-#ifndef XUD_SUSPEND_PHY
-#define XUD_SUSPEND_PHY (1)
-#endif
 
 /* TODO pack this to save mem
  * TODO size of this hardcoded in ResetEpStateByAddr_
@@ -515,7 +529,7 @@ typedef struct XUD_ep_info
     unsigned int actualPid;            // 6 Actual OUT PID received for OUT, Length (words) for IN.
     unsigned int tailLength;           // 7 "tail" length for IN (bytes)
     unsigned int epAddress;            // 8 EP address assigned by XUD (Used for marking stall etc)
-    unsigned int resetting;            // 9 Flag to indicate to EP a bus-reset occured.
+    unsigned int busUpdate;            // 9 Flag to indicate to EP a bus-reset occured.
     unsigned int halted;               // 10 NAK or STALL
     unsigned int saved_array_ptr;      // 11
     unsigned int array_ptr_setup;      // 12

@@ -8,6 +8,7 @@
 #include <xs1.h>
 #include "xud.h"
 #include "XUD_USB_Defines.h"
+#include "assert.h"
 
 static inline int min(int x, int y)
 {
@@ -49,26 +50,22 @@ XUD_Result_t XUD_DoGetRequest(XUD_ep ep_out, XUD_ep ep_in, unsigned char buffer[
     return XUD_GetBuffer(ep_out, tmpBuffer, rxlength);
 }
 
-
-
 void XUD_CloseEndpoint(XUD_ep one)
 {
     unsigned c1;
 
     /* Input rst control token */
-    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));             // Load our chanend
-    asm volatile ("outct res[%0], 1":: "r"(c1)); // Close channel to other side
-    asm volatile ("chkct res[%0], 1":: "r"(c1)); // Close channel to this side
+    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));    // Load our chanend
+    asm volatile ("outct res[%0], 1":: "r"(c1));        // Close channel to other side
+    asm volatile ("chkct res[%0], 1":: "r"(c1));        // Close channel to this side
 }
 
-XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
+XUD_BusState_t XUD_GetBusState(XUD_ep one, XUD_ep &?two)
 {
-    int busStateCt;
-    int busSpeed;
+    unsigned busStateCt;
+    unsigned c1, c2;
 
-    unsigned c1, c2, tmp;
-
-    /* Input rst control token */
+    /* Input bus update control token */
     asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));             // Load our chanend
     asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c1)); // busStateCt = inct(one);
 
@@ -78,11 +75,31 @@ XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
         asm volatile ("inct %0, res[%1]": "=r"(busStateCt):"r"(c2));
     }
 
+    switch(busStateCt)
+    {
+        case XUD_RESET_TOKEN:
+            return XUD_BUS_RESET;
+        case XUD_SUSPEND_TOKEN:
+            return XUD_BUS_SUSPEND;
+        case XUD_RESUME_TOKEN:
+            return XUD_BUS_RESUME;
+        default:
+            assert(0);
+            break;
+    }
+    return 0; // Unreachable
+}
+
+static void XUD_EPUpdateCommon(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two))
+{
+    // Clear busUpdate flag and mark endpoint as not ready
+    unsigned tmp;
+
     /* Clear ready flag (tidies small race where EP marked ready just after XUD clears ready due to reset */
     asm volatile("ldw %0, %1[0]":"=r"(tmp):"r"(one));           // Load address of ep in XUD rdy table
     asm volatile ("stw %0, %1[0]"::"r"(0), "r"(tmp));
 
-    /* Clear resetting flag */
+    /* Clear busUpdate flag */
     asm volatile ("stw %0, %1[9]"::"r"(0), "r"(one));
 
     if(!isnull(two))
@@ -90,8 +107,58 @@ XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
         asm volatile("ldw %0, %1[0]":"=r"(tmp):"r"(two));       // Load address of ep in XUD rdy table
         asm volatile ("stw %0, %1[0]"::"r"(0), "r"(tmp));
 
-         /* Reset reseting flag */
+         /* Reset busUpdate flag */
         asm volatile ("stw %0, %1[9]"::"r"(0), "r"(two));
+    }
+}
+
+XUD_Result_t XUD_Ack(XUD_ep one, NULLABLE_REFERENCE_PARAM(XUD_ep, two))
+{
+    unsigned c1, c2;
+
+    XUD_EPUpdateCommon(one, two);
+
+    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));              // Load EP chanend
+
+    if (!isnull(two))
+    {
+        asm volatile("ldw %0, %1[2]":"=r"(c2):"r"(two));          // Load EP chanend
+    }
+
+
+    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));              // Load EP chanend
+    asm volatile ("outct res[%0], 9":: "r"(c1));                  // Send ACK. TODO remove magic number
+
+    if (!isnull(two))
+    {
+        asm volatile("ldw %0, %1[2]":"=r"(c2):"r"(two));          // Load EP chanend
+        asm volatile ("outct res[%0], 9":: "r"(c2));              // Send ACK. TODO remove magic number
+    }
+
+    return XUD_RES_OKAY;
+}
+
+
+XUD_BusSpeed_t XUD_ResetEndpoint(XUD_ep one, XUD_ep &?two)
+{
+    int busSpeed;
+
+    unsigned c1, c2, tmp;
+
+    XUD_EPUpdateCommon(one, two);
+
+    asm volatile("ldw %0, %1[2]":"=r"(c1):"r"(one));              // Load EP chanend
+
+    if (!isnull(two))
+    {
+        asm volatile("ldw %0, %1[2]":"=r"(c2):"r"(two));          // Load EP chanend
+    }
+
+    asm volatile("testct %0, res[%1]" : "=r"(tmp) : "r"(c1));
+
+    if(tmp)
+    {
+        printstr("CT\n");
     }
 
     /* Expect a word with speed */

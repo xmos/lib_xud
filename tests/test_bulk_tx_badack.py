@@ -6,13 +6,17 @@ from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_packet import TokenPacket, RxDataPacket, TxHandshakePacket, USB_PID
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+from usb_phy import USB_PKT_TIMINGS
 
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
     pktLength = 10
-    ied = 4000
+    # Tx -> Tx, sent hanshake after IN -> sending IN tok
+    ied = 24
+    # Tx -> Tx, sent bad hanshake after IN -> sending IN tok
+    ied_bad = 23
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -35,7 +39,12 @@ def test_session(ep, address, bus_speed):
                     pid=USB_PID["DATA0"],
                 )
             )
-            session.add_event(TxHandshakePacket(pid=0xFF))
+            session.add_event(
+                TxHandshakePacket(
+                    pid=0xFF,
+                    interEventDelay = USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]
+                )
+            )
 
         session.add_event(
             UsbTransaction(
@@ -45,7 +54,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=ied,
+                interEventDelay=ied_bad,
             )
         )
 

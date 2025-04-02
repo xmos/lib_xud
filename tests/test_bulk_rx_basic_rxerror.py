@@ -10,8 +10,13 @@ from usb_transaction import UsbTransaction
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    # Large inter-event delay is to give the DUT time to perform checking
-    ied = 6000
+    # Rx -> Tx, recieving OUT handshake -> sending OUT tok
+    ied = 19
+    # Tx -> Tx, asserting RxError -> sending OUT tok
+    # not clear from UTMI if it's the same as normal Tx -> Tx
+    ied_err = 11
+    # second one doesn't pass with 11
+    ied_err1 = 12 
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -53,7 +58,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=11,
-            interEventDelay=ied,
+            interEventDelay=ied_err,
         )
     )
 
@@ -92,7 +97,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=13,
-            interEventDelay=ied,
+            interEventDelay=ied_err1,
         )
     )
 

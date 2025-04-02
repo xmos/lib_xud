@@ -45,14 +45,14 @@ def test_session(ep, address, bus_speed):
                 pid=USB_PID["SETUP"],
                 address=trafficAddress1,
                 endpoint=ep,
-                interEventDelay=ied,
+                interEventDelay=130#ied,
             )
         )
         session.add_event(
             TxDataPacket(
                 dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
                 pid=USB_PID["DATA0"],
-                interEventDelay=ied,
+                # interEventDelay=ied,
             )
         )
 
@@ -64,7 +64,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="SETUP",
                 dataLength=8,
-                interEventDelay=ied,
+                # interEventDelay=4#ied,
             )
         )
 
@@ -76,7 +76,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=ied,
+                interEventDelay=33#ied,
             )
         )
 
@@ -86,14 +86,14 @@ def test_session(ep, address, bus_speed):
                 pid=USB_PID["SETUP"],
                 address=trafficAddress2,
                 endpoint=ep,
-                interEventDelay=ied,
+                # interEventDelay=4#ied,
             )
         )
         session.add_event(
             TxDataPacket(
                 dataPayload=[1, 2, 3, 4, 5, 6, 7, 8],
                 pid=USB_PID["DATA0"],
-                interEventDelay=ied,
+                # interEventDelay=4#ied,
             )
         )
 
@@ -102,7 +102,6 @@ def test_session(ep, address, bus_speed):
                 pid=USB_PID["IN"],
                 address=trafficAddress2,
                 endpoint=ep,
-                interEventDelay=1000,
             )
         )
 
@@ -115,7 +114,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="OUT",
                 dataLength=0,
-                interEventDelay=ied,
+                interEventDelay=5#ied,
             )
         )
 

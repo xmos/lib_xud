@@ -5,13 +5,13 @@ import pytest
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-from usb_phy import USB_MAX_EP_ADDRESS
+from usb_phy import USB_MAX_EP_ADDRESS, USB_PKT_TIMINGS
 
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ied = 500
+    ied = USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]
 
     trafficAddress1 = (address + 1) % 128
     trafficAddress2 = (address + 127) % 128

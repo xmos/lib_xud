@@ -26,8 +26,6 @@ def test_session(ep, address, bus_speed):
     pktLength = 10
     frameNumber = 52  # Note, for frame number 52 we expect A5 34 40 on the bus
 
-    interEventDelay = USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
-
     session = UsbSession(
         bus_speed=bus_speed,
         run_enumeration=False,
@@ -47,14 +45,13 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=interEventDelay,
         )
     )
 
     frameNumber = frameNumber + 1
     pktLength = pktLength + 1
 
-    session.add_event(CreateSofToken(frameNumber))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]))
     session.add_event(
         UsbTransaction(
             session,
@@ -63,7 +60,6 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=interEventDelay,
         )
     )
 

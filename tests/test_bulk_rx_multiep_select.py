@@ -22,10 +22,11 @@ def test_session(ep, address, bus_speed):
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
+    interEventDelay = 32
+
     testEpCount = 3
     pktLength_start = 10
     pktLength_end = 19
-    interEventDelay = 100
     maxEp = ep + testEpCount - 1
 
     pktLength = [pktLength_start] * testEpCount

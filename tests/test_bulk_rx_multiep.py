@@ -7,6 +7,8 @@ import pytest
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+from usb_phy import USB_PKT_TIMINGS
+
 
 # EP numbers currently fixed for this test - set in params
 PARAMS = deepcopy(PARAMS)
@@ -16,6 +18,8 @@ for k in PARAMS:
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
+
+    ied = USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -31,6 +35,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="OUT",
                 dataLength=pktLength,
+                interEventDelay=ied,
             )
         )
         session.add_event(
@@ -41,6 +46,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="OUT",
                 dataLength=pktLength,
+                interEventDelay=ied,
             )
         )
         session.add_event(
@@ -51,6 +57,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="OUT",
                 dataLength=pktLength,
+                interEventDelay=ied,
             )
         )
         session.add_event(
@@ -61,6 +68,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="OUT",
                 dataLength=pktLength,
+                interEventDelay=ied,
             )
         )
 

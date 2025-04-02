@@ -43,7 +43,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="SETUP",
                 dataLength=8,
-                interEventDelay=interEventDelay,
+                interEventDelay=170#interEventDelay,
             )
         )
 
@@ -55,7 +55,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=interEventDelay,
+                interEventDelay=33#interEventDelay,
             )
         )
 
@@ -67,7 +67,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="OUT",
                 dataLength=0,
-                interEventDelay=interEventDelay,
+                interEventDelay=23#interEventDelay,
             )
         )
 

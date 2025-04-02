@@ -12,7 +12,9 @@ def test_session(ep, address, bus_speed):
 
     start_length = 10
     end_length = start_length + 10
-    interEventDelay = 50
+    # Rx -> Tx, recieving OUT handshake -> sending OUT tok
+    # ied_out = 19
+    ied_out = 100
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -27,7 +29,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="OUT",
                 dataLength=pktLength,
-                interEventDelay=interEventDelay,
+                interEventDelay=ied_out,
             )
         )
 

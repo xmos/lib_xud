@@ -43,7 +43,6 @@ def test_session(ep, address, bus_speed):
             endpointType="CONTROL",
             transType="SETUP",
             dataLength=8,
-            interEventDelay=interEventDelay,
         )
     )
 
@@ -55,7 +54,7 @@ def test_session(ep, address, bus_speed):
             endpointType="CONTROL",
             transType="OUT",
             dataLength=10,
-            interEventDelay=interEventDelay,
+            interEventDelay=11#interEventDelay,
         )
     )
 
@@ -65,7 +64,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["SETUP"],
             address=address,
             endpoint=ep,
-            interEventDelay=interEventDelay,
+            interEventDelay=1#interEventDelay,
         )
     )
 
@@ -73,7 +72,6 @@ def test_session(ep, address, bus_speed):
         TxDataPacket(
             dataPayload=[8, 9, 10, 11, 12, 13, 14, 15],
             pid=USB_PID["DATA0"],
-            interEventDelay=interEventDelay,
         )
     )
 
@@ -86,7 +84,7 @@ def test_session(ep, address, bus_speed):
             endpointType="CONTROL",
             transType="IN",
             dataLength=0,
-            interEventDelay=interEventDelay,
+            interEventDelay=10#interEventDelay,
         )
     )
 

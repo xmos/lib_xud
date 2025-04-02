@@ -22,6 +22,8 @@ def test_session(ep, address, bus_speed):
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
+    ied = 40
+
     testEpCount = 3
     pktLength_start = 10
     pktLength_end = 19
@@ -47,7 +49,7 @@ def test_session(ep, address, bus_speed):
                     endpointType="BULK",
                     transType="IN",
                     dataLength=transPktLength,
-                    interEventDelay=100,
+                    interEventDelay=ied,
                 )
             )
 

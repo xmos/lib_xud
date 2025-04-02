@@ -14,8 +14,8 @@ def test_session(ep, address, bus_speed):
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    # The large inter-frame gap is to give the DUT time to print its output
-    interEventDelay = 500
+    # Rx -> Tx, recieving OUT handshake -> sending OUT tok
+    ied_out = 20
 
     # Valid OUT transaction
     session.add_event(
@@ -26,7 +26,6 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=10,
-            interEventDelay=interEventDelay,
         )
     )
 
@@ -40,7 +39,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=11,
-            interEventDelay=interEventDelay,
+            interEventDelay=ied_out,
             resend=True,
         )
     )
@@ -54,7 +53,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=11,
-            interEventDelay=interEventDelay,
+            interEventDelay=ied_out,
         )
     )
 
@@ -67,7 +66,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=12,
-            interEventDelay=interEventDelay,
+            interEventDelay=ied_out,
         )
     )
 
@@ -79,7 +78,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=13,
-            interEventDelay=interEventDelay,
+            interEventDelay=ied_out,
         )
     )
 

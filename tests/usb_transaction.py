@@ -185,7 +185,8 @@ class UsbTransaction(UsbEvent):
                 elif self._nacking:
                     self._packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
                 else:
-                    self._packets.append(TxHandshakePacket())
+                    # we know that the device is not halted and not nacking, hence we've recieved the RxDataPacket before
+                    self._packets.append(TxHandshakePacket(interEventDelay = USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]))
 
         super().__init__(time=eventTime)
 

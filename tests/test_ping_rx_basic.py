@@ -28,7 +28,6 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["PING"],
             address=address,
             endpoint=ep,
-            interEventDelay=500,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
@@ -39,7 +38,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["PING"],
             address=address,
             endpoint=ep,
-            interEventDelay=500,
+            interEventDelay=1,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
@@ -53,7 +52,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=10,
-            interEventDelay=500,
+            interEventDelay=1,
         )
     )
 
@@ -63,7 +62,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["PING"],
             address=address,
             endpoint=ep,
-            interEventDelay=6000,
+            interEventDelay=89,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["ACK"]))
@@ -74,7 +73,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["PING"],
             address=address,
             endpoint=ep,
-            interEventDelay=6000,
+            interEventDelay=1,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["ACK"]))
@@ -88,7 +87,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=10,
-            interEventDelay=6000,
+            interEventDelay=1,
         )
     )
 
@@ -98,7 +97,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["PING"],
             address=address,
             endpoint=ep,
-            interEventDelay=500,
+            interEventDelay=47,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
@@ -109,7 +108,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["PING"],
             address=address,
             endpoint=ep,
-            interEventDelay=500,
+            interEventDelay=1,
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
@@ -123,7 +122,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=10,
-            interEventDelay=500,
+            interEventDelay=1,
         )
     )
 

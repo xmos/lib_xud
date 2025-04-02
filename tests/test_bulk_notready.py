@@ -3,6 +3,7 @@
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_packet import TokenPacket, TxDataPacket, RxHandshakePacket, USB_PID
+from usb_phy import USB_PKT_TIMINGS
 import pytest
 from conftest import PARAMS, test_RunUsbSession
 
@@ -11,7 +12,6 @@ from conftest import PARAMS, test_RunUsbSession
 def test_session(ep, address, bus_speed):
 
     pktLength = 10
-    ied = 500
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -34,6 +34,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["IN"],
             address=address,
             endpoint=ep,
+            interEventDelay = USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]
         )
     )
     session.add_event(RxHandshakePacket(pid=USB_PID["NAK"]))
@@ -43,7 +44,7 @@ def test_session(ep, address, bus_speed):
             pid=USB_PID["OUT"],
             address=address,
             endpoint=ep,
-            interEventDelay=ied,
+            interEventDelay = USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]
         )
     )
 

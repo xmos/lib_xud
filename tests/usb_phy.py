@@ -56,13 +56,14 @@ USB_TIMINGS_SHORT = {
 
 
 USB_PKT_TIMINGS_TIGHT = {
-    "TX_TO_RX_PACKET_TIMEOUT": 18,  # Timeout between sending DUT a packet
-    # and the expected response (in USB
-    # clocks). This is SIE decision time in
-    # UTMI spec
-    # TODO this needs reducing to 14!
-    "TX_TO_TX_PACKET_DELAY": 5,  # Default delay between transmitting two packets
-    # TODO this needs reducing to 4!
+    # UTMI uses device-centric terminology, while these constants are host-centric, numbers are in USB clocks
+    "TX_TO_RX_PACKET_TIMEOUT": 18,  # Timeout between sending a packet and the expected response
+    # UTMI defines SIE decision time (0 - 14) but there's also RxEnd delay (2.75 - 7.875) and TxStart delay (1 - 2)
+    # so assuming the PHY works fast, we have 14 + 2.75 + 1 = 18
+    "TX_TO_TX_PACKET_DELAY": 4,     # Default delay between transmitting two packets
+    "RX_TO_TX_PACKET_DELAY": 1      # Delay between recieving a packet and sending a new one
+    # The SIE prep time in UTMI is 6 - 36.875, where there's a TxEnd delay (2 - 5) and RxStart delay (2.75 - 7.875)
+    # Which leaves us (the host) with 6 - 2 - 2.75 = 1
 }
 
 

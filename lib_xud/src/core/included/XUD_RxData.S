@@ -113,8 +113,7 @@ OutTail0:
     clre}
 xta_targetA_RxRet1:
 xta_targetA_RxRet2:
-xta_targetA_RxRet3:
-    {RETSP_u6   0;  ldc r1, 0}
+    {RETSP_u6   0;  eq         r6, r6, r11}
 
 // 1 Tail Byte
 .align 32
@@ -126,8 +125,7 @@ OutTail1:
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL1]
 xta_targetB_RxRet1:
 xta_targetB_RxRet2:
-xta_targetB_RxRet3:
-    {RETSP_u6   0;  ldc r1, 0}
+    {RETSP_u6   0;  eq         r6, r6, r11}
 
 // Two Tail Bytes
 .align 32
@@ -139,8 +137,7 @@ OutTail2:
     ldw         r11, sp[STACK_RXCRC_TAIL2]
 xta_targetC_RxRet1:
 xta_targetC_RxRet2:
-xta_targetC_RxRet3:
-    {RETSP_u6   0;  ldc r1, 0}
+    {RETSP_u6   0;  eq         r6, r6, r11}
 
 // Three Tail Bytes
 .align 32
@@ -153,6 +150,5 @@ OutTail3:
     crc8        r6, r1, r2, r9                  // Use the fact the the bottom byte of port id is 0.. saves us an ldc
 xta_targetD_RxRet1:
 xta_targetD_RxRet2:
-xta_targetD_RxRet3:
-    {RETSP_u6   0;  ldc r1, 0}
+    {RETSP_u6   0;  eq         r6, r6, r11}
 

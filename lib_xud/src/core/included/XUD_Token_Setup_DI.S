@@ -19,8 +19,8 @@ XUD_Setup_LoadBuffer:
     bl         doRXData                         // RXData writes available data to buffer and does crc check.
 RxRet1:
                                                 // r8: Data tail size (bytes)
-    xor        r1, r6, r11                      // Check for good CRC16
-    bt         r1, XUD_Setup_NotReady           // Branch based on CRC good/bad
+
+    bf          r6, XUD_Setup_NotReady          // Branch based on CRC good/bad
 
 XUD_Setup_ClearStall:                           // CRC OK
                                                 // Have received a Setup so clear any STALL condition on IN/OUT endpoint.
@@ -28,7 +28,8 @@ XUD_Setup_ClearStall:                           // CRC OK
     ldaw         r6, dp[epAddr]
 
     ldaw         r11, r10[4]                    // R11 = R10 + 16
-    ldw          r11, r6[r11]
+    {ldc         r1, 0
+    ldw          r11, r6[r11]}
     stw          r1, r11[10]                    // r1: 0
 
     ldw          r11, r6[r10]

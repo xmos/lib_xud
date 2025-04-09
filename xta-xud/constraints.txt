@@ -181,7 +181,7 @@ TIME 100 ns
 # may need to add more time here
 
 PATH {doRXData_Ack}                {XUD_TokenRx_Pid}
-PATH {DoOutNonIso_Ack}             {XUD_TokenRx_Pid}
+PATH {DoOutNonIso_Ack}             {Token_PID_RxRet2}
 PATH {Ping_Ack}                    {XUD_TokenRx_Pid}
 PATH {PingNotAck}                  {XUD_TokenRx_Pid}
 PATH {XUD_TokenOut_BufferFull_Nak} {XUD_TokenRx_Pid}

@@ -109,7 +109,8 @@ DoneTail:
     bf          r11, XUD_IN_DoneTx
 
 SetupReceiveHandShake:
-    ldc        r11, 8
+    {setsr      0x1                                 // enable events so we can get a handshake before waiteu
+    ldc        r11, 8}
 xta_ep_SetupReceiveHandShake:
     {setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
     ldw        r8, sp[STACK_RXRDY_PORT]}

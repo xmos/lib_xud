@@ -41,7 +41,7 @@ suspend_t_wtwrsths:
 #define STACK_OUT_TIMER (9)                 // Used for out data timeout
 #define STACK_RXA_PORT (10)                 // RXA_port
 // 11                : Unused
-// 12                : Unused
+#define STACK_SOF_FRAME         (12)
 #define STACK_SUSPEND_TIMEOUT   (13)
 #define STACK_SUSPEND_TIMER     (14)
 #define STACK_RXE_PORT          (15)

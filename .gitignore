@@ -16,6 +16,7 @@
 *.pyc
 **/*.egg-info/
 **/.venv*/
+.python-version
 
 # XMOS temp files
 **/*build*/*
@@ -41,7 +42,8 @@
 doc/_build/pdf/*.pdf
 **/doc/pdf/*.pdf
 
-*.expect
-*xsim_trace*
-xcoverage_result.txt
-tests/test*/src/test*.xn
+# Testing
+tests/expect
+tests/logs
+tests/result
+tests/test_*/**/*.xn

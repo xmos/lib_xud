@@ -50,7 +50,7 @@ xta_ep_XUD_IN_TxHandshake:
 
 XUD_IN_TxNak:
     ldc         r11, USB_PIDn_NAK
-xta_ep_XUD_IN_TxNak:    
+xta_ep_XUD_IN_TxNak:
     outpw       res[TXD], r11, 8
     #define  XTA_TOKENJMP_PID   xta_ep_Token_PID_TxNak
     #define  XTA_TOKENJMP_EPCRC xta_ep_Token_EPCRC_TxNak
@@ -162,10 +162,11 @@ XUD_IN_DoneTx:
 ClearInEpReady:                                    // TODO Tidy this up
     {ldc        r9, 0                              // Coming from TxHandShakeReceived we already have 0 here, from DoneTail we don't
     ldw        r10, r5[r3]}                        // Load the EP struct
+    ldw        r4, sp[STACK_SOF_FRAME]
     stw        r9, r5[r3]                          // Clear the ready
     ldw        r11, r10[1]                         // Load channel
 xta_no_pauseC:
-    out        res[r11], r11                       // Output word to signal packet sent okay
+    out        res[r11], r4                        // Output word to signal packet sent okay
     bu         NextToken
 
 .align 64

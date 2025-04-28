@@ -598,6 +598,8 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
 
             ep_info[USB_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
 
+            ep_info[USB_MAX_NUM_EP_OUT+i].max_len = 1024;
+
             ep_info[USB_MAX_NUM_EP_OUT+i].halted = 0;    // Mark EP as not halted
 
             asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));

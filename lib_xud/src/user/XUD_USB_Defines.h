@@ -33,6 +33,7 @@
 #define USB_PIDn_DATA0                  0xc3
 #define USB_PIDn_DATA1                  USB_PID_NEGATE(USB_PID_DATA1)
 #define USB_PIDn_DATA2                  USB_PID_NEGATE(USB_PID_DATA2)
+#define USB_PIDn_MDATA                  USB_PID_NEGATE(USB_PID_MDATA)
 #define USB_PIDn_ACK                    0xd2
 #define USB_PIDn_NAK                    0x5a
 #define USB_PIDn_STALL                  0x1e

@@ -29,10 +29,12 @@ xta_ep_DoOutNonIso_Ack:
 StoreTailDataOut:
     ldw        r11, r3[1]                       // Load EP chanend
 xta_no_pauseG:
-    out        res[r11], r4                     // Output datalength (words)
+    {out        res[r11], r4                    // Output datalength (words)
+    ldw         r4, sp[STACK_SOF_FRAME]}
     stw        r1, r5[r10]                      // Clear ready (r1: 0)
 xta_no_pauseH:
-    {outt       res[r11], r8;   ldw    r6, sp[STACK_RXCRC_INIT]} // CRC16 init (out) - Needs reseting after an out & Send tail length
+    outt        res[r11], r8
+    {outt       res[r11], r4;   ldw    r6, sp[STACK_RXCRC_INIT]} // CRC16 init (out) - Needs reseting after an out & Send tail length
 #if defined(__XS2A__)
     ldw         r1, sp[STACK_VTOK_PORT]
 #endif

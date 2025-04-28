@@ -399,27 +399,7 @@ void XUD_Kill(XUD_ep ep);
  *                         The buffer is assumed to be word aligned.
  * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
-#if (XUD_WEAK_API)
 XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr);
-#else
-static inline XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
-{
-    int chan_array_ptr;
-    int reset;
-
-    /* Firstly check if we have missed a USB reset - endpoint may would not want receive after a reset */
-    asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
-    if(reset)
-    {
-        return XUD_RES_UPDATE;
-    }
-    asm volatile("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-    asm volatile("stw %0, %1[3]"::"r"(addr),"r"(ep));            // Store buffer
-    asm volatile("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
-
-    return XUD_RES_OKAY;
-}
-#endif
 
 /**
  * \brief      Marks an OUT endpoint as ready to receive data
@@ -438,64 +418,7 @@ int XUD_SetReady_Out(XUD_ep ep, unsigned char buffer[]) ATTRIB_WEAK;
  * \param      len         The length of the data to transmit.
  * \return     XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
-#if (XUD_WEAK_API)
 XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len);
-#else
-static inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
-{
-    int chan_array_ptr;
-    int tmp, tmp2;
-    int wordLength;
-    int tailLength;
-
-    int reset;
-
-    /* Firstly check if we have missed a USB reset - endpoint may not want to send out old data after a reset */
-    asm volatile("ldw %0, %1[9]":"=r"(reset):"r"(ep));
-    if(reset)
-    {
-        return XUD_RES_UPDATE;
-    }
-
-    /* Tail length bytes to bits */
-#ifdef __XC__
-    tailLength = zext((len << 3),5);
-#else
-    tailLength = (len << 3) & 0x1F;
-#endif
-
-    /* Datalength (bytes) --> datalength (words) */
-    wordLength = len >> 2;
-
-    /* If tail-length is 0 and word-length not 0. Make tail-length 32 and word-length-- */
-    if ((tailLength == 0) && (wordLength != 0))
-    {
-        wordLength = wordLength - 1;
-        tailLength = 32;
-    }
-
-    /* Get end off buffer address */
-    asm volatile("add %0, %1, %2":"=r"(tmp):"r"(addr),"r"(wordLength << 2));
-
-    /* Produce negative offset from end of buffer */
-    asm volatile("neg %0, %1":"=r"(tmp2):"r"(wordLength));
-
-    /* Store neg index */
-    asm volatile("stw %0, %1[6]"::"r"(tmp2),"r"(ep));
-
-    /* Store buffer pointer */
-    asm volatile("stw %0, %1[3]"::"r"(tmp),"r"(ep));
-
-    /*  Store tail len */
-    asm volatile("stw %0, %1[7]"::"r"(tailLength),"r"(ep));
-
-    /* Finally, mark ready */
-    asm volatile("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(ep));
-    asm volatile("stw %0, %1[0]"::"r"(ep),"r"(chan_array_ptr));
-
-    return XUD_RES_OKAY;
-}
-#endif
 
 /**
  * \brief   Marks an IN endpoint as ready to transmit data
@@ -505,14 +428,7 @@ static inline XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int len)
  * \param   len         The length of the data to transmit.
  * \return  XUD_RES_OKAY on success, for errors see `Status Reporting`.
  */
-static inline XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len)
-{
-    unsigned addr;
-
-    asm volatile("mov %0, %1":"=r"(addr):"r"(buffer));
-
-    return XUD_SetReady_InPtr(ep, addr, len);
-}
+XUD_Result_t XUD_SetReady_In(XUD_ep ep, unsigned char buffer[], int len);
 
 /**
  * \brief   Select handler function for receiving OUT endpoint data in a select.
@@ -580,6 +496,13 @@ typedef struct XUD_ep_info
     unsigned int halted;               // 10 NAK or STALL
     unsigned int saved_array_ptr;      // 11
     unsigned int array_ptr_setup;      // 12
+    unsigned int saved_frame;          // 13 Cached micro-frame number
+    unsigned int got_sof;              // 14 Got SoF state, only set in IN
+    unsigned int max_len;              // 15 Maximum transaction len permitted per endpoint
+    unsigned int max_trans;            // 16 Maximum nuber of transactions permitted per endpoint
+    unsigned int tr;                   // 17 Current transaction
+    unsigned int N_tr;                 // 18 Nuber of IN transactions in the current micro-frame
+    unsigned int remained;             // 19
 } XUD_ep_info;
 
 #endif

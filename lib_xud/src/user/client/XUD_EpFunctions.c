@@ -91,7 +91,6 @@ void XUD_ClearStall(XUD_ep e)
     XUD_ClearStallByAddr(ep->epAddress);
 }
 
-/* ignoreHalted should only be used for Setup data */
 static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigned char buffer[])
 {
     /* If EP is marked as halted do not mark as ready.. */

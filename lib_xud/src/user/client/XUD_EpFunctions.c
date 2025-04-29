@@ -1,4 +1,4 @@
-// Copyright 2021-2024 XMOS LIMITED.
+// Copyright 2021-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include "xud.h"
@@ -91,7 +91,6 @@ void XUD_ClearStall(XUD_ep e)
     XUD_ClearStallByAddr(ep->epAddress);
 }
 
-/* ignoreHalted should only be used for Setup data */
 static inline XUD_Result_t XUD_GetBuffer_Start(volatile XUD_ep_info *ep, unsigned char buffer[])
 {
     /* If EP is marked as halted do not mark as ready.. */

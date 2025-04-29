@@ -1,8 +1,8 @@
 lib_xud change log
 ==================
 
-2.4.1
------
+UNRELEASED
+----------
 
   * CHANGE: Extended XMOS Public Licence copyright to 2024
 

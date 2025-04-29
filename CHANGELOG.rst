@@ -4,7 +4,7 @@ lib_xud change log
 UNRELEASED
 ----------
 
-  * CHANGE: Extended XMOS Public Licence copyright to 2024
+  * CHANGE: Optimised port timings for XS3A to use non-inverted clock
 
 2.4.0
 -----

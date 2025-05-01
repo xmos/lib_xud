@@ -24,7 +24,11 @@
 .align FUNCTION_ALIGNMENT
 XUD_IN_NotReady:
     ldw         r11, sp[STACK_EPTYPES_IN]
+#ifndef XUD_NAK_ISO_IN
     ldw         r11, r11[r10]                      // Load EP Type
+#else
+    ldc         r11, 1
+#endif
     bt          r11, XUD_IN_TxHandshake
     ldc         r11, 0xc3                          // Create 0-length packet
 xta_ep_XUD_IN_NotReady:

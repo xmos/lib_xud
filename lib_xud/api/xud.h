@@ -122,6 +122,7 @@ typedef enum XUD_Result
     XUD_RES_UPDATE = -1,
     XUD_RES_OKAY = 0,
     XUD_RES_ERR =  2,
+    XUD_RES_WAIT
 } XUD_Result_t;
 
 /* Note, also used at CT to inform EPs of bus-state change type */

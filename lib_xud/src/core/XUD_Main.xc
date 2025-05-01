@@ -563,6 +563,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
 
             ep_info[i].epType = epTypeTableOut[i];
             ep_info[i].halted = USB_PIDn_NAK;      // Mark EP as not halted
+            ep_info[i].remained = 0;
 
 #if !defined(__XS2A__)
             ep_info[i].pid = USB_PIDn_DATA0;

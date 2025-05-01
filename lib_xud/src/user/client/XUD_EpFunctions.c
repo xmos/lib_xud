@@ -140,8 +140,10 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     if(ep->epType == XUD_EPTYPE_ISO) {
         unsigned frame;
         asm volatile("int %0, res[%1]" : "=r"(frame) : "r"(c));
+    #if 0
         got_sof = (ep->saved_frame != frame) ? 1 : 0;
         ep->saved_frame = frame;
+    #endif
     }
 
     /* Bits to bytes */
@@ -188,6 +190,22 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
 #ifdef USB_HBW_EP
     else
     {
+        ep->remained += *datalength;
+        if(ep->actualPid == USB_PIDn_MDATA)
+        {
+            ep->buffer += ep->remained;
+            XUD_GetBuffer_Start(ep, ep->buffer);
+            *datalength = 0;
+            return XUD_RES_OKAY;
+        }
+        else
+        {
+            *datalength = ep->remained;
+            ep->remained = 0;
+            return XUD_RES_OKAY;
+        }
+
+    #if 0
         unsigned tr = ep->tr;
         if(got_sof && (tr == 0))
         {
@@ -203,6 +221,7 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
         }
         else if(!got_sof && (tr == 2) && (ep->actualPid == USB_PID_DATA2)) ep->tr = 0;
         else return XUD_RES_ERR;
+    #endif
     }
 #endif
 
@@ -426,6 +445,11 @@ XUD_Result_t XUD_SetBuffer_Finish(chanend c, XUD_ep e)
     {
         ep->got_sof = (ep->saved_frame != frame) ? 1 : 0;
         ep->saved_frame = frame;
+        if(ep->remained)
+        {
+            XUD_SetReady_InPtr(ep, ep->buffer+4, ep->remained); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
+            return XUD_RES_WAIT;
+        }
     }
 #endif
 

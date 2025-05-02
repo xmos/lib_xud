@@ -1,0 +1,81 @@
+@startuml
+
+participant host as host
+participant xud as "xud driver"
+participant ep_buffer as ep_buffer
+participant decoupler as decoupler
+
+header Working case
+
+host -> decoupler : set interface
+
+decoupler -> xud : set_buffer_start (frame1, DATA2)
+
+host -> xud : SOF
+host -> xud : SOF
+host -> xud : SOF
+host -> xud : SOF
+host -> xud : IN token
+xud -> ep_buffer : set_buffer_finish (frame1, DATA2) \ngot_sof = 1
+ep_buffer -> xud : set_buffer_start, (frame1, DATA1)
+host -> xud : IN token
+xud -> ep_buffer : set_buffer_finish (frame1, DATA1) \ngot_sof = 0
+ep_buffer -> xud : set_buffer_start, (frame1, DATA0)
+host -> xud : IN token
+xud -> ep_buffer : set_buffer_finish (frame1, DATA0) \ngot_sof = 0
+ep_buffer -> decoupler : unblock
+decoupler -> xud : set_buffer_start (frame2, DATA2)
+
+host -> xud : SOF
+host -> xud : IN token
+
+newpage Error case
+
+host -> decoupler : set interface
+
+decoupler -> xud : set_buffer_start (frame1, DATA2)
+
+host -> xud : SOF
+host -> xud : SOF
+host -> xud : SOF
+host -> xud : SOF
+host -> xud : IN token
+xud -> ep_buffer : set_buffer_finish (frame1, DATA2) \ngot_sof = 1
+ep_buffer -> xud : set_buffer_start, (frame1, DATA1)
+host -[#red]> xud : SOF
+host -> xud : IN token
+xud -> ep_buffer : set_buffer_finish (frame1, DATA1) \ngot_sof = 1 (ERROR)
+note right
+    drop remaining frame1
+end note
+ep_buffer -> decoupler : unblock
+decoupler -> xud : set_buffer_start (frame2, DATA2)
+
+host -> xud : IN token
+xud -> ep_buffer : set_buffer_finish (frame2, DATA2) \ngot_sof = 0
+ep_buffer -> xud : set_buffer_start, (frame2, DATA2)
+note right
+    resend first subpacket
+    as havent received sof
+end note
+host -> xud : IN token
+xud -> ep_buffer : set_buffer_finish (frame2, DATA2) \ngot_sof = 0
+ep_buffer -> xud : set_buffer_start, (frame2, DATA2)
+note right
+    resend first subpacket
+    as havent received sof
+end note
+
+host -> xud : SOF
+host -> xud : IN token
+xud -> ep_buffer : set_buffer_finish (frame2, DATA2) \ngot_sof = 1
+note right
+    now that we're sync'd
+    to SOF, send the second
+    subpacket for this frame
+end note
+ep_buffer -> xud : set_buffer_start, (frame2, DATA1)
+
+
+
+@enduml

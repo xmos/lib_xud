@@ -504,6 +504,9 @@ typedef struct XUD_ep_info
     unsigned int tr;                   // 17 Current transaction
     unsigned int N_tr;                 // 18 Nuber of IN transactions in the current micro-frame
     unsigned int remained;             // 19
+    unsigned int first_pid;            // 21 // 'ignore' for OUT
+    unsigned int save_buffer;          // 22
+    unsigned int save_length;          // 23
 } XUD_ep_info;
 
 #endif

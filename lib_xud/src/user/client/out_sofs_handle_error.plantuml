@@ -1,0 +1,66 @@
+@startuml
+
+participant host as host
+participant xud as "xud driver"
+participant ep_buffer as ep_buffer
+participant decoupler as decoupler
+
+header Working case
+
+ep_buffer -> decoupler : Notify
+decoupler -> xud : get_buffer_start
+host -> xud : SOF
+host -> xud : SOF
+host -> xud : SOF
+host -> xud : OUT token
+xud -> ep_buffer : get_buffer_finish, \npid=MDATA, got_sof=1
+ep_buffer -> xud : get_buffer_start
+host -> xud : OUT token
+xud -> ep_buffer : get_buffer_finish, \npid=MDATA, got_sof=0
+ep_buffer -> xud : get_buffer_start
+host -> xud : OUT token
+xud -> ep_buffer : get_buffer_finish, \npid=DATA2, got_sof=0
+ep_buffer -> decoupler : Notify
+decoupler -> xud : get_buffer_start
+host -> xud : SOF
+
+
+newpage Error case
+
+decoupler -> xud : get_buffer_start
+host -> xud : SOF
+host -> xud : OUT token
+xud -> ep_buffer : get_buffer_finish, \npid=MDATA, got_sof=1
+ep_buffer -> xud : get_buffer_start
+host -> xud : OUT token
+xud -[#red]> ep_buffer : get_buffer_finish, \npid=DATA0, got_sof=0
+note right
+wrong PID
+endnote
+host -> xud : OUT token
+note right
+since we intend to drop
+all data recvd in this microframe
+anyway, its okay to miss
+this token
+endnote
+ep_buffer -> ep_buffer : set ep->tr=0
+ep_buffer -> xud : get_buffer_start \n re-issue transfer with the same buffer
+xud -[#red]> ep_buffer : get_buffer_finish, \npid=<whatever>, got_sof=0
+note right
+Since we've reset tr,
+at this point, we only see
+valid data if got_sof = 1,
+so this automatically syncs us
+to the next microframe
+endnote
+ep_buffer -> ep_buffer : set ep->tr=0
+ep_buffer -> xud : get_buffer_start \n re-issue transfer with the same buffer
+host -> xud : SOF
+host -> xud : OUT token
+xud -> ep_buffer : get_buffer_finish, \npid=MDATA, got_sof=1
+note right
+this is seen as valid
+endnote
+
+@enduml

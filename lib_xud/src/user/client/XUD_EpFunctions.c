@@ -140,10 +140,9 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     if(ep->epType == XUD_EPTYPE_ISO) {
         unsigned frame;
         asm volatile("int %0, res[%1]" : "=r"(frame) : "r"(c));
-    #if 0
         got_sof = (ep->saved_frame != frame) ? 1 : 0;
         ep->saved_frame = frame;
-    #endif
+
     }
 
     /* Bits to bytes */
@@ -190,11 +189,16 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
 #ifdef USB_HBW_EP
     else
     {
+        unsigned tr = ep->tr;
         ep->remained += *datalength;
         if(ep->actualPid == USB_PIDn_MDATA)
         {
-            ep->buffer += ep->remained;
-            XUD_GetBuffer_Start(ep, ep->buffer);
+            ep->buffer += *datalength;
+
+            /* Mark EP as ready */
+            unsigned * array_ptr = (unsigned *)ep->array_ptr;
+            *array_ptr = (unsigned) ep;
+            //XUD_GetBuffer_Start(ep, ep->buffer);
             *datalength = 0;
             return XUD_RES_OKAY;
         }
@@ -204,28 +208,91 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
             ep->remained = 0;
             return XUD_RES_OKAY;
         }
-
-    #if 0
-        unsigned tr = ep->tr;
-        if(got_sof && (tr == 0))
-        {
-            if(ep->actualPid == USB_PIDn_DATA0) ep->tr = 0;
-            else if(ep->actualPid == USB_PIDn_MDATA) ep->tr = 1;
-            else return XUD_RES_ERR;
-        }
-        else if(!got_sof && (tr == 1))
-        {
-            if(ep->actualPid == USB_PIDn_DATA1) ep->tr = 0;
-            else if(ep->actualPid == USB_PIDn_MDATA) ep->tr = 2;
-            else return XUD_RES_ERR;
-        }
-        else if(!got_sof && (tr == 2) && (ep->actualPid == USB_PID_DATA2)) ep->tr = 0;
-        else return XUD_RES_ERR;
-    #endif
     }
 #endif
 
     return XUD_RES_OKAY;
+}  // NOCOVER
+
+XUD_Result_t XUD_GetBuffer_Finish_ISO(chanend c, XUD_ep e, unsigned *datalength)
+{   // NOCOVER
+    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
+
+    unsigned length;
+    unsigned lengthTail;
+    unsigned recv_length;
+
+    /* Input packet length (words) */
+    asm volatile("in %0, res[%1]" : "=r"(length) : "r"(c));
+
+    /* Input tail length (bytes) */
+    asm volatile("int %0, res[%1]" : "=r"(lengthTail) : "r"(c));
+
+    unsigned got_sof;
+    unsigned frame;
+    asm volatile("int %0, res[%1]" : "=r"(frame) : "r"(c));
+    got_sof = (ep->saved_frame != frame) ? 1 : 0;
+    ep->saved_frame = frame;
+
+    /* Bits to bytes */
+    lengthTail >>= 3;
+
+    /* Words to bytes */
+    length <<= 2;
+
+    /* -2 length correction for CRC */
+    recv_length = length + lengthTail - 2;
+
+    /// Limitation: We only support a max of 2 transactions. tr = 0 and tr = 1
+    unsigned error = 0;
+    unsigned tr = ep->tr;
+    if(tr == 0)
+    {
+        // 1st transaction can only be DATA0 or MDATA and it should see a sof
+        if(!got_sof || (ep->actualPid == USB_PIDn_DATA1))
+        {
+            error = 1;
+        }
+    }
+    else
+    {
+        // 2nd transaction can only be DATA1 and shouldn't see a sof
+        if(got_sof || (ep->actualPid != USB_PIDn_DATA1))
+        {
+            error = 1;
+        }
+    }
+    if(error)
+    {
+        // Ignore everything recvd so far in this microframe
+        // and mark EP ready with the original buffer start address
+        ep->remained = 0;
+        ep->tr = 0;
+        ep->buffer = ep->save_buffer;
+        /* Mark EP as ready */
+        unsigned * array_ptr = (unsigned *)ep->array_ptr;
+        *array_ptr = (unsigned) ep;
+        *datalength = 0;
+    }
+    else if(ep->actualPid == USB_PIDn_MDATA)
+    {
+        // We expect more data
+        ep->buffer += recv_length;
+        /* Mark EP as ready */
+        unsigned * array_ptr = (unsigned *)ep->array_ptr;
+        *array_ptr = (unsigned) ep;
+        ep->remained += recv_length;
+        ep->tr = 1;
+        *datalength = 0;
+    }
+    else
+    {
+        // Received the full frame. Notify client by setting *datalength to the
+        // received frame length
+        *datalength = recv_length + ep->remained;
+    }
+    return XUD_RES_OKAY;
+
 }  // NOCOVER
 
 XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
@@ -285,7 +352,7 @@ void XUD_GetData_Select(chanend c, XUD_ep e, unsigned *datalength, XUD_Result_t 
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
-    *result = XUD_GetBuffer_Finish(ep->client_chanend, e, datalength);
+    *result = XUD_GetBuffer_Finish_ISO(ep->client_chanend, e, datalength);
 }
 
 XUD_Result_t XUD_GetSetupBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
@@ -386,31 +453,56 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
     {
         unsigned N = ep->N_tr;
         unsigned tr = ep->tr;
-        if(ep->got_sof)
+        if(N == 3)
         {
-            if(tr == 0)
+            if(tr == 0) // current transfer
             {
-                if(N == 3) {ep->pid = USB_PIDn_DATA2; ep->tr = 1;}
-                if(N == 2) {ep->pid = USB_PIDn_DATA1; ep->tr = 1;}
-                if(N == 1) {ep->pid = USB_PIDn_DATA0; ep->tr = 0;}
-                ep->got_sof = 0;
+                ep->pid = USB_PIDn_DATA2;
+                ep->tr = 1; // next transfer
+                ep->first_pid = USB_PIDn_DATA2;
             }
-            else return XUD_RES_ERR;
-        }
-        else
-        {
-            if(tr == 1)
+            else if(tr == 1)
             {
-                if(N == 3) {ep->pid = USB_PIDn_DATA1; ep->tr = 2;}
-                if(N == 2) {ep->pid = USB_PIDn_DATA0; ep->tr = 0;}
-                else return XUD_RES_ERR;
+                ep->pid = USB_PIDn_DATA1;
+                ep->tr = 2;
             }
             else if(tr == 2)
             {
-                if(N == 3) {ep->pid = USB_PIDn_DATA0; ep->tr = 0;}
-                else return XUD_RES_ERR;
+                ep->pid = USB_PIDn_DATA0;
+                ep->tr = 0;
             }
-            else return XUD_RES_ERR;
+            else
+            {
+                return XUD_RES_ERR;
+            }
+        }
+        else if(N == 2)
+        {
+            if(tr == 0)
+            {
+                ep->pid = USB_PIDn_DATA1;
+                ep->tr = 1;
+                ep->first_pid = USB_PIDn_DATA1;
+            }
+            else if(tr == 1)
+            {
+                ep->pid = USB_PIDn_DATA0;
+                ep->tr = 0;
+            }
+            else
+            {
+                return XUD_RES_ERR;
+            }
+        }
+        else if(N == 1)
+        {
+            ep->pid = USB_PIDn_DATA0;
+            ep->tr = 0;
+            ep->first_pid = USB_PIDn_DATA0;
+        }
+        else
+        {
+            return XUD_RES_ERR;
         }
     }
 #endif
@@ -443,12 +535,38 @@ XUD_Result_t XUD_SetBuffer_Finish(chanend c, XUD_ep e)
 #ifdef USB_HBW_EP
     else
     {
-        ep->got_sof = (ep->saved_frame != frame) ? 1 : 0;
+        ep->got_sof = (ep->saved_frame != frame) ? 1 : 0; // Between this finish and the last, was there a SOF received.
+        unsigned save_saved_frame = ep->saved_frame;
         ep->saved_frame = frame;
-        if(ep->remained)
+
+        // Check if what's completed was correct wrt got_sof
+        if(ep->pid != ep->first_pid) // If not the first subpacket
         {
-            XUD_SetReady_InPtr(ep, ep->buffer+4, ep->remained); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
-            return XUD_RES_WAIT;
+            if(ep->got_sof) // we dont expect to have received a sof
+            {
+                // This is error. Notify client, who is then expected to issue a new transfer
+                return XUD_RES_ERR;
+            }
+            else if(ep->remained)
+            {
+                XUD_SetBuffer_Start(ep, ep->buffer+4, ep->remained); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
+                return XUD_RES_WAIT;
+            }
+        }
+        else // first subpacket of the frame
+        {
+            if(!ep->got_sof) // We expect to have received a SOF
+            {
+                ep->tr = 0;
+                XUD_SetBuffer_Start(ep, ep->save_buffer, ep->save_length); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
+                // TODO repeat the first subframe till we receive a SOF
+                return XUD_RES_ERR;
+            }
+            else if(ep->remained)
+            {
+                XUD_SetBuffer_Start(ep, ep->buffer+4, ep->remained); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
+                return XUD_RES_WAIT;
+            }
         }
     }
 #endif

@@ -36,8 +36,8 @@ def test_session(ep, address, bus_speed):
 
     session.add_event(CreateSofToken(frameNumber))
 
-    session.add_event(UsbSuspend(350000, suspendedPhy=False))
-    session.add_event(UsbResume(glitches=[("SE_1", 10)], suspendedPhy=False))
+    session.add_event(UsbSuspend(350000))
+    session.add_event(UsbResume(glitches=[("SE_1", 10)]))
 
     frameNumber = frameNumber + 1
     pktLength = pktLength + 1

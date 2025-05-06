@@ -39,12 +39,12 @@ pipeline {
   parameters {
     string(
       name: 'TOOLS_VERSION',
-      defaultValue: '15.3.0',
+      defaultValue: '-j -b markp_xsim_expose_signals_from_usb_shim latest',
       description: 'The XTC tools version'
     )
     string(
       name: 'XMOSDOC_VERSION',
-      defaultValue: 'v6.2.0',
+      defaultValue: 'v7.0.0',
       description: 'The xmosdoc version'
     )
     string(

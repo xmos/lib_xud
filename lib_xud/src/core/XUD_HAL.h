@@ -93,3 +93,16 @@ void XUD_HAL_EnableUsb(unsigned pwrConfig);
  **/
 unsigned int XUD_HAL_GetVBusState(void);
 
+/**
+ * \brief  HAL function to put PHY into low power mode
+ * \param  none
+ * \return void
+ **/
+void XUD_HAL_SuspendPhy(void);
+
+/**
+ * \brief  HAL function to take PHY out of low power mode
+ * \param  none
+ * \return void
+ **/
+void XUD_HAL_UnSuspendPhy(void);

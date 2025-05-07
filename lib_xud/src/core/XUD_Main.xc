@@ -110,7 +110,9 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epAddr_Ready[], XUD_EpType epT
     {
         if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
         {
-            /* Set EP resetting flag. EP uses this to check if it missed a reset before setting ready */
+            /* Set EP resetting flag. EP uses this to check if it missed a reset before setting ready.
+             * This is required since a "non-ready" EP will not have received its notifcation, it may
+             * subsequently re-mark itself ready causing XUD to send out of date data */
             ep_info[i].resetting = 1;
 
             /* Clear EP ready. Note. small race since EP might set ready after XUD sets resetting to 1

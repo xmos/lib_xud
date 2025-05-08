@@ -5,6 +5,7 @@ import pytest
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
+from usb_packet import CreateSofToken
 
 
 @pytest.fixture
@@ -15,12 +16,16 @@ def test_session(ep, address, bus_speed):
 
     start_length = 200
     end_length = 203
+    frameNumber = 0
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
     # TODO randomise packet lengths and data
     for pktLength in range(start_length, end_length + 1):
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        frameNumber += 1
+
         session.add_event(
             UsbTransaction(
                 session,

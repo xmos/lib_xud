@@ -49,7 +49,9 @@ typedef enum t_runMode
 } t_runMode;
 
 int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode runMode);
+int TestEp_Tx_Hbw(chanend c_in, int epNum1, unsigned start, unsigned end, unsigned ep_len, t_runMode runMode);
 int TestEp_Rx(chanend c_out, int epNum, int start, int end);
+int TestEp_Rx_Hbw(chanend c_out, int epNum, int start, int end, int ep_len);
 int TestEp_Loopback(chanend c_out1, chanend c_in1, t_runMode runMode);
 
 void dummyThreads();

@@ -1,0 +1,48 @@
+// Copyright 2016-2024 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
+#ifndef EP_COUNT_OUT
+#define EP_COUNT_OUT   (6)
+#endif
+
+#ifndef EP_COUNT_IN
+#define EP_COUNT_IN    (6)
+#endif
+
+#ifndef PKT_LENGTH_START
+#define PKT_LENGTH_START 	(4)
+#endif
+
+#ifndef PKT_LENGTH_END
+#define PKT_LENGTH_END 		(7)
+#endif
+
+#ifndef EP_LENGTH
+#define EP_LENGTH           (8)
+#endif
+
+#include "xud_shared.h"
+
+XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO};
+XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO,
+                                                XUD_EPTYPE_ISO};
+
+unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
+{
+    unsigned fail = TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH);
+
+    return fail;
+}
+
+#include "test_main.xc"
+
+

@@ -280,6 +280,9 @@ ConfigRxErrEventVector:
     setd       res[r3], r11                 // Set event cond data to 1
     eeu        res[r3]
 
+    ldc        r11, 0
+    stw        r11, sp[STACK_SOF_FRAME]
+
 SetupSuspendResetTimer:
     getr       r10, XS1_RES_TYPE_TIMER
     ecallf     r10

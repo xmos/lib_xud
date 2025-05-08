@@ -71,6 +71,7 @@ class UsbDeviceAttach(UsbEvent):
 
             if xcvrsel == 1 and termsel == 1:
                 break
+            usb_phy.wait_until(xsi.get_time() + 1) # yield to allow other threads to run
 
         print("DUT entered FS")
 

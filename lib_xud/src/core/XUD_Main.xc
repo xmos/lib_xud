@@ -565,6 +565,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
             ep_info[i].halted = USB_PIDn_NAK;      // Mark EP as not halted
             ep_info[i].remained = 0;
             ep_info[i].first_pid = 0;
+            ep_info[i].saved_frame = 0;
 
 #if !defined(__XS2A__)
             ep_info[i].pid = USB_PIDn_DATA0;
@@ -603,6 +604,9 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
             ep_info[USB_MAX_NUM_EP_OUT+i].max_len = 1024;
 
             ep_info[USB_MAX_NUM_EP_OUT+i].halted = 0;    // Mark EP as not halted
+
+            ep_info[USB_MAX_NUM_EP_OUT+i].remained = 0;
+            ep_info[USB_MAX_NUM_EP_OUT+i].saved_frame = 0;
 
             asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));
             outuint(c_ep_in[i], x);

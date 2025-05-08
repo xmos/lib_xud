@@ -121,6 +121,8 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     unsigned length;
     unsigned lengthTail;
     unsigned busUpdate;
+    unsigned recv_length;
+
 
     /* Wait for XUD response */
     asm volatile("testct %0, res[%1]" : "=r"(busUpdate) : "r"(c));
@@ -130,97 +132,6 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
         return XUD_RES_UPDATE;
     }
 
-    /* Input packet length (words) */
-    asm volatile("in %0, res[%1]" : "=r"(length) : "r"(c));
-
-    /* Input tail length (bytes) */
-    asm volatile("int %0, res[%1]" : "=r"(lengthTail) : "r"(c));
-
-    unsigned got_sof;
-    if(ep->epType == XUD_EPTYPE_ISO) {
-        unsigned frame;
-        asm volatile("int %0, res[%1]" : "=r"(frame) : "r"(c));
-        got_sof = (ep->saved_frame != frame) ? 1 : 0;
-        ep->saved_frame = frame;
-
-    }
-
-    /* Bits to bytes */
-    lengthTail >>= 3;
-
-    /* Words to bytes */
-    length <<= 2;
-
-    /* -2 length correction for CRC */
-    *datalength = length + lengthTail - 2;
-
-#ifndef USB_HBW_EP
-    /* Load received PID */
-    unsigned receivedPid = ep->actualPid;
-
-    /* Check received PID vs expected PID */
-    if(receivedPid != ep->pid)
-    {
-        *datalength = 0; /* Extra safety measure */
-        return XUD_RES_ERR;
-    }
-#endif
-
-    /* ISO == 0 */
-    if(ep->epType != XUD_EPTYPE_ISO)
-    {
-#ifdef USB_HBW_EP
-    /* Load received PID */
-    unsigned receivedPid = ep->actualPid;
-
-    /* Check received PID vs expected PID */
-    if(receivedPid != ep->pid)
-    {
-        *datalength = 0; /* Extra safety measure */
-        return XUD_RES_ERR;
-    }
-#endif
-#ifdef __XS2A__
-        ep->pid ^= 0x8;
-#else
-        ep->pid ^= 0x88;
-#endif
-    }
-#ifdef USB_HBW_EP
-    else
-    {
-        unsigned tr = ep->tr;
-        ep->remained += *datalength;
-        if(ep->actualPid == USB_PIDn_MDATA)
-        {
-            ep->buffer += *datalength;
-
-            /* Mark EP as ready */
-            unsigned * array_ptr = (unsigned *)ep->array_ptr;
-            *array_ptr = (unsigned) ep;
-            //XUD_GetBuffer_Start(ep, ep->buffer);
-            *datalength = 0;
-            return XUD_RES_OKAY;
-        }
-        else
-        {
-            *datalength = ep->remained;
-            ep->remained = 0;
-            return XUD_RES_OKAY;
-        }
-    }
-#endif
-
-    return XUD_RES_OKAY;
-}  // NOCOVER
-
-XUD_Result_t XUD_GetBuffer_Finish_ISO(chanend c, XUD_ep e, unsigned *datalength)
-{   // NOCOVER
-    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
-
-    unsigned length;
-    unsigned lengthTail;
-    unsigned recv_length;
 
     /* Input packet length (words) */
     asm volatile("in %0, res[%1]" : "=r"(length) : "r"(c));
@@ -229,10 +140,12 @@ XUD_Result_t XUD_GetBuffer_Finish_ISO(chanend c, XUD_ep e, unsigned *datalength)
     asm volatile("int %0, res[%1]" : "=r"(lengthTail) : "r"(c));
 
     unsigned got_sof;
+
     unsigned frame;
     asm volatile("int %0, res[%1]" : "=r"(frame) : "r"(c));
     got_sof = (ep->saved_frame != frame) ? 1 : 0;
     ep->saved_frame = frame;
+
 
     /* Bits to bytes */
     lengthTail >>= 3;
@@ -243,53 +156,100 @@ XUD_Result_t XUD_GetBuffer_Finish_ISO(chanend c, XUD_ep e, unsigned *datalength)
     /* -2 length correction for CRC */
     recv_length = length + lengthTail - 2;
 
-    /// Limitation: We only support a max of 2 transactions. tr = 0 and tr = 1
-    unsigned error = 0;
-    unsigned tr = ep->tr;
-    if(tr == 0)
+#ifndef USB_HBW_EP
+    /* Load received PID */
+    unsigned receivedPid = ep->actualPid;
+
+    /* Check received PID vs expected PID */
+    if(receivedPid != ep->pid)
     {
-        // 1st transaction can only be DATA0 or MDATA and it should see a sof
-        if(!got_sof || (ep->actualPid == USB_PIDn_DATA1))
-        {
-            error = 1;
-        }
+        *datalength = 0; /* Extra safety measure */
+        XUD_Result_t res = XUD_GetBuffer_Start(ep, ep->buffer);
+        if(res == XUD_RES_UPDATE) return res;
+        return XUD_RES_ERR;
     }
     else
     {
-        // 2nd transaction can only be DATA1 and shouldn't see a sof
-        if(got_sof || (ep->actualPid != USB_PIDn_DATA1))
+        *datalength = recv_length;
+    }
+#endif
+
+    /* ISO == 0 */
+    if(ep->epType != XUD_EPTYPE_ISO)
+    {
+#ifdef USB_HBW_EP
+        /* Load received PID */
+        unsigned receivedPid = ep->actualPid;
+
+        /* Check received PID vs expected PID */
+        if(receivedPid != ep->pid)
         {
-            error = 1;
+            *datalength = 0; /* Extra safety measure */
+            XUD_Result_t res = XUD_GetBuffer_Start(ep, ep->buffer);
+            if(res == XUD_RES_UPDATE) return res;
+            return XUD_RES_ERR;
         }
-    }
-    if(error)
-    {
-        // Ignore everything recvd so far in this microframe
-        // and mark EP ready with the original buffer start address
-        ep->remained = 0;
-        ep->tr = 0;
-        ep->buffer = ep->save_buffer;
-        /* Mark EP as ready */
-        unsigned * array_ptr = (unsigned *)ep->array_ptr;
-        *array_ptr = (unsigned) ep;
-        *datalength = 0;
-    }
-    else if(ep->actualPid == USB_PIDn_MDATA)
-    {
-        // We expect more data
-        ep->buffer += recv_length;
-        /* Mark EP as ready */
-        unsigned * array_ptr = (unsigned *)ep->array_ptr;
-        *array_ptr = (unsigned) ep;
-        ep->remained += recv_length;
-        ep->tr = 1;
-        *datalength = 0;
+        else
+        {
+            *datalength = recv_length;
+        }
+#endif
+#ifdef __XS2A__
+        ep->pid ^= 0x8;
+#else
+        ep->pid ^= 0x88;
+#endif
     }
     else
     {
-        // Received the full frame. Notify client by setting *datalength to the
-        // received frame length
-        *datalength = recv_length + ep->remained;
+        /// Limitation: We only support a max of 2 transactions. tr = 0 and tr = 1
+        unsigned error = 0;
+        unsigned tr = ep->tr;
+        if(tr == 0)
+        {
+            // 1st transaction can only be DATA0 or MDATA and it should see a sof
+            if(!got_sof || (ep->actualPid == USB_PIDn_DATA1))
+            {
+                error = 1;
+            }
+        }
+        else
+        {
+            // 2nd transaction can only be DATA1 and shouldn't see a sof
+            if(got_sof || (ep->actualPid != USB_PIDn_DATA1))
+            {
+                error = 1;
+            }
+        }
+        if(error)
+        {
+            // Ignore everything recvd so far in this microframe
+            // and mark EP ready with the original buffer start address
+            ep->remained = 0;
+            ep->tr = 0;
+            ep->buffer = ep->save_buffer;
+            /* Mark EP as ready */
+            unsigned * array_ptr = (unsigned *)ep->array_ptr;
+            *array_ptr = (unsigned) ep;
+            return XUD_RES_WAIT;
+        }
+        else if(ep->actualPid == USB_PIDn_MDATA)
+        {
+            // We expect more data
+            ep->buffer += recv_length;
+            /* Mark EP as ready */
+            unsigned * array_ptr = (unsigned *)ep->array_ptr;
+            *array_ptr = (unsigned) ep;
+            ep->remained += recv_length;
+            ep->tr = 1;
+            return XUD_RES_WAIT;
+        }
+        else
+        {
+            // Received the full frame. Notify client by setting *datalength to the
+            // received frame length
+            *datalength = recv_length + ep->remained;
+        }
     }
     return XUD_RES_OKAY;
 
@@ -303,42 +263,28 @@ XUD_Result_t XUD_DoSetRequestStatus(XUD_ep ep_in)
     return XUD_SetBuffer(ep_in, tmp, 0);
 }
 
-static XUD_Result_t XUD_GetBuffer_one(XUD_ep e, unsigned char buffer[], unsigned *datalength)
+XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
+    XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer);
+
+    if(result == XUD_RES_UPDATE)
+    {
+        return result;
+    }
+
     while(1)
     {
-        XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer);
-
-        if(result == XUD_RES_UPDATE)
-        {
-            return XUD_RES_UPDATE;
-        }
-
         result = XUD_GetBuffer_Finish(ep->client_chanend, e, datalength);
 
         /* If error (e.g. bad PID seq) try again */
-        if(result != XUD_RES_ERR)
+        // return on okay and reset
+        if((result == XUD_RES_OKAY) || (result == XUD_RES_UPDATE))
         {
             return result;
         }
     }
-}
-
-XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
-{
-    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
-    unsigned len = 0;
-    *datalength = 0;
-
-    do{
-        XUD_Result_t res = XUD_GetBuffer_one(e, buffer, &len);
-        if(res != XUD_RES_OKAY) return res;
-        buffer = &buffer[len];
-        *datalength += len;
-    }while(ep->actualPid == USB_PIDn_MDATA);
-    return XUD_RES_OKAY;
 }
 
 int XUD_SetReady_Out(XUD_ep e, unsigned char buffer[])
@@ -352,7 +298,7 @@ void XUD_GetData_Select(chanend c, XUD_ep e, unsigned *datalength, XUD_Result_t 
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
-    *result = XUD_GetBuffer_Finish_ISO(ep->client_chanend, e, datalength);
+    *result = XUD_GetBuffer_Finish(ep->client_chanend, e, datalength);
 }
 
 XUD_Result_t XUD_GetSetupBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalength)
@@ -411,6 +357,7 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
 {   // NOCOVER
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
+
     while(1)
     {
         /* Check if we missed a reset */
@@ -425,8 +372,24 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
             break;
         }
     }
-    unsigned send_len = (datalength > ep->max_len) ? ep->max_len : datalength;
-    unsigned remained = datalength - send_len;
+
+
+
+    unsigned send_len;
+#ifdef USB_HBW_EP
+    if(datalength > ep->max_len)
+    {
+        send_len = ep->max_len;
+        ep->remained = datalength - send_len;
+    }
+    else
+    {
+        send_len = datalength;
+        ep->remained =  0;
+    }
+#else
+    send_len = datalength;
+#endif
 
     int lengthWords = send_len >> 2;
     unsigned lengthTail = (send_len << 3) & 0x1f; // zext(5)?
@@ -445,64 +408,28 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
     ep->actualPid = lengthWords; /* Re-use of actualPid entry - TODO rename */
     ep->tailLength = lengthTail;
 
-    unsigned * array_ptr = (unsigned *)ep->array_ptr;
-    *array_ptr = (unsigned) ep;
-
 #ifdef USB_HBW_EP
+    unsigned N = ep->N_tr;
+    unsigned tr = ep->tr;
     if(ep->epType == XUD_EPTYPE_ISO)
     {
-        unsigned N = ep->N_tr;
-        unsigned tr = ep->tr;
-        if(N == 3)
-        {
-            if(tr == 0) // current transfer
-            {
-                ep->pid = USB_PIDn_DATA2;
-                ep->tr = 1; // next transfer
-                ep->first_pid = USB_PIDn_DATA2;
-            }
-            else if(tr == 1)
-            {
-                ep->pid = USB_PIDn_DATA1;
-                ep->tr = 2;
-            }
-            else if(tr == 2)
-            {
-                ep->pid = USB_PIDn_DATA0;
-                ep->tr = 0;
-            }
-            else
-            {
-                return XUD_RES_ERR;
-            }
-        }
-        else if(N == 2)
+        if(N == 2)
         {
             if(tr == 0)
             {
                 ep->pid = USB_PIDn_DATA1;
-                ep->tr = 1;
                 ep->first_pid = USB_PIDn_DATA1;
+                ep->tr = 1; // For next time.
             }
             else if(tr == 1)
             {
                 ep->pid = USB_PIDn_DATA0;
-                ep->tr = 0;
-            }
-            else
-            {
-                return XUD_RES_ERR;
             }
         }
-        else if(N == 1)
+        else // N == 1
         {
             ep->pid = USB_PIDn_DATA0;
-            ep->tr = 0;
             ep->first_pid = USB_PIDn_DATA0;
-        }
-        else
-        {
-            return XUD_RES_ERR;
         }
     }
 #endif
@@ -547,24 +474,20 @@ XUD_Result_t XUD_SetBuffer_Finish(chanend c, XUD_ep e)
                 // This is error. Notify client, who is then expected to issue a new transfer
                 return XUD_RES_ERR;
             }
-            else if(ep->remained)
-            {
-                XUD_SetBuffer_Start(ep, ep->buffer+4, ep->remained); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
-                return XUD_RES_WAIT;
-            }
+            // Dont expect any more data remaining since we only support max N_tr = 2
         }
         else // first subpacket of the frame
         {
             if(!ep->got_sof) // We expect to have received a SOF
             {
                 ep->tr = 0;
-                XUD_SetBuffer_Start(ep, ep->save_buffer, ep->save_length); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
+                XUD_SetBuffer_Start(e, ep->save_buffer, ep->save_length); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
                 // TODO repeat the first subframe till we receive a SOF
-                return XUD_RES_ERR;
+                return XUD_RES_WAIT;
             }
             else if(ep->remained)
             {
-                XUD_SetBuffer_Start(ep, ep->buffer+4, ep->remained); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
+                XUD_SetBuffer_Start(e, ep->buffer+4, ep->remained); // TODO +4 to compensate for lengthTail. See XUD_SetBuffer_Start
                 return XUD_RES_WAIT;
             }
         }
@@ -574,23 +497,10 @@ XUD_Result_t XUD_SetBuffer_Finish(chanend c, XUD_ep e)
     return XUD_RES_OKAY;
 }   // NOCOVER
 
-static XUD_Result_t XUD_SetBuffer_one(XUD_ep e, unsigned char buffer[], unsigned datalength)
-{
-    volatile XUD_ep_info * ep = (XUD_ep_info*) e;
-
-    XUD_Result_t result = XUD_SetBuffer_Start(e, buffer, datalength);
-
-    if(result == XUD_RES_UPDATE)
-    {
-        return result;
-    }
-
-    return XUD_SetBuffer_Finish(ep->client_chanend, e);
-}
-
 XUD_Result_t XUD_SetBuffer(XUD_ep e, unsigned char buffer[], unsigned datalength)
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
+
     unsigned N = 0;
     unsigned full_len = datalength;
 
@@ -601,16 +511,21 @@ XUD_Result_t XUD_SetBuffer(XUD_ep e, unsigned char buffer[], unsigned datalength
     }
     ep->N_tr = N;
 
-    // do error handling for when trying to send more data then allowed?
+    XUD_Result_t result = XUD_SetBuffer_Start(e, buffer, datalength);
 
-    do{
-        unsigned send_len = (datalength >= ep->max_len) ? ep->max_len : datalength;
-        datalength -= send_len;
-        XUD_Result_t res = XUD_SetBuffer_one(e, buffer, send_len);
-        if(res != XUD_RES_OKAY) return res;
-        buffer = &buffer[send_len];
-    }while(datalength != 0);
-    return XUD_RES_OKAY;
+    if(result == XUD_RES_UPDATE)
+    {
+        return result;
+    }
+
+    while(1)
+    {
+        result = XUD_SetBuffer_Finish(ep->client_chanend, e);
+        if (result != XUD_RES_WAIT)
+        {
+            return result;
+        }
+    }
 }
 
 XUD_Result_t XUD_SetReady_In(XUD_ep e, unsigned char buffer[], int len)
@@ -635,13 +550,13 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
     if (datalength <= epMax)
     {
         /* Datalength is less than the maximum per transaction of the EP, so just send */
-        result = XUD_SetBuffer_one(ep_in, buffer, datalength);
+        result = XUD_SetBuffer(ep_in, buffer, datalength);
         return result;
     }
     else
     {
         /* Send first packet out and reset PID */
-        if((result = XUD_SetBuffer_one(ep_in, buffer, epMax)) != XUD_RES_OKAY)
+        if((result = XUD_SetBuffer(ep_in, buffer, epMax)) != XUD_RES_OKAY)
         {
             return result;
         }
@@ -656,7 +571,7 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
             if (datalength > epMax)
             {
                 /* PID Automatically toggled */
-                if ((result = XUD_SetBuffer_one(ep_in, bufferPtr, epMax)) != XUD_RES_OKAY)
+                if ((result = XUD_SetBuffer(ep_in, bufferPtr, epMax)) != XUD_RES_OKAY)
                     return result;
 
                 datalength -= epMax;
@@ -665,7 +580,7 @@ XUD_Result_t XUD_SetBuffer_EpMax(XUD_ep ep_in, unsigned char buffer[], unsigned 
             else
             {
                 /* PID automatically toggled */
-                if ((result = XUD_SetBuffer_one(ep_in, bufferPtr, datalength)) != XUD_RES_OKAY)
+                if ((result = XUD_SetBuffer(ep_in, bufferPtr, datalength)) != XUD_RES_OKAY)
                     return result;
 
                 break; //out of while loop

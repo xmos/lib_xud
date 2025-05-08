@@ -20,7 +20,7 @@ def test_session(ep, address, bus_speed):
     # Reserved/Invalid PID
     session.add_event(
         TokenPacket(
-            pid=USB_PID["RESERVED"],
+            pid=USB_PID["MDATA"],
             address=address,
             endpoint=ep,
         )

@@ -241,3 +241,171 @@ class UsbTransaction(UsbEvent):
     def drive(self, usb_phy, bus_speed):
         for p in self.packets:
             p.drive(usb_phy, bus_speed)
+
+
+class UsbTransactionHbw(UsbEvent):
+    def __init__(
+        self,
+        session,
+        deviceAddress=0,
+        endpointNumber=0,
+        endpointType="ISO",
+        transType="OUT",
+        bus_speed="HS",
+        eventTime=0,
+        dataLength=0,
+        interEventDelay=INTER_TRANSACTION_DELAY,
+        ep_len=1024,
+    ):
+        assert endpointType == "ISO"
+        assert transType in ["OUT", "IN"]
+        assert bus_speed == "HS"
+
+        self._deviceAddress = deviceAddress
+        self._endpointNumber = endpointNumber
+        self._endpointType = endpointType
+        self._transType = transType
+        self._datalength = dataLength
+        self._bus_speed = bus_speed
+
+        # Populate packet list for a (valid) transaction
+        self._packets = []
+
+        if transType == "OUT":
+
+            packets = []
+
+            n_tr = 0
+            end_pids = [USB_PID["DATA0"], USB_PID["DATA1"], USB_PID["DATA2"]]
+
+            while dataLength != 0:
+
+                packets.append(
+                    TokenPacket(
+                        interEventDelay=interEventDelay,
+                        pid=USB_PID[transType],
+                        address=self._deviceAddress,
+                        endpoint=self._endpointNumber,
+                        data_valid_count=self.data_valid_count,
+                    )
+                )
+
+                # not handling halted or resend for now
+
+                if dataLength <= ep_len:
+                    send_len = dataLength
+                    pid = end_pids[n_tr]
+                else:
+                    send_len = ep_len
+                    pid = USB_PID["MDATA"]
+
+                dataLength -= send_len
+                n_tr += 1
+
+                # Generate packet data payload
+                packetPayload = session.getPayload_out(
+                    endpointNumber, send_len
+                )
+
+                # Add data packet to packets list
+                packets.append(
+                    TxDataPacket(
+                        pid=pid,
+                        dataPayload=packetPayload,
+                    )
+                )
+
+            self._packets.extend(packets)
+
+        else:
+
+            rem = dataLength
+            n_tr = 0
+            pids = [USB_PID["DATA2"], USB_PID["DATA1"], USB_PID["DATA0"]]
+            N_tr = round(dataLength / ep_len + 0.5)
+            pids = pids[3 - N_tr:]
+
+            while rem != 0:
+
+                self._packets.append(
+                    TokenPacket(
+                        interEventDelay=interEventDelay,
+                        pid=USB_PID["IN"],
+                        address=self._deviceAddress,
+                        endpoint=self._endpointNumber,
+                        data_valid_count=self.data_valid_count,
+                    )
+                )
+
+                pid = pids[n_tr]
+
+                if rem > ep_len:
+                    rcv_len = ep_len
+                else:
+                    rcv_len = rem
+
+                rem -= rcv_len
+                n_tr += 1
+
+
+                packetPayload = session.getPayload_in(endpointNumber, rcv_len)
+
+                self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
+
+
+        # setup events here
+
+        super().__init__(time=eventTime)
+
+    # TODO ideally USBTransaction doesnt know about data_valid_count
+    @property
+    def data_valid_count(self):
+        return USB_DATA_VALID_COUNT[self.bus_speed]
+
+    @property
+    def endpointType(self):
+        return self._endpointType
+
+    @property
+    def packets(self):
+        return self._packets
+
+    @property
+    def bus_speed(self):
+        return self._bus_speed
+
+    @bus_speed.setter
+    def bus_speed(self, bus_speed):
+        self._bus_speed = bus_speed
+
+    @property
+    def event_count(self):
+        eventCount = 0
+
+        # We should be able to do len(packets) but lets just be sure..
+        for p in self.packets:
+            eventCount += p.event_count
+
+        # Sanity check
+        assert eventCount == len(self.packets)
+
+        return eventCount
+
+    def expected_output(self, bus_speed, offset=0):
+        expected_output = ""
+
+        for p in self.packets:
+            expected_output += p.expected_output(bus_speed)
+
+        return expected_output
+
+    def __str__(self):
+        s = "UsbTransaction:\n"
+        for p in self.packets:
+            s += "\t" + str(p) + "\n"
+        return s
+
+    def drive(self, usb_phy, bus_speed):
+        for p in self.packets:
+            p.drive(usb_phy, bus_speed)
+

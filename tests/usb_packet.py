@@ -81,10 +81,11 @@ USB_PID = {
     "SOF": 0xA5,
     "DATA1": 0x4B,
     "IN": 0x69,
+    "DATA2": 0x87,
     "NAK": 0x5A,
     "SETUP": 0x2D,
     "STALL": 0x1E,
-    "RESERVED": 0x0F,
+    "MDATA": 0x0F,
 }
 
 

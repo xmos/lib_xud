@@ -63,11 +63,11 @@ void TerminateFail(int failReason)
             printintln(failReason);
             break;
     }
-    exit(failReason);
+    _Exit(failReason);
 }
 void TerminatePass(int x)
 {
-    exit(0);
+    _Exit(0);
 }
 #endif
 

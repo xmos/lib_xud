@@ -63,30 +63,6 @@ def test_session(ep, address, bus_speed):
             interEventDelay=interEventDelay,
         )
     )
-    '''
-    TODO Sending an extra packet as a hack workaround the issue where got_sof is seen as 0 in XUD_GetBuffer_Finish()
-    for the first OUT packet received after resume.
-    This is because a the driver sets sp[STACK_SOF_FRAME] after a suspend while ep->saved_frame which is the last seen
-    value of sp[STACK_SOF_FRAME] in XUD_GetBuffer_Finish() is not reset and continues to be 1. Since sp[STACK_SOF_FRAME]
-    is reset after suspend, the sp[STACK_SOF_FRAME] value after suspend -> resume -> sof -> out packet is 1 which is the same
-    as ep->saved_frame, so the OUT packet after suspend sees got_sof = 0 and is dropped.
-    To workaround this, I send one more packet before suspend, so ep->saved_frame can be 2 and doesn't match sp[STACK_SOF_FRAME] = 1
-    after suspend and the OUT packet is not dropped.
-
-    Note: this is only a temporary hack and needs to be fixed!!
-    '''
-    # Also check Iso EP
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep + 1,
-            endpointType="ISO",
-            transType="OUT",
-            dataLength=pktLength,
-            interEventDelay=500,
-        )
-    )
 
     frameNumber = frameNumber + 1
     session.add_event(CreateSofToken(frameNumber))
@@ -99,7 +75,7 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep + 1,
             endpointType="ISO",
             transType="OUT",
-            dataLength=pktLength+1,
+            dataLength=pktLength,
             interEventDelay=500,
         )
     )
@@ -129,7 +105,7 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep + 1,
             endpointType="ISO",
             transType="OUT",
-            dataLength=pktLength + 2,
+            dataLength=pktLength + 1,
             interEventDelay=100,
         )
     )

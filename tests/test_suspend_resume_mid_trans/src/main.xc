@@ -60,7 +60,7 @@ int main()
 
         {
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
-            fail |= TestEp_Rx(c_ep_out[TEST_EP_NUM + 1], TEST_EP_NUM + 1, PKT_LENGTH_START, PKT_LENGTH_END+1);
+            fail |= TestEp_Rx(c_ep_out[TEST_EP_NUM + 1], TEST_EP_NUM + 1, PKT_LENGTH_START, PKT_LENGTH_END);
 
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);

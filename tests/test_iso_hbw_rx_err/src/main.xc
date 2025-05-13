@@ -14,7 +14,7 @@
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END 		(15)
+#define PKT_LENGTH_END 		(14)
 #endif
 
 #ifndef EP_LENGTH

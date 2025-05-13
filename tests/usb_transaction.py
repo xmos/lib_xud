@@ -256,6 +256,7 @@ class UsbTransactionHbw(UsbEvent):
         dataLength=0,
         interEventDelay=INTER_TRANSACTION_DELAY,
         ep_len=1024,
+        resend=False,
     ):
         assert endpointType == "ISO"
         assert transType in ["OUT", "IN"]
@@ -304,7 +305,7 @@ class UsbTransactionHbw(UsbEvent):
 
                 # Generate packet data payload
                 packetPayload = session.getPayload_out(
-                    endpointNumber, send_len
+                    endpointNumber, send_len, resend=resend
                 )
 
                 # Add data packet to packets list

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <platform.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <assert.h>
 #include "xud.h"
 

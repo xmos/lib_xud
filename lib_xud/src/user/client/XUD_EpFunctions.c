@@ -8,6 +8,7 @@ extern XUD_ep_info ep_info[USB_MAX_NUM_EP];
 
 void XUD_ResetEpStateByAddr(unsigned epAddr)
 {
+
     unsigned pid = USB_PIDn_DATA0;
 
 #if defined(__XS2A__)
@@ -25,7 +26,10 @@ void XUD_ResetEpStateByAddr(unsigned epAddr)
     }
 
     XUD_ep_info *ep = &ep_info[epAddr];
-    ep->pid = pid;
+    if(ep->epType != XUD_EPTYPE_ISO)
+    {
+        ep->pid = pid;
+    }
 }
 
 void XUD_SetStallByAddr(int epNum)
@@ -267,6 +271,10 @@ XUD_Result_t XUD_GetBuffer(XUD_ep e, unsigned char buffer[], unsigned *datalengt
 {
     volatile XUD_ep_info * ep = (XUD_ep_info*) e;
 
+    ep->tr = 0;
+    ep->remained = 0;
+    ep->save_buffer = (unsigned)buffer;
+
     XUD_Result_t result = XUD_GetBuffer_Start(ep, buffer);
 
     if(result == XUD_RES_UPDATE)
@@ -434,6 +442,9 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
     }
 #endif
 
+    unsigned * array_ptr = (unsigned *)ep->array_ptr;
+    *array_ptr = (unsigned) ep;
+
     return XUD_RES_OKAY;
 }
 
@@ -510,6 +521,9 @@ XUD_Result_t XUD_SetBuffer(XUD_ep e, unsigned char buffer[], unsigned datalength
         N++;
     }
     ep->N_tr = N;
+    ep->tr = 0;
+    ep->save_buffer = (unsigned)buffer;
+    ep->save_length = (unsigned)datalength;
 
     XUD_Result_t result = XUD_SetBuffer_Start(e, buffer, datalength);
 

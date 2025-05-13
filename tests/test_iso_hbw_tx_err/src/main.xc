@@ -14,7 +14,7 @@
 #endif
 
 #ifndef PKT_LENGTH_END
-#define PKT_LENGTH_END 		(15)
+#define PKT_LENGTH_END 		(14)
 #endif
 
 #ifndef EP_LENGTH
@@ -38,7 +38,7 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL,
 
 unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
-    unsigned fail = TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH);
+    unsigned fail = TestEp_Tx_Hbw(c_ep_in[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);
 
     return fail;
 }

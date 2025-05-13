@@ -55,7 +55,7 @@ int main()
                 XUD_ep ep_out_0 = XUD_InitEp(c_ep_out[0]);
                 XUD_Kill(ep_out_0);
             }
-            exit(0);
+            _Exit(0);
         }
 
         dummyThreads();

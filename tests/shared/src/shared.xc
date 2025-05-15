@@ -18,6 +18,8 @@ unsafe
 /* Alternatives to the RTL sim testbench functions */
 void TerminateFail(int failReason)
 {
+    assert(failReason > 0);
+
     switch(failReason)
     {
         case FAIL_RX_DATAERROR:
@@ -38,6 +40,18 @@ void TerminateFail(int failReason)
 
         case FAIL_RX_FRAMENUMBER:
             printstr("\nXCORE: ### FAIL ### : Received bad frame number\n");
+            break;
+
+        case FAIL_BAD_BUS_SPEED:
+            printstr("\nXCORE: ### FAIL ### : Bad or unexpected bus speed\n");
+            break;
+
+        case FAIL_UNEXPECTED_RESET:
+            printstr("\nXCORE: ### FAIL ### : Received unexpected reset\n");
+            break;
+
+        default:
+            printstr("\nXCORE: ### FAIL ### : Unknown failure\n");
             break;
     }
     exit(failReason);

@@ -12,11 +12,16 @@
 
 void exit(int);
 
-#define FAIL_RX_DATAERROR        1
-#define FAIL_RX_LENERROR         2
-#define FAIL_RX_EXPECTED_CTL     3
-#define FAIL_RX_BAD_RETURN_CODE  4
-#define FAIL_RX_FRAMENUMBER      5
+typedef enum{
+    PASS = 0,
+    FAIL_RX_DATAERROR,
+    FAIL_RX_LENERROR,
+    FAIL_RX_EXPECTED_CTL,
+    FAIL_RX_BAD_RETURN_CODE,
+    FAIL_RX_FRAMENUMBER,
+    FAIL_BAD_BUS_SPEED,
+    FAIL_UNEXPECTED_RESET
+} testResult_t;
 
 #ifndef PKT_LEN_START
 #define PKT_LEN_START       (10)

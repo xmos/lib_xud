@@ -13,6 +13,7 @@ def test_session(ep, address, bus_speed):
 
     start_length = 10
     end_length = start_length + 4
+    ep_len = start_length + 4 # To ensure 1tr
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -33,6 +34,7 @@ def test_session(ep, address, bus_speed):
                 transType="OUT",
                 dataLength=pktLength,
                 interEventDelay=interTransactionDelay,
+                ep_len=ep_len
             )
         )
 

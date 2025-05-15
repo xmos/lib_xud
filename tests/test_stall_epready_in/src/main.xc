@@ -112,3 +112,4 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 }
 
 #include "test_main.xc"
+#include "src/shared.xc"

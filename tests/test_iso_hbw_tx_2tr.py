@@ -6,12 +6,7 @@ from copy import deepcopy
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_packet import CreateSofToken
-from usb_transaction import UsbTransactionHbw
-
-# Only run for HS
-PARAMS = deepcopy(PARAMS)
-for k in PARAMS:
-    PARAMS[k].update({"bus_speed": ["HS"]})
+from usb_transaction import UsbTransaction
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
@@ -30,7 +25,7 @@ def test_session(ep, address, bus_speed):
         frameNumber += 1
 
         session.add_event(
-            UsbTransactionHbw(
+            UsbTransaction(
                 session,
                 deviceAddress=address,
                 endpointNumber=ep,

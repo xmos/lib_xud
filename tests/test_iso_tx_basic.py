@@ -5,19 +5,23 @@ import pytest
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
-
+from usb_packet import CreateSofToken
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
     start_length = 10
     end_length = start_length + 5
+    frameNumber = 0
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
     for pktLength in range(start_length, end_length):
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        frameNumber += 1
+
         session.add_event(
             UsbTransaction(
                 session,
@@ -26,7 +30,8 @@ def test_session(ep, address, bus_speed):
                 endpointType="ISO",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=500,
+                interEventDelay=70,
+                ep_len=15
             )
         )
 

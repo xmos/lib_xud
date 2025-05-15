@@ -160,7 +160,7 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     /* -2 length correction for CRC */
     recv_length = length + lengthTail - 2;
 
-#ifndef USB_HBW_EP
+#if !USB_HBW_EP
     /* Load received PID */
     unsigned receivedPid = ep->actualPid;
 
@@ -181,7 +181,7 @@ XUD_Result_t XUD_GetBuffer_Finish(chanend c, XUD_ep e, unsigned *datalength)
     /* ISO == 0 */
     if(ep->epType != XUD_EPTYPE_ISO)
     {
-#ifdef USB_HBW_EP
+#if USB_HBW_EP
         /* Load received PID */
         unsigned receivedPid = ep->actualPid;
 
@@ -384,7 +384,7 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
 
 
     unsigned send_len;
-#ifdef USB_HBW_EP
+#if USB_HBW_EP
     if(datalength > ep->max_len)
     {
         send_len = ep->max_len;
@@ -416,7 +416,7 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
     ep->actualPid = lengthWords; /* Re-use of actualPid entry - TODO rename */
     ep->tailLength = lengthTail;
 
-#ifdef USB_HBW_EP
+#if USB_HBW_EP
     unsigned N = ep->N_tr;
     unsigned tr = ep->tr;
     if(ep->epType == XUD_EPTYPE_ISO)
@@ -470,7 +470,7 @@ XUD_Result_t XUD_SetBuffer_Finish(chanend c, XUD_ep e)
     {
         ep->pid ^= 0x88;
     }
-#ifdef USB_HBW_EP
+#if USB_HBW_EP
     else
     {
         ep->got_sof = (ep->saved_frame != frame) ? 1 : 0; // Between this finish and the last, was there a SOF received.

@@ -59,8 +59,13 @@ int main()
             null, epTypeTableOut, epTypeTableIn, XUD_TEST_SPEED, XUD_PWR_BUS);
 
         {
+        #if USB_HBW_EP
+            unsigned fail = TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH);
+            fail |= TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM + 1], TEST_EP_NUM + 1, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH);
+        #else
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
             fail |= TestEp_Rx(c_ep_out[TEST_EP_NUM + 1], TEST_EP_NUM + 1, PKT_LENGTH_START, PKT_LENGTH_END);
+        #endif
 
             XUD_ep ep0 = XUD_InitEp(c_ep_out[0]);
             XUD_Kill(ep0);
@@ -74,3 +79,5 @@ int main()
 
     return 0;
 }
+
+#include "src/shared.xc"

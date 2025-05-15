@@ -43,6 +43,10 @@ typedef enum{
 #define TEST_EP_NUM         (1)
 #endif
 
+#ifndef EP_LENGTH
+#define EP_LENGTH (1024)
+#endif
+
 typedef enum t_runMode
 {
     RUNMODE_LOOP,

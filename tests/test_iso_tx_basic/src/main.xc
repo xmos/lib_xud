@@ -17,6 +17,10 @@
 #define PKT_LENGTH_END 		(14)
 #endif
 
+#ifndef EP_LENGTH
+#define EP_LENGTH           (15)
+#endif
+
 #include "xud_shared.h"
 
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL,
@@ -34,11 +38,16 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL,
 
 unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
+    #if USB_HBW_EP
+    unsigned fail = TestEp_Tx_Hbw(c_ep_in[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);
+    #else
     unsigned fail = TestEp_Tx(c_ep_in[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
+    #endif
 
     return fail;
 }
 
 #include "test_main.xc"
+#include "src/shared.xc"
 
 

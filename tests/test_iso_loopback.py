@@ -9,13 +9,18 @@ from usb_packet import CreateSofToken
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed):
+def test_session(ep, address, bus_speed, hbw_ep):
 
     ep_loopback = ep
     ep_loopback_kill = ep + 1
 
     start_length = 200
     end_length = 203
+    if hbw_ep == 'hbw_on':
+        ep_length = 160
+    else:
+        ep_length = 1024
+
     frameNumber = 0
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -35,6 +40,7 @@ def test_session(ep, address, bus_speed):
                 transType="OUT",
                 dataLength=pktLength,
                 interEventDelay=500,
+                ep_len = ep_length
             )
         )
 
@@ -51,6 +57,7 @@ def test_session(ep, address, bus_speed):
                 transType="IN",
                 dataLength=pktLength,
                 interEventDelay=498,
+                ep_len = ep_length
             )
         )
 
@@ -66,6 +73,7 @@ def test_session(ep, address, bus_speed):
             transType="OUT",
             dataLength=pktLength,
             interEventDelay=500,
+            ep_len = ep_length
         )
     )
     session.add_event(
@@ -77,6 +85,7 @@ def test_session(ep, address, bus_speed):
             transType="IN",
             dataLength=pktLength,
             interEventDelay=500,
+            ep_len = ep_length
         )
     )
 

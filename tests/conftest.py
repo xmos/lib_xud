@@ -7,6 +7,7 @@ import time
 import sys
 import re
 from filelock import FileLock
+import itertools
 
 import pytest
 
@@ -33,6 +34,7 @@ PARAMS = {
         "bus_speed": ["HS", "FS"],
         "dummy_threads": [0, 5],  # Note, plus 2 for test cores
         "core_freq": [600, 800],
+        "hbw_ep": ["hbw_on", "hbw_off"]
     },
     "default": {
         "arch": ["xs3"],
@@ -41,6 +43,7 @@ PARAMS = {
         "bus_speed": ["HS", "FS"],
         "dummy_threads": [0, 5],  # Note, plus 2 for test cores
         "core_freq": [600],
+        "hbw_ep": ["hbw_on", "hbw_off"]
     },
     "smoke": {
         "arch": ["xs3"],
@@ -49,6 +52,7 @@ PARAMS = {
         "bus_speed": ["HS", "FS"],
         "dummy_threads": [5],  # Note, plus 2 for test cores
         "core_freq": [600],
+        "hbw_ep": ["hbw_on", "hbw_off"]
     },
 }
 
@@ -104,9 +108,26 @@ def pytest_generate_tests(metafunc):
     except AttributeError:
         params = {}
 
-    for name, values in params.items():
-        if name in metafunc.fixturenames:
-            metafunc.parametrize(name, values)
+    # param names that are also fixturenames (Arguments to test_RunUsbSession()).
+    param_names = [name for name in params if name in metafunc.fixturenames]
+
+    # Get all combinations of the various params
+    all_combinations = list(itertools.product(*(params[name] for name in param_names)))
+
+    # filter combinations such that hbw_ep = 'hbw_on' runs only for bus_speed = 'HS'
+    filtered_combinations = []
+    for combo in all_combinations:
+        if not (combo[param_names.index('hbw_ep')] == 'hbw_on' and combo[param_names.index('bus_speed')] != 'HS'):
+            filtered_combinations.append(combo)
+
+    # Do module based filtering.
+    # Any tests with 'hbw' in their names run only with hbw_ep = 'hbw_on'
+    filtered_combinations_module = []
+    for combo in filtered_combinations:
+        if not ("hbw" in metafunc.module.__name__ and combo[param_names.index('hbw_ep')] == "hbw_off"):
+            filtered_combinations_module.append(combo)
+
+    metafunc.parametrize(param_names, filtered_combinations_module)
 
 
 @pytest.fixture()
@@ -147,6 +168,7 @@ def test_RunUsbSession(
     bus_speed,
     dummy_threads,
     core_freq,
+    hbw_ep,
     test_file,
     capfd,
 ):
@@ -182,6 +204,7 @@ def test_RunUsbSession(
             bus_speed,
             dummy_threads,
             core_freq,
+            hbw_ep,
             clk_60,
             usb_phy,
             [test_session],

@@ -105,6 +105,7 @@ FIXTURE_TO_BUILD_OPTION = {
     "ep": "TEST_EP_NUM",
     "address": "TEST_ADDRESS",
     "bus_speed": "TEST_BUS_SPEED",
+    "hbw_ep": "TEST_HBW_EP"
 }
 
 
@@ -115,6 +116,7 @@ def do_usb_test(
     bus_speed,
     dummy_threads,
     core_freq,
+    hbw_ep,
     clk,
     phy,
     sessions,
@@ -134,7 +136,7 @@ def do_usb_test(
     # Shared test code for all RX tests using the test_rx application
     testname, _ = os.path.splitext(os.path.basename(test_file))
 
-    desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}"
+    desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}_{hbw_ep}"
     binary = f"{testname}/bin/{desc}/{testname}_{desc}.xe"
 
     # Do not need to clean since different build will different params go to
@@ -149,6 +151,8 @@ def do_usb_test(
     )
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
+
+
     if build_success:
 
         if eval(os.getenv("xcov")):
@@ -168,9 +172,12 @@ def do_usb_test(
                 usb_speed=bus_speed,
             )
 
-            create_expect(session, expect_filename, verbose=verbose)
+            expect_str = create_expect(session, expect_filename, verbose=verbose)
 
-            tester = testers.ComparisonTester(open(expect_filename))
+            # Send the list returned from create_expect directly to avoid creating
+            # uniquely named .expect files with identical content, which can cause
+            # issues when running tests with pytest-xdist.
+            tester = testers.ComparisonTester(expect_str)
 
             simargs = get_sim_args(testname, desc)
             if session:
@@ -190,8 +197,13 @@ def do_usb_test(
 
 
 def create_expect(session, filename, verbose=False):
-    """Create the expect file for what packets should be reported by the DUT"""
+    """Create the expect file for what packets should be reported by the DUT
 
+    Returns:
+        str: The lines written into the expect file as a single string.
+    """
+
+    full_expect_str = ""
     with open(filename, "w") as f:
 
         if verbose:
@@ -216,11 +228,14 @@ def create_expect(session, filename, verbose=False):
                 print(str(expect_str), end=" ")
 
             f.write(str(expect_str))
+            full_expect_str += str(expect_str)
 
         f.write("Test done\n")
+        full_expect_str += "Test done\n"
 
         if verbose:
             print("Test done\n")
+    return full_expect_str
 
 
 def get_sim_args(testname, desc):

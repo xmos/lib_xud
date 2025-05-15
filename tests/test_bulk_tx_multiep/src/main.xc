@@ -29,10 +29,18 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 
     par
     {
+    #if USB_HBW_EP
+        fail[0] = TestEp_Tx_Hbw(c_ep_in[3], 3, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);
+        fail[1] = TestEp_Tx_Hbw(c_ep_in[4], 4, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);
+        fail[2] = TestEp_Tx_Hbw(c_ep_in[5], 5, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);
+        fail[3] = TestEp_Tx_Hbw(c_ep_in[6], 6, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);
+    #else
         fail[0] = TestEp_Tx(c_ep_in[3], 3, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
         fail[1] = TestEp_Tx(c_ep_in[4], 4, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
         fail[2] = TestEp_Tx(c_ep_in[5], 5, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
         fail[3] = TestEp_Tx(c_ep_in[6], 6, PKT_LENGTH_START, PKT_LENGTH_END, RUNMODE_DIE);
+    #endif
+
     }
 
     for(size_t i = 0; i < 4; i++)
@@ -42,5 +50,6 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 }
 
 #include "test_main.xc"
+#include "src/shared.xc"
 
 

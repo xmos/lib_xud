@@ -5,13 +5,8 @@ from copy import deepcopy
 
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
-from usb_transaction import UsbTransactionHbw
+from usb_transaction import UsbTransaction
 from usb_packet import CreateSofToken, TokenPacket, TxDataPacket, USB_PID
-
-# Only run for HS
-PARAMS = deepcopy(PARAMS)
-for k in PARAMS:
-    PARAMS[k].update({"bus_speed": ["HS"]})
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
@@ -50,7 +45,7 @@ def test_session(ep, address, bus_speed):
 
     # healthy packet, but will be dropped, due to implementation details
     session.add_event(
-        UsbTransactionHbw(
+        UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep,
@@ -68,7 +63,7 @@ def test_session(ep, address, bus_speed):
 
     # healthy packet, this one should be recieved
     session.add_event(
-        UsbTransactionHbw(
+        UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep,
@@ -102,7 +97,7 @@ def test_session(ep, address, bus_speed):
 
     # healthy packet, this one should be recieved
     session.add_event(
-        UsbTransactionHbw(
+        UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep,
@@ -138,7 +133,7 @@ def test_session(ep, address, bus_speed):
     frameNumber += 1
 
     session.add_event(
-        UsbTransactionHbw(
+        UsbTransaction(
             session,
             deviceAddress=address,
             endpointNumber=ep,

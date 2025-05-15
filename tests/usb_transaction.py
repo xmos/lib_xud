@@ -1,6 +1,7 @@
 # Copyright 2021-2025 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
+import warnings
 from usb_event import UsbEvent
 from usb_packet import (
     USB_PID,
@@ -37,6 +38,7 @@ class UsbTransaction(UsbEvent):
         halted=False,
         resetDataPid=False,
         nacking=False,
+        ep_len=1024,
     ):
 
         self._deviceAddress = deviceAddress
@@ -59,228 +61,11 @@ class UsbTransaction(UsbEvent):
         # TODO would it be better to generate packets on the fly in drive()
         # rather than create a packet list?
         if transType in ["OUT", "SETUP"]:
-
-            packets = []
-            packets.append(
-                TokenPacket(
-                    interEventDelay=interEventDelay,
-                    pid=USB_PID[transType],
-                    address=self._deviceAddress,
-                    endpoint=self._endpointNumber,
-                    data_valid_count=self.data_valid_count,
-                )
-            )
-
-            # Don't toggle data pid if we had a bad data crc
-            if (
-                self._badDataCrc
-                or self._rxeAssertDelay_data
-                or endpointType == "ISO"
-                or halted
-                or resend
-            ):
-                togglePid = False
-            else:
-                togglePid = True
-
-            expectHandshake = (
-                (not self._badDataCrc)
-                and (not self._rxeAssertDelay_data)
-                and (deviceAddress == session.deviceAddress)
-                and (self._endpointType != "ISO")
-            )
-
-            if expectHandshake or self._endpointType == "ISO":
-                needResend = False
-            else:
-                needResend = True
-
-            if halted:
-                resetDataPid = True
-                needResend = True
-
-            resend = resend or needResend
-
-            # Generate packet data payload
-            packetPayload = session.getPayload_out(
-                endpointNumber, dataLength, resend=resend
-            )
-
-            # Reset data PID's on SETUP transaction
-            if transType == "SETUP":
-                pid = session.data_pid_out(
-                    endpointNumber, togglePid=True, resetDataPid=True
-                )
-
-                # If SETUP trans then we need to reset and toggle the corresponding IN EP's PID also
-                in_pid = session.data_pid_in(
-                    endpointNumber, togglePid=True, resetDataPid=True
-                )
-            else:
-                pid = session.data_pid_out(
-                    endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
-                )
-
-            # Add data packet to packets list
-            packets.append(
-                TxDataPacket(
-                    pid=pid,
-                    dataPayload=packetPayload,
-                    bad_crc=self._badDataCrc,
-                    rxe_assert_time=self._rxeAssertDelay_data,
-                )
-            )
-
-            # Note precedence of halted here
-            if expectHandshake:
-                if self._halted:
-                    packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
-                elif self._nacking:
-                    packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
-                else:
-                    packets.append(RxHandshakePacket())
-
-            self._packets.extend(packets)
-
-        else:
-
-            self._packets.append(
-                TokenPacket(
-                    interEventDelay=interEventDelay,
-                    pid=USB_PID["IN"],
-                    address=self._deviceAddress,
-                    endpoint=self._endpointNumber,
-                    data_valid_count=self.data_valid_count,
-                )
-            )
-
-            if (
-                self._badDataCrc
-                or self._rxeAssertDelay_data
-                or self._endpointType == "ISO"
-                or self._halted
-                or self._nacking
-            ):
-                togglePid = False
-            else:
-                togglePid = True
-
-            if halted:
-                resetDataPid = True
-
-            pid = session.data_pid_in(
-                endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
-            )
-
-            # Add data packet to packets list
-            if not halted and not self._nacking:
-                # Generate packet data payload
-                packetPayload = session.getPayload_in(endpointNumber, dataLength)
-                self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
-
-            if self._endpointType != "ISO":
-
-                if self._halted:
-                    self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
-                elif self._nacking:
-                    self._packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
-                else:
-                    # we know that the device is not halted and not nacking, hence we've recieved the RxDataPacket before
-                    self._packets.append(TxHandshakePacket(interEventDelay = USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]))
-
-        super().__init__(time=eventTime)
-
-    # TODO ideally USBTransaction doesnt know about data_valid_count
-    @property
-    def data_valid_count(self):
-        return USB_DATA_VALID_COUNT[self.bus_speed]
-
-    @property
-    def endpointType(self):
-        return self._endpointType
-
-    @property
-    def packets(self):
-        return self._packets
-
-    @property
-    def bus_speed(self):
-        return self._bus_speed
-
-    @bus_speed.setter
-    def bus_speed(self, bus_speed):
-        self._bus_speed = bus_speed
-
-    @property
-    def event_count(self):
-        eventCount = 0
-
-        # We should be able to do len(packets) but lets just be sure..
-        for p in self.packets:
-            eventCount += p.event_count
-
-        # Sanity check
-        assert eventCount == len(self.packets)
-
-        return eventCount
-
-    def expected_output(self, bus_speed, offset=0):
-        expected_output = ""
-
-        for p in self.packets:
-            expected_output += p.expected_output(bus_speed)
-
-        return expected_output
-
-    def __str__(self):
-        s = "UsbTransaction:\n"
-        for p in self.packets:
-            s += "\t" + str(p) + "\n"
-        return s
-
-    def drive(self, usb_phy, bus_speed):
-        for p in self.packets:
-            p.drive(usb_phy, bus_speed)
-
-
-class UsbTransactionHbw(UsbEvent):
-    def __init__(
-        self,
-        session,
-        deviceAddress=0,
-        endpointNumber=0,
-        endpointType="ISO",
-        transType="OUT",
-        bus_speed="HS",
-        eventTime=0,
-        dataLength=0,
-        interEventDelay=INTER_TRANSACTION_DELAY,
-        ep_len=1024,
-        resend=False,
-    ):
-        assert endpointType == "ISO"
-        assert transType in ["OUT", "IN"]
-        assert bus_speed == "HS"
-
-        self._deviceAddress = deviceAddress
-        self._endpointNumber = endpointNumber
-        self._endpointType = endpointType
-        self._transType = transType
-        self._datalength = dataLength
-        self._bus_speed = bus_speed
-
-        # Populate packet list for a (valid) transaction
-        self._packets = []
-
-        if transType == "OUT":
-
-            packets = []
-
             n_tr = 0
-            end_pids = [USB_PID["DATA0"], USB_PID["DATA1"], USB_PID["DATA2"]]
-
-            while dataLength != 0:
-
+            end_pids_iso = [USB_PID["DATA0"], USB_PID["DATA1"], USB_PID["DATA2"]]
+            send_len = 0
+            packets = []
+            while True:
                 packets.append(
                     TokenPacket(
                         interEventDelay=interEventDelay,
@@ -291,43 +76,101 @@ class UsbTransactionHbw(UsbEvent):
                     )
                 )
 
-                # not handling halted or resend for now
+                # Don't toggle data pid if we had a bad data crc
+                if (
+                    self._badDataCrc
+                    or self._rxeAssertDelay_data
+                    or endpointType == "ISO"
+                    or halted
+                    or resend
+                ):
+                    togglePid = False
+                else:
+                    togglePid = True
 
+                expectHandshake = (
+                    (not self._badDataCrc)
+                    and (not self._rxeAssertDelay_data)
+                    and (deviceAddress == session.deviceAddress)
+                    and (self._endpointType != "ISO")
+                )
+
+                if expectHandshake or self._endpointType == "ISO":
+                    needResend = False
+                else:
+                    needResend = True
+
+                if halted:
+                    resetDataPid = True
+                    needResend = True
+
+                resend = resend or needResend
+
+                # TODO resend not handled properly for hbw, num transfers > 1
                 if dataLength <= ep_len:
                     send_len = dataLength
-                    pid = end_pids[n_tr]
                 else:
                     send_len = ep_len
-                    pid = USB_PID["MDATA"]
-
-                dataLength -= send_len
-                n_tr += 1
 
                 # Generate packet data payload
                 packetPayload = session.getPayload_out(
                     endpointNumber, send_len, resend=resend
                 )
 
+                if self._endpointType == "ISO": # ISO doesn't halt or toggle PIDs so not calling session.data_pid_in() should be fine
+                    if dataLength <= ep_len:
+                        pid = end_pids_iso[n_tr]
+                    else:
+                        pid = USB_PID["MDATA"]
+                # Reset data PIDs on SETUP transaction
+                elif transType == "SETUP":
+                    pid = session.data_pid_out(
+                        endpointNumber, togglePid=True, resetDataPid=True
+                    )
+
+                    # If SETUP trans then we need to reset and toggle the corresponding IN EP's PID also
+                    in_pid = session.data_pid_in(
+                        endpointNumber, togglePid=True, resetDataPid=True
+                    )
+                else:
+                    pid = session.data_pid_out(
+                        endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
+                    )
+
                 # Add data packet to packets list
                 packets.append(
                     TxDataPacket(
                         pid=pid,
                         dataPayload=packetPayload,
+                        bad_crc=self._badDataCrc,
+                        rxe_assert_time=self._rxeAssertDelay_data,
                     )
                 )
 
+                # Note precedence of halted here
+                if expectHandshake:
+                    if self._halted:
+                        packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                    elif self._nacking:
+                        packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
+                    else:
+                        packets.append(RxHandshakePacket())
+
+                dataLength -= send_len
+                n_tr += 1
+                if dataLength <= 0:
+                    break
+
             self._packets.extend(packets)
 
-        else:
-
-            rem = dataLength
+        else: # IN transaction
+            remaining = dataLength
             n_tr = 0
             pids = [USB_PID["DATA2"], USB_PID["DATA1"], USB_PID["DATA0"]]
             N_tr = round(dataLength / ep_len + 0.5)
             pids = pids[3 - N_tr:]
 
-            while rem != 0:
-
+            while True:
                 self._packets.append(
                     TokenPacket(
                         interEventDelay=interEventDelay,
@@ -338,23 +181,53 @@ class UsbTransactionHbw(UsbEvent):
                     )
                 )
 
-                pid = pids[n_tr]
+                if (
+                    self._badDataCrc
+                    or self._rxeAssertDelay_data
+                    or self._endpointType == "ISO"
+                    or self._halted
+                    or self._nacking
+                ):
+                    togglePid = False
+                else:
+                    togglePid = True
 
-                if rem > ep_len:
+                if halted:
+                    resetDataPid = True
+
+                if self._endpointType == "ISO": # ISO doesn't halt or toggle PID so not calling session.data_pid_in is fine for ISO
+                    pid = pids[n_tr]
+                else:
+                    pid = session.data_pid_in(
+                        endpointNumber, togglePid=togglePid, resetDataPid=resetDataPid
+                    )
+
+                if remaining > ep_len:
                     rcv_len = ep_len
                 else:
-                    rcv_len = rem
+                    rcv_len = remaining
 
-                rem -= rcv_len
+                # Add data packet to packets list
+                if not halted and not self._nacking:
+                    # Generate packet data payload
+                    packetPayload = session.getPayload_in(endpointNumber, rcv_len)
+                    self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
+
+                if self._endpointType != "ISO":
+
+                    if self._halted:
+                        self._packets.append(RxHandshakePacket(pid=USB_PID["STALL"]))
+                    elif self._nacking:
+                        self._packets.append(RxHandshakePacket(pid=USB_PID["NAK"]))
+                    else:
+                        # we know that the device is not halted and not nacking, hence we've recieved the RxDataPacket before
+                        self._packets.append(TxHandshakePacket(interEventDelay = USB_PKT_TIMINGS["RX_TO_TX_PACKET_DELAY"]))
+
+                remaining -= rcv_len
                 n_tr += 1
 
-
-                packetPayload = session.getPayload_in(endpointNumber, rcv_len)
-
-                self._packets.append(RxDataPacket(pid=pid, dataPayload=packetPayload))
-
-
-        # setup events here
+                if remaining <= 0:
+                    break
 
         super().__init__(time=eventTime)
 
@@ -409,4 +282,3 @@ class UsbTransactionHbw(UsbEvent):
     def drive(self, usb_phy, bus_speed):
         for p in self.packets:
             p.drive(usb_phy, bus_speed)
-

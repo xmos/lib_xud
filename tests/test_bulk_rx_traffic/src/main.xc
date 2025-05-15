@@ -42,7 +42,11 @@ int main()
         }
 
         {
+        #if USB_HBW_EP
+            unsigned fail = TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH);
+        #else
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
+        #endif
 
             /* Give some time for the traffic EP transactions to be sent */
             {
@@ -65,3 +69,5 @@ int main()
 
     return 0;
 }
+
+#include "src/shared.xc"

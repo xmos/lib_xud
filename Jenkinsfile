@@ -5,7 +5,7 @@
 def clone_test_deps() {
   dir("${WORKSPACE}") {
     sh "git clone git@github.com:xmos/test_support"
-    sh "git -C test_support checkout c820ebe67bea0596dabcdaf71a590c671385ac35"
+    sh "git -C test_support checkout remove_whitespace"
   }
 }
 

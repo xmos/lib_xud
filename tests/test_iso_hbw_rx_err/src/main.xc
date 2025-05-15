@@ -38,11 +38,16 @@ XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL,
 
 unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 {
+#if USB_HBW_EP
     unsigned fail = TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH);
+#else
+    unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);
+#endif
 
     return fail;
 }
 
 #include "test_main.xc"
+#include "src/shared.xc"
 
 

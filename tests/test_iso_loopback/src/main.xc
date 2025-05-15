@@ -9,6 +9,14 @@
 #define EP_COUNT_OUT   (6)
 #define EP_COUNT_IN    (6)
 
+#if USB_HBW_EP
+    #define EP_LENGTH (160)
+#else
+    #define EP_LENGTH (1024)
+#endif
+
+#include "xud_shared.h"
+
 /* Endpoint type tables */
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
@@ -26,6 +34,12 @@ int TestEp_LoopbackForever(chanend c_out1, chanend c_in1)
 
     XUD_ep ep_out1 = XUD_InitEp(c_out1);
     XUD_ep ep_in1  = XUD_InitEp(c_in1);
+
+#if USB_HBW_EP
+    unsigned offset = 15;
+    asm volatile("stw %0, %1[%2]"::"r"(EP_LENGTH),"r"(ep_out1),"r"(offset));
+    asm volatile("stw %0, %1[%2]"::"r"(EP_LENGTH),"r"(ep_in1),"r"(offset));
+#endif
 
     unsigned char buffer[1024];
 
@@ -49,6 +63,12 @@ int TestEp_LoopbackOnce(chanend c_out, chanend c_in, chanend c_out_0)
     XUD_ep ep_out_0 = XUD_InitEp(c_out_0);
     XUD_ep ep_out = XUD_InitEp(c_out);
     XUD_ep ep_in  = XUD_InitEp(c_in);
+
+#if USB_HBW_EP
+    unsigned offset = 15;
+    asm volatile("stw %0, %1[%2]"::"r"(EP_LENGTH),"r"(ep_out),"r"(offset));
+    asm volatile("stw %0, %1[%2]"::"r"(EP_LENGTH),"r"(ep_in),"r"(offset));
+#endif
 
     unsigned char buffer[1024];
 
@@ -83,3 +103,5 @@ int main()
 
     return 0;
 }
+
+#include "src/shared.xc"

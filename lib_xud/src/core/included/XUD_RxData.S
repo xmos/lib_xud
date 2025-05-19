@@ -121,7 +121,7 @@ OutTail1:
     {clre
     shr         r11, r11, 24}                   // Shift off junk
     crc32_inc   r6, r11, r9, r4, 1
-    stw         r11, r1[r4]                     // Store last data
+    //stw         r11, r1[r4]                     // Store last data
     LDWSP_ru6   r11, sp[STACK_RXCRC_TAIL1]
 xta_targetB_RxRet1:
 xta_targetB_RxRet2:
@@ -133,7 +133,7 @@ OutTail2:
     {clre
     shr         r11, r11, 16}
     crc32_inc   r6, r11, r9, r4, 1
-    stw         r11, r1[r4]                     // Store last data
+    //stw         r11, r1[r4]                     // Store last data
     ldw         r11, sp[STACK_RXCRC_TAIL2]
 xta_targetC_RxRet1:
 xta_targetC_RxRet2:

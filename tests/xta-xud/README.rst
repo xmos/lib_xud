@@ -1,6 +1,18 @@
 Timing Analysis for LIB_XUD
 ===========================
 
+.. warning::
+  This script does not provide fully accurate numbers for timings for
+  several reasons:
+    * No port buffering is simmulated
+    * FNOPs are not accurate
+    * Some timings constraints might not be accuarte
+    * Event/Interrupt handling is not fully accurate
+    * It does not take into account the high-level USB protocol details 
+      (i.e. error handling)
+  The data generated here is mostly used to get a general picture of
+  different places of lib_xud compared to each other.
+
 This directory contains a program to analyse timing behaviour of
 lib_xud.
 
@@ -38,7 +50,7 @@ not parsed for errors so be careful):
 
 Run, for example::
 
-  python3 xta.py ../examples/app_hid_mouse/bin/xc/app_hid_mouse_xc.xe
+  python3 xta.py ../../examples/app_hid_mouse/bin/xc/app_hid_mouse_xc.xe
 
 And it will output diagnostic information finishing with the following sections::
 

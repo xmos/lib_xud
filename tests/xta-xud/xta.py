@@ -1,3 +1,6 @@
+# Copyright 2024-2025 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
+
 from instr_db import uses_memory, is_io, may_go_on
 import subprocess
 import sys

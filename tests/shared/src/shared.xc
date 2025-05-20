@@ -145,9 +145,10 @@ int TestEp_Tx(chanend c_in, int epNum1, unsigned start, unsigned end, t_runMode 
 int TestEp_Tx_Hbw(chanend c_in, int epNum1, unsigned start, unsigned end, unsigned ep_len, t_runMode runMode)
 {
     XUD_ep ep_in  = XUD_InitEp(c_in);
-
-    unsigned offset = 15;
-    asm volatile("stw %0, %1[%2]"::"r"(ep_len),"r"(ep_in),"r"(offset));
+    unsafe {
+        XUD_ep_info * ep = (XUD_ep_info*) ep_in;
+        ep->max_len = ep_len;
+    }
 
     TestEp_Tx_RunData(ep_in, start, end);
 
@@ -243,8 +244,10 @@ int TestEp_Rx(chanend c_out, int epNum, int start, int end)
 int TestEp_Rx_Hbw(chanend c_out, int epNum, int start, int end, int ep_len)
 {
     XUD_ep ep_out1 = XUD_InitEp(c_out);
-    unsigned offset = 15;
-    asm volatile("stw %0, %1[%2]"::"r"(ep_len),"r"(ep_out1),"r"(offset));
+    unsafe {
+        XUD_ep_info * ep = (XUD_ep_info*) ep_out1;
+        ep->max_len = ep_len;
+    }
 
     return TestEp_Rx_RunData(ep_out1, epNum, start, end);
 }

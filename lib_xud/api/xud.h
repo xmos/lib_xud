@@ -479,9 +479,6 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
 #define XUD_SUSPEND_PHY (0)
 #endif
 
-/*
- * TODO size of this hardcoded in ResetEpStateByAddr_
- */
 typedef struct XUD_ep_info
 {
     unsigned int array_ptr;            // 0
@@ -498,15 +495,12 @@ typedef struct XUD_ep_info
     unsigned int saved_array_ptr;      // 11
     unsigned int array_ptr_setup;      // 12
     unsigned int saved_frame;          // 13 Cached micro-frame number
-    unsigned int got_sof;              // 14 Got SoF state, only set in IN
-    unsigned int max_len;              // 15 Maximum transaction len permitted per endpoint
-    unsigned int max_trans;            // 16 Maximum nuber of transactions permitted per endpoint
-    unsigned int tr;                   // 17 Current transaction
-    unsigned int N_tr;                 // 18 Nuber of IN transactions in the current micro-frame
-    unsigned int remained;             // 19
-    unsigned int first_pid;            // 20 // 'ignore' for OUT
-    unsigned int save_buffer;          // 21
-    unsigned int save_length;          // 22
+    unsigned int max_len;              // 14 Maximum transaction len permitted per endpoint
+    unsigned int current_transaction;  // 15 Current transaction
+    unsigned int remained;             // 16 For IN, datalength in bytes remaining to be sent. For OUT, datalength received so far in the current transfer
+    unsigned int first_pid;            // 17 first pid to send for an IN transfer. Unused for OUT
+    unsigned int save_buffer;          // 18 copy of the buffer start address. Used to retry an IN transfer, or to discard an OUT transfer mid-way and roll back the buffer start address
+    unsigned int save_length;          // 19 copy of the transfer length. Used to retry an IN transfer. Unused for OUT
 } XUD_ep_info;
 
 #endif

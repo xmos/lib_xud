@@ -11,8 +11,12 @@ from usb_transaction import UsbTransaction
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    # Note, quite big gap to allow checking
-    ied = 4000
+    # Tx -> Tx, sent hanshake after IN -> sending IN tok
+    ied = 24
+    # Rx -> Tx, got data from teh device but have not sent an ACK
+    # so device must timeout first before beimg able to recieve
+    # a new token, TODO: verify this time for FS
+    ied_timeout = 99
 
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
@@ -44,7 +48,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=ied,
+                interEventDelay=ied_timeout,
             )
         )
 

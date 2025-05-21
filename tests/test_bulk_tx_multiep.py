@@ -17,8 +17,6 @@ for k in PARAMS:
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    ied = 200
-
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
@@ -32,7 +30,6 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=ied,
             )
         )
         session.add_event(
@@ -43,7 +40,6 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=ied,
             )
         )
         session.add_event(
@@ -54,7 +50,6 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=ied,
             )
         )
         session.add_event(
@@ -65,7 +60,6 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=ied,
             )
         )
 

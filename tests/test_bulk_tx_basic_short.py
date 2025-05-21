@@ -10,6 +10,9 @@ from usb_transaction import UsbTransaction
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
+    # Tx -> Tx, sent hanshake after IN -> sending IN tok
+    ied = 23
+
     start_length = 0
     end_length = 7
 
@@ -26,7 +29,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=100,
+                interEventDelay=ied,
             )
         )
 

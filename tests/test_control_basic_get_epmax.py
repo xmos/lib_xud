@@ -45,7 +45,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="SETUP",
                 dataLength=8,
-                interEventDelay=1000,  # Large delay to allow for packet generation
+                interEventDelay=250,  # Large delay to allow for packet generation
             )
         )
 
@@ -68,7 +68,7 @@ def test_session(ep, address, bus_speed):
                     endpointType="CONTROL",
                     transType="IN",
                     dataLength=pktLength,
-                    interEventDelay=500,
+                    interEventDelay=35,
                 )
             )
 
@@ -80,7 +80,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="CONTROL",
                 transType="OUT",
                 dataLength=0,
-                interEventDelay=500,
+                interEventDelay=25,
             )
         )
 

@@ -20,7 +20,12 @@ def test_session(ep, address, bus_speed):
     ep_loopback = ep
     ep_loopback_kill = ep + 1
 
-    interEventDelay = 500
+    # Rx -> Tx, recieving handshake after OUT -> sending IN tok
+    ied_in = 21
+    # Last IN doesn't work with 21 for some reason
+    ied_in1 = 25
+    # Tx -> Tx, sending IN handshake -> sending next OUT tok
+    ied_out = 15
 
     start_length = 10
     end_length = 20
@@ -39,7 +44,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="OUT",
                 dataLength=pktLength,
-                interEventDelay=interEventDelay,
+                interEventDelay=ied_out,
             )
         )
         session.add_event(
@@ -50,7 +55,7 @@ def test_session(ep, address, bus_speed):
                 endpointType="BULK",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=interEventDelay,
+                interEventDelay=ied_in,
             )
         )
 
@@ -65,7 +70,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=interEventDelay,
+            interEventDelay=ied_out,
         )
     )
     session.add_event(
@@ -76,7 +81,7 @@ def test_session(ep, address, bus_speed):
             endpointType="BULK",
             transType="IN",
             dataLength=pktLength,
-            interEventDelay=interEventDelay,
+            interEventDelay=ied_in1,
         )
     )
 

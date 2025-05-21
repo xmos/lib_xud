@@ -50,7 +50,7 @@ def test_session(ep, address, bus_speed):
     session.add_event(UsbResume(suspendedPhy=False))
 
     frameNumber = frameNumber + 1
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=2000))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=52))
 
     session.add_event(
         UsbTransaction(
@@ -73,7 +73,7 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=500,
+            interEventDelay=200,
         )
     )
 
@@ -93,7 +93,7 @@ def test_session(ep, address, bus_speed):
     session.add_event(UsbResume(suspendedPhy=False))
 
     frameNumber = frameNumber + 1
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=2000))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=52))
 
     session.add_event(
         UsbTransaction(
@@ -103,7 +103,7 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength + 1,
-            interEventDelay=100,
+            # interEventDelay=100,
         )
     )
 

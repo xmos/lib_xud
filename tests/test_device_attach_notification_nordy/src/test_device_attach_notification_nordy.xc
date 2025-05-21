@@ -49,7 +49,10 @@ testResult_t TestEpBusUpdate_Tx(XUD_ep ep_out0, XUD_ep ep_in, int epNum, int pkt
      * a bus reset notification. This packet should never make it to the host */
     result = XUD_SetBuffer(ep_in, bufferTxBad, pktLen);
 
-    /* Since device has received a reset, don't expect the old buffer we set abouve to actually
+    if(result != XUD_RES_RST)
+        return FAIL_UNEXPECTED_STATUS;
+
+    /* Since device has received a reset, don't expect the old buffer we set above to actually
      * be transmitted. The EP should now be NAKing */
 
     /* Sync with the host via EP0 so we know we can now get the bus status update and set some fresh
@@ -57,11 +60,17 @@ testResult_t TestEpBusUpdate_Tx(XUD_ep ep_out0, XUD_ep ep_in, int epNum, int pkt
     result = XUD_GetBuffer(ep_out0, bufferRx, length);
     busSpeed = XUD_ResetEndpoint(ep_in, null);
 
+    if(result != XUD_RES_OKAY)
+        return FAIL_UNEXPECTED_STATUS;
+
     if(busSpeed != XUD_TEST_SPEED)
         return FAIL_BAD_BUS_SPEED;
 
     /* Mark EP ready with a fresh new buffer */
     result = XUD_SetBuffer(ep_in, bufferTx, pktLen);
+
+    if(result != XUD_RES_OKAY)
+        return FAIL_UNEXPECTED_STATUS;
 
     /* Allow a little time for Tx data to make it's way of the port - important for FS tests */
     {

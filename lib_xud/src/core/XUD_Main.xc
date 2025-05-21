@@ -457,7 +457,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 void _userTrapHandleRegister(void);
 
 #pragma unsafe arrays
-static void drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[])
+static void _XUD_drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[])
 {
     for(int i = 0; i < n; i++)
     {
@@ -623,8 +623,8 @@ int XUD_Main(chanend c_ep_out[], int noEpOut,
     // Need to close, drain, and check - three stages.
     for(int i = 0; i < 2; i++)
     {
-        drain(c_ep_out, noEpOut, i, epTypeTableOut);  // On all inputs
-        drain(c_ep_in, noEpIn, i, epTypeTableIn);     // On all output
+        _XUD_drain(c_ep_out, noEpOut, i, epTypeTableOut);  // On all inputs
+        _XUD_drain(c_ep_in, noEpIn, i, epTypeTableIn);     // On all output
     }
 
     return 0;

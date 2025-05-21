@@ -131,7 +131,7 @@ int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
 {
     if (l != expectedLength)
     {
-        printstr("#### Unexpected length on EP: ");
+        printstr("#### XCORE: Unexpected length on EP: ");
         printint(epNum);
         printstr(". Got: ");
         printint(l);
@@ -149,7 +149,7 @@ int RxDataCheck(unsigned char b[], int l, int epNum, unsigned expectedLength)
             if(b[i] != g_rxDataCheck[epNum])
             {
 #ifdef XUD_SIM_XSIM
-                printstr("#### Mismatch on EP: ");
+                printstr("#### XCORE: Mismatch on EP: ");
                 printint(epNum);
                 printstr(". Got:");
                 printhex(b[i]);

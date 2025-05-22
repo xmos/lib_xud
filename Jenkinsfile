@@ -13,7 +13,7 @@ getApproval()
 
 pipeline {
   agent {
-    label 'x86_64 && linux'
+    label 'x86_64 && linux && documentation'
   }
   options {
     buildDiscarder(xmosDiscardBuildSettings())

@@ -7,6 +7,55 @@ from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_packet import CreateSofToken, TokenPacket, TxDataPacket, USB_PID
+# Case1: error at transaction 1, unexpected SOF
+# | SOF MDATA | SOF MDATA | SOF MDATA | SOF MDATA | SOF MDATA DATA0 | SOF MDATA DATA1 |
+# |   drop    |    drop   |     drop  |     drop  |       drop      |   receive       |
+
+# Case2: error at transaction 1, wrong PID (MDATA)
+# | SOF MDATA MDATA | SOF MDATA MDATA | SOF MDATA MDATA | SOF MDATA MDATA | SOF MDATA DATA1 | SOF MDATA DATA1 |
+# |   drop          |    drop         |     drop        |     drop        |       drop      |     receive     |
+
+# Case3: error at transaction 1, wrong PID (DATA0)
+# | SOF MDATA DATA0 | SOF MDATA DATA0 | SOF MDATA DATA0 | SOF MDATA DATA0 | SOF MDATA DATA1 |
+# |   drop          |    drop         |     drop        |     drop        |       receive   |
+
+
+# Case4: error at transaction 0, missing SOF
+# | DATA0     | DATA0     | DATA0     | DATA0     | SOF MDATA DATA1 |
+# | drop      | drop      | drop      | drop      | receive         |
+
+# Case5: error at transaction 0, wrong PID (DATA1)
+# | SOF DATA1 | SOF DATA1 | SOF DATA1 | SOF DATA1 | SOF MDATA DATA1 |
+# | drop      | drop      | drop      | drop      | receive         |
+
+from usb_phy import USB_PKT_TIMINGS
+INTER_TRANSACTION_DELAY = USB_PKT_TIMINGS["TX_TO_TX_PACKET_DELAY"]
+def CustomUsbOutTransaction(session,
+                            deviceAddress=0,
+                            endpointNumber=0,
+                            interEventDelay=INTER_TRANSACTION_DELAY,
+                            payloads=[],
+                            pids=[]
+                         ):
+    assert len(payloads)
+    assert len(pids)
+    assert len(payloads) == len(pids)
+    for i in range(len(payloads)):
+        session.add_event(
+            TokenPacket(
+                pid=USB_PID["OUT"],
+                address=deviceAddress,
+                endpoint=endpointNumber,
+                interEventDelay=interEventDelay
+            )
+        )
+        session.add_event(
+            TxDataPacket(
+                dataPayload=payloads[i],
+                pid=USB_PID[pids[i]]
+            )
+        )
+
 
 @pytest.fixture
 def test_session(ep, address, bus_speed):
@@ -14,31 +63,22 @@ def test_session(ep, address, bus_speed):
     frameNumber = 0
     ep_len = 8
     pktLength = 12
-
+    num_error_transfers = 4 # No. of errorneous transfers before a correct one is sent
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
-    frameNumber += 1
-
-    # Send first MDATA
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["OUT"],
-            address=address,
-            endpoint=ep,
+    # Case1: error at transaction 1, unexpected SOF
+    # Partial transfers with only MDATA transaction (missing DATA1)
+    for _ in range(num_error_transfers):
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        frameNumber += 1
+        CustomUsbOutTransaction(session,
+                        deviceAddress=address,
+                        endpointNumber=ep,
+                        pids=["MDATA"],
+                        payloads=[[0xaa for x in range(ep_len)]]
         )
-    )
-    payload = [1 for x in range(ep_len)]
-    session.add_event(
-        TxDataPacket(
-            dataPayload=payload,
-            pid=USB_PID["MDATA"]
-        )
-    )
-
-    # lost DATA0 packet, should drop MDATA data
 
     session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
     frameNumber += 1
@@ -75,22 +115,64 @@ def test_session(ep, address, bus_speed):
         )
     )
 
-    # data0 - no sof, should drop
+    # Case2: error at transaction 1, wrong PID (MDATA)
+    for _ in range(num_error_transfers):
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        frameNumber += 1
+
+        CustomUsbOutTransaction(session,
+                                deviceAddress=address,
+                                endpointNumber=ep,
+                                interEventDelay=50,
+                                pids=["MDATA", "MDATA"],
+                                payloads=[[0xaa for x in range(ep_len)], [0xaa for x in range(ep_len)]]
+        )
+
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=500))
+    frameNumber += 1
+
     session.add_event(
-        TokenPacket(
-            pid=USB_PID["OUT"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=50
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="ISO",
+            transType="OUT",
+            dataLength=pktLength+1,
+            interEventDelay=70,
+            ep_len=ep_len,
+            resend=True
         )
     )
-    payload = [2 for x in range(ep_len)]
+
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=500))
+    frameNumber += 1
+    # healthy packet, this one should be recieved
     session.add_event(
-        TxDataPacket(
-            dataPayload=payload,
-            pid=USB_PID["DATA0"]
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="ISO",
+            transType="OUT",
+            dataLength=pktLength+1,
+            interEventDelay=70,
+            ep_len=ep_len,
         )
     )
+
+    # Case3: error at transaction 1, wrong PID (DATA0)
+    for _ in range(num_error_transfers):
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        frameNumber += 1
+        CustomUsbOutTransaction(session,
+                        deviceAddress=address,
+                        endpointNumber=ep,
+                        interEventDelay=50,
+                        pids=["MDATA", "DATA0"],
+                        payloads=[[0xaa for x in range(ep_len)], [0xaa for x in range(ep_len)]]
+        )
+
 
     session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
     frameNumber += 1
@@ -103,32 +185,54 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep,
             endpointType="ISO",
             transType="OUT",
-            dataLength=pktLength + 1,
+            dataLength=pktLength+2,
+            interEventDelay=70,
+            ep_len=ep_len,
+        )
+    )
+
+    # Case4: error at transaction 0, no SOF
+    # data0 - no sof, should drop
+    for _ in range(num_error_transfers):
+        CustomUsbOutTransaction(session,
+                deviceAddress=address,
+                endpointNumber=ep,
+                interEventDelay=50,
+                pids=["DATA0"],
+                payloads=[[0xaa for x in range(ep_len)]]
+        )
+
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+    frameNumber += 1
+
+    # healthy packet, this one should be recieved
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="ISO",
+            transType="OUT",
+            dataLength=pktLength + 3,
             interEventDelay=70,
             ep_len=ep_len
         )
     )
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
-    frameNumber += 1
+    # Case5: error at transaction 0, wrong PID (DATA1)
+    for _ in range(num_error_transfers):
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        frameNumber += 1
 
-    # data1 - wrong pid
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["OUT"],
-            address=address,
-            endpoint=ep,
+        CustomUsbOutTransaction(session,
+                deviceAddress=address,
+                endpointNumber=ep,
+                interEventDelay=50,
+                pids=["DATA1"],
+                payloads=[[0xaa for x in range(ep_len)]]
         )
-    )
-    payload = [3 for x in range(ep_len)]
-    session.add_event(
-        TxDataPacket(
-            dataPayload=payload,
-            pid=USB_PID["DATA1"]
-        )
-    )
 
-    # healthy packet, this one will be dropped
+    # healthy packet, this one will be received
     session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
     frameNumber += 1
 
@@ -139,7 +243,7 @@ def test_session(ep, address, bus_speed):
             endpointNumber=ep,
             endpointType="ISO",
             transType="OUT",
-            dataLength=pktLength + 2,
+            dataLength=pktLength + 4,
             interEventDelay=70,
             ep_len=ep_len,
         )

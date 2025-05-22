@@ -501,6 +501,7 @@ typedef struct XUD_ep_info
     unsigned int first_pid;            // 17 first pid to send for an IN transfer. Unused for OUT
     unsigned int save_buffer;          // 18 copy of the buffer start address. Used to retry an IN transfer, or to discard an OUT transfer mid-way and roll back the buffer start address
     unsigned int save_length;          // 19 copy of the transfer length. Used to retry an IN transfer. Unused for OUT
+    unsigned int out_err;
 } XUD_ep_info;
 
 #endif

@@ -198,3 +198,5 @@ int main()
 
     return 0;
 }
+
+#include "src/shared.xc"

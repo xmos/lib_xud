@@ -26,7 +26,7 @@ PidJumpTable_RxData:
 .word Pid_Pre             // 12   0x0c
 .word Pid_Setup           // 13   0x0d
 .word Pid_Stall           // 14   0x0e
-.word Pid_Datam_RxData          // 15   0x0f
+.word Pid_MData_RxData          // 15   0x0f
 #if defined(XUD_DEBUG_VERSION) || defined(XUD_FULL_PIDTABLE)
 .word Pid_Bad_RxData
 .word Pid_Bad_RxData
@@ -308,7 +308,7 @@ PidJumpTable_RxData:
 .word Pid_Bad_RxData    // 12   0x0c
 .word Pid_Bad_RxData    // 13   0x0d
 .word Pid_Bad_RxData    // 14   0x0e
-.word Pid_Datam_RxData  // 15   0x0f
+.word Pid_MData_RxData  // 15   0x0f
 .word Pid_Bad_RxData    // 16   0x10
 .word Pid_Bad_RxData    // 17   0x11
 .word Pid_Bad_RxData    // 18   0x12

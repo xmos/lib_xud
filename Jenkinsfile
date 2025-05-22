@@ -49,7 +49,7 @@ pipeline {
     )
     string(
       name: 'INFR_APPS_VERSION',
-      defaultValue: 'develop',
+      defaultValue: 'v2.1.0',
       description: 'The infr_apps version'
     )
   }

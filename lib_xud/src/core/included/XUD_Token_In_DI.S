@@ -106,14 +106,15 @@ xta_ep_XUD_IN_TxLoop_CRC:
 DoneTail:
     ldw         r11, sp[STACK_EPTYPES_IN]
     ldw         r11, r11[r10]                       // Load EP Type
-    bf          r11, XUD_IN_DoneTx
+    {bf         r11, XUD_IN_DoneTx
+    ldc         r11, 8}
 
 SetupReceiveHandShake:
-    {setsr      0x1                                 // enable events so we can get a handshake before waiteu
-    ldc        r11, 8}
 xta_ep_SetupReceiveHandShake:
-    {setpsc     res[RXD], r11                       // Set port shift count (expect 8 bit handshake)
+    {setpsc     res[RXD], r11                      // Set port shift count (expect 8 bit handshake)
     ldw        r8, sp[STACK_RXRDY_PORT]}
+
+    setsr 0x1                                      // enable events so we can get a handshake before waiteu
 
 SetupTimeout:                                      // Timeout done using another port we dont happen to already be using events on. Cunning.
     {eeu        res[r8]
@@ -154,7 +155,7 @@ xta_ep_TxHandShakeReceived:
 #else
     ldc        r9, USB_PIDn_ACK
 #endif
-    {clre;              sub r9, r11, r9} 
+    {clre;              sub r9, r11, r9}           // No other events are enabled here, both RxV and TxRdIn are cleared before, so can delay clre to this point
     bt         r9, NextToken
 
 XUD_IN_DoneTx:

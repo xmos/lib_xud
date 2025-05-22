@@ -4,9 +4,9 @@ Timing Analysis for LIB_XUD
 .. warning::
   This script does not provide fully accurate numbers for timings for
   several reasons:
-    * No port buffering is simmulated
+    * No port buffering is simulated
     * FNOPs are not accurate
-    * Some timings constraints might not be accuarte
+    * Some timings constraints might not be accurate
     * Event/Interrupt handling is not fully accurate
     * It does not take into account the high-level USB protocol details 
       (i.e. error handling)
@@ -73,7 +73,7 @@ And it will output diagnostic information finishing with the following sections:
        435 MHz: required for {ENDPOINT1} => {ENDPOINT2} 29 cycles
        315 MHz: required for ...
 
-THe meaning of these is as follows:
+The meaning of these is as follows:
 
 * The labelled timing endpoints are all the endpoints that were found in
   the binary provided

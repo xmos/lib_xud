@@ -39,7 +39,7 @@ UNIQIFY(Pid_Data1):
 UNIQIFY(Pid_Pre):
 UNIQIFY(Pid_Setup):
 UNIQIFY(Pid_Stall):
-UNIQIFY(Pid_Datam):
+UNIQIFY(Pid_MData):
 UNIQIFY(Pid_Bad):
 #undef XTA_TOKENJMP_ID
     bau         r11                                    // Branch to Pid_Out, Pid_Sof, Pid_In, Pid_Setup etc

@@ -80,8 +80,6 @@ int epStatFlagTableOut[USB_MAX_NUM_EP_OUT];
 
 unsigned sentReset = 0;
 
-unsigned chanArray;
-
 #define RESET_TIME_us               (5)
 #define RESET_TIME                  (RESET_TIME_us * PLATFORM_REFERENCE_MHZ)
 

@@ -54,6 +54,8 @@ suspend_t_wtwrsths:
 #define STACK_PIDJUMPTABLE      (22)
 #define STACK_PIDJUMPTABLE_RXDATA (23)
 #define STACK_CRC5TABLE_ADDR      (24)
+#define STACK_RXRDY_PORT        (25)
+#define STACK_TXRDYIN_PORT      (26)
 
 // Params
 #define STACK_VTOK_PORT     (STACK_EXTEND + 1)
@@ -142,6 +144,7 @@ ResetIntHandler:
 .cc_top XUD_LLD_IoLoop.func, XUD_LLD_IoLoop
 
 .issue_mode dual
+xta_start:
 // Note, included here so in same elimination blocks to avoid long jumps
 #include "./included/XUD_Token_In_DI.S"
 #include "./included/XUD_Token_Setup_DI.S"
@@ -149,20 +152,6 @@ ResetIntHandler:
 #include "./included/XUD_RxData.S"
 #include "./included/XUD_Token_Ping.S"
 #include "./included/XUD_Token_SOF.S"
-
-BadCrcAddr:
-    // zext       r11, 8
-    // ldc        r10, PIDn_SOF
-    // eq         r11, r11, r10
-    //ecallt      r11
-    //bt          r11, Pid_Sof_NoChan                    // TODO we should really CRC SOFs
-    ldw         r11, sp[STACK_RXA_PORT]
-
-waitforRXALow0:
-    in          r10, res[r11]
-    bt          r10, waitforRXALow0
-    setc        res[RXD], XS1_SETC_RUN_CLRBUF
-    bu          Loop_BadPid
 
 .align FUNCTION_ALIGNMENT
 XUD_LLD_IoLoop:
@@ -186,9 +175,20 @@ SaveStackPointer:
     ldw         r11, cp[suspendTimeout]
     stw         r11, sp[STACK_SUSPEND_TIMEOUT]
 
-ConfigRxDEventVector:                           // Configure event on RXD port for receiveing a handshake after Tx
+ConfigRxReadyEventVector:                       // Configure event on RxReady going high for receiving a handshake after Tx
+    ldw         r10, dp[rx_rdy]
+    stw         r10, sp[STACK_RXRDY_PORT]
+    setc        res[r10], XS1_SETC_COND_EQ
+    setc        res[r10], XS1_SETC_IE_MODE_EVENT
+    ldc         r11, 1
+    setd        res[r10], r11
+    ldap        r11, TxHandShakeReceived
+    setv        res[r10], r11
+
+ConfigRxDEventVector:                           // Configure event on RxD port for receiving data
+    setc        res[RXD], XS1_SETC_COND_NONE
     setc        res[RXD], XS1_SETC_IE_MODE_EVENT
-    ldap        r11,  TxHandShakeReceived
+    ldap        r11,  NextRxWord
     setv        res[RXD], r11
 
 ConfigRxA:                                      // Configure a event on RXA going low, used during packet reception
@@ -200,12 +200,15 @@ ConfigRxA:                                      // Configure a event on RXA goin
     setv        res[RXA], r11
     eeu         res[RXA]
 
-ConfigValidToken:
 #ifdef __XS2A__
-    ldw         r10, sp[STACK_VTOK_PORT]        // ValidToken is used for timing timeout period when expecting an ack after tx
-#else
-    ldw         r10, dp[rx_rdy]                 // TODO use from stack
+ConfigValidToken:                               // Clear any VTok port condition
+    ldw         r10, sp[STACK_VTOK_PORT]
+    setc        res[r10], XS1_SETC_COND_NONE
 #endif
+
+ConfigTxReadyIn:                                // Configure event on TxReadyIn for timing timeout when waiting ack after tx, can use any usb clocked port here
+    ldw         r10, dp[tx_readyin]
+    stw         r10, sp[STACK_TXRDYIN_PORT]
     setc        res[r10], XS1_SETC_COND_NONE
     ldap        r11, TxHandshakeTimeOut
     setv        res[r10], r11
@@ -245,8 +248,7 @@ CrcRxResidualsOnStack:
     ldc        r11, 0x3334                      // CRC16 init (out)
     stw        r11, sp[STACK_RXCRC_INIT]
 
-    ldw        r11, sp[STACK_EPCHANS]
-    stw        r11, dp[chanArray]
+    ldw        r5, sp[STACK_EPCHANS]            // r5 is never reset
 
 ConfigSofJump:
     ldw        r11, sp[STACK_SOFCHAN]
@@ -288,6 +290,7 @@ SetupSuspendResetTimer:
     setv       res[r10], r11
 
     setc       res[r10], XS1_SETC_COND_NONE
+xta_no_pauseO:
     in         r11, res[r10]                    // Get current time
     ldw        r9, cp[suspendTimeout]
     add        r11, r11, r9
@@ -306,20 +309,19 @@ SetupSuspendResetTimer:
 .align FUNCTION_ALIGNMENT
 .skip 0
 NextToken:
-    ldc         r9, 0xa001                      // CRC16 poly, used in doRxData
-    ldw         r5, sp[(STACK_EXTEND+4)]        // EP structures array - pointers to EP tables or 0
+    ldc         r9, 0xa001                      // CRC16 poly, needs resetting after IN
 
 NextTokenAfterOut:
-    ldc         r7, 0xf335                      // TX Crc init
-    ldc         r6, 0x3334                      // CRC16 init (out) - Needs reseting after an out
+    ldd         r6, r7, sp[STACK_TXCRC_INIT>>1] // CRC16 init (RX/TX), needs reseting after IN, OUT, SETUP
 #ifdef __XS2A__
     ldw         r1, sp[STACK_VTOK_PORT]
 #endif
 
 Loop_BadPid:
 NextTokenAfterPing:
-    setsr       1                               // Enable thread events
-
+    #define XTA_TOKENJMP_PID xta_ep_XUD_TokenRx_Pid
+    #define XTA_TOKENJMP_EPCRC xta_ep_XUD_TokenRx_EPCRC
+    #define XTA_TOKENJMP_ID G
     #include "XUD_TokenJmp.S"
 
 // Un-implemented PID list
@@ -333,18 +335,20 @@ Pid_Nak:
 Pid_Pre:
 Pid_Stall:
 Pid_MData:
-Pid_Datam:
 Pid_Data0:
 Pid_Data1:
 Pid_Bad:                                            // Bad PID received, ignore
 
+
 XUD_InvalidToken:
     ldw        r10, sp[STACK_RXA_PORT]              // Load RxA Port ID (r1)
 XUD_InvalidTok_waitforRXALow:
+xta_ep_XUD_InvalidTok_waitforRXALow:
     in         r11, res[r10]
-    bt         r11, XUD_InvalidTok_waitforRXALow
     setc       res[RXD], XS1_SETC_RUN_CLRBUF
     bu         Loop_BadPid                          // Invalid token received Ignore unknown toks
+
+xta_end:
 
 .align FUNCTION_ALIGNMENT
 Return:

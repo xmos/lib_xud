@@ -1,0 +1,211 @@
+MACRO {ANY_HEADER}  {Pid_Out_header} {Pid_Ping_header} {Pid_Sof_header} {Pid_SofNC_header} {Pid_In_header} {Pid_Setup_header}
+MACRO {TX_CRC} {XUD_IN_TxLoop_CRC} {XUD_IN_TxCrc_TailS0} {XUD_IN_TxCrc_TailS1} {XUD_IN_TxCrc_TailS2} {XUD_IN_TxCrc_TailS3} {XUD_IN_TxCrc_TailS4}
+
+### COMMON SENSE ###
+
+
+# Timing paths where we just have a single byte in the output buffer
+
+TIME 16.667 ns                                 # 8 bit times
+PATH {XUD_IN_TxLoop_dataLast} {XUD_IN_TxLoop_CRC}
+PATH {XUD_IN_TxLoop_PID}    {XUD_IN_TxLoop_data0}
+PATH {XUD_IN_TxPid_TailS0} {XUD_IN_TxCrc_TailS0}
+PATH {XUD_IN_TxPid_TailS1} {XUD_IN_TxDat_TailS1}
+PATH {XUD_IN_TxPid_TailS2} {XUD_IN_TxDat_TailS2}
+PATH {XUD_IN_TxPid_TailS3} {XUD_IN_TxDat_TailS3}
+PATH {XUD_IN_TxPid_TailS4} {XUD_IN_TxDat_TailS4}
+PATH {XUD_IN_TxDat_TailS1} {XUD_IN_TxCrc_TailS1}
+
+# Timing paths where we just have two bytes in the output buffer
+
+TIME 33.333 ns                                 # 16 bit times
+PATH {XUD_IN_TxDat_TailS2} {XUD_IN_TxCrc_TailS2}
+
+# Timing paths where we just have three bytes in the output buffer
+
+TIME 50.000 ns                                 # 24 bit times
+PATH {XUD_IN_TxDat_TailS3} {XUD_IN_TxCrc_TailS3}
+
+# Timing paths where we have four bytes in the output buffer
+
+TIME 66.666 ns                                 # 32 bit times
+PATH {XUD_IN_TxDat_TailS4} {XUD_IN_TxCrc_TailS4}
+PATH {XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataN}
+PATH {XUD_IN_TxLoop_data0} {XUD_IN_TxLoop_dataLast}
+PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataLast}
+PATH {XUD_IN_TxLoop_dataN}  {XUD_IN_TxLoop_dataN}
+PATH {doRXData_dataN}      {doRXData_dataN}
+PATH {doRXData_dataN}       {doRXData_dataLast}
+PATH {Token_PID_doRXData}   {doRXData_dataN}
+PATH {Token_PID_doRXData}   {doRXData_dataLast}
+
+
+
+### RX to TX ###
+
+
+
+# TODO: Follow up times, TX data after RX header
+# these all start from reading pid to outputting data
+# can relax the constrain as we don't read rxa here
+# now doing as standart rx -> tx
+
+TIME 233 ns
+PATH {Pid_In_header}  {XUD_IN_NotReady}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS0}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS1}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS2}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS3}
+PATH {Pid_In_header}  {XUD_IN_TxPid_TailS4}
+PATH {Pid_In_header}  {XUD_IN_TxLoop_PID}
+PATH {Pid_In_header}  {XUD_IN_TxNak}
+PATH {Pid_In_header}  {XUD_IN_TxHandshake}
+PATH {Pid_Ping_header}  {PingNotAck}
+PATH {Pid_Ping_header}  {Ping_Ack}
+
+# Ack IN packet
+# Rx to Tx ack
+# TODO: change to rxalow, or make stricter
+# first one is the OUT ack, second is the Setup Ack
+TIME 233 ns
+PATH {doRXData_dataLast} {doRXData_Ack}
+PATH {doRXData_dataLast} {DoOutNonIso_Ack}
+# OUT error, waiting for the rxa low and sending a handshake
+PATH {XUD_TokenOut_WaitForPacketEnd} {XUD_TokenOut_BufferFull_Nak}
+
+
+
+### Rx to Rx ###
+
+
+
+# iner-packet delay
+# can we add 24 bit times here?
+# will process the rest of the token and get to recieving a data pid
+
+TIME 100 ns
+PATH {Pid_Setup_header}     {Token_PID_doRXData}
+PATH {Pid_Out_header}       {Token_PID_doRXData}
+PATH {Pid_Out_header}       {XUD_TokenOut_BufferFull}
+PATH {Pid_Sof_header}       {XUD_TokenRx_Pid}
+PATH {Pid_SofNC_header}     {XUD_TokenRx_Pid}
+
+# restore from errors
+# may need to make these stricter as rxa already went low
+PATH {XUD_InvalidTok_waitforRXALow} {XUD_TokenRx_Pid}
+PATH {XUD_TokenOut_WaitForPacketEnd} {XUD_TokenRx_Pid}
+PATH {RxErr_RxALow} {XUD_TokenRx_Pid}
+
+# recieving ack to next token
+TIME 100 ns
+PATH {TxHandShakeReceived}         {XUD_TokenRx_Pid}
+# not really rx to rx as it starts from the timeout, maybe move it somewhere else
+# TODO: see if there's a specific timing reqirement for recovering from the timeout
+PATH {TxHandshakeTimeOut}         {XUD_TokenRx_Pid}
+
+# ISO data end to next token
+TIME 100 ns
+PATH {doRXData_dataLast} {Token_PID_RxRet2}
+
+# this one is a bad data in Setup and non-ISO OUT to the new token
+TIME 100 ns
+PATH {doRXData_dataLast} {XUD_TokenRx_Pid}
+PATH {XUD_Setup_BuffFull} {XUD_TokenRx_Pid}
+
+# TODO: review
+# time between inputting the data pid we don't use and waiting on rxa going low
+# will leave as 32 bit times 
+TIME 66.667 ns
+PATH {XUD_TokenOut_BufferFull}     {XUD_TokenOut_WaitForPacketEnd}
+
+# TODO: review
+# time after recieving Setup pid, seeing that the buffer is full and waiting on rxa to go low
+TIME 50 ns
+PATH {Pid_Setup_header} {XUD_Setup_BuffFull}
+
+
+# See if the PID is bad
+# Have a whole Token packet, so have 32 bit times
+# really has to start from reading the PID, not ERCRC TODO
+TIME 66.667 ns
+PATH {Token_EPCRC_IN_NotReady} {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_IN_TxHandshake} {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_TxNak}    {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_doRXData} {XUD_InvalidTok_waitforRXALow}
+PATH {Token_EPCRC_RxRet2}   {XUD_InvalidTok_waitforRXALow}
+PATH {XUD_TokenRx_EPCRC}    {XUD_InvalidTok_waitforRXALow}
+
+## intra packet
+
+# rx pid to rx header
+# withing a token packet
+# 16 bits constrain
+TIME 33.333 ns
+PATH {Token_PID_IN_NotReady} {Token_EPCRC_IN_NotReady}
+PATH {Token_PID_IN_TxHandshake} {Token_EPCRC_IN_TxHandshake}
+PATH {Token_PID_TxNak}    {Token_EPCRC_TxNak}
+PATH {Token_PID_doRXData} {Token_EPCRC_doRXData}
+PATH {Token_PID_RxRet2}   {Token_EPCRC_RxRet2}
+PATH {XUD_TokenRx_Pid}    {XUD_TokenRx_EPCRC}
+
+# followup time after setpsc to in, has to be 32 + 16 bit times
+TIME 100 ns
+PATH {Token_EPCRC_IN_NotReady} {ANY_HEADER}
+PATH {Token_EPCRC_IN_TxHandshake} {ANY_HEADER}
+PATH {Token_EPCRC_TxNak} {ANY_HEADER}
+PATH {Token_EPCRC_doRXData} {ANY_HEADER}
+PATH {Token_EPCRC_RxRet2} {ANY_HEADER}
+PATH {XUD_TokenRx_EPCRC} {ANY_HEADER}
+
+# TODO review
+# do crc, see that it's bad, be ready to see rxa going low to recieve a next packet
+# we don't do crc for the SOF and DATA for some reason
+# 24 bits constrain
+TIME 50 ns
+PATH {Pid_In_header} {XUD_InvalidTok_waitforRXALow}
+PATH {Pid_Out_header} {XUD_InvalidTok_waitforRXALow}
+PATH {Pid_Ping_header} {XUD_InvalidTok_waitforRXALow}
+PATH {Pid_Setup_header} {XUD_InvalidTok_waitforRXALow}
+
+
+
+### TX to RX ###
+
+
+
+TIME 100 ns
+
+# Tx to Rx inter-packed delay
+# between transactions
+# handshake to next token
+# may need to add more time here
+
+PATH {doRXData_Ack}                {XUD_TokenRx_Pid}
+PATH {DoOutNonIso_Ack}             {Token_PID_RxRet2}
+PATH {Ping_Ack}                    {XUD_TokenRx_Pid}
+PATH {PingNotAck}                  {XUD_TokenRx_Pid}
+PATH {XUD_TokenOut_BufferFull_Nak} {XUD_TokenRx_Pid}
+
+# ISO IN data to next token
+# between transactions
+TIME 100 ns
+PATH {TX_CRC} {XUD_TokenRx_Pid}
+
+# Non-ISO IN data to recieving a handshake
+# between packets
+TIME 100 ns
+PATH {TX_CRC} {SetupReceiveHandShake}
+
+# followup time after setpsc to in, has to be 32 + 8 bit times
+TIME 83.3334 ns
+PATH {SetupReceiveHandShake} {TxHandShakeReceived}
+# will keep the same for now TODO
+PATH {SetupReceiveHandShake} {TxHandshakeTimeOut}
+
+# output error after the IN token, go to the next PID
+# first 2 sent one byte, the third one sends 3, why?
+TIME 100 ns
+PATH {XUD_IN_TxHandshake}  {Token_PID_IN_TxHandshake}
+PATH {XUD_IN_TxNak}        {Token_PID_TxNak}
+# ISO
+PATH {XUD_IN_NotReady}     {Token_PID_IN_NotReady}

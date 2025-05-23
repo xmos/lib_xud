@@ -7,6 +7,7 @@ UNRELEASED
   * ADDED:    Option XUD_SUSPEND_PHY to place USB phy in low power mode during
     USB suspend
   * CHANGE:   Optimised port timings for XS3A to use non-inverted clock
+  * CHANGE:   Low level (speed) optimisations  
 
 2.4.0
 -----

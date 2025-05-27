@@ -37,6 +37,9 @@ pipeline {
     timestamps()
   }
   parameters {
+    choice(name: 'TEST_LEVEL', choices: ['smoke', 'default', 'extended'],
+            description: 'The level of test coverage to run'
+    )
     string(
       name: 'TOOLS_VERSION',
       defaultValue: '-j -b markp_xsim_expose_signals_from_usb_shim latest',
@@ -103,7 +106,7 @@ pipeline {
             dir("${REPO}/tests") {
               createVenv(reqFile: "requirements.txt")
               withVenv{
-                runPytest('--numprocesses=8 --smoke --enabletracing')
+                runPytest("--numprocesses=8 --${params.TEST_LEVEL} --enabletracing")
               }
             } // dir
           } // withTools

@@ -156,7 +156,7 @@ __attribute__((always_inline)) static XUD_Result_t XUD_GetBuffer_Finish(chanend 
 
 #if USB_HBW_EP
     unsigned ep_marked_ready = 0;
-    if(!ep->out_err && ep->actualPid == USB_PIDn_MDATA)
+    if(!ep->out_err_flag && ep->actualPid == USB_PIDn_MDATA)
     {
         // We expect more data
         ep->buffer += recv_length;
@@ -218,7 +218,7 @@ __attribute__((always_inline)) static XUD_Result_t XUD_GetBuffer_Finish(chanend 
     {
         /// Limitation: We only support a max of 2 transactions per OUT transfer. ep->current_transaction can only be 0 or 1
         unsigned current_transaction = ep->current_transaction;
-        unsigned error = ep->out_err; // If we're already in error from last transaction
+        unsigned error = ep->out_err_flag; // If we're already in error from last transaction
         if(current_transaction == 0)
         {
             // 1st transaction can only be DATA0 or MDATA and it should see a sof
@@ -239,9 +239,9 @@ __attribute__((always_inline)) static XUD_Result_t XUD_GetBuffer_Finish(chanend 
         {
             if(ep_marked_ready)
             {
-                // Can't undo having marked EP as ready, so set ep in error (ep->out_err = 1) and handle at the finish of next packet.
+                // Can't undo having marked EP as ready, so set ep in error (ep->out_err_flag = 1) and handle at the finish of next packet.
                 // NOTE, this assumes that we have an extra ep->max_len worth of memory in the buffer
-                ep->out_err = 1;
+                ep->out_err_flag = 1;
                 return XUD_RES_WAIT;
             }
             else // For everything else, i.e whether we've detected an error this transaction or handling an error from the previous transaction,
@@ -253,7 +253,7 @@ __attribute__((always_inline)) static XUD_Result_t XUD_GetBuffer_Finish(chanend 
                 /* Mark EP as ready */
                 unsigned * array_ptr = (unsigned *)ep->array_ptr;
                 *array_ptr = (unsigned) ep;
-                ep->out_err = 0;
+                ep->out_err_flag = 0;
                 ep->remained = 0;
                 ep->current_transaction = 0;
                 return XUD_RES_WAIT;
@@ -441,7 +441,6 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
             if(current_transaction == 0)
             {
                 ep->pid = USB_PIDn_DATA1;
-                //ep->first_pid = USB_PIDn_DATA1;
                 ep->current_transaction = 1; // For next time.
             }
             else if(current_transaction == 1)
@@ -452,7 +451,6 @@ XUD_Result_t XUD_SetBuffer_Start(XUD_ep e, unsigned char buffer[], unsigned data
         else // N == 1
         {
             ep->pid = USB_PIDn_DATA0;
-            //ep->first_pid = USB_PIDn_DATA0;
         }
     }
 #endif

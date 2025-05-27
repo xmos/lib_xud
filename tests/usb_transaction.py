@@ -167,7 +167,7 @@ class UsbTransaction(UsbEvent):
             remaining = dataLength
             n_tr = 0
             pids = [USB_PID["DATA2"], USB_PID["DATA1"], USB_PID["DATA0"]]
-            N_tr = round(dataLength / ep_len + 0.5)
+            N_tr = int((dataLength + ep_len-1) / ep_len)
             pids = pids[3 - N_tr:]
 
             while True:

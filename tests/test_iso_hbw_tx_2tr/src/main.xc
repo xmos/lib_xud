@@ -10,7 +10,7 @@
 #endif
 
 #ifndef PKT_LENGTH_START
-#define PKT_LENGTH_START 	(12)
+#define PKT_LENGTH_START 	(6)
 #endif
 
 #ifndef PKT_LENGTH_END

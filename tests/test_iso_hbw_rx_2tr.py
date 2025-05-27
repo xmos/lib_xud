@@ -11,8 +11,8 @@ from usb_packet import CreateSofToken
 @pytest.fixture
 def test_session(ep, address, bus_speed):
 
-    start_length = 12
-    end_length = start_length + 4
+    start_length = 6
+    end_length = start_length + 10
     frameNumber = 0
 
     session = UsbSession(

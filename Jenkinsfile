@@ -106,7 +106,7 @@ pipeline {
             dir("${REPO}/tests") {
               createVenv(reqFile: "requirements.txt")
               withVenv{
-                runPytest("--numprocesses=8 --${params.TEST_LEVEL} --enabletracing")
+                runPytest("--numprocesses=8 --testlevel=${params.TEST_LEVEL} --enabletracing")
               }
             } // dir
           } // withTools

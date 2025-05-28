@@ -52,8 +52,7 @@ PARAMS = {
 
 
 def pytest_addoption(parser):
-    parser.addoption("--smoke", action="store_true", help="Smoke test")
-    parser.addoption("--extended", action="store_true", help="Extended test")
+    parser.addoption("--testlevel", action="store", default="default", help="smoke or extended")
     parser.addoption(
         "--clean",
         action="store_true",
@@ -92,9 +91,9 @@ def pytest_generate_tests(metafunc):
         PARAMS = metafunc.module.PARAMS  # noqa F401
         if metafunc.config.getoption("clean"):
             params = PARAMS.get("extended", PARAMS["default"])
-        elif metafunc.config.getoption("smoke"):
+        elif metafunc.config.getoption("testlevel") == "smoke":
             params = PARAMS.get("smoke", PARAMS["default"])
-        elif metafunc.config.getoption("extended"):
+        elif metafunc.config.getoption("testlevel") == "extended":
             params = PARAMS.get("extended", PARAMS["default"])
         else:
             params = PARAMS["default"]

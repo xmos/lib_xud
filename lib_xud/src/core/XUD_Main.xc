@@ -27,6 +27,18 @@
 #error USB_MAX_NUM_EP_OUT must be 16!
 #endif
 
+#if !(((USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME) == 1) || ((USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME) == 2))
+#error "USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME must be either 1 or 2"
+#endif
+
+#if ((USB_ISO_EP_MAX_TRANSACTION_SIZE) > 1024)
+#error "USB_ISO_EP_MAX_TRANSACTION_SIZE must not exceed 1024"
+#endif
+
+#if ((USB_ISO_EP_MAX_TRANSACTION_SIZE) % 4)
+#error "USB_ISO_EP_MAX_TRANSACTION_SIZE must be a multiple of 4"
+#endif
+
 void XUD_UserSuspend();
 void XUD_UserResume();
 void XUD_PhyReset_User();
@@ -583,7 +595,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
             ep_info[i].remained = 0;
             ep_info[i].first_pid = 0;
             ep_info[i].saved_frame = 0;
-            ep_info[i].max_len = 1024;
+            ep_info[i].max_len = USB_ISO_EP_MAX_TRANSACTION_SIZE;
             ep_info[i].out_err_flag = 0;
 #if !defined(__XS2A__)
             ep_info[i].pid = USB_PIDn_DATA0;
@@ -619,7 +631,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
 
             ep_info[USB_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
 
-            ep_info[USB_MAX_NUM_EP_OUT+i].max_len = 1024;
+            ep_info[USB_MAX_NUM_EP_OUT+i].max_len = USB_ISO_EP_MAX_TRANSACTION_SIZE;
 
             ep_info[USB_MAX_NUM_EP_OUT+i].halted = 0;    // Mark EP as not halted
 

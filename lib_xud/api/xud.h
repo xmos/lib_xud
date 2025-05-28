@@ -20,6 +20,8 @@
 #include "xud_conf.h"
 #endif
 
+#include "xud_conf_default.h"
+
 #ifndef XUD_STARTUP_ADDRESS
 #define XUD_STARTUP_ADDRESS (0)
 #endif

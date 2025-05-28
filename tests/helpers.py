@@ -211,9 +211,10 @@ def create_expect(session, filename, verbose=False):
 
         if session == None:
             f.write("Test done\n")
+            full_expect_str += "Test done\n"
             if verbose:
                 print("Test done\n")
-            return
+            return full_expect_str
 
         events = session.events
 

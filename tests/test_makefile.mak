@@ -64,7 +64,8 @@ XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM)_$(TEST_ADDRE
 	-DXUD_TEST_SPEED=$(TEST_BUS_SPEED_INT) \
 	-DXUD_STARTUP_ADDRESS=$(TEST_ADDRESS) \
 	-DTEST_DTHREADS=$(TEST_DTHREADS) \
-	-DTEST_EP_NUM=$(TEST_EP_NUM)
+	-DTEST_EP_NUM=$(TEST_EP_NUM) \
+	-DXUD_CORE_CLOCK=$(TEST_FREQ)
 
 # The TARGET variable determines what target system the application is 
 # compiled for. It either refers to an XN file in the source directories

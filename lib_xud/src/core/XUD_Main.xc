@@ -166,26 +166,32 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
 #endif
 
 #if !defined(__XS2A__)
-
+    /* XS3 settings */
     #ifndef XUD_CORE_CLOCK
         #error XUD_CORE_CLOCK not defined (in MHz)
     #endif
 
+    /* Sim settings are currenly different from silicon due to differences in sim model and silicon behaviour - see https://github.com/xmos/lib_xud/issues/427*/
     #ifdef XUD_SIM_XSIM
-        #if (XUD_CORE_CLOCK >= 700)
-            #define RX_RISE_DELAY 0
-            #define RX_FALL_DELAY 0
-            #define TX_RISE_DELAY 0
-            #define TX_FALL_DELAY 7
+        #if (XUD_CORE_CLOCK >= 800)
+            #define RX_RISE_DELAY 6 // Si setting
+            #define TX_RISE_DELAY 6 // Only 6 works
+            #define TX_FALL_DELAY 5 // 5 or less works
+        #elif (XUD_CORE_CLOCK >= 700)
+            #define RX_RISE_DELAY 5 // Si setting
+            #define TX_RISE_DELAY 5 // Only 5 works
+            #define TX_FALL_DELAY 4 // 4 or less works
         #elif (XUD_CORE_CLOCK >= 600)
-            #define RX_RISE_DELAY 0
-            #define RX_FALL_DELAY 0
-            #define TX_RISE_DELAY 0
-            #define TX_FALL_DELAY 5
+            #define RX_RISE_DELAY 5 // Si setting
+            #define TX_RISE_DELAY 4 // 4 or 5 works
+            #define TX_FALL_DELAY 2 // 2 or less works
+        #elif (XUD_CORE_CLOCK >= 500)
+            #define RX_RISE_DELAY 4 // Si setting
+            #define TX_RISE_DELAY 4 // Only 4 works
+            #define TX_FALL_DELAY 0 // Only 0 works
         #else
-            #error XUD_CORE_CLOCK must be >= 600
+            #error XUD_CORE_CLOCK must be >= 500
         #endif
-        #define RX_ACTIVE_PAD_DELAY 2
     #else
     /* See https://xmosjira.atlassian.net/wiki/spaces/~870418189/pages/4627398657/on-die+USB+PHY+timings */
         #if (XUD_CORE_CLOCK >= 800)
@@ -200,7 +206,7 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
             #define RX_RISE_DELAY 5
             #define TX_RISE_DELAY 3
             #define TX_FALL_DELAY 4
-        #elif (XUD_CORE_CLOCK >= 500)
+        #elif (XUD_CORE_CLOCK >= 500) 
             #define RX_RISE_DELAY 4
             #define TX_RISE_DELAY 2
             #define TX_FALL_DELAY 2
@@ -224,8 +230,8 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
     configure_clock_src(tx_usb_clk, p_usb_clk);
     configure_clock_src(rx_usb_clk, p_usb_clk);
 
-#if defined(__XS2A__) || defined(XUD_SIM_XSIM)
-    // This, along with the following delays,  forces the clock
+#if defined(__XS2A__)
+    // This, along with the following delays, forces the clock
     // to the ports to be effectively controlled by the
     // previous usb clock edges
     set_port_inv(p_usb_clk);

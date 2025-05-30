@@ -173,7 +173,11 @@ def do_usb_test(
             tester = testers.ComparisonTester(open(expect_filename))
 
             simargs = get_sim_args(testname, desc)
-            simthreads = [clk, phy] + extra_tasks
+            if session:
+                simthreads = [clk, phy] + extra_tasks
+            else:
+                simthreads = []
+
             return Pyxsim.run_on_simulator_(
                 binary,
                 simthreads=simthreads,
@@ -188,14 +192,21 @@ def do_usb_test(
 def create_expect(session, filename, verbose=False):
     """Create the expect file for what packets should be reported by the DUT"""
 
-    events = session.events
-
     with open(filename, "w") as f:
-
-        packet_offset = 0
 
         if verbose:
             print("EXPECTED OUTPUT:")
+
+        if session == None:
+            f.write("Test done\n")
+            if verbose:
+                print("Test done\n")
+            return
+
+        events = session.events
+
+        packet_offset = 0
+
         for event in events:
 
             expect_str = event.expected_output(session.bus_speed, offset=packet_offset)

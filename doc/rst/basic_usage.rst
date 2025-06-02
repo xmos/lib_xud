@@ -205,13 +205,24 @@ Status reporting
 An endpoint can register for "status reporting" such that bus state can be known. This is achieved
 by ORing ``XUD_STATUS_ENABLE`` into the relevant endpoint in the endpoint type table.
 
-This means that endpoints are notified of USB bus resets (and therefore bus-speed changes). The
-``lib_xud`` access functions discussed previously (``XUD_GetBuffer``, ``XUD_SetBuffer``, etc) return
-``XUD_RES_RST`` if a USB bus reset is detected.
+This means that endpoints are notified of USB bus resets (and therefore bus-speed changes), suspend
+and resume events. The ``lib_xud`` access functions discussed previously (``XUD_GetBuffer``,
+``XUD_SetBuffer``, etc) return ``XUD_RES_UPDATE`` if a USB bus status change is detected.
 
-This reset notification is important if an endpoint task is expecting alternating IN and OUT
-transactions. For example, consider the case where an endpoint is always expecting the sequence
-OUT, IN, OUT (such as a control transfer or a request response protocol).
+An endpoint should then call the ``XUD_GetBusState()`` function to ascertain the new bus-state, this
+will return one of :
+
+- ``XUD_BUS_RESET``
+- ``XUD_BUS_SUSPEND``
+- ``XUD_BUS_RESUME``
+
+If ``XUD_BUS_RESET`` is returned the endpoint must call the ``XUD_ResetEndpoint()`` function. This
+will return the current bus speed as a ``XUD_BusSpeed_t`` with the value ``XUD_SPEED_FS`` or
+``XUD_SPEED_HS``.
+
+A reset notification is of particular importance if an endpoint task is expecting alternating IN
+and OUT transactions. For example, consider the case where an endpoint is always expecting the
+sequence OUT, IN, OUT (such as a control transfer or a request response protocol).
 If an unplug/reset event was received after the first OUT, the host would return to sending the
 initial OUT after a re-plug, whilst the endpoint task would hang trying to send a response the IN.
 The endpoint needs to know of the bus reset in order to reset its state machine.
@@ -223,16 +234,24 @@ The endpoint needs to know of the bus reset in order to reset its state machine.
 This functionality is also important for high-speed devices, since it is not guaranteed that a host
 will enumerate the device as a high-speed device, say if it's plugged via full-speed hub.
 
-The device typically needs to know what bus-speed it is currently running at.
-
-After a reset notification has been received, the endpoint must call the ``XUD_ResetEndpoint()``
-function. This will return the current bus speed as a ``XUD_BusSpeed_t`` with the value
-``XUD_SPEED_FS`` ;or ``XUD_SPEED_HS``.
+If ``XUD_BUS_SUSPEND`` or ``XUD_BUS_RESUME`` is returned by ``XUD_GetBusState()`` then the endpoint
+should perform any desired functionality - for example powering up/down external circuitry, reducing
+`xcore` clock frequency etc, *before* acknowledging the update with ``XUD_AckBusState()``.
 
 ``XUD_ResetEndpoint()``
 -----------------------
 
 .. doxygenfunction:: XUD_ResetEndpoint
+
+``XUD_GetBusState()()``
+-----------------------
+
+.. doxygenfunction:: XUD_GetBusState
+
+``XUD_AckBusState()``
+-----------------------
+
+.. doxygenfunction:: XUD_AckBusState
 
 .. _sec_status_reporting:
 

@@ -20,7 +20,17 @@
 #include "xud_conf.h"
 #endif
 
-#include "xud_conf_default.h"
+#ifndef USB_ISO_EP_MAX_TRANSACTION_SIZE
+#define USB_ISO_EP_MAX_TRANSACTION_SIZE     (1024) /* max size of the data payload for each individual transaction for an ISO EP */
+#endif
+
+#ifndef USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME
+#define USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME     (2) /* maximum number of transactions per microframe for an ISO EP*/
+#endif
+
+#ifndef USB_HBW_EP
+#define USB_HBW_EP (0)  /* HiBW support disabled by default*/
+#endif
 
 #ifndef XUD_STARTUP_ADDRESS
 #define XUD_STARTUP_ADDRESS (0)

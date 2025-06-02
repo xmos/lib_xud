@@ -105,7 +105,7 @@ FIXTURE_TO_BUILD_OPTION = {
     "ep": "TEST_EP_NUM",
     "address": "TEST_ADDRESS",
     "bus_speed": "TEST_BUS_SPEED",
-    "hbw_ep": "TEST_HBW_EP"
+    "hbw_support": "TEST_HBW_EP"
 }
 
 
@@ -116,7 +116,7 @@ def do_usb_test(
     bus_speed,
     dummy_threads,
     core_freq,
-    hbw_ep,
+    hbw_support,
     clk,
     phy,
     sessions,
@@ -136,7 +136,7 @@ def do_usb_test(
     # Shared test code for all RX tests using the test_rx application
     testname, _ = os.path.splitext(os.path.basename(test_file))
 
-    desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}_{hbw_ep}"
+    desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}_{hbw_support}"
     binary = f"{testname}/bin/{desc}/{testname}_{desc}.xe"
 
     # Do not need to clean since different build will different params go to

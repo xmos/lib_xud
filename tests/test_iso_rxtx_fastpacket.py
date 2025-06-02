@@ -9,7 +9,7 @@ from usb_packet import CreateSofToken
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed):
+def test_session(ep, address, bus_speed, hbw_support):
 
     start_length = 10
     end_length = 19
@@ -20,8 +20,9 @@ def test_session(ep, address, bus_speed):
     )
 
     for pktLength in range(start_length, end_length + 1):
-        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
-        frameNumber += 1
+        if hbw_support == "hbw_on":
+            session.add_event(CreateSofToken(frameNumber))
+            frameNumber += 1
         session.add_event(
             UsbTransaction(
                 session,

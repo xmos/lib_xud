@@ -56,14 +56,20 @@ def CustomUsbOutTransaction(session,
             )
         )
 
+# Run at increased system frequency
+PARAMS = deepcopy(PARAMS)
+for k in PARAMS:
+    PARAMS[k].update({"core_freq": [600, 800]})
 
 @pytest.fixture
-def test_session(ep, address, bus_speed):
-
+def test_session(ep, address, bus_speed, core_freq):
     frameNumber = 0
     ep_len = 8
     pktLength = 12
     num_error_transfers = 4 # No. of errorneous transfers before a correct one is sent
+    sof_event_delay = 20
+    out_token_event_delay = 15
+
     session = UsbSession(
         bus_speed=bus_speed, run_enumeration=False, device_address=address
     )
@@ -71,7 +77,7 @@ def test_session(ep, address, bus_speed):
     # Case1: error at transaction 1, unexpected SOF
     # Partial transfers with only MDATA transaction (missing DATA1)
     for _ in range(num_error_transfers):
-        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
         frameNumber += 1
         CustomUsbOutTransaction(session,
                         deviceAddress=address,
@@ -80,7 +86,7 @@ def test_session(ep, address, bus_speed):
                         payloads=[[0xaa for x in range(ep_len)]]
         )
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
 
     # healthy packet, but will be dropped, due to implementation details
@@ -92,13 +98,13 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=70,
+            interEventDelay=out_token_event_delay,
             ep_len=ep_len,
             resend=True
         )
     )
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
 
     # healthy packet, this one should be recieved
@@ -110,27 +116,28 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=70,
+            interEventDelay=out_token_event_delay,
             ep_len=ep_len
         )
     )
 
     # Case2: error at transaction 1, wrong PID (MDATA)
     for _ in range(num_error_transfers):
-        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
         frameNumber += 1
 
         CustomUsbOutTransaction(session,
                                 deviceAddress=address,
                                 endpointNumber=ep,
-                                interEventDelay=50,
+                                interEventDelay=out_token_event_delay,
                                 pids=["MDATA", "MDATA"],
                                 payloads=[[0xaa for x in range(ep_len)], [0xaa for x in range(ep_len)]]
         )
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=500))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
 
+    # healthy packet, but will be dropped, due to implementation details
     session.add_event(
         UsbTransaction(
             session,
@@ -139,13 +146,13 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength+1,
-            interEventDelay=70,
+            interEventDelay=out_token_event_delay,
             ep_len=ep_len,
             resend=True
         )
     )
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=500))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
     # healthy packet, this one should be recieved
     session.add_event(
@@ -156,25 +163,25 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength+1,
-            interEventDelay=70,
+            interEventDelay=out_token_event_delay,
             ep_len=ep_len,
         )
     )
 
     # Case3: error at transaction 1, wrong PID (DATA0)
     for _ in range(num_error_transfers):
-        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
         frameNumber += 1
         CustomUsbOutTransaction(session,
                         deviceAddress=address,
                         endpointNumber=ep,
-                        interEventDelay=50,
+                        interEventDelay=out_token_event_delay,
                         pids=["MDATA", "DATA0"],
                         payloads=[[0xaa for x in range(ep_len)], [0xaa for x in range(ep_len)]]
         )
 
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
 
     # healthy packet, this one should be recieved
@@ -186,7 +193,7 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength+2,
-            interEventDelay=70,
+            interEventDelay=out_token_event_delay,
             ep_len=ep_len,
         )
     )
@@ -197,12 +204,12 @@ def test_session(ep, address, bus_speed):
         CustomUsbOutTransaction(session,
                 deviceAddress=address,
                 endpointNumber=ep,
-                interEventDelay=50,
+                interEventDelay=out_token_event_delay,
                 pids=["DATA0"],
                 payloads=[[0xaa for x in range(ep_len)]]
         )
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
 
     # healthy packet, this one should be recieved
@@ -214,26 +221,26 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength + 3,
-            interEventDelay=70,
+            interEventDelay=out_token_event_delay,
             ep_len=ep_len
         )
     )
 
     # Case5: error at transaction 0, wrong PID (DATA1)
     for _ in range(num_error_transfers):
-        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
         frameNumber += 1
 
         CustomUsbOutTransaction(session,
                 deviceAddress=address,
                 endpointNumber=ep,
-                interEventDelay=50,
+                interEventDelay=out_token_event_delay,
                 pids=["DATA1"],
                 payloads=[[0xaa for x in range(ep_len)]]
         )
 
     # healthy packet, this one will be received
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
 
     session.add_event(
@@ -244,9 +251,12 @@ def test_session(ep, address, bus_speed):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength + 4,
-            interEventDelay=70,
+            interEventDelay=out_token_event_delay,
             ep_len=ep_len,
         )
     )
+
+    if core_freq == 600:
+        pytest.xfail("HBW 2txn test requires a 800MHz part")
 
     return session

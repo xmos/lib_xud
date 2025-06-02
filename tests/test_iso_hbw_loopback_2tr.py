@@ -1,21 +1,26 @@
 # Copyright 2016-2025 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
-
+from copy import deepcopy
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_packet import CreateSofToken
 
+# Run at increased system frequency
+PARAMS = deepcopy(PARAMS)
+for k in PARAMS:
+    PARAMS[k].update({"core_freq": [600, 800]})
 
 @pytest.fixture
-def test_session(ep, address, bus_speed, hbw_support):
+def test_session(ep, address, bus_speed, core_freq):
 
     ep_loopback = ep
     ep_loopback_kill = ep + 1
 
-    start_length = 200
-    end_length = 203
+    start_length = 190
+    end_length = 210
+    ep_length = 200
 
     frameNumber = 0
     session = UsbSession(
@@ -24,9 +29,8 @@ def test_session(ep, address, bus_speed, hbw_support):
 
     # TODO randomise packet lengths and data
     for pktLength in range(start_length, end_length + 1):
-        if hbw_support == "hbw_on":
-            session.add_event(CreateSofToken(frameNumber))
-            frameNumber += 1
+        session.add_event(CreateSofToken(frameNumber))
+        frameNumber += 1
 
         session.add_event(
             UsbTransaction(
@@ -36,14 +40,11 @@ def test_session(ep, address, bus_speed, hbw_support):
                 endpointType="ISO",
                 transType="OUT",
                 dataLength=pktLength,
-                interEventDelay=500
+                interEventDelay=10,
+                ep_len = ep_length
             )
         )
 
-        # Was min IPG supported on iso loopback to not nak
-        # This was 420, had to increase when moved to lib_xud (14.1.2 tools)
-        # increased again from 437 when SETUP/OUT checking added
-        # increaed from 477 when adding xs3
         session.add_event(
             UsbTransaction(
                 session,
@@ -52,7 +53,8 @@ def test_session(ep, address, bus_speed, hbw_support):
                 endpointType="ISO",
                 transType="IN",
                 dataLength=pktLength,
-                interEventDelay=498
+                interEventDelay=50,
+                ep_len = ep_length
             )
         )
 
@@ -67,7 +69,8 @@ def test_session(ep, address, bus_speed, hbw_support):
             endpointType="ISO",
             transType="OUT",
             dataLength=pktLength,
-            interEventDelay=500
+            interEventDelay=500,
+            ep_len = ep_length
         )
     )
     session.add_event(
@@ -78,8 +81,12 @@ def test_session(ep, address, bus_speed, hbw_support):
             endpointType="ISO",
             transType="IN",
             dataLength=pktLength,
-            interEventDelay=500
+            interEventDelay=500,
+            ep_len = ep_length
         )
     )
+
+    if core_freq == 600:
+        pytest.xfail("HBW 2txn test requires a 800MHz part")
 
     return session

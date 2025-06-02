@@ -66,9 +66,13 @@ class UsbTransaction(UsbEvent):
             send_len = 0
             packets = []
             while True:
+                if isinstance(interEventDelay, list):
+                    inter_event_delay = interEventDelay[n_tr]
+                else:
+                    inter_event_delay = interEventDelay
                 packets.append(
                     TokenPacket(
-                        interEventDelay=interEventDelay,
+                        interEventDelay=inter_event_delay,
                         pid=USB_PID[transType],
                         address=self._deviceAddress,
                         endpoint=self._endpointNumber,
@@ -171,9 +175,14 @@ class UsbTransaction(UsbEvent):
             pids = pids[3 - N_tr:]
 
             while True:
+                if isinstance(interEventDelay, list):
+                    inter_event_delay = interEventDelay[n_tr]
+                else:
+                    inter_event_delay = interEventDelay
+
                 self._packets.append(
                     TokenPacket(
-                        interEventDelay=interEventDelay,
+                        interEventDelay=inter_event_delay,
                         pid=USB_PID["IN"],
                         address=self._deviceAddress,
                         endpoint=self._endpointNumber,

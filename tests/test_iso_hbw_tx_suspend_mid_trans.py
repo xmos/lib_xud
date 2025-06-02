@@ -5,8 +5,9 @@ from copy import deepcopy
 
 from conftest import PARAMS, test_RunUsbSession  # noqa F401
 from usb_session import UsbSession
-from usb_packet import CreateSofToken, TokenPacket, RxDataPacket, USB_PID
+from usb_packet import CreateSofToken, TokenPacket, USB_PID, RxDataPacket
 from usb_transaction import UsbTransaction
+from usb_signalling import UsbSuspend, UsbResume
 
 # Run at increased system frequency
 PARAMS = deepcopy(PARAMS)
@@ -15,11 +16,10 @@ for k in PARAMS:
 
 @pytest.fixture
 def test_session(ep, address, bus_speed, core_freq):
-
+    start_length = 9
+    end_length = 10
     frameNumber = 0
     ep_len = 8
-    pktLength = 12
-
     sof_event_delay = 20
     in_token_event_delay = 30
 
@@ -30,38 +30,58 @@ def test_session(ep, address, bus_speed, core_freq):
     session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
 
-    # starting normally
+    # Receive a good transfer
+    session.add_event(
+        UsbTransaction(
+            session,
+            deviceAddress=address,
+            endpointNumber=ep,
+            endpointType="ISO",
+            transType="IN",
+            dataLength=start_length,
+            interEventDelay=in_token_event_delay,
+            ep_len=ep_len
+        )
+    )
+
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
+    frameNumber += 1
+    # Do partial transfer
     session.add_event(
         TokenPacket(
             pid=USB_PID["IN"],
             address=address,
             endpoint=ep,
+            interEventDelay=in_token_event_delay
         )
     )
     payload = session.getPayload_in(ep, ep_len)
     session.add_event(RxDataPacket(dataPayload=payload, pid=USB_PID["DATA1"]))
 
-    # sof before data0, oops
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
+    # Send suspend followed by resume
+    session.add_event(UsbSuspend(350000, suspendedPhy=False))
+    session.add_event(UsbResume(suspendedPhy=False))
+
+    # TODO Why is such a big interEventDelay needed after suspend/resume
+    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay+80))
     frameNumber += 1
 
-    # will have to recive the remaining data0
+    # Do remaining transfer
     session.add_event(
         TokenPacket(
             pid=USB_PID["IN"],
             address=address,
             endpoint=ep,
+            interEventDelay=in_token_event_delay
         )
     )
-    payload = session.getPayload_in(ep, pktLength - ep_len)
+    payload = session.getPayload_in(ep, start_length + 1 - ep_len)
     session.add_event(RxDataPacket(dataPayload=payload, pid=USB_PID["DATA0"]))
 
-    # at this point host sees data0 and should either discard it or do something else
-    # but data0 always marks the last transaction, so sending sof
     session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
     frameNumber += 1
 
-    # after the sof the host will recieve a new frame
+    # Receive a good transfer
     session.add_event(
         UsbTransaction(
             session,
@@ -69,39 +89,9 @@ def test_session(ep, address, bus_speed, core_freq):
             endpointNumber=ep,
             endpointType="ISO",
             transType="IN",
-            dataLength=pktLength + 1,
+            dataLength=start_length+2,
             interEventDelay=in_token_event_delay,
-            ep_len=8
-        )
-    )
-
-    # no sof here, should send data1
-    # generous delay here due app error handling
-    session.add_event(
-        TokenPacket(
-            pid=USB_PID["IN"],
-            address=address,
-            endpoint=ep,
-            interEventDelay=55
-        )
-    )
-    payload = session.getPayload_in(ep, ep_len, resend=True)
-    session.add_event(RxDataPacket(dataPayload=payload, pid=USB_PID["DATA1"]))
-
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=sof_event_delay))
-    frameNumber += 1
-
-    # next packet after sof should be normal and resend the old data
-    session.add_event(
-        UsbTransaction(
-            session,
-            deviceAddress=address,
-            endpointNumber=ep,
-            endpointType="ISO",
-            transType="IN",
-            dataLength=pktLength + 2,
-            interEventDelay=in_token_event_delay,
-            ep_len=8
+            ep_len=ep_len
         )
     )
 

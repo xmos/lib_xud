@@ -24,7 +24,7 @@ for k in PARAMS:
 
 
 @pytest.fixture
-def test_session(ep, address, bus_speed):
+def test_session(ep, address, bus_speed, hbw_support):
 
     # TODO ideally this can be tidied
     initial_delay = 22000
@@ -61,7 +61,10 @@ def test_session(ep, address, bus_speed):
     frameNumber = frameNumber + 1
     pktLength = pktLength + 1
 
-    session.add_event(CreateSofToken(frameNumber, interEventDelay=20))
+    if hbw_support == "hbw_on":
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=20))
+    else:
+        session.add_event(CreateSofToken(frameNumber))
 
     # OUT transation - data to device
     session.add_event(

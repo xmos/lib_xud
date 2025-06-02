@@ -8,9 +8,13 @@ from usb_session import UsbSession
 from usb_transaction import UsbTransaction
 from usb_packet import CreateSofToken
 
-@pytest.fixture
-def test_session(ep, address, bus_speed):
+# Run at increased system frequency
+PARAMS = deepcopy(PARAMS)
+for k in PARAMS:
+    PARAMS[k].update({"core_freq": [600, 800]})
 
+@pytest.fixture
+def test_session(ep, address, bus_speed, core_freq):
     start_length = 6
     end_length = start_length + 10
     frameNumber = 0
@@ -20,7 +24,7 @@ def test_session(ep, address, bus_speed):
     )
 
     for pktLength in range(start_length, end_length):
-        session.add_event(CreateSofToken(frameNumber, interEventDelay=50))
+        session.add_event(CreateSofToken(frameNumber, interEventDelay=5))
         frameNumber += 1
         session.add_event(
             UsbTransaction(
@@ -30,9 +34,11 @@ def test_session(ep, address, bus_speed):
                 endpointType="ISO",
                 transType="OUT",
                 dataLength=pktLength,
-                interEventDelay=70,
+                interEventDelay=[45, 15],
                 ep_len=8
             )
         )
+    if core_freq == 600:
+        pytest.xfail("HBW 2txn test requires a 800MHz part")
 
     return session

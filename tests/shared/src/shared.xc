@@ -50,8 +50,17 @@ void TerminateFail(int failReason)
             printstr("\nXCORE: ### FAIL ### : Received unexpected reset\n");
             break;
 
+        case FAIL_UNEXPECTED_STATUS:
+            printstr("\nXCORE: ### FAIL ### : Received unexpected status\n");
+            break;
+
+        case FAIL_UNEXPECTED_BUS_STATE:
+            printstr("\nXCORE: ### FAIL ### : Received unexpected bus state\n");
+            break;
+
         default:
-            printstr("\nXCORE: ### FAIL ### : Unknown failure\n");
+            printstr("\nXCORE: ### FAIL ### : Unknown failure: ");
+            printintln(failReason);
             break;
     }
     exit(failReason);

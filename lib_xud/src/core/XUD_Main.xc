@@ -77,7 +77,6 @@ unsigned SavedSp;
 int epStatFlagTableIn[USB_MAX_NUM_EP_IN];
 int epStatFlagTableOut[USB_MAX_NUM_EP_OUT];
 
-
 unsigned sentReset = 0;
 
 #define RESET_TIME_us               (5)
@@ -102,18 +101,18 @@ void XUD_SetCrcTableAddr(unsigned addr);
 static int one = 1;
 
 #pragma unsafe arrays
-static void SendResetToEps(XUD_chan c[], XUD_chan epAddr_Ready[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int token)
+void SendBusStateToEps(XUD_chan c[], XUD_chan epAddr_Ready[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, unsigned token)
 {
     for(int i = 0; i < nOut; i++)
     {
         if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
         {
-            /* Set EP resetting flag. EP uses this to check if it missed a reset before setting ready.
+            /* Set EP busUpdate flag. EP uses this to check if it missed a reset before setting ready.
              * This is required since a "non-ready" EP will not have received its notifcation, it may
              * subsequently re-mark itself ready causing XUD to send out of date data */
-            ep_info[i].resetting = 1;
+            ep_info[i].busUpdate = 1;
 
-            /* Clear EP ready. Note. small race since EP might set ready after XUD sets resetting to 1
+            /* Clear EP ready. Note. small race since EP might set ready after XUD sets busUpdate to 1
              * but this should be caught in time (EP gets CT) */
             epAddr_Ready[i] = 0;
             epAddr_Ready[i+ USB_MAX_NUM_EP] = 0;
@@ -124,13 +123,14 @@ static void SendResetToEps(XUD_chan c[], XUD_chan epAddr_Ready[], XUD_EpType epT
     {
         if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
         {
-            ep_info[i + USB_MAX_NUM_EP_OUT].resetting = 1;
+            ep_info[i + USB_MAX_NUM_EP_OUT].busUpdate = 1;
             epAddr_Ready[i + USB_MAX_NUM_EP_OUT] = 0;
             XUD_Sup_outct(c[i + USB_MAX_NUM_EP_OUT], token);
         }
     }
 }
 
+#pragma unsafe arrays
 static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn, int speed)
 {
     for(int i = 0; i < nOut; i++)
@@ -145,6 +145,25 @@ static void SendSpeed(XUD_chan c[], XUD_EpType epTypeTableOut[], XUD_EpType epTy
         if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
         {
             XUD_Sup_outuint(c[i + USB_MAX_NUM_EP_OUT], speed);
+        }
+    }
+}
+
+#pragma unsafe arrays
+void GetCTFromEps(XUD_chan c[], XUD_chan epAddr_Ready[], XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[], int nOut, int nIn)
+{
+    for(int i = 0; i < nOut; i++)
+    {
+        if(epTypeTableOut[i] != XUD_EPTYPE_DIS && epStatFlagTableOut[i])
+        {
+            XUD_Sup_inct(c[i]);
+        }
+    }
+    for(int i = 0; i < nIn; i++)
+    {
+        if(epTypeTableIn[i] != XUD_EPTYPE_DIS && epStatFlagTableIn[i])
+        {
+            XUD_Sup_inct(c[i + USB_MAX_NUM_EP_OUT]);
         }
     }
 }
@@ -332,14 +351,15 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
                     else
                         reset = 0;
                 }
-                /* Inspect for suspend or reset */
+
+                /* Handle suspend */
                 if(!reset)
                 {
                     /* Run user suspend code */
                     XUD_UserSuspend();
 
                     /* Run suspend code, returns 1 if reset from suspend, 0 for resume, -1 for invalid vbus */
-                    reset = XUD_Suspend(pwrConfig);
+                    reset = XUD_Suspend(pwrConfig, epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn);
 
                     if((pwrConfig == XUD_PWR_SELF) && (reset==-1))
                     {
@@ -350,12 +370,13 @@ static int XUD_Manager_loop(XUD_chan epChans0[], XUD_chan epAddr_Ready[],  chane
                     /* Run user resume code */
                     XUD_UserResume();
                 }
-                /* Test if coming back from reset or suspend */
+
+                /* Handle bus reset */
                 if(reset == 1)
                 {
                     if(!sentReset)
                     {
-                        SendResetToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, USB_RESET_TOKEN);
+                        SendBusStateToEps(epChans0, epAddr_Ready, epTypeTableOut, epTypeTableIn, noEpOut, noEpIn, XUD_BUS_RESET);
                         sentReset = 1;
                     }
 
@@ -470,8 +491,7 @@ static void _XUD_drain(chanend chans[], int n, int op, XUD_EpType epTypeTable[])
             switch(op)
             {
                 case 0:
-                    outct(chans[i], XS1_CT_END);
-                    outuint(chans[i], XUD_SPEED_KILL);
+                    outct(chans[i], XUD_BUS_KILL);
                     break;
                 case 1:
                     outct(chans[i], XS1_CT_END);
@@ -494,7 +514,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
         epAddr_Ready[i] = 0;
         epAddr_Ready[i+USB_MAX_NUM_EP] = 0; //epAddr_Ready_Setup
         ep_info[i].epAddress = i;
-        ep_info[i].resetting = 0;
+        ep_info[i].busUpdate = 0;
 
         /* Mark all EP's as halted, we might later clear this if the EP is in use */
         ep_info[i].halted = USB_PIDn_STALL;
@@ -509,7 +529,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
         ep_info[i].epAddress = i;
         epAddr_Ready[USB_MAX_NUM_EP_OUT+i] = 0;
         ep_info[USB_MAX_NUM_EP_OUT+i].epAddress = (i | 0x80);
-        ep_info[USB_MAX_NUM_EP_OUT+i].resetting = 0;
+        ep_info[USB_MAX_NUM_EP_OUT+i].busUpdate = 0;
         ep_info[USB_MAX_NUM_EP_OUT+i].halted = USB_PIDn_STALL;
 
         asm("ldaw %0, %1[%2]":"=r"(x):"r"(ep_info),"r"((USB_MAX_NUM_EP_OUT+i)*sizeof(XUD_ep_info)/sizeof(unsigned)));

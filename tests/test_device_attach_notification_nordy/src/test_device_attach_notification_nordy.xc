@@ -30,13 +30,12 @@ testResult_t TestEpBusUpdate_Tx(XUD_ep ep_out0, XUD_ep ep_in, int epNum, int pkt
 {
     XUD_Result_t result;
     XUD_BusSpeed_t busSpeed;
+    XUD_BusState_t busState;
     unsigned length;
 
     unsigned char bufferRx[1024];
     unsigned char bufferTx[1024];
     unsigned char bufferTxBad[1024];
-
-    set_core_fast_mode_on();
 
     /* Prepare packet */
     for(int i = 0; i < pktLen; i++)
@@ -49,7 +48,7 @@ testResult_t TestEpBusUpdate_Tx(XUD_ep ep_out0, XUD_ep ep_in, int epNum, int pkt
      * a bus reset notification. This packet should never make it to the host */
     result = XUD_SetBuffer(ep_in, bufferTxBad, pktLen);
 
-    if(result != XUD_RES_RST)
+    if(result != XUD_RES_UPDATE)
         return FAIL_UNEXPECTED_STATUS;
 
     /* Since device has received a reset, don't expect the old buffer we set above to actually
@@ -58,10 +57,15 @@ testResult_t TestEpBusUpdate_Tx(XUD_ep ep_out0, XUD_ep ep_in, int epNum, int pkt
     /* Sync with the host via EP0 so we know we can now get the bus status update and set some fresh
      * data */
     result = XUD_GetBuffer(ep_out0, bufferRx, length);
-    busSpeed = XUD_ResetEndpoint(ep_in, null);
 
     if(result != XUD_RES_OKAY)
         return FAIL_UNEXPECTED_STATUS;
+
+    busState = XUD_GetBusState(ep_in, null);
+    busSpeed = XUD_ResetEndpoint(ep_in, null);
+
+    if(busState != XUD_BUS_RESET)
+        return FAIL_UNEXPECTED_BUS_STATE;
 
     if(busSpeed != XUD_TEST_SPEED)
         return FAIL_BAD_BUS_SPEED;
@@ -89,28 +93,34 @@ testResult_t TestEpBusUpdate_Tx(XUD_ep ep_out0, XUD_ep ep_in, int epNum, int pkt
 testResult_t TestEpBusUpdate_Rx(XUD_ep ep_out0, XUD_ep ep_out1, int epNum, int expectedLength)
 {
     XUD_Result_t result;
+    XUD_BusState_t busState;
     XUD_BusSpeed_t busSpeed = XUD_TEST_SPEED;
 
     /* Buffer for packet data and lengths */
     unsigned char buffer[1024];
     unsigned length;
 
-    set_core_fast_mode_on();
-
     /* Get packet on EP 0 such that we know host has end reset */
     result = XUD_GetBuffer(ep_out0, buffer, length);
+
+    if(result != XUD_RES_OKAY)
+        return FAIL_UNEXPECTED_STATUS;
 
     /* Expect reset notification - reset should of ready happened whilst the test EP wasn't marked
      * ready */
     result = XUD_GetBuffer(ep_out1, buffer, length);
 
-    if(result != XUD_RES_RST)
+    if(result != XUD_RES_UPDATE)
         return FAIL_UNEXPECTED_STATUS;
 
+    busState = XUD_GetBusState(ep_out1, null);
     busSpeed = XUD_ResetEndpoint(ep_out1, null);
 
+    if(busState != XUD_BUS_RESET)
+        return FAIL_UNEXPECTED_BUS_STATE;
+
     if(busSpeed != XUD_TEST_SPEED)
-            return FAIL_BAD_BUS_SPEED;
+        return FAIL_BAD_BUS_SPEED;
 
     /* Expect a packet */
     result = XUD_GetBuffer(ep_out1, buffer, length);
@@ -151,6 +161,7 @@ int main()
         }
 
         {
+            set_core_fast_mode_on();
             XUD_ep ep_out0 = XUD_InitEp(c_ep_out[0]);
             XUD_ep ep_out1 = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
             XUD_ep ep_in0 = XUD_InitEp(c_ep_in[0]);
@@ -164,8 +175,8 @@ int main()
             XUD_Kill(ep_in0);
 
             /* Accept the kill notifications from XUD */
-            XUD_ResetEndpoint(ep_out0, ep_out1);
-            XUD_ResetEndpoint(ep_in0, ep_in1);
+            XUD_GetBusState(ep_out0, ep_out1);
+            XUD_GetBusState(ep_in0, ep_in1);
             XUD_CloseEndpoint(ep_out0);
             XUD_CloseEndpoint(ep_out1);
             XUD_CloseEndpoint(ep_in0);

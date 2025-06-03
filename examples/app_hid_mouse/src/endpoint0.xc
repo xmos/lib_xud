@@ -160,18 +160,39 @@ void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
             /* Returns  XUD_RES_OKAY if handled okay,
              *          XUD_RES_ERR if request was not handled (STALLed),
              *          XUD_RES_RST for USB Reset */
-             unsafe{
-            result = USB_StandardRequests(ep0_out, ep0_in, devDesc,
+            unsafe
+            {
+                result = USB_StandardRequests(ep0_out, ep0_in, devDesc,
                         sizeof(devDesc), cfgDesc, sizeof(cfgDesc),
                         null, 0, null, 0, stringDescriptors, sizeof(stringDescriptors)/sizeof(stringDescriptors[0]),
                         sp, usbBusSpeed);
-             }
+            }
         }
 
-        /* USB bus reset detected, reset EP and get new bus speed */
-        if(result == XUD_RES_RST)
+        /* USB bus change detected, */
+        if(result == XUD_RES_UPDATE)
         {
-            usbBusSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
+            XUD_BusState_t busState = XUD_GetBusState(ep0_out, ep0_in);
+
+            if(busState == XUD_BUS_RESET)
+            {
+                /* Reset EP and get new bus speed */
+                 usbBusSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
+            }
+            else if(busState == XUD_BUS_SUSPEND)
+            {
+                /* Perform suspend actions */
+
+                /* Acknowledge back to XUD letting it know we've handled suspend */
+                XUD_AckBusState(ep0_out, ep0_in);
+            }
+            else if(busState == XUD_BUS_RESUME)
+            {
+                /* Perform resume actions */
+
+                /* Acknowledge back to XUD letting it know we've handled resume */
+                XUD_AckBusState(ep0_out, ep0_in);
+            }
         }
     }
 } /* Endpoint0 */

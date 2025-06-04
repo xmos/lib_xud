@@ -8,6 +8,15 @@ from usb_session import UsbSession
 from usb_packet import CreateSofToken, TokenPacket, RxDataPacket, USB_PID
 from usb_transaction import UsbTransaction
 
+# Tested sequence
+# SOF DATA1 | SOF DATA0            | SOF DATA1 DATA0 | DATA0        | SOF DATA0 DATA1
+#           | Unexpected SOF       |  Good transfer  | Missing SOF  | Good transfer
+#           |                      |                 |              |
+#           | XUD_SetBuffer_Finish |                 | Will attempt | Resend DATA0
+#           | returns XUD_RES_ERR  |                 | to sync with | from last
+#           | to client            |                 | SOF          | transaction
+
+
 # Run at increased system frequency
 PARAMS = deepcopy(PARAMS)
 for k in PARAMS:

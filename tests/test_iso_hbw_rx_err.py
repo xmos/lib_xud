@@ -21,8 +21,8 @@ from usb_packet import CreateSofToken, TokenPacket, TxDataPacket, USB_PID
 
 
 # Case4: error at transaction 0, missing SOF
-# | DATA0     | DATA0     | DATA0     | DATA0     | SOF MDATA DATA1 |
-# | drop      | drop      | drop      | drop      | receive         |
+# DATA0     DATA0     DATA0     DATA0     | SOF MDATA DATA1 |
+# drop      drop      drop      drop      | receive         |
 
 # Case5: error at transaction 0, wrong PID (DATA1)
 # | SOF DATA1 | SOF DATA1 | SOF DATA1 | SOF DATA1 | SOF MDATA DATA1 |

@@ -23,7 +23,6 @@ COMMON_FLAGS = -DDEBUG_PRINT_ENABLE \
 			   -Xmapper --retain \
 			   -g \
 			   -save-temps \
-			   -v \
 			   $(CFLAGS)
 
 TEST_FLAGS ?=

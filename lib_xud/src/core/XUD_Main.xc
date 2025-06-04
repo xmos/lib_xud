@@ -593,7 +593,6 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
             ep_info[i].epType = epTypeTableOut[i];
             ep_info[i].halted = USB_PIDn_NAK;      // Mark EP as not halted
             ep_info[i].remained = 0;
-            ep_info[i].first_pid = 0;
             ep_info[i].saved_frame = 0;
             ep_info[i].max_len = USB_ISO_EP_MAX_TRANSACTION_SIZE;
             ep_info[i].out_err_flag = 0;
@@ -636,6 +635,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
             ep_info[USB_MAX_NUM_EP_OUT+i].halted = 0;    // Mark EP as not halted
 
             ep_info[USB_MAX_NUM_EP_OUT+i].remained = 0;
+            ep_info[i].txns_per_transfer = 1;
             ep_info[USB_MAX_NUM_EP_OUT+i].saved_frame = 0;
             ep_info[USB_MAX_NUM_EP_OUT+i].out_err_flag = 0;
 

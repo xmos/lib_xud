@@ -134,7 +134,7 @@ typedef enum XUD_Result
     XUD_RES_UPDATE = -1,
     XUD_RES_OKAY = 0,
     XUD_RES_ERR =  2,
-    XUD_RES_WAIT
+    XUD_RES_WAIT = 3    /* Used for notifying the client that an IN or OUT transfer is still in progress */
 } XUD_Result_t;
 
 /* Note, also used at CT to inform EPs of bus-state change type */
@@ -510,7 +510,7 @@ typedef struct XUD_ep_info
     unsigned int max_len;              // 14 Maximum transaction len permitted per endpoint
     unsigned int current_transaction;  // 15 index of the current transaction
     unsigned int remained;             // 16 For IN, datalength in bytes remaining to be sent. For OUT, datalength received so far in the current transfer
-    unsigned int first_pid;            // 17 first pid to send for an IN transfer. Unused for OUT
+    unsigned int txns_per_transfer;    // 17 Number of transactions in the current IN transfer. Unused for OUT
     unsigned int save_buffer;          // 18 copy of the buffer start address. Used to retry an IN transfer, or to discard an OUT transfer mid-way and roll back the buffer start address
     unsigned int save_length;          // 19 copy of the transfer length. Used to retry an IN transfer. Unused for OUT
     unsigned int out_err_flag;         // 20 flag indicating if the OUT EP is in error

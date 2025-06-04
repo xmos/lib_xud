@@ -9,6 +9,9 @@ from usb_transaction import UsbTransaction
 from usb_packet import CreateSofToken, TokenPacket, TxDataPacket, USB_PID
 from usb_signalling import UsbSuspend, UsbResume
 
+# |SOF MDATA DATA1   |SOF MDATA         | Suspend ... Resume | SOF MDATA DATA1  | SOF MDATA DATA1
+# | Receive          |Partial transfer  |                    | Drop             | Receive
+
 # Run at increased system frequency
 PARAMS = deepcopy(PARAMS)
 for k in PARAMS:

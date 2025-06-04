@@ -91,7 +91,7 @@ data-sheet recommendations).
 ``lib_xud`` makes a call to a function ``XUD_HAL_GetVBusState()`` that which should be implemented
 to match the target hardware. For example::
 
-    on tile[XUD_TILE]: in port p_vbus = XS1_PORT_1P;
+    on tile[USB_TILE]: in port p_vbus = XS1_PORT_1P;
 
     unsigned int XUD_HAL_GetVBusState(void)
     {
@@ -118,7 +118,7 @@ developer only needs to set this if ``XUD_Main()`` is executing on a tile other 
 
 There are two ways of setting this define, either in the application `CMakeLists.txt` for example::
 
-    set(APP_COMPILER_FLAGS -DXUD_TILE=tile[0])
+    set(APP_COMPILER_FLAGS -DUSB_TILE=tile[1])
 
 Or, following `XMOS` software library convention, providing a `xud_conf.h` file in the application
 codebase. This header file will be automatically detected by the build system and used by
@@ -127,7 +127,7 @@ codebase. This header file will be automatically detected by the build system an
     #ifndef _XUD_CONF_H_
     #define _XUD_CONF_H_
 
-    #define XUD_TILE tile[0]
+    #define USB_TILE tile[1]
 
     #endif
 

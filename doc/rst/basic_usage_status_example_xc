@@ -7,9 +7,25 @@ void ExampleEndpoint(chanend c_ep_in)
 
     while(1)
     {
-        if((result = XUD_SetBuffer(ep_to_host, buffer, 512)) == XUD_RES_RST)
+        if((result = XUD_SetBuffer(ep_to_host, buffer, 512)) == XUD_RES_UPDATE)
         {
-            XUD_ResetEndpoint(ep_from_host, ep_to_host);
+            XUD_BusState_t busState = XUD_GetBusState(ep_to_host, null);
+            switch(busState):
+            {
+                case XUD_BUS_RESET:
+                    XUD_ResetEndpoint(ep_to_host, null);
+                    break;
+
+                case XUD_BUS_SUSPEND:
+                    // Perform any suspend related functionality
+                    XUD_AckBusState(ep_to_host, null);
+                    break;
+
+                case XUD_BUS_RESUME:
+                    // Perform any resume related functionality
+                    XUD_AckBusState(ep_to_host, null);
+                    break;
+            }
         }
     }
 }

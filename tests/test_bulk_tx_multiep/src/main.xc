@@ -29,7 +29,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 
     par
     {
-    #if USB_HBW_EP
+    #if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
         fail[0] = TestEp_Tx_Hbw(c_ep_in[3], 3, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);
         fail[1] = TestEp_Tx_Hbw(c_ep_in[4], 4, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);
         fail[2] = TestEp_Tx_Hbw(c_ep_in[5], 5, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH, RUNMODE_DIE);

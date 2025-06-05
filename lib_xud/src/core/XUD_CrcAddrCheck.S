@@ -30,6 +30,7 @@ XTA_CRCADDRCHECK:
 
     in         r4, res[r1];
     bt         r4, XUD_InvalidToken;                        // If VALID_TOKEN not high, ignore token - PORT INVERTED! */
+#undef XTA_CRCADDRCHECK
 #endif
 
 

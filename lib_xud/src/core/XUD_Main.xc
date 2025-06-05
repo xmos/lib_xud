@@ -27,16 +27,16 @@
 #error USB_MAX_NUM_EP_OUT must be 16!
 #endif
 
-#if !(((USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME) == 1) || ((USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME) == 2))
-#error "USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME must be either 1 or 2"
+#if !(((XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME) == 1) || ((XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME) == 2))
+#error "XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME must be either 1 or 2"
 #endif
 
-#if ((USB_ISO_EP_MAX_TRANSACTION_SIZE) > 1024)
-#error "USB_ISO_EP_MAX_TRANSACTION_SIZE must not exceed 1024"
+#if ((XUD_USB_ISO_EP_MAX_TXN_SIZE) > 1024)
+#error "XUD_USB_ISO_EP_MAX_TXN_SIZE must not exceed 1024"
 #endif
 
-#if ((USB_ISO_EP_MAX_TRANSACTION_SIZE) % 4)
-#error "USB_ISO_EP_MAX_TRANSACTION_SIZE must be a multiple of 4"
+#if ((XUD_USB_ISO_EP_MAX_TXN_SIZE) % 4)
+#error "XUD_USB_ISO_EP_MAX_TXN_SIZE must be a multiple of 4"
 #endif
 
 void XUD_UserSuspend();
@@ -594,7 +594,7 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
             ep_info[i].halted = USB_PIDn_NAK;      // Mark EP as not halted
             ep_info[i].remained = 0;
             ep_info[i].saved_frame = 0;
-            ep_info[i].max_len = USB_ISO_EP_MAX_TRANSACTION_SIZE;
+            ep_info[i].max_len = XUD_USB_ISO_EP_MAX_TXN_SIZE;
             ep_info[i].out_err_flag = 0;
 #if !defined(__XS2A__)
             ep_info[i].pid = USB_PIDn_DATA0;
@@ -630,12 +630,12 @@ void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEp
 
             ep_info[USB_MAX_NUM_EP_OUT+i].epType = epTypeTableIn[i];
 
-            ep_info[USB_MAX_NUM_EP_OUT+i].max_len = USB_ISO_EP_MAX_TRANSACTION_SIZE;
+            ep_info[USB_MAX_NUM_EP_OUT+i].max_len = XUD_USB_ISO_EP_MAX_TXN_SIZE;
 
             ep_info[USB_MAX_NUM_EP_OUT+i].halted = 0;    // Mark EP as not halted
 
             ep_info[USB_MAX_NUM_EP_OUT+i].remained = 0;
-            ep_info[i].txns_per_transfer = 1;
+            ep_info[i].num_transactions = 1;
             ep_info[USB_MAX_NUM_EP_OUT+i].saved_frame = 0;
             ep_info[USB_MAX_NUM_EP_OUT+i].out_err_flag = 0;
 

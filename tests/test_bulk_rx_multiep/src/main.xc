@@ -31,7 +31,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 
     par
     {
-    #if USB_HBW_EP
+    #if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
         fail[0] = TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PACKET_LEN_START, PACKET_LEN_END, EP_LENGTH);
         fail[1] = TestEp_Rx_Hbw(c_ep_out[4], 4, PACKET_LEN_START, PACKET_LEN_END, EP_LENGTH);
         fail[2] = TestEp_Rx_Hbw(c_ep_out[5], 5, PACKET_LEN_START, PACKET_LEN_END, EP_LENGTH);

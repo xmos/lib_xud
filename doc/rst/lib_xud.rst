@@ -15,6 +15,7 @@ lib_xud: USB Device Library
   programming.rst
   example.rst
   advanced_usage.rst
+  high_bandwidth_endpoints.rst
   options.rst
   further_reading.rst
 

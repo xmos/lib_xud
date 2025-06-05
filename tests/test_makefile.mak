@@ -42,9 +42,9 @@ TEST_BUS_SPEED_INT = 2
 endif
 
 ifeq ($(TEST_HBW_EP), hbw_on)
-TEST_HBW_EP_INT = 1
+ISO_MAX_TXNS = 2
 else
-TEST_HBW_EP_INT = 0
+ISO_MAX_TXNS = 1
 endif
 
 SOURCE_DIRS = ./src
@@ -56,7 +56,7 @@ XCC_FLAGS_$(TEST_ARCH)_$(TEST_FREQ)_$(TEST_DTHREADS)_$(TEST_EP_NUM)_$(TEST_ADDRE
 	-DTEST_DTHREADS=$(TEST_DTHREADS) \
 	-DTEST_EP_NUM=$(TEST_EP_NUM) \
 	-DXUD_CORE_CLOCK=$(TEST_FREQ) \
-	-DUSB_HBW_EP=$(TEST_HBW_EP_INT)
+	-DXUD_USB_ISO_MAX_TXNS_PER_MICROFRAME=$(ISO_MAX_TXNS)
 
 # The TARGET variable determines what target system the application is
 # compiled for. It either refers to an XN file in the source directories

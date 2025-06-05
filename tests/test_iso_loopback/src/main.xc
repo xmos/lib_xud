@@ -66,7 +66,7 @@ int TestEp_LoopbackOnce(chanend c_out, chanend c_in, chanend c_out_0)
     }
 
     XUD_Kill(ep_out_0);
-    exit(0);
+    _Exit(0);
 }
 
 int main()

@@ -42,7 +42,7 @@ int main()
         }
 
         {
-        #if USB_HBW_EP
+        #if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
             unsigned fail = TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH);
         #else
             unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);

@@ -9,7 +9,7 @@
 #define EP_COUNT_OUT   (6)
 #define EP_COUNT_IN    (6)
 
-#if USB_HBW_EP
+#if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
     #define EP_LENGTH (200)
 #else
     #define EP_LENGTH (1024)
@@ -35,7 +35,7 @@ int TestEp_LoopbackForever(chanend c_out1, chanend c_in1)
     XUD_ep ep_out1 = XUD_InitEp(c_out1);
     XUD_ep ep_in1  = XUD_InitEp(c_in1);
 
-#if USB_HBW_EP
+#if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
     unsafe {
         XUD_ep_info * ep = (XUD_ep_info*) ep_out1;
         ep->max_len = EP_LENGTH;
@@ -67,7 +67,7 @@ int TestEp_LoopbackOnce(chanend c_out, chanend c_in, chanend c_out_0)
     XUD_ep ep_out = XUD_InitEp(c_out);
     XUD_ep ep_in  = XUD_InitEp(c_in);
 
-#if USB_HBW_EP
+#if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
     unsafe {
         XUD_ep_info * ep = (XUD_ep_info*) ep_out;
         ep->max_len = EP_LENGTH;
@@ -90,7 +90,7 @@ int TestEp_LoopbackOnce(chanend c_out, chanend c_in, chanend c_out_0)
     }
 
     XUD_Kill(ep_out_0);
-    exit(0);
+    _Exit(0);
 }
 
 int main()

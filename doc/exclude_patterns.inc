@@ -3,3 +3,4 @@ examples
 tests
 CHANGELOG.rst
 LICENSE.rst
+.pytest_cache/README.md

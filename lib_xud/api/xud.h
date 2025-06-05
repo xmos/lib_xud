@@ -20,16 +20,32 @@
 #include "xud_conf.h"
 #endif
 
-#ifndef USB_ISO_EP_MAX_TRANSACTION_SIZE
-#define USB_ISO_EP_MAX_TRANSACTION_SIZE     (1024) /* max size of the data payload for each individual transaction for an ISO EP */
+#ifndef XUD_USB_ISO_EP_MAX_TXN_SIZE
+/**
+ * @brief Max data payload per ISO transaction (in bytes).
+ *
+ * Must not exceed 1024, per USB 2.0 spec limit for high-speed isochronous transfers.
+ *
+ * Default: 1024
+ */
+#define XUD_USB_ISO_EP_MAX_TXN_SIZE     (1024)
 #endif
 
-#ifndef USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME
-#define USB_ISO_MAX_TRANSACTIONS_PER_MICROFRAME     (2) /* maximum number of transactions per microframe for an ISO EP*/
-#endif
 
-#ifndef USB_HBW_EP
-#define USB_HBW_EP (0)  /* HiBW support disabled by default*/
+#ifndef XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME
+/**
+ * @brief Maximum number of transactions per microframe for an ISO endpoint.
+ *
+ * Defines how many transactions an isochronous (ISO) endpoint can perform in a single
+ * USB microframe. This value controls whether high-bandwidth ISO support is enabled.
+ *
+ * - Default: 1
+ * - Maximum supported value: 2
+ *
+ * Setting this to a value greater than 1 enables ISO High Bandwidth support
+ * in lib_xud.
+ */
+#define XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME     (1)
 #endif
 
 #ifndef XUD_STARTUP_ADDRESS
@@ -510,7 +526,7 @@ typedef struct XUD_ep_info
     unsigned int max_len;              // 14 Maximum transaction len permitted per endpoint
     unsigned int current_transaction;  // 15 index of the current transaction
     unsigned int remained;             // 16 For IN, datalength in bytes remaining to be sent. For OUT, datalength received so far in the current transfer
-    unsigned int txns_per_transfer;    // 17 Number of transactions in the current IN transfer. Unused for OUT
+    unsigned int num_transactions;     // 17 Number of transactions in the current IN transfer. Unused for OUT
     unsigned int save_buffer;          // 18 copy of the buffer start address. Used to retry an IN transfer, or to discard an OUT transfer mid-way and roll back the buffer start address
     unsigned int save_length;          // 19 copy of the transfer length. Used to retry an IN transfer. Unused for OUT
     unsigned int out_err_flag;         // 20 flag indicating if the OUT EP is in error

@@ -30,7 +30,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
 
     When compiling, the .o for the shared.xc file gets created in the test_iso_rx_basic/shared/src directory
     and not within the test_iso_rx_basic/.build_<config> directory.
-    When compiling 2 tests, one which defines USB_HBW_EP to 1 and the other to 0, the test_iso_rx_basic/shared/src/shared.o
+    When compiling 2 tests, one which defines XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME to 2 and the other to 1, the test_iso_rx_basic/shared/src/shared.o
     contains one of TestEp_Rx_Hbw or TestEp_Rx, depending on which test compiled first and the other test gives an error like
     ../../shared/test_main.xc:(.text+0x8): Error: undefined reference to '_STestEp_Rx_0'
 
@@ -40,7 +40,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     which doesnt compile the shared.xc file.
     */
 
-    #if USB_HBW_EP
+    #if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
         unsigned fail = TestEp_Rx_Hbw(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END, EP_LENGTH);
     #else
         unsigned fail = TestEp_Rx(c_ep_out[TEST_EP_NUM], TEST_EP_NUM, PKT_LENGTH_START, PKT_LENGTH_END);

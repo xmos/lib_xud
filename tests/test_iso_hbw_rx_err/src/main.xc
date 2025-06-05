@@ -53,7 +53,7 @@ unsigned test_func(chanend c_ep_out[EP_COUNT_OUT], chanend c_ep_in[EP_COUNT_IN])
     memset(buffer, 0xDE, sizeof(buffer));
 
     XUD_ep ep_out1 = XUD_InitEp(c_ep_out[TEST_EP_NUM]);
-#if USB_HBW_EP
+#if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
     unsafe {
         XUD_ep_info * ep = (XUD_ep_info*) ep_out1;
         ep->max_len = EP_LENGTH;

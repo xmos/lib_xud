@@ -17,6 +17,7 @@ UNRELEASED
     (similar to previous behaviour).
   * CHANGED:  Optimised port timings for XS3A to use non-inverted clock
   * CHANGED:  Low level (speed) optimisations
+  * FIXED:    Incorrect references to XUD_TILE replaced by USB_TILE in documentation
 
 2.4.0
 -----

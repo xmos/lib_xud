@@ -1,28 +1,12 @@
 // This file relates to internal XMOS infrastructure and should be ignored by external users
 
-@Library('xmos_jenkins_shared_library@v0.34.0') _
-
-def checkout_shallow()
-{
-    checkout scm: [
-        $class: 'GitSCM',
-        branches: scm.branches,
-        userRemoteConfigs: scm.userRemoteConfigs,
-        extensions: [[$class: 'CloneOption', depth: 1, shallow: true, noTags: false]]
-    ]
-}
+@Library('xmos_jenkins_shared_library@v0.39.0') _
 
 def clone_test_deps() {
   dir("${WORKSPACE}") {
     sh "git clone git@github.com:xmos/test_support"
     sh "git -C test_support checkout c820ebe67bea0596dabcdaf71a590c671385ac35"
   }
-}
-
-def archiveLib(String repoName) {
-    sh "git -C ${repoName} clean -xdf"
-    sh "zip ${repoName}_sw.zip -r ${repoName}"
-    archiveArtifacts artifacts: "${repoName}_sw.zip", allowEmptyArchive: false
 }
 
 getApproval()
@@ -68,7 +52,7 @@ pipeline {
         }
 
         dir("${REPO}") {
-          checkout_shallow()
+          checkoutScmShallow()
 
           dir("examples") {
             withTools(params.TOOLS_VERSION) {
@@ -123,7 +107,7 @@ pipeline {
     stage("Archive lib") {
         steps
         {
-            archiveLib(REPO)
+            archiveSandbox(REPO)
         }
     }
   }

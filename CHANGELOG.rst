@@ -1,8 +1,8 @@
 lib_xud change log
 ==================
 
-UNRELEASED
-----------
+3.0.0
+-----
 
   * ADDED:    Option XUD_SUSPEND_PHY to place USB phy in low power mode during
     USB suspend
@@ -12,12 +12,12 @@ UNRELEASED
   * CHANGED   Endpoint API functions now return XUD_RES_UPDATE on a bus state
     change (suspend/resume/reset). XUD_GetBusState() should then be called to
     ascertain the new state. XUD_AckBusState() must be used to acknowledge
-    suspend or resume states. XUD_ResetEndpoint() should be used to handle
-    reset states
-    (similar to previous behaviour).
+    suspend or resume states. XUD_ResetEndpoint() should be used to handle reset
+    states (similar to previous behaviour).
   * CHANGED:  Optimised port timings for XS3A to use non-inverted clock
-  * CHANGED:  Low level (speed) optimisations
-  * FIXED:    Incorrect references to XUD_TILE replaced by USB_TILE in documentation
+  * CHANGED:  Instruction-level (speed) optimisations
+  * FIXED:    Incorrect references to XUD_TILE replaced by USB_TILE in
+    documentation
 
 2.4.0
 -----

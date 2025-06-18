@@ -99,16 +99,22 @@ typedef unsigned int XUD_ep;
 /* Value to be or'ed in with EpTransferType to enable bus state notifications */
 #define XUD_STATUS_ENABLE           0x80000000
 
+#define XUD_SPEED_FS_VAL            1
+#define XUD_SPEED_HS_VAL            2
+
 typedef enum XUD_BusSpeed
 {
-    XUD_SPEED_FS = 1,
-    XUD_SPEED_HS = 2,
+    XUD_SPEED_FS = XUD_SPEED_FS_VAL,
+    XUD_SPEED_HS = XUD_SPEED_HS_VAL
 } XUD_BusSpeed_t;
+
+#define XUD_PWR_BUS_VAL             0
+#define XUD_PWR_SELF_VAL            1
 
 typedef enum XUD_PwrConfig
 {
-    XUD_PWR_BUS,
-    XUD_PWR_SELF
+    XUD_PWR_BUS = XUD_PWR_BUS_VAL,
+    XUD_PWR_SELF = XUD_PWR_SELF_VAL
 } XUD_PwrConfig;
 
 typedef enum XUD_Result

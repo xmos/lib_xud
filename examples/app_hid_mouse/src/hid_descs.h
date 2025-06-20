@@ -1,11 +1,8 @@
 // Copyright 2024-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-/*
- * @brief Defines shared data for HID example threads.
- */
-#ifndef HID_DEFS_H
-#define HID_DEFS_H
+#ifndef HID_DESCS_H
+#define HID_DESCS_H
 
 /* Global report buffer */
 #define HID_REPORT_BUFFER_SIZE 3
@@ -147,4 +144,4 @@ static char * stringDescriptors[]=
 };
 #endif
 
-#endif // HID_DEFS_H
+#endif // HID_DESCS_H

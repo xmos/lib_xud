@@ -12,7 +12,7 @@ set(APP_COMPILER_FLAGS_xc -g -O3 -report -fxscope)
 
 # Setup different source files for the two build configurations
 set(SOURCE_FILES_c src/main.c)
-set(SOURCE_FILES_xc src/main.xc src/endpoint0.xc)
+set(SOURCE_FILES_xc src/main.xc)
 
 set (APP_DEPENDENT_MODULES    "lib_xud")
 

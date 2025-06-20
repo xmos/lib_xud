@@ -22,24 +22,26 @@
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE };
 XUD_EpType epTypeTableIn[EP_COUNT_IN]   = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_BUL };
 
-/* It is essential that HID_REPORT_BUFFER_SIZE, defined in hid_defs.h, matches the   */
-/* infered length of the report described in hidReportDescriptor above. In this case */
+/* It is essential that HID_REPORT_BUFFER_SIZE, defined in hid_desc.h, matches the   */
+/* infered length of the report described in hidReportDescriptor. In this case */
 /* it is three bytes, three button bits padded to a byte, plus a byte each for X & Y */
 unsigned char g_reportBuffer[HID_REPORT_BUFFER_SIZE] = {0, 0, 0};
 
 /* HID Class Requests */
 XUD_Result_t HidInterfaceClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t sp)
 {
-    unsigned buffer[64];
+    unsigned char buffer[64];
 
     switch(sp.bRequest)
     {
         case HID_GET_REPORT:
 
             /* Mandatory. Allows sending of report over control pipe */
-            /* Send a hid report - note the use of unsafe due to shared mem */
-            buffer[0] = g_reportBuffer[0];
-            return XUD_DoGetRequest(c_ep0_out, c_ep0_in, (void*)buffer, 4, sp.wLength);
+            /* Send a hid report */
+            for (int i = 0; i < sizeof(g_reportBuffer); i++)
+                buffer[i] = g_reportBuffer[i];
+
+            return XUD_DoGetRequest(c_ep0_out, c_ep0_in, buffer, sizeof(g_reportBuffer), sp.wLength);
             break;
 
         case HID_GET_IDLE:

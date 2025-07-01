@@ -5,7 +5,7 @@ lib_xud: USB Device Library
 ###########################
 
 :vendor: XMOS
-:version: 3.0.0
+:version: 3.0.1
 :scope: General Use
 :description: USB device library
 :category: General Purpose

@@ -1,6 +1,12 @@
 lib_xud change log
 ==================
 
+UNRELEASED
+----------
+
+  * ADDED:     XUD_THREAD_MODE_FAST_EN option to enable/disable XUD thread fast
+    mode
+
 3.0.0
 -----
 

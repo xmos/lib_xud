@@ -539,14 +539,14 @@ void XUD_GetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(unsigned, length),
 void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, result));
 
 /* Control token defines - used to inform EPs of bus-state types */
-#define USB_RESET_TOKEN             8        /* Control token value that signals RESET */
+#define USB_RESET_TOKEN             (8)        /* Control token value that signals RESET */
 
 /**
  * @def XUD_OSC_MHZ
  * @brief Frequency of oscillator used to clock xcore (in MHz)
  */
 #ifndef XUD_OSC_MHZ
-#define XUD_OSC_MHZ     (24)
+#define XUD_OSC_MHZ                 (24)
 #endif
 
 /**
@@ -559,7 +559,20 @@ void XUD_SetData_Select(chanend c, XUD_ep ep, REFERENCE_PARAM(XUD_Result_t, resu
  * Only supported on XS3A/xcore.ai based devices.
  */
 #ifndef XUD_SUSPEND_PHY
-#define XUD_SUSPEND_PHY (0)
+#define XUD_SUSPEND_PHY             (0)
+#endif
+
+/**
+ * @def XUD_THREAD_MODE_FAST_EN
+ * @brief Enable fast thread mode for XUD.
+ *
+ * This option should not be changed unless expressly told to do so by XMOS support or documentation.
+ *
+ * When set to 1, the XUD thread will run in fast mode.
+ * When set to 0, the XUD thread will run in standard mode.
+ */
+#ifndef XUD_THREAD_MODE_FAST_EN
+#define XUD_THREAD_MODE_FAST_EN     (1)
 #endif
 
 /*

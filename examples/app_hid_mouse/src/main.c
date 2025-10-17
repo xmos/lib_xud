@@ -162,7 +162,7 @@ void Endpoint0(chanend_t chan_ep0_out, chanend_t chan_ep0_in)
                     {
                         /* Returns  XUD_RES_OKAY if handled,
                          *          XUD_RES_ERR if not handled,
-                         *          XUD_RES_RST for bus reset */
+                         *          XUD_RES_UPDATE for bus reset */
                         result = HidInterfaceClassRequests(ep0_out, ep0_in, sp);
                     }
                     break;
@@ -174,7 +174,7 @@ void Endpoint0(chanend_t chan_ep0_out, chanend_t chan_ep0_in)
         {
             /* Returns  XUD_RES_OKAY if handled okay,
              *          XUD_RES_ERR if request was not handled (STALLed),
-             *          XUD_RES_RST for USB Reset */
+             *          XUD_RES_UPDATE for USB Reset */
 
             hwtimer_realloc_xc_timer(); // realocate logical core xC hw timer
 

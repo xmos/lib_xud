@@ -165,7 +165,7 @@ void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
         {
             /* Returns  XUD_RES_OKAY if handled okay,
              *          XUD_RES_ERR if request was not handled (STALLed),
-             *          XUD_RES_UPDATE for USB Reset */
+             *          XUD_RES_UPDATE for update to USB bus */
             unsafe
             {
                 result = USB_StandardRequests(ep0_out, ep0_in, devDesc,

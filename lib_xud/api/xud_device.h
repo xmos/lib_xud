@@ -80,7 +80,7 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
  *  \param  ep_out   OUT endpint from XUD
  *  \param  ep_in    IN endpoint to XUD
  *  \param  sp       SetupPacket structure to be filled in (passed by ref)
- *  \return          Returns XUD_RES_OKAY on success, XUD_RES_UPDATE on bus reset
+ *  \return          Returns XUD_RES_OKAY on success, XUD_RES_UPDATE on an update to the USB bus
  */
 XUD_Result_t USB_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, REFERENCE_PARAM(USB_SetupPacket_t, sp));
 

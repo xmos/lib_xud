@@ -9,7 +9,7 @@
 #define EP_COUNT_IN    2
 
 /* Endpoint type tables - informs XUD what the transfer types for each Endpoint in use and also
- * if the endpoint wishes to be informed of USB bus resets
+ * if the endpoint wishes to be informed of USB bus status updates. 
  */
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_BUL};
@@ -153,7 +153,7 @@ void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in)
                     {
                         /* Returns  XUD_RES_OKAY if handled,
                          *          XUD_RES_ERR if not handled,
-                         *          XUD_RES_UPDATE for bus reset */
+                         *          XUD_RES_UPDATE for bus status updates */
                         result = HidInterfaceClassRequests(ep0_out, ep0_in, sp);
                     }
                     break;

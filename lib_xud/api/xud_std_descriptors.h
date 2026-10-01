@@ -26,6 +26,7 @@ typedef enum
     USB_CLASS_AUDIO_VIDEO               = 0x10,
 //...
     USB_CLASS_MAPPED_INDEX_END          = 17,
+    USB_CLASS_DFU                       = 0xFE,
     USB_CLASS_VENDOR_SPECIFIC           = 0xFF
 } USB_ClassCode_t;
 

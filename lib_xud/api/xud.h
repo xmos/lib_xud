@@ -149,6 +149,31 @@ typedef enum XUD_PwrConfig
     XUD_PWR_SELF = XUD_PWR_SELF_VAL
 } XUD_PwrConfig;
 
+#define XUD_CFG_BMATTR_BUS_PWR    0x80
+#define XUD_CFG_BMATTR_SELF_PWR   0xC0
+
+/**
+ * @brief Report as self or bus powered device. This affects descriptors
+ * and XUD usage and is important for USB compliance
+ *
+ * Default: XUD_PWR_BUS
+ */
+#ifndef XUD_POWERMODE
+#define XUD_POWERMODE               XUD_PWR_BUS
+#endif
+
+#define XUD_GET_BMATTR_POWERMODE() ((XUD_POWERMODE == XUD_PWR_BUS) ? XUD_CFG_BMATTR_BUS_PWR : XUD_CFG_BMATTR_SELF_PWR)
+
+/**
+ * \def XUD_BMAX_POWER
+ * \brief Maximum power consumption of the USB device in 2mA units.
+ *
+ * Default: 500/2 (250)
+ */
+#ifndef XUD_BMAX_POWER
+#define XUD_BMAX_POWER              (500/2)
+#endif
+
 typedef enum XUD_Result
 {
     XUD_RES_UPDATE = -1,
@@ -188,6 +213,62 @@ typedef enum XUD_BusState_t
 #endif
 
 /**
+ * @brief Enable MSOS 2.0 DFU descriptor
+ *
+ * Default: 0 (Disabled)
+ */
+#ifndef XUD_ENABLE_MSOS_DFU_DESCS
+#define XUD_ENABLE_MSOS_DFU_DESCS    (0)
+#endif
+
+/**
+ * @brief Enable MSOS 2.0 Vendor specific control descriptors
+ *
+ * When enabled, the device will include MSOS 2.0 Vendor specific control descriptors in its configuration.
+ * Default: 0 (Disabled)
+ */
+#ifndef XUD_ENABLE_MSOS_CONTROL_DESCS
+#define XUD_ENABLE_MSOS_CONTROL_DESCS   (0)
+#endif
+
+/**
+ * @brief Interface number for the DFU interface on Endpoint0
+ *
+ * This specifies the interface number for the DFU interface on Endpoint0.
+ * Default: 1
+ */
+#ifndef XUD_INTERFACE_NUMBER_DFU
+#define XUD_INTERFACE_NUMBER_DFU 1
+#endif
+
+/**
+ * @brief Interface number for the Miscellaneous control interface on Endpoint0
+ *
+ * This specifies the interface number for the Miscellaneous control interface on Endpoint0.
+ * Default: 2
+ */
+#ifndef XUD_INTERFACE_NUMBER_MISC_CONTROL
+#define XUD_INTERFACE_NUMBER_MISC_CONTROL 2
+#endif
+
+#if (XUD_ENABLE_MSOS_DFU_DESCS) || (XUD_ENABLE_MSOS_CONTROL_DESCS)
+#ifdef XUD_BCD_USB
+
+#if (XUD_BCD_USB != 0x0201)
+#warning "XUD_BCD_USB is not 0x0201, this may cause compatibility issues with DFU or Vendor Control interfaces."
+#endif
+
+#else
+#define XUD_BCD_USB                 0x0201
+#endif
+
+#else
+#ifndef XUD_BCD_USB
+#define XUD_BCD_USB                 0x0200
+#endif
+#endif /* (XUD_ENABLE_MSOS_DFU_DESCS) || (XUD_ENABLE_MSOS_CONTROL_DESCS) */
+
+/**
  * @brief Device interface GUID for the MSOS 2.0 Descriptor.
  *
  * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
@@ -195,6 +276,18 @@ typedef enum XUD_BusState_t
  */
 #ifndef XUD_WINUSB_DEVICE_INTERFACE_GUID_CONTROL
 #define XUD_WINUSB_DEVICE_INTERFACE_GUID_CONTROL    "{a008382b-5adc-464f-a849-17500f09074c}"
+#endif
+
+/**
+ * @brief Device interface GUID for the DFU interface.
+ *
+ * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
+ * Default: "{89C14132-D389-4FF7-944E-2E33379BB59D}" User can override by defining their own in xua_conf.h
+ *
+ * \warning This GUID must remain unchanged for DFU to work correctly with the XMOS supplied DFU driver.
+ */
+#ifndef XUD_WINUSB_DEVICE_INTERFACE_GUID_DFU
+#define XUD_WINUSB_DEVICE_INTERFACE_GUID_DFU        "{89C14132-D389-4FF7-944E-2E33379BB59D}"
 #endif
 
 /**

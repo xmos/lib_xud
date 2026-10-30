@@ -32,7 +32,6 @@
 #define U32_TO_U8S_LE(_u32)   _U32_BYTE0(_u32), _U32_BYTE1(_u32), _U32_BYTE2(_u32), _U32_BYTE3(_u32)
 
 // BOS descriptor related defines
-#define USB_DESCTYPE_BOS                    (0x0F)
 #define USB_DESCTYPE_DEVICE_CAPABILITY      (0x10)
 #define DEVICE_CAPABILITY_PLATFORM          0x05
 #define USB_BOS_MS_OS_20_UUID               0xDF, 0x60, 0xDD, 0xD8, 0x89, 0x45, 0xC7, 0x4C, \
@@ -69,9 +68,6 @@ typedef struct
 #define MSOS_INTERFACE_GUID_LEN           (80) /* bytes */
 /* x/2 to go from utf-16 to single byte characters that make up the GUID string, -2 to remove both null characters */
 #define DEVICE_INTERFACE_GUID_MAX_STRLEN  ((MSOS_INTERFACE_GUID_LEN / 2) - 2)
-
-// Microsoft OS 2.0 Descriptors, Table 8
-#define MS_OS_20_DESCRIPTOR_INDEX 7 /* wIndex of the D2H vendor request sent by the host to read the MSOS descriptor*/
 
 typedef enum
 {

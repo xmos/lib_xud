@@ -40,26 +40,26 @@ static unsigned char devDesc[] =
 /* Configuration Descriptor */
 static unsigned char cfgDesc[] = {
     0x09,                 /* 0  bLength */
-    0x02,                 /* 1  bDescriptortype */
+    USB_DESCTYPE_CONFIGURATION,/* 1  bDescriptortype */
     0x22, 0x00,           /* 2  wTotalLength */
     0x01,                 /* 4  bNumInterfaces */
     0x01,                 /* 5  bConfigurationValue */
     0x03,                 /* 6  iConfiguration */
-    0x80,                 /* 7  bmAttributes */
+    XUD_GET_BMATTR_POWERMODE(),/* 7  bmAttributes */
     0xC8,                 /* 8  bMaxPower */
 
     0x09,                 /* 0  bLength */
-    0x04,                 /* 1  bDescriptorType */
+    USB_DESCTYPE_INTERFACE,/* 1  bDescriptorType */
     0x00,                 /* 2  bInterfacecNumber */
     0x00,                 /* 3  bAlternateSetting */
     0x01,                 /* 4: bNumEndpoints */
-    0x03,                 /* 5: bInterfaceClass */
+    USB_CLASS_HID,        /* 5: bInterfaceClass */
     0x00,                 /* 6: bInterfaceSubClass */
     0x02,                 /* 7: bInterfaceProtocol*/
     0x00,                 /* 8  iInterface */
 
     0x09,                 /* 0  bLength. Note this is replicated in hidDescriptor[] */
-    0x21,                 /* 1  bDescriptorType (HID) */
+    USB_DESCTYPE_HID,     /* 1  bDescriptorType (HID) */
     0x11,                 /* 2  bcdHID */
     0x01,                 /* 3  bcdHID */
     0x00,                 /* 4  bCountryCode */
@@ -69,7 +69,7 @@ static unsigned char cfgDesc[] = {
     0x00,                 /* 8  wDescriptorLength */
 
     0x07,                 /* 0  bLength */
-    0x05,                 /* 1  bDescriptorType */
+    USB_DESCTYPE_ENDPOINT,/* 1  bDescriptorType */
     0x81,                 /* 2  bEndpointAddress */
     0x03,                 /* 3  bmAttributes */
     0x40,                 /* 4  wMaxPacketSize */
@@ -80,7 +80,7 @@ static unsigned char cfgDesc[] = {
 static unsigned char hidDescriptor[] =
 {
     0x09,               /* 0  bLength */
-    0x21,               /* 1  bDescriptorType (HID) */
+    USB_DESCTYPE_HID,   /* 1  bDescriptorType (HID) */
     0x11,               /* 2  bcdHID */
     0x01,               /* 3  bcdHID */
     0x00,               /* 4  bCountryCode */

@@ -26,6 +26,7 @@ typedef enum
     USB_CLASS_AUDIO_VIDEO               = 0x10,
 //...
     USB_CLASS_MAPPED_INDEX_END          = 17,
+    USB_CLASS_DFU                       = 0xFE,
     USB_CLASS_VENDOR_SPECIFIC           = 0xFF
 } USB_ClassCode_t;
 
@@ -45,6 +46,8 @@ enum USB_DescriptorTypes_t
     USB_DESCTYPE_OTG                    = 0x09,
     USB_DESCTYPE_DEBUG                  = 0x0A,
     USB_DESCTYPE_INTERFACE_ASSOCIATION  = 0x0B, /* Interface association descriptor */
+    USB_DESCTYPE_BOS                    = 0x0F, /* Binary Device Object Store descriptor */
+    USB_DESCTYPE_HID                    = 0x21, /* HID descriptor */
 };
 
 #ifdef __STDC__

@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.21)
+include($ENV{XMOS_CMAKE_PATH}/xcommon.cmake)
+project(test_crc_basic)
+set(TEST_FLAGS )
+include(${CMAKE_CURRENT_LIST_DIR}/../test_app.cmake)
+XMOS_REGISTER_APP()

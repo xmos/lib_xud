@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.21)
+include($ENV{XMOS_CMAKE_PATH}/xcommon.cmake)
+project(test_device_attach_notification)
+set(TEST_FLAGS -DSUSPEND_TIMEOUT_us=300 -DSUSPEND_T_WTWRSTHS_us=20 -DT_FILT_us=1 -DINVALID_DELAY_us=100)
+include(${CMAKE_CURRENT_LIST_DIR}/../test_app.cmake)
+XMOS_REGISTER_APP()

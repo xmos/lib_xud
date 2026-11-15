@@ -83,6 +83,9 @@ pipeline {
                 dir("${REPO_NAME}/tests") {
                   createVenv(reqFile: "requirements.txt")
                   withVenv{
+                    // One build directory per core frequency; tests build what they run
+                    sh 'cmake -G "Unix Makefiles" -B build_600 -DTEST_FREQ=600'
+                    sh 'cmake -G "Unix Makefiles" -B build_800 -DTEST_FREQ=800'
                     sh "pytest -v -n auto --testlevel=${params.TEST_LEVEL} --enabletracing --junitxml=pytest_result.xml"
                   }
                 } // dir

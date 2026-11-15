@@ -35,4 +35,6 @@ filelock==3.0.12
 # If this repository uses the setup functionality (e.g., script entry points)
 # of its own setup.py file, then this list must include an entry for that
 # setup.py file, e.g., '-e .' or '-e ./python' (without the quotes).
--e git+ssh://git@github.com/xmos/test_support.git@bece044e38686f2f17457069508756bc976a8b6a#egg=test_support
+# Pyxsim.build() and Pyxsim.run() are not yet in an xmos/test_support release;
+# pin the release once it is out.
+-e git+ssh://git@github.com/xross-work/test_support.git@feature/pyxrun#egg=test_support

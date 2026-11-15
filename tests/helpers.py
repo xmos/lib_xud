@@ -98,17 +98,6 @@ def generate_elf_disasm(binary, split_dir, disasm):
         sys.exit(1)
 
 
-FIXTURE_TO_BUILD_OPTION = {
-    "core_freq": "TEST_FREQ",
-    "arch": "TEST_ARCH",
-    "dummy_threads": "TEST_DTHREADS",
-    "ep": "TEST_EP_NUM",
-    "address": "TEST_ADDRESS",
-    "bus_speed": "TEST_BUS_SPEED",
-    "hbw_support": "TEST_HBW_EP"
-}
-
-
 def do_usb_test(
     arch,
     ep,
@@ -125,13 +114,7 @@ def do_usb_test(
     verbose=False,
     capfd=None,
 ):
-    build_options = []
-
     xcov = eval(os.getenv("xcov"))
-
-    # Flags for makefile
-    for k, v in FIXTURE_TO_BUILD_OPTION.items():
-        build_options += [str(v) + "=" + str(locals()[k])]
 
     # Shared test code for all RX tests using the test_rx application
     testname, _ = os.path.splitext(os.path.basename(test_file))
@@ -139,61 +122,51 @@ def do_usb_test(
     desc = f"{arch}_{core_freq}_{dummy_threads}_{ep}_{address}_{bus_speed}_{hbw_support}"
     binary = f"{testname}/bin/{desc}/{testname}_{desc}.xe"
 
-    # Do not need to clean since different build will different params go to
-    # separate binaries
-    if eval(os.getenv("clean")):
-        clean_only = True
-    else:
-        clean_only = False
-
-    build_success, _ = Pyxsim._build(
-        binary, do_clean=False, clean_only=clean_only, build_options=build_options
-    )
+    # Each combination of parameters is a build configuration of the test's
+    # application (test_app.cmake), built here the first time a test needs it.
+    # The core frequency selects the XN file, so each has its own build directory.
+    Pyxsim.build(binary, build_dir=os.path.join(os.path.dirname(__file__), f"build_{core_freq}"))
 
     assert len(sessions) == 1, "Multiple sessions not yet supported"
 
 
-    if build_success:
+    if eval(os.getenv("xcov")):
+        split_dir = f"{testname}/bin/{desc}/"
+        disasm = f"{testname}/bin/{desc}/{testname}_{desc}.dump"
+        generate_elf_disasm(binary, split_dir, disasm)
 
-        if eval(os.getenv("xcov")):
-            split_dir = f"{testname}/bin/{desc}/"
-            disasm = f"{testname}/bin/{desc}/{testname}_{desc}.dump"
-            generate_elf_disasm(binary, split_dir, disasm)
+    for session in sessions:
 
-        for session in sessions:
+        phy.session = session
 
-            phy.session = session
+        expect_folder = create_if_needed("expect")
+        expect_filename = "{folder}/{test}_{arch}_{usb_speed}.expect".format(
+            folder=expect_folder,
+            test=testname,
+            arch=arch,
+            usb_speed=bus_speed,
+        )
 
-            expect_folder = create_if_needed("expect")
-            expect_filename = "{folder}/{test}_{arch}_{usb_speed}.expect".format(
-                folder=expect_folder,
-                test=testname,
-                arch=arch,
-                usb_speed=bus_speed,
-            )
+        expect_str = create_expect(session, expect_filename, verbose=verbose)
 
-            expect_str = create_expect(session, expect_filename, verbose=verbose)
+        # Send the list returned from create_expect directly to avoid creating
+        # uniquely named .expect files with identical content, which can cause
+        # issues when running tests with pytest-xdist.
+        tester = testers.ComparisonTester(expect_str)
 
-            # Send the list returned from create_expect directly to avoid creating
-            # uniquely named .expect files with identical content, which can cause
-            # issues when running tests with pytest-xdist.
-            tester = testers.ComparisonTester(expect_str)
+        simargs = get_sim_args(testname, desc)
+        if session:
+            simthreads = [clk, phy] + extra_tasks
+        else:
+            simthreads = []
 
-            simargs = get_sim_args(testname, desc)
-            if session:
-                simthreads = [clk, phy] + extra_tasks
-            else:
-                simthreads = []
-
-            return Pyxsim.run_on_simulator_(
-                binary,
-                simthreads=simthreads,
-                tester=tester,
-                simargs=simargs,
-                capfd=capfd,
-            )
-    else:
-        return False
+        return Pyxsim.run(
+            binary,
+            tester,
+            simthreads,
+            simargs=simargs,
+            capfd=capfd,
+        )
 
 
 def create_expect(session, filename, verbose=False):

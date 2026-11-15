@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.21)
+include($ENV{XMOS_CMAKE_PATH}/xcommon.cmake)
+project(test_suspend_resume_suspendphy)
+set(TEST_FLAGS -DSUSPEND_TIMEOUT_us=300 -DSUSPEND_T_WTWRSTHS_us=20 -DXUD_BYPASS_RESET=1 -DXUD_SUSPEND_PHY=1)
+include(${CMAKE_CURRENT_LIST_DIR}/../test_app.cmake)
+XMOS_REGISTER_APP()

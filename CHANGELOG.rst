@@ -1,6 +1,12 @@
 lib_xud change log
 ==================
 
+UNRELEASED
+----------
+
+  * CHANGED:  Simulator tests build with XCommon CMake instead of xcommon
+    Makefiles; each test builds only the configurations it runs
+
 4.0.1
 -----
 

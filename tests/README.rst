@@ -1,30 +1,39 @@
-
-Lib_xud Tests
+lib_xud tests
 =============
 
-Set up envirnment
-.................
+The tests run ``lib_xud`` in the simulator against a Python model of a USB
+host and PHY, using ``test_support``. They need the XTC Tools environment and
+a Python virtual environment.
 
-In infr_scripts_pl, run:
-``source ./SetupEnv``
+Set up
+......
 
-In test_support, run:
-``./Build.pl build install``
+From this directory, inside a virtual environment::
 
+    python -m pip install -r requirements.txt
 
-Installation and prerequiste for running pytest
-...............................................
+Each test's application has a ``CMakeLists.txt`` that includes the shared
+``test_app.cmake``. That declares one build configuration for each
+combination of test parameters. The core frequency selects the XN file, so
+configure one build directory for each frequency the tests use::
 
-``pip install pytest``
+    cmake -G "Unix Makefiles" -B build_600 -DTEST_FREQ=600
+    cmake -G "Unix Makefiles" -B build_800 -DTEST_FREQ=800
 
-To run all tests:
+Nothing is compiled at this point. Each test builds the configuration it is
+about to run, the first time it needs it.
 
-``pytest -n 4 --enabletracing --xcov [test level]``
+Running
+.......
 
-test level: smoke < default < extended
+To run all tests::
 
-To run specific test:
+    pytest -n auto --testlevel=<level>
 
-``pytest -n 4 --enabletracing --xcov [test level] <test_name>.py``
+To run one test file::
 
-test level: smoke < default < extended
+    pytest -n auto --testlevel=<level> <test_name>.py
+
+``<level>`` is ``smoke``, ``default`` or ``extended``, in increasing order of
+the number of parameter combinations; the default is ``default``.
+``--enabletracing`` writes instruction traces to ``logs``.
